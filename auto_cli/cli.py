@@ -13,13 +13,14 @@ import sys
 TOP_LEVEL_ARGS=['func', 'help', 'verbose']
 
 class CLI:
-  def __init__(self, target_module, function_opts:Dict[str, Dict]):
+  def __init__(self, target_module, title, function_opts:Dict[str, Dict]):
     self.target_module = target_module
+    self.title = title
     self.function_opts = function_opts
 
   def fn_callback(self, fn_name, args):
     res = self.execute_model_fn(fn_name, args)
-    print(f"Results for {fn_name}", res)
+    print(f"[{self.title}] Results for {fn_name}", res)
 
   def execute_model_fn(self, fn_name:str, fn_args:Dict):
     #mod = importlib.import_module(module_name)
@@ -47,15 +48,9 @@ class CLI:
       subparser.add_argument(f"--{parm_name}", **parm_opts)
 
   def create_arg_parser(self):
-    # create_arg_parser.train_parms = sig_parms('nn', 'train')
-    # create_arg_parser.lr_parms = sig_parms('nn', 'lr')
-    # create_arg_parser.graph_parms = sig_parms('nn', 'graph')
-    # create_arg_parser.predict_parms = sig_parms('nn', 'predict')
-    # create_arg_parser.verify_parms = sig_parms('nn', 'verify')
-
     parser = argparse.ArgumentParser(
-      description='Char CNN Model',
-      prog='char_cnn',
+      description=self.title,
+      prog=self.title,
       add_help=False,
       formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -85,18 +80,6 @@ class CLI:
     for fn_name, fn_opt in self.function_opts.items():
       callback_fn = functools.partial(self.fn_callback, fn_name)
       self.setup_subparser(subparser, fn_name, callback_fn, fn_opt["description"])
-
-    # lr_callback = functools.partial(self.fn_callback, "lr")
-    # graph_callback = functools.partial(self.fn_callback, "graph")
-    # predict_callback = functools.partial(self.fn_callback, "predict")
-    # train_callback = functools.partial(self.fn_callback, "train")
-    # verify_callback = functools.partial(self.fn_callback, "verify")
-    #
-    # self.setup_subparser(subparser, 'lr', lr_callback, 'Find Learning Rate for %(prog)s')
-    # self.setup_subparser(subparser, 'graph', graph_callback, 'Graph(s) for %(prog)s')
-    # self.setup_subparser(subparser, 'predict', predict_callback, 'Predict using %(prog)s')
-    # self.setup_subparser(subparser, 'train', train_callback, 'Train using %(prog)s')
-    # self.setup_subparser(subparser, 'verify', verify_callback, 'Verify using %(prog)s')
 
     return parser
 

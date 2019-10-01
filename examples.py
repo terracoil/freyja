@@ -3,9 +3,7 @@
   Simple Examples of CLI creation.
 """
 import sys
-from auto_cli import CLI
-
-
+from auto_cli.cli import CLI
 
 def foo():
   print("FOO!")
