@@ -11,7 +11,7 @@ from setuptools import setup
 
 DESCRIPTION = """
   auto-cli-py
-  Python Library for AI training via python or CLI
+  Python Package to automatically create CLI from function via introspection
 """
 
 setup(
