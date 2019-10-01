@@ -36,6 +36,7 @@ dependencies:
     - xz=5.2.4
     - zlib=1.2.11
     - pip:
+          - "git+https://github.com/tangledpath/auto-cli-py>=0.4.2"
           - click==7.0
           - httpimport==0.5.16
           - itsdangerous==1.1.0
