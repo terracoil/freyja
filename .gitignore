@@ -1,0 +1,25 @@
+# Compiled python modules.
+*.pyc
+.DS_Store
+*/.DS_Store
+
+# Pytest
+.pytest_cache
+__pycache__
+
+# Setuptools distribution folder.
+dist
+build
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
+.egg*
+
+# Logs
+logs
+*.log
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+junk.txt
