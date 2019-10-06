@@ -9,21 +9,28 @@
 
 from setuptools import setup
 
-DESCRIPTION = """
-  auto-cli-py
-  Python Package to automatically create CLI from function via introspection
-"""
+DESCRIPTION = "auto-cli-py: python package to automatically create CLI from function via introspection"
+
+with open("README.md", "r") as fh:
+  long_description = fh.read()
 
 setup(
   name='auto-cli-py',
-  version='0.4.2',
+  version='0.4.4',
   description=DESCRIPTION,
   url='http://github.com/tangledpath/auto-cli-py',
   author='Steven Miers',
   author_email='steven.miers@gmail.com',
   include_package_data=True,
-  license='copyright',
+  long_description=long_description,
+  long_description_content_type="text/markdown",
   packages=['auto_cli'],
+  python_requires='>=3.6',
   tests_require=[],
-  zip_safe=False
+  zip_safe=False,
+  classifiers=[
+      "Programming Language :: Python :: 3",
+      "License :: OSI Approved :: MIT License",
+      "Operating System :: OS Independent",
+  ],
 )
