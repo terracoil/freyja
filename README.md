@@ -1,12 +1,18 @@
 # auto-cli-py
-Python Library for Training a model
+Python Library that builds a complete CLI given one or more functions.
+
+Most options are set using introspection/signature and annotation functionality, so very little configuration has to be done.
 
 ## Setup
 
 ### TL;DR Install for usage
 ```bash
 # Install from github
-pip install git+https://github.com/tangledpath/auto-cli-py
+pip install auto-cli-py
+
+# See example code and output
+python examples.py
+
 ```
 
 ### In python code

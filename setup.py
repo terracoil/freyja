@@ -9,10 +9,14 @@
 
 from setuptools import setup
 
-DESCRIPTION = "auto-cli-py: python package to automatically create CLI from function via introspection"
+DESCRIPTION = "auto-cli-py: python package to automatically create CLI commands from function via introspection"
 
 with open("README.md", "r") as fh:
   long_description = fh.read()
+
+long_description += "\n---\n## Example\n"
+with open("examples.py", "r") as fh:
+  long_description += fh.read()
 
 setup(
   name='auto-cli-py',

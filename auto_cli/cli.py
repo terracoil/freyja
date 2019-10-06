@@ -63,7 +63,7 @@ class CLI:
         if annotation == str:
           parm_opts['type'] = str
           if has_default:
-            parm_opts['default'] =  f'"{str(parm.default)}"'
+            parm_opts['default'] = parm.default# f'"{str(parm.default)}"'
         elif annotation == int:
           parm_opts['type'] = int
           if has_default:
