@@ -20,7 +20,7 @@ with open("examples.py", "r") as fh:
 
 setup(
   name='auto-cli-py',
-  version='0.4.4',
+  version='0.4.5',
   description=DESCRIPTION,
   url='http://github.com/tangledpath/auto-cli-py',
   author='Steven Miers',
