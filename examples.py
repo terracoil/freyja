@@ -202,10 +202,10 @@ def advanced_demo(
         print(f"Result {i+1}: {result}")
 
 
-# Subcommand examples - Database operations
-def db_create(
+# Database subcommands using double underscore (db__)
+def db__create(
     name: str,
-    engine: str = "sqlite",
+    engine: str = "postgres",
     host: str = "localhost",
     port: int = 5432,
     encrypted: bool = False
@@ -224,7 +224,7 @@ def db_create(
     print("✓ Database created successfully")
 
 
-def db_migrate(
+def db__migrate(
     direction: str = "up",
     steps: int = 1,
     dry_run: bool = False,
@@ -247,34 +247,34 @@ def db_migrate(
         print("✓ Migrations completed")
 
 
-def db_backup(
-    output_file: Path,
+def db__backup_restore(
+    action: str,
+    file_path: Path,
     compress: bool = True,
-    exclude_tables: str = "",
-    include_data: bool = True
+    exclude_tables: str = ""
 ):
-    """Create a database backup.
+    """Backup or restore database operations.
 
-    :param output_file: Path where the backup file will be saved
-    :param compress: Compress the backup file to save space
-    :param exclude_tables: Comma-separated list of tables to exclude
-    :param include_data: Include table data in backup (schema only if false)
+    :param action: Action to perform (backup or restore)
+    :param file_path: Path to backup file
+    :param compress: Compress backup files (backup only)
+    :param exclude_tables: Comma-separated list of tables to exclude from backup
     """
-    backup_type = "full" if include_data else "schema-only"
-    compression = "compressed" if compress else "uncompressed"
+    if action == "backup":
+        backup_type = "compressed" if compress else "uncompressed"
+        print(f"Creating {backup_type} backup at: {file_path}")
+        
+        if exclude_tables:
+            excluded = exclude_tables.split(',')
+            print(f"Excluding tables: {', '.join(excluded)}")
+    elif action == "restore":
+        print(f"Restoring database from: {file_path}")
     
-    print(f"Creating {backup_type} {compression} backup...")
-    print(f"Output file: {output_file}")
-    
-    if exclude_tables:
-        excluded = exclude_tables.split(',')
-        print(f"Excluding tables: {', '.join(excluded)}")
-    
-    print("✓ Backup completed successfully")
+    print("✓ Operation completed successfully")
 
 
-# Subcommand examples - User management
-def user_create(
+# User management subcommands using double underscore (user__)
+def user__create(
     username: str,
     email: str,
     role: str = "user",
@@ -301,17 +301,17 @@ def user_create(
     print("✓ User created successfully")
 
 
-def user_list(
+def user__list(
     role_filter: str = "all",
     active_only: bool = False,
-    format_output: str = "table",
+    output_format: str = "table",
     limit: int = 50
 ):
     """List user accounts with filtering options.
 
     :param role_filter: Filter by role (all, user, admin, moderator)
     :param active_only: Show only active accounts
-    :param format_output: Output format (table, json, csv)
+    :param output_format: Output format (table, json, csv)
     :param limit: Maximum number of users to display
     """
     filters = []
@@ -321,7 +321,7 @@ def user_list(
         filters.append("status=active")
     
     filter_text = f" with filters: {', '.join(filters)}" if filters else ""
-    print(f"Listing up to {limit} users in {format_output} format{filter_text}")
+    print(f"Listing up to {limit} users in {output_format} format{filter_text}")
     
     # Simulate user list
     sample_users = [
@@ -330,7 +330,7 @@ def user_list(
         ("charlie", "charlie@example.com", "moderator", "inactive")
     ]
     
-    if format_output == "table":
+    if output_format == "table":
         print("\nUsername | Email              | Role      | Status")
         print("-" * 50)
         for username, email, role, status in sample_users[:limit]:
@@ -339,7 +339,7 @@ def user_list(
                 print(f"{username:<8} | {email:<18} | {role:<9} | {status}")
 
 
-def user_delete(
+def user__delete(
     username: str,
     force: bool = False,
     backup_data: bool = True
@@ -358,11 +358,37 @@ def user_delete(
     print("✓ User deleted successfully")
 
 
+# Multi-level admin operations using triple underscore (admin__*)
+def admin__user__reset_password(username: str, notify_user: bool = True):
+    """Reset a user's password (admin operation).
+
+    :param username: Username whose password to reset
+    :param notify_user: Send notification email to user
+    """
+    print(f"🔑 Admin operation: Resetting password for user '{username}'")
+    if notify_user:
+        print("📧 Sending password reset notification")
+    print("✓ Password reset completed")
+
+
+def admin__system__maintenance_mode(enable: bool, message: str = "System maintenance in progress"):
+    """Enable or disable system maintenance mode.
+
+    :param enable: Enable (True) or disable (False) maintenance mode
+    :param message: Message to display to users during maintenance
+    """
+    action = "Enabling" if enable else "Disabling"
+    print(f"🔧 {action} system maintenance mode")
+    if enable:
+        print(f"📢 Message: '{message}'")
+    print("✓ Maintenance mode updated")
+
+
 if __name__ == '__main__':
     # Create CLI without any manual configuration - everything from docstrings!
     cli = CLI(
         sys.modules[__name__],
-        title="Auto-CLI Example - Modern Python CLI generation from docstrings"
+        title="Enhanced CLI - Hierarchical commands with double underscore delimiter"
     )
 
     # Run the CLI and exit with appropriate code
