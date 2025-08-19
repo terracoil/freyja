@@ -385,10 +385,15 @@ def admin__system__maintenance_mode(enable: bool, message: str = "System mainten
 
 
 if __name__ == '__main__':
-    # Create CLI without any manual configuration - everything from docstrings!
+    # Import theme functionality
+    from auto_cli.theme import create_default_theme
+    
+    # Create CLI with colored theme
+    theme = create_default_theme()
     cli = CLI(
         sys.modules[__name__],
-        title="Enhanced CLI - Hierarchical commands with double underscore delimiter"
+        title="Enhanced CLI - Hierarchical commands with double underscore delimiter",
+        theme=theme
     )
 
     # Run the CLI and exit with appropriate code

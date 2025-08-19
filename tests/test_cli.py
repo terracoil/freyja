@@ -240,3 +240,45 @@ class TestBackwardCompatibility:
         # Core functionality should work the same way
         result = cli.run(['sample-function', '--name', 'test'])
         assert "Hello test!" in result
+
+
+class TestColorOptions:
+    """Test color-related CLI options."""
+
+    def test_no_color_option_exists(self, sample_module):
+        """Test that --no-color/-n option is available."""
+        cli = CLI(sample_module, "Test CLI")
+        parser = cli.create_parser()
+        
+        help_text = parser.format_help()
+        assert '--no-color' in help_text or '-n' in help_text
+
+    def test_no_color_parser_creation(self, sample_module):
+        """Test creating parser with no_color parameter."""
+        from auto_cli.theme import create_default_theme
+        theme = create_default_theme()
+        
+        cli = CLI(sample_module, "Test CLI", theme=theme)
+        
+        # Test that no_color parameter works
+        parser_with_color = cli.create_parser(no_color=False)
+        parser_no_color = cli.create_parser(no_color=True)
+        
+        # Both should generate help without errors
+        help_with_color = parser_with_color.format_help()
+        help_no_color = parser_no_color.format_help()
+        
+        assert "Test CLI" in help_with_color
+        assert "Test CLI" in help_no_color
+
+    def test_no_color_flag_detection(self, sample_module):
+        """Test that --no-color flag is properly detected in run method."""
+        cli = CLI(sample_module, "Test CLI")
+        
+        # Test command execution with --no-color (global flag comes first)
+        result = cli.run(['--no-color', 'sample-function'])
+        assert "Hello world!" in result
+        
+        # Test with short form
+        result = cli.run(['-n', 'sample-function'])
+        assert "Hello world!" in result
