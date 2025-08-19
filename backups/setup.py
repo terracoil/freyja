@@ -12,13 +12,13 @@ from setuptools import setup
 DESCRIPTION = "auto-cli-py: python package to automatically create CLI commands from function via introspection"
 
 long_description = []
-with open("README.md", "r") as fh:
+with open("README.md") as fh:
   long_description.append(fh.read())
 
 long_description.append("---")
 long_description.append("---## Example")
 long_description.append("```python")
-with open("examples.py", "r") as fh:
+with open("examples.py") as fh:
   long_description.append(fh.read())
 long_description += "```"
 

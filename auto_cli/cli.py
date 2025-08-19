@@ -1,248 +1,195 @@
+"""Auto-generate CLI from function signatures and docstrings."""
 import argparse
-from collections import OrderedDict
 import enum
-import functools
 import inspect
 import sys
 import traceback
-from typing import Dict
+from collections.abc import Callable
+from typing import Any, Union
 
-TOP_LEVEL_ARGS=['func', 'help', 'verbose']
+from .docstring_parser import extract_function_help
+
 
 class CLI:
-  class ArgFormatter(argparse.HelpFormatter):
-    """Help message formatter which adds default values to argument help.
-    Only the name of this class is considered a public API. All the methods
-    provided by the class are considered an implementation detail.
-    """
+    """Automatically generates CLI from module functions using introspection."""
 
-    def _get_help_string(self, action):
-      help = action.help
-      print("HERE, orig helop", dir(action))
-      print(action)
-      if '%(default)' not in action.help:
-        if action.default is not argparse.SUPPRESS:
-          defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
-          if action.option_strings or action.nargs in defaulting_nargs:
-            help += ' (default: %(default)s)'
-            pass
-      #help+=":%(type)s"  if hasattr(action,'type') else '' # in action else '' #Default=[%(default)s]') if 'default' in parm_opts else ''
-      # help+="=%(default)s" if 'default' in action else ''
-      # help+="  -> [%(choices)s]" if 'choices' in action else ''
+    def __init__(self, target_module, title: str, function_filter: Callable | None = None):
+        """Initialize CLI generator.
 
-      return help
+        :param target_module: Module containing functions to expose as CLI commands
+        :param title: CLI application title and description
+        :param function_filter: Optional filter to select functions (default: non-private callables)
+        """
+        self.target_module = target_module
+        self.title = title
+        self.function_filter = function_filter or self._default_function_filter
+        self._discover_functions()
 
-  def __init__(self, target_module, title, function_opts:Dict[str, Dict]):
-    self.target_module = target_module
-    self.title = title
-    self.function_opts = function_opts
+    def _default_function_filter(self, name: str, obj: Any) -> bool:
+        """Default filter: include non-private callable functions."""
+        return (
+            not name.startswith('_') and
+            callable(obj) and
+            not inspect.isclass(obj) and
+            inspect.isfunction(obj)
+        )
 
-  def fn_callback(self, fn_name, args):
-    res = self.execute_model_fn(fn_name, args)
-    print(f"[{self.title}] Results for {fn_name}", res)
+    def _discover_functions(self):
+        """Auto-discover functions from module using the filter."""
+        self.functions = {}
+        for name, obj in inspect.getmembers(self.target_module):
+            if self.function_filter(name, obj):
+                self.functions[name] = obj
 
-  def execute_model_fn(self, fn_name:str, fn_args:Dict):
-    fn = getattr(self.target_module, fn_name)
-    return fn(**fn_args)
+    def _get_arg_type_config(self, annotation: type) -> dict[str, Any]:
+        """Convert type annotation to argparse configuration."""
+        from pathlib import Path
+        from typing import get_args, get_origin
 
-  def sig_parms(self, fn_name:str):
-    fn = getattr(self.target_module, fn_name)
-    sigs = inspect.signature(fn)
-    return sigs.parameters
+        # Handle Optional[Type] -> get the actual type
+        # Handle both typing.Union and types.UnionType (Python 3.10+)
+        origin = get_origin(annotation)
+        if origin is Union or str(origin) == "<class 'types.UnionType'>":
+            args = get_args(annotation)
+            # Optional[T] is Union[T, NoneType]
+            if len(args) == 2 and type(None) in args:
+                annotation = next(arg for arg in args if arg is not type(None))
 
-  @staticmethod
-  def add_sig_parm_args(sig_parms:OrderedDict, subparser):
-
-    for parm_name, parm in sig_parms.items():
-      parm_opts = {}
-
-      has_default = parm.default is not parm.empty
-
-      annotation = parm.annotation
-      if annotation is not parm.empty:
-        if annotation == str:
-          parm_opts['type'] = str
-          if has_default:
-            parm_opts['default'] = parm.default# f'"{str(parm.default)}"'
-        elif annotation == int:
-          parm_opts['type'] = int
-          if has_default:
-            parm_opts['default'] =  parm.default
+        if annotation in (str, int, float):
+            return {'type': annotation}
         elif annotation == bool:
-          parm_opts['type'] = bool
-          if has_default:
-            parm_opts['default'] =  parm.default
-        elif annotation == float:
-          parm_opts['type'] = float
-          if has_default:
-            parm_opts['default'] =  parm.default
-        elif issubclass(annotation, enum.Enum):
+            return {'action': 'store_true'}
+        elif annotation == Path:
+            return {'type': Path}
+        elif inspect.isclass(annotation) and issubclass(annotation, enum.Enum):
+            return {
+                'type': lambda x: annotation[x.split('.')[-1]],
+                'choices': list(annotation),
+                'metavar': f"{{{','.join(e.name for e in annotation)}}}"
+            }
+        return {}
 
-          # Easy lookup for enumeration types:
-          def choice_type_fn(enum_type:enum.Enum, arg:str):
-            return enum_type[arg.split(".")[-1]]
+    def _add_function_args(self, parser: argparse.ArgumentParser, fn: Callable):
+        """Add function parameters as CLI arguments with help from docstring."""
+        sig = inspect.signature(fn)
+        _, param_help = extract_function_help(fn)
 
-          # Convert enumeration to choices:
-          parm_opts['choices'] = [e for e in annotation]
-          parm_opts['type'] = functools.partial(choice_type_fn, annotation)
+        for name, param in sig.parameters.items():
+            # Skip *args and **kwargs - they can't be CLI arguments
+            if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+                continue
 
-          if has_default and hasattr(parm.default, 'name'):
-            # Set default to friendly enum value:
-            parm_opts['default'] = f"{parm.default}"
-        else:
-          pass
-          #parm_opts['type'] = "unknown" #f"**{'xox'}(**)" #str(annotation)
-          #print("UNRECOG ANNOT", annotation)
+            arg_config: dict[str, Any] = {
+                'dest': name,
+                'help': param_help.get(name, f"{name} parameter")
+            }
 
-      if parm_opts:
-        help = []
-        if 'choices' in parm_opts:
-          help.append("Choices: [%(choices)s]")
-        elif 'type' in parm_opts:
-          help.append("Type:%(type)s")
+            # Handle type annotations
+            if param.annotation != param.empty:
+                type_config = self._get_arg_type_config(param.annotation)
+                arg_config.update(type_config)
 
-        if 'default' in parm_opts:
-          help.append("=%(default)s(default)")
+            # Handle defaults - determine if argument is required
+            if param.default != param.empty:
+                arg_config['default'] = param.default
+                # Don't set required for optional args
+            else:
+                arg_config['required'] = True
 
-        #help += f'keys={str(parm_opts.keys())}'
-        parm_opts['help'] = "".join(help)
-      parm_opts['metavar'] = parm_name.upper()
-      subparser.add_argument(f"--{parm_name}", **parm_opts)
+            # Add argument with kebab-case flag name
+            flag = f"--{name.replace('_', '-')}"
+            parser.add_argument(flag, **arg_config)
 
-  @staticmethod
-  def _add_enh_signature(enh_name, enh, str_builder):
-    """ Utility function to add signature of method """
-    parms = []
-    signature = inspect.signature(enh)
-    if signature != signature.empty:
-      for p in signature.parameters.values():
-        parm = f'{p.name}'
-        # Sig annotation, if any:
-        if p.annotation != p.empty:
-          if p.annotation == str:
-            parm += ':str'
-          if p.annotation == int:
-            parm += ':int'
-          else:
-            parm += f':{p.annotation}'
-        if p.default != p.empty:
-          parm += f'={p.default}'
-        parms.append(parm)
+    def create_parser(self) -> argparse.ArgumentParser:
+        """Create argument parser from discovered functions."""
+        parser = argparse.ArgumentParser(
+            description=self.title,
+            formatter_class=argparse.RawDescriptionHelpFormatter
+        )
 
-      # Add all parms as string to sig:
-      parm_str = ', '.join(parms)
-      sig = f"{enh_name}({parm_str})"
-      if signature.return_annotation != signature.empty:
-        if p.annotation == str:
-          sig += ' => str'
-        else:
-          sig += f" => {signature.return_annotation}"
-      # str_builder.append(textwrap.indent("Signature:", CHAR_TAB))
-      # str_builder.append(textwrap.indent(sig, CHAR_TAB2))
-    return str_builder
+        # Add global verbose flag
+        parser.add_argument(
+            "-v", "--verbose",
+            action="store_true",
+            help="Enable verbose output"
+        )
 
-  def create_arg_parser(self):
-    #HELP_FORMATTER = functools.partial(argparse.HelpFormatter, prog=None, max_help_position=120)
-    parser = argparse.ArgumentParser(
-      description=self.title,
-      prog=self.title,
-      add_help=True,
-      formatter_class=functools.partial(argparse.HelpFormatter, prog=None, max_help_position=120)
-    )
+        subparsers = parser.add_subparsers(
+            title='Commands',
+            dest='command',
+            required=False,  # Allow no command to show help
+            help='Available commands',
+            metavar=''  # Remove the comma-separated list
+        )
 
-    subparser = parser.add_subparsers(
-      title='Commands',
-      description='Valid Commands',
-      help='Additional Help:',
-    )
+        for name, fn in self.functions.items():
+            # Get function description from docstring
+            desc, _ = extract_function_help(fn)
 
-    # Custom help arg:
-    # parser.add_argument(
-    #   '-h',
-    #   '--help',
-    #   action="store_true",
-    #   help='Show help with increasing level of verbosity using --verbose flag'
-    # )
+            # Create subparser with kebab-case command name
+            command_name = name.replace('_', '-')
+            sub = subparsers.add_parser(
+                command_name,
+                help=desc,
+                description=desc
+            )
 
-    parser.add_argument(
-      "-v",
-      "--verbose",
-      help="increase output verbosity",
-      action="store_true"
-    )
+            # Add function arguments
+            self._add_function_args(sub, fn)
 
-    # Subparsers automatically setup based on function signatures:
-    for fn_name, fn_opt in self.function_opts.items():
-      callback_fn = functools.partial(self.fn_callback, fn_name)
-      self.setup_subparser(parser, subparser, fn_name, callback_fn, fn_opt["description"])
+            # Store function reference for execution
+            sub.set_defaults(_cli_function=fn, _function_name=name)
 
-    return parser
+        return parser
 
-  def setup_subparser(self, parser, subparser, fn_name, func_callback, help):
-    sub_parser = subparser.add_parser(fn_name, help=help)
+    def run(self, args: list | None = None) -> Any:
+        """Parse arguments and execute the appropriate function."""
+        parser = self.create_parser()
 
-    # Get signature parms and add corresponding arguments:
-    parms = self.sig_parms(fn_name)
-    CLI.add_sig_parm_args(parms, sub_parser)
+        try:
+            parsed = parser.parse_args(args)
 
-    help_formatter = functools.partial(argparse.HelpFormatter,prog=parser.prog,max_help_position=80)
-    sub_parser.set_defaults(func=func_callback)
-    sub_parser.formatter_class = help_formatter#argparse.HelpFormatter(prog=parser.prog, max_help_position=100)#   CLI.ArgFormatter#argparse.ArgumentDefaultsHelpFormatter
-    return sub_parser
+            # If no command provided, show help
+            if not hasattr(parsed, '_cli_function'):
+                parser.print_help()
+                return 0
 
-  @staticmethod
-  def __get_commands_help__(parser, command_name:str=None, usage=False):
-    helps = []
+            # Get function and prepare execution
+            fn = parsed._cli_function
+            sig = inspect.signature(fn)
 
-    subparsers_actions = [
-      action for action in parser._actions
-      if isinstance(action, argparse._SubParsersAction)
-    ]
+            # Build kwargs from parsed arguments
+            kwargs = {}
+            for param_name in sig.parameters:
+                # Convert kebab-case back to snake_case for function call
+                attr_name = param_name.replace('-', '_')
+                if hasattr(parsed, attr_name):
+                    value = getattr(parsed, attr_name)
+                    kwargs[param_name] = value
 
-    for subparsers_action in subparsers_actions:
-      for choice, subparser in subparsers_action.choices.items():
-        if command_name is None or command_name == choice:
-          if usage:
-            helps.append(subparser.format_usage())
-          else:
-            helps.append(f"Command '{choice}'")
-            #helps.append(textwrap.indent(subparser.format_help(), '  '))
-            helps.append(subparser.format_help())
+            # Execute function and return result
+            return fn(**kwargs)
 
-    return "\n".join(helps)
+        except SystemExit:
+            # Let argparse handle its own exits (help, errors, etc.)
+            raise
+        except Exception as e:
+            # Handle execution errors gracefully
+            print(f"Error executing {parsed._function_name}: {e}", file=sys.stderr)
+            if getattr(parsed, 'verbose', False):
+                traceback.print_exc()
+            return 1
 
-  def display(self):
-    parser = self.create_arg_parser()
-    try:
-      if len(sys.argv[1:])==0:
-        print(parser.format_help())
-        #parser.print_usage() # for just the usage line
-      else:
-        args = parser.parse_args()
-        if 'func' in args:
-          vargs = vars(args)
-          fn_args = {k: vargs[k] for k in vargs if k not in TOP_LEVEL_ARGS}
-
-          # Show Usage no matter what:
-          cmd_name = args.func.args[0]# __name__.replace('_callback', '')
-          print(f"Command Name: {cmd_name}")
-          command_help = CLI.__get_commands_help__(parser, cmd_name, True)
-          #print(textwrap.indent(command_help, prefix='  '))
-          print(command_help)
-
-          args.func(fn_args)
-        # elif 'help' in args and args.help:
-        #   print("HELP:")
-        #   print(parser.format_help())
-        #   if 'verbose' in args:
-        #     print("Help for commands:")
-        #     command_help = CLI.__get_commands_help__(parser)
-        #     print(command_help)
-
-    except Exception as x:
-      print(f"Unexpected Error: {type(x)}: '{x}'")
-      traceback.print_exc()
-      x.__traceback__.print_stack()
-    finally:
-      parser.exit()
-
+    def display(self):
+        """Legacy method for backward compatibility - runs the CLI."""
+        try:
+            result = self.run()
+            if isinstance(result, int):
+                sys.exit(result)
+        except SystemExit:
+            # Argparse already handled the exit
+            pass
+        except Exception as e:
+            print(f"Unexpected error: {e}", file=sys.stderr)
+            traceback.print_exc()
+            sys.exit(1)

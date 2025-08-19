@@ -1,83 +1,109 @@
 # auto-cli-py
-Python Library that builds a complete CLI given one or more functions.
+Python Library that builds a complete CLI given one or more functions using introspection.
 
-Most options are set using introspection/signature and annotation functionality, so very little configuration has to be done.
+Most options are set using introspection/signature and annotation functionality, so very little configuration has to be done. The library analyzes your function signatures and automatically creates command-line interfaces with proper argument parsing, type checking, and help text generation.
 
-## Setup
-@@DEPRECATED; USE https://github.com/tiangolo/typer-cli instead.
+## Quick Start
 
-### TL;DR Install for usage
+### Installation
 ```bash
-# Install from github
+# Install from PyPI
 pip install auto-cli-py
 
 # See example code and output
 python examples.py
-
 ```
 
-### In python code
+### Basic Usage
+
+```python
+#!/usr/bin/env python
+import sys
+from auto_cli.cli import CLI
+
+def greet(name: str = "World", count: int = 1):
+    """Greet someone multiple times."""
+    for _ in range(count):
+        print(f"Hello, {name}!")
+
+if __name__ == '__main__':
+    fn_opts = {
+        'greet': {'description': 'Greet someone'}
+    }
+    cli = CLI(sys.modules[__name__], function_opts=fn_opts, title="My CLI")
+    cli.display()
+```
+
+This automatically generates a CLI with:
+- `--name` parameter (string, default: "World")  
+- `--count` parameter (integer, default: 1)
+- Proper help text and error handling
+
 ## Development
-* Standard python packaging - Follows methodologies from: https://python-packaging.readthedocs.io/en/latest/minimal
-.html
-* Uses pytest
 
-### Pytest
-https://docs.pytest.org/en/latest/
+This project uses Poetry for dependency management and modern Python tooling.
 
-### Python (Anaconda) environment
-*(assumes anaconda is properly installed)*
-```bash
-# First time. Create conda environment from environment.yml and activate it:
-conda env create -f environment.yml -n auto-cli-py
-conda activate auto-cli-py
-```
+### Setup Development Environment
 
 ```bash
-# If environment changes:
-conda activate auto-cli-py
-conda env update -f=environment.yml
-# -- OR remove and restart --
-conda remove --name auto-cli-py --all
-conda env create -f environment.yml
+# Clone the repository
+git clone https://github.com/tangledpath/auto-cli-py.git
+cd auto-cli-py
+
+# Install Poetry (if not already installed)
+curl -sSL https://install.python-poetry.org | python3 -
+
+# Setup development environment
+./scripts/setup-dev.sh
 ```
 
-### Activate environment
-```bash
-conda activate auto-cli-py
-
-# This symlinks the installed auto_cli package to the source:
-pip install -e .
-```
-
-### Preparation
-```bash
-conda activate auto-cli-py
-```
-
-### Linting and Testing
-*pytest behavior and output is controlled through `auto_cli/tests/pytest.ini`*
+### Development Commands
 
 ```bash
-# Lint all code:
-pylint auto_cli
+# Install dependencies
+poetry install
 
-# Run all tests
-pytest
+# Run tests
+./scripts/test.sh
+# Or directly: poetry run pytest
 
-# See more options for pytest:
-pytest --help
+# Run linting and formatting
+./scripts/lint.sh
 
-# This is handy:
-pytest --fixtures-per-test
+# Run examples
+poetry run python examples.py
 
+# Build package
+poetry build
+
+# Publish to PyPI (maintainers only)
+./scripts/publish.sh
 ```
 
-### Installation (other)
+### Code Quality
+
+The project uses several tools for code quality:
+- **Black**: Code formatting
+- **Ruff**: Fast Python linter
+- **MyPy**: Type checking  
+- **Pylint**: Additional linting
+- **Pre-commit**: Automated checks on commit
+
+### Testing
 
 ```bash
-# AND/OR Install from a specific github branch
-pip uninstall auto-cli-py
-pip install git+https://github.com/tangledpath/auto-cli-py.git@features/blah
+# Run all tests with coverage
+poetry run pytest
+
+# Run specific test file
+poetry run pytest tests/test_cli.py
+
+# Run with verbose output
+poetry run pytest -v
 ```
+
+### Requirements
+
+- Python 3.13.5+
+- No runtime dependencies (uses only standard library)
 
