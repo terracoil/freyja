@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Enhanced examples demonstrating auto-cli-py with docstring integration."""
+# Enhanced examples demonstrating auto-cli-py with docstring integration.
 import enum
 import sys
 from pathlib import Path
@@ -58,12 +58,15 @@ def train(
     :param use_gpu: Enable GPU acceleration if available
     """
     gpu_status = "GPU" if use_gpu else "CPU"
+    params = {
+        "Data directory": data_dir,
+        "Learning rate": initial_learning_rate,
+        "Random seed": seed,
+        "Batch size": batch_size,
+        "Epochs": epochs
+    }
     print(f"Training model on {gpu_status}:")
-    print(f"  Data directory: {data_dir}")
-    print(f"  Learning rate: {initial_learning_rate}")
-    print(f"  Random seed: {seed}")
-    print(f"  Batch size: {batch_size}")
-    print(f"  Epochs: {epochs}")
+    print('\n'.join(f"  {k}: {v}" for k, v in params.items()))
 
 
 def count_animals(count: int = 20, animal: AnimalType = AnimalType.BEE):
@@ -95,11 +98,14 @@ def process_file(
     if output_path is None:
         output_path = input_path.with_suffix(f"{input_path.suffix}.processed")
 
-    print(f"Processing file: {input_path}")
-    print(f"Output to: {output_path}")
-    print(f"Encoding: {encoding}")
-    print(f"Log level: {log_level.value}")
-    print(f"Backup enabled: {backup}")
+    config = {
+        "Processing file": input_path,
+        "Output to": output_path,
+        "Encoding": encoding,
+        "Log level": log_level.value,
+        "Backup enabled": backup
+    }
+    print('\n'.join(f"{k}: {v}" for k, v in config.items()))
 
     # Simulate file processing
     if input_path.exists():
@@ -240,7 +246,7 @@ def db__migrate(
     action = "Would migrate" if dry_run else "Migrating"
     force_text = " (forced)" if force else ""
     print(f"{action} {steps} step(s) {direction}{force_text}")
-    
+
     if not dry_run:
         for i in range(steps):
             print(f"  Running migration {i+1}/{steps}...")
@@ -263,13 +269,13 @@ def db__backup_restore(
     if action == "backup":
         backup_type = "compressed" if compress else "uncompressed"
         print(f"Creating {backup_type} backup at: {file_path}")
-        
+
         if exclude_tables:
             excluded = exclude_tables.split(',')
             print(f"Excluding tables: {', '.join(excluded)}")
     elif action == "restore":
         print(f"Restoring database from: {file_path}")
-    
+
     print("✓ Operation completed successfully")
 
 
@@ -294,10 +300,10 @@ def user__create(
     print(f"  Username: {username}")
     print(f"  Email: {email}")
     print(f"  Role: {role}")
-    
+
     if send_welcome:
         print(f"📧 Sending welcome email to {email}")
-    
+
     print("✓ User created successfully")
 
 
@@ -319,17 +325,17 @@ def user__list(
         filters.append(f"role={role_filter}")
     if active_only:
         filters.append("status=active")
-    
+
     filter_text = f" with filters: {', '.join(filters)}" if filters else ""
     print(f"Listing up to {limit} users in {output_format} format{filter_text}")
-    
+
     # Simulate user list
     sample_users = [
         ("alice", "alice@example.com", "admin", "active"),
         ("bob", "bob@example.com", "user", "active"),
         ("charlie", "charlie@example.com", "moderator", "inactive")
     ]
-    
+
     if output_format == "table":
         print("\nUsername | Email              | Role      | Status")
         print("-" * 50)
@@ -352,7 +358,7 @@ def user__delete(
     """
     if backup_data:
         print(f"📦 Creating backup of data for user '{username}'")
-    
+
     confirmation = "(forced)" if force else "(with confirmation)"
     print(f"Deleting user '{username}' {confirmation}")
     print("✓ User deleted successfully")
@@ -387,7 +393,7 @@ def admin__system__maintenance_mode(enable: bool, message: str = "System mainten
 if __name__ == '__main__':
     # Import theme functionality
     from auto_cli.theme import create_default_theme
-    
+
     # Create CLI with colored theme
     theme = create_default_theme()
     cli = CLI(

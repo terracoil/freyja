@@ -121,11 +121,11 @@ class ColorFormatter:
     def _is_color_terminal(self) -> bool:
         """Check if the current terminal supports colors."""
         import os
-        
+
         # Check for explicit disable first
         if os.environ.get('NO_COLOR') or os.environ.get('CLICOLOR') == '0':
             return False
-            
+
         # Check for explicit enable
         if os.environ.get('FORCE_COLOR') or os.environ.get('CLICOLOR'):
             return True
