@@ -9,6 +9,13 @@ try:
     COLORAMA_AVAILABLE = True
 except ImportError:
     COLORAMA_AVAILABLE = False
+
+# Additional ANSI codes for features not available in Colorama
+ANSI_BOLD = '\x1b[1m'      # Bold text (avoid Style.BRIGHT to prevent color shifts)
+ANSI_ITALIC = '\x1b[3m'    # Italic text (support varies by terminal)
+ANSI_UNDERLINE = '\x1b[4m' # Underlined text
+
+if not COLORAMA_AVAILABLE:
     # Fallback classes for when colorama is not available
     class _MockColorama:
         def __getattr__(self, name: str) -> str:
@@ -35,8 +42,8 @@ class ThemeStyle:
 
 @dataclass
 class ColorTheme:
-    """Complete color theme configuration for CLI output.
-
+    """
+    Complete color theme configuration for CLI output.
     Defines styling for all major UI elements in the help output.
     """
     title: ThemeStyle                      # Main CLI title/description
@@ -169,15 +176,15 @@ class ColorFormatter:
             if bg_code:
                 codes.append(bg_code)
 
-        # Text styling (using ANSI codes instead of Style.BRIGHT)
+        # Text styling (using Colorama and defined ANSI constants)
         if style.bold:
-            codes.append('\x1b[1m')  # ANSI bold code (avoid Style.BRIGHT to prevent color shifts)
+            codes.append(ANSI_BOLD)  # Use ANSI bold to avoid Style.BRIGHT color shifts
         if style.dim:
-            codes.append(Style.DIM)
+            codes.append(Style.DIM)  # Colorama DIM style
         if style.italic:
-            codes.append('\x1b[3m')  # ANSI italic code (support varies by terminal)
+            codes.append(ANSI_ITALIC)  # ANSI italic code (support varies by terminal)
         if style.underline:
-            codes.append('\x1b[4m')  # ANSI underline code
+            codes.append(ANSI_UNDERLINE)  # ANSI underline code
 
         if not codes:
             return text
@@ -223,8 +230,8 @@ class ColorFormatter:
 def create_default_theme() -> ColorTheme:
     """Create a default color theme with reasonable, accessible colors."""
     return ColorTheme(
-        title=ThemeStyle(fg='MAGENTA'),  # Dark magenta (no bold)
-        subtitle=ThemeStyle(fg='YELLOW'),
+        title=ThemeStyle(fg='MAGENTA', bg='LIGHTWHITE_EX', bold=True),  # Dark magenta bold with light gray background
+        subtitle=ThemeStyle(fg='YELLOW', italic=True),
         command_name=ThemeStyle(fg='CYAN', bold=True),  # Cyan bold for command names
         command_description=ThemeStyle(fg='ORANGE'),  # Orange for flat command descriptions (match subcommand descriptions)
         group_command_name=ThemeStyle(fg='CYAN', bold=True),  # Cyan bold for group command names

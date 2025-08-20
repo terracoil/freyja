@@ -991,7 +991,7 @@ class CLI:
 
         # Main subparsers
         subparsers = parser.add_subparsers(
-            title='Commands',
+            title='COMMANDS',
             dest='command',
             required=False,  # Allow no command to show help
             help='Available commands',
@@ -1047,7 +1047,7 @@ class CLI:
         # Create subcommand parsers with enhanced help
         dest_name = '_'.join(path) + '_subcommand' if len(path) > 1 else 'subcommand'
         sub_subparsers = group_parser.add_subparsers(
-            title=f'{name.title().replace("-", " ")} Commands',
+            title=f'{name.title().replace("-", " ")} COMMANDS',
             dest=dest_name,
             required=False,
             help=f'Available {name} commands',
