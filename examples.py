@@ -390,6 +390,10 @@ def admin__system__maintenance_mode(enable: bool, message: str = "System mainten
     print("✓ Maintenance mode updated")
 
 
+
+
+
+
 if __name__ == '__main__':
     # Import theme functionality
     from auto_cli.theme import create_default_theme
@@ -399,7 +403,8 @@ if __name__ == '__main__':
     cli = CLI(
         sys.modules[__name__],
         title="Enhanced CLI - Hierarchical commands with double underscore delimiter",
-        theme=theme
+        theme=theme,
+        theme_tuner=True
     )
 
     # Run the CLI and exit with appropriate code
