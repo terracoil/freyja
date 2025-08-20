@@ -12,13 +12,20 @@ class MathUtils:
       :value: The value to clamp
       :min_val: Minimum allowed value
       :max_val: Maximum allowed value
+
+    Examples:
+        MathUtils.clamp(5, 0, 10) # 5
+        MathUtils.clamp(-5, 0, 10) # 0
+        MathUtils.clamp(15, 0, 10) # 10
     """
     return max(min_val, min(value, max_val))
 
   @classmethod
-  def minmax_range(cls, *args: Numeric, negative_lower: bool = False) -> Tuple[Numeric, Numeric]:
-    mm = cls.minmax(*args)
-    return -mm[0] if negative_lower else mm[0], mm[1]
+  def minmax_range(cls, args: [Numeric], negative_lower:bool=False) -> Tuple[Numeric, Numeric]:
+    print(f"minmax_range: {args} with negative_lower: {negative_lower}")
+    lower, upper = cls.minmax(*args)
+
+    return cls.safe_negative(lower, negative_lower), upper
 
   @classmethod
   def minmax(cls, *args: Numeric) -> Tuple[Numeric, Numeric]:
@@ -29,11 +36,21 @@ class MathUtils:
     Raises:
         ValueError: If no arguments are provided
     """
-    if not args: raise ValueError("minmax() requires at least one argument")
+    if not args:
+      raise ValueError("minmax() requires at least one argument")
 
     return min(args), max(args)
 
   @classmethod
+  def safe_negative(cls, value: Numeric, neg:bool=True) -> Numeric:
+    """
+    Return the negative of a dynamic number only if neg is True.
+    :param value: Value to check and convert
+    :param neg: Whether to convert to negative or not
+    """
+    return -value if neg else value
+
+  @classmethod
   def percent(cls, val: int | float, max_val: int | float) -> float:
     if max_val < cls.EPSILON: raise ValueError("max_val is too small")
-    return (max_val - val) / float(max_val)
+    return val / float(max_val)

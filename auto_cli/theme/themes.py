@@ -38,29 +38,6 @@ class Themes:
     self.adjust_strategy = adjust_strategy
     self.adjust_percent = adjust_percent
 
-  def get_adjusted_style(self, style_name: str) -> Optional[ThemeStyle]:
-    """Get a style with adjusted colors by name.
-
-    :param style_name: Name of the style attribute
-    :return: ThemeStyle with adjusted colors, or None if style doesn't exist
-    """
-    result = None
-
-    if hasattr(self, style_name):
-      original_style = getattr(self, style_name)
-      if isinstance(original_style, ThemeStyle):
-        # Create a new style with adjusted colors
-        adjusted_fg = self.adjust_color(original_style.fg) if original_style.fg else None
-        print(f"Adjusted {style_name}: {original_style.fg} to {adjusted_fg}")
-        adjusted_bg = original_style.bg#self.adjust_color(original_style.bg) if original_style.bg else None
-
-        result = ThemeStyle(
-          fg=adjusted_fg, bg=adjusted_bg, bold=original_style.bold, italic=original_style.italic,
-          dim=original_style.dim, underline=original_style.underline
-        )
-
-    return result
-
   def adjust_color(self, color: Optional[str]) -> Optional[str]:
     """Apply adjustment to a color based on the current strategy.
 
@@ -71,42 +48,21 @@ class Themes:
     # print(f"adjust_color: #{color}: #{is_valid_hex_color(color)}")
     # Only adjust if we have a color, adjustment percentage, and it's a hex color
     if color and self.adjust_percent != 0 and is_valid_hex_color(color):
-      try:
-        r, g, b = hex_to_rgb(color)
-        rgb = None
-        # print("adjust_color2")
-        val_min, val_max = self.max_rgb_adjust(r, g, b)
-        if self.adjust_strategy == AdjustStrategy.PROPORTIONAL:
-          a = MathUtils.clamp(self.adjust_percent, val_min, val_max)
-          rgb = [int(v * a) for v in (r, g, b)]
-          # print(f"Multiplied {[r, g, b]} by {a} to get {rgb} = {rgb_to_hex(*rgb)}\n")
-        elif self.adjust_strategy == AdjustStrategy.ABSOLUTE:
-          # print("adjust_color3 absolute")
-          rgb = [MathUtils.clamp(int(x + self.adjust_percent), 0, 255) for x in (r, g, b)]
+      rgb = hex_to_rgb(color)
+      factor = -self.adjust_percent
+      if self.adjust_percent >= 0:
+        # Lighter - blend with white (255, 255, 255)
+        r, g, b = [int(v + (255 - v) * factor) for v in rgb]
+      else:
+        # Darker - blend with black (0, 0, 0)
+        factor = 1 + self.adjust_percent  # adjust_pct is negative, so this reduces values
+        r, g, b = [int(v * factor) for v in rgb]
 
-        result = rgb_to_hex(*rgb)
-      except (ValueError, TypeError) as e:
-        print(f"Error: {e}")
-        # Return original color if adjustment fails
-        pass
+      r,g,b = [MathUtils.clamp(v, 0, 255) for v in (r,g,b)]
+      result = rgb_to_hex(r,g,b)
 
     # print(f"adjust_color: #{color} => #{result}")
     return result
-
-  def max_rgb_adjust(self, r: int, g: int, b: int) -> [float, float]:
-    """Calculate safe adjustment that won't exceed RGB bounds.
-
-    :param r: Red component (0-255)
-    :param g: Green component (0-255)
-    :param b: Blue component (0-255)
-    :return: Safe adjustment amount
-    """
-    # Upper bound: ensure all values stay <= 255 when multiplied
-    v_min, v_max = MathUtils.minmax_range(r, g, b, True)
-    return [self.color_pct(v) for v in [v_min, v_max]]
-
-  def color_pct(self, v: float) -> float:
-    return MathUtils.percent(v, 255.0)
 
   def create_adjusted_copy(self, adjust_percent: float, adjust_strategy: Optional[AdjustStrategy] = None) -> 'Themes':
     """Create a new theme with adjusted colors.
@@ -117,6 +73,7 @@ class Themes:
     """
     if adjust_percent < -5.0 or adjust_percent > 5.0:
       raise ValueError(f"adjust_percent must be between -5.0 and 5.0, got {adjust_percent}")
+
     strategy = adjust_strategy or self.adjust_strategy
 
     # Temporarily set adjustment parameters for the adjustment process
@@ -127,19 +84,17 @@ class Themes:
 
     try:
       new_theme = Themes(
-        title=self.get_adjusted_style('title'),
-        subtitle=self.get_adjusted_style('subtitle'),
-        command_name=self.get_adjusted_style('command_name'),
-        command_description=self.get_adjusted_style('command_description'),
-        group_command_name=self.get_adjusted_style('group_command_name'),
-        subcommand_name=self.get_adjusted_style('subcommand_name'),
-        subcommand_description=self.get_adjusted_style('subcommand_description'),
-        option_name=self.get_adjusted_style('option_name'),
-        option_description=self.get_adjusted_style('option_description'),
-        required_option_name=self.get_adjusted_style('required_option_name'),
-        required_option_description=self.get_adjusted_style('required_option_description'),
-        required_asterisk=self.get_adjusted_style('required_asterisk'),
-        adjust_strategy=strategy,
+        title=self.get_adjusted_style(self.title), subtitle=self.get_adjusted_style(self.subtitle),
+        command_name=self.get_adjusted_style(self.command_name),
+        command_description=self.get_adjusted_style(self.command_description),
+        group_command_name=self.get_adjusted_style(self.group_command_name),
+        subcommand_name=self.get_adjusted_style(self.subcommand_name),
+        subcommand_description=self.get_adjusted_style(self.subcommand_description),
+        option_name=self.get_adjusted_style(self.option_name),
+        option_description=self.get_adjusted_style(self.option_description),
+        required_option_name=self.get_adjusted_style(self.required_option_name),
+        required_option_description=self.get_adjusted_style(self.required_option_description),
+        required_asterisk=self.get_adjusted_style(self.required_asterisk), adjust_strategy=strategy,
         adjust_percent=adjust_percent
       )
     finally:
@@ -149,19 +104,19 @@ class Themes:
 
     return new_theme
 
-  # def _create_adjusted_theme_style(self, original: ThemeStyle) -> ThemeStyle:
-  #   """Create a ThemeStyle with adjusted colors.
-  #
-  #   :param original: Original ThemeStyle
-  #   :return: ThemeStyle with adjusted colors
-  #   """
-  #   adjusted_fg = self.adjust_color(original.fg) if original.fg else None
-  #   adjusted_bg = original.bg # self.adjust_color(original.bg) if original.bg else None
-  #
-  #   return ThemeStyle(
-  #     fg=adjusted_fg, bg=adjusted_bg, bold=original.bold, italic=original.italic, dim=original.dim,
-  #     underline=original.underline
-  #   )
+  def get_adjusted_style(self, original: ThemeStyle) -> ThemeStyle:
+    """Create a ThemeStyle with adjusted colors.
+
+    :param original: Original ThemeStyle
+    :return: ThemeStyle with adjusted colors
+    """
+    adjusted_fg = self.adjust_color(original.fg) if original.fg else None
+    adjusted_bg = original.bg # self.adjust_color(original.bg) if original.bg else None
+
+    return ThemeStyle(
+      fg=adjusted_fg, bg=adjusted_bg, bold=original.bold, italic=original.italic, dim=original.dim,
+      underline=original.underline
+    )
 
 
 def create_default_theme() -> Themes:

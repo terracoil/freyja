@@ -86,23 +86,20 @@ class ColorFormatter:
       if style.fg:
         if style.fg.startswith('#'):
           # Hex color - convert to ANSI
-          fg_code=self._hex_to_ansi(style.fg, is_background=False)
+          fg_code=self._hex_to_ansi(style.fg, background=False)
           if fg_code:
             codes.append(fg_code)
         elif style.fg.startswith('\x1b['):
           # Direct ANSI code
           codes.append(style.fg)
         else:
-          # Fallback to old method for backwards compatibility
-          fg_code=self._get_color_code(style.fg, is_background=False)
-          if fg_code:
-            codes.append(fg_code)
+          raise ValueError(f"Not a valid format: {style.fg}")
 
       # Background color - handle hex colors and ANSI codes
       if style.bg:
         if style.bg.startswith('#'):
           # Hex color - convert to ANSI
-          bg_code=self._hex_to_ansi(style.bg, is_background=True)
+          bg_code=self._hex_to_ansi(style.bg, background=True)
           if bg_code:
             codes.append(bg_code)
         elif style.bg.startswith('\x1b['):
@@ -129,43 +126,61 @@ class ColorFormatter:
 
     return result
 
-  def _hex_to_ansi(self, hex_color: str, is_background: bool = False) -> str:
+  def _hex_to_ansi(self, hex_color: str, background: bool = False) -> str:
     """Convert hex colors to ANSI escape codes.
 
     :param hex_color: Hex value (e.g., '#FF0000')
-    :param is_background: Whether this is a background color
+    :param background: Whether this is a background color
     :return: ANSI color code or empty string
     """
     # Map common hex colors to ANSI codes
-    hex_to_ansi_fg={
-      '#000000':'\x1b[30m', '#FF0000':'\x1b[31m', '#008000':'\x1b[32m',
-      '#FFFF00':'\x1b[33m', '#0000FF':'\x1b[34m', '#FF00FF':'\x1b[35m',
-      '#00FFFF':'\x1b[36m', '#FFFFFF':'\x1b[37m',
-      '#808080':'\x1b[90m', '#FF8080':'\x1b[91m',
-      '#80FF80':'\x1b[92m', '#FFFF80':'\x1b[93m',
-      '#8080FF':'\x1b[94m', '#FF80FF':'\x1b[95m',
-      '#80FFFF':'\x1b[96m', '#F0F0F0':'\x1b[97m',
-      '#FFA500':'\x1b[33m',  # Orange maps to yellow (closest available)
-    }
+        # Clean and validate hex input
+    hex_color = hex_color.strip().lstrip('#').upper()
 
-    hex_to_ansi_bg={
-      '#000000':'\x1b[40m', '#FF0000':'\x1b[41m', '#008000':'\x1b[42m',
-      '#FFFF00':'\x1b[43m', '#0000FF':'\x1b[44m', '#FF00FF':'\x1b[45m',
-      '#00FFFF':'\x1b[46m', '#FFFFFF':'\x1b[47m',
-      '#808080':'\x1b[100m', '#FF8080':'\x1b[101m',
-      '#80FF80':'\x1b[102m', '#FFFF80':'\x1b[103m',
-      '#8080FF':'\x1b[104m', '#FF80FF':'\x1b[105m',
-      '#80FFFF':'\x1b[106m', '#F0F0F0':'\x1b[107m',
-    }
+    # Handle 3-digit hex (e.g., "F57" -> "FF5577")
+    if len(hex_color) == 3:
+        hex_color = ''.join(c * 2 for c in hex_color)
 
-    color_map=hex_to_ansi_bg if is_background else hex_to_ansi_fg
-    return color_map.get(hex_color.upper(), "")
+    if len(hex_color) != 6 or not all(c in '0123456789ABCDEF' for c in hex_color):
+        raise ValueError(f"Invalid hex color: {hex_color}")
 
-  def _get_color_code(self, color: str, is_background: bool = False) -> str:
-    """Convert color names to ANSI escape codes (backwards compatibility).
+    # Convert to RGB
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
 
-    :param color: Color name or hex value
-    :param is_background: Whether this is a background color
-    :return: ANSI color code or empty string
+    # Find closest ANSI 256 color
+    ansi_code = self.rgb_to_ansi256(r, g, b)
+
+    # Return appropriate ANSI escape sequence
+    prefix = '\033[48;5;' if background else '\033[38;5;'
+    return f"{prefix}{ansi_code}m"
+
+  def rgb_to_ansi256(self, r: int, g: int, b: int) -> int:
     """
-    return self._hex_to_ansi(color, is_background) if color.startswith('#') else ""
+    Convert RGB values to the closest ANSI 256-color code.
+
+    Args:
+        r, g, b: RGB values (0-255)
+
+    Returns:
+        ANSI color code (0-255)
+    """
+    # Check if it's close to grayscale (colors 232-255)
+    if abs(r - g) < 10 and abs(g - b) < 10 and abs(r - b) < 10:
+        # Use grayscale palette (24 shades)
+        gray = (r + g + b) // 3
+        if gray < 8:
+            return 16  # Black
+        elif gray > 238:
+            return 231  # White
+        else:
+            return 232 + (gray - 8) * 23 // 230
+
+    # Use 6x6x6 color cube (colors 16-231)
+    # Map RGB values to 6-level scale (0-5)
+    r6 = min(5, r * 6 // 256)
+    g6 = min(5, g * 6 // 256)
+    b6 = min(5, b * 6 // 256)
+
+    return 16 + (36 * r6) + (6 * g6) + b6
