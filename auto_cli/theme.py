@@ -30,6 +30,7 @@ class ThemeStyle:
     bold: bool = False             # Bold text
     italic: bool = False           # Italic text (may not work on all terminals)
     dim: bool = False              # Dimmed/faint text
+    underline: bool = False        # Underlined text
 
 
 @dataclass
@@ -42,12 +43,14 @@ class ColorTheme:
     subtitle: ThemeStyle                   # Section headers (e.g., "Commands:")
     command_name: ThemeStyle               # Command names
     command_description: ThemeStyle        # Command descriptions
+    group_command_name: ThemeStyle         # Group command names (commands with subcommands)
     subcommand_name: ThemeStyle            # Subcommand names
     subcommand_description: ThemeStyle     # Subcommand descriptions
     option_name: ThemeStyle                # Optional argument names (--flag)
     option_description: ThemeStyle         # Optional argument descriptions
     required_option_name: ThemeStyle       # Required argument names
     required_option_description: ThemeStyle # Required argument descriptions
+    required_asterisk: ThemeStyle          # Required asterisk marker (*)
 
 
 class ColorFormatter:
@@ -166,12 +169,15 @@ class ColorFormatter:
             if bg_code:
                 codes.append(bg_code)
 
-        # Text styling
+        # Text styling (using ANSI codes instead of Style.BRIGHT)
         if style.bold:
-            codes.append(Style.BRIGHT)
+            codes.append('\x1b[1m')  # ANSI bold code (avoid Style.BRIGHT to prevent color shifts)
         if style.dim:
             codes.append(Style.DIM)
-        # Note: italic support varies by terminal, colorama doesn't have direct support
+        if style.italic:
+            codes.append('\x1b[3m')  # ANSI italic code (support varies by terminal)
+        if style.underline:
+            codes.append('\x1b[4m')  # ANSI underline code
 
         if not codes:
             return text
@@ -218,15 +224,17 @@ def create_default_theme() -> ColorTheme:
     """Create a default color theme with reasonable, accessible colors."""
     return ColorTheme(
         title=ThemeStyle(fg='MAGENTA'),  # Dark magenta (no bold)
-        subtitle=ThemeStyle(fg='YELLOW', bold=True),
-        command_name=ThemeStyle(fg='CYAN', bold=True),
-        command_description=ThemeStyle(fg='CYAN'),
-        subcommand_name=ThemeStyle(fg='LIGHTBLACK_EX'),  # Dark grey for subcommand names
+        subtitle=ThemeStyle(fg='YELLOW'),
+        command_name=ThemeStyle(fg='CYAN', bold=True),  # Cyan bold for command names
+        command_description=ThemeStyle(fg='ORANGE'),  # Orange for flat command descriptions (match subcommand descriptions)
+        group_command_name=ThemeStyle(fg='CYAN', bold=True),  # Cyan bold for group command names
+        subcommand_name=ThemeStyle(fg='CYAN', italic=True, bold=True),  # Cyan italic bold for subcommand names
         subcommand_description=ThemeStyle(fg='ORANGE'),  # Actual orange color for subcommand descriptions
-        option_name=ThemeStyle(fg='BLUE'),  # Much darker blue (no bold) instead of cyan
+        option_name=ThemeStyle(fg='GREEN'),  # Green for all options
         option_description=ThemeStyle(fg='YELLOW'),  # Keep yellow for option descriptions as requested
-        required_option_name=ThemeStyle(fg='RED', bold=True),  # Keep red bold for required options
-        required_option_description=ThemeStyle(fg='WHITE', bold=True)  # Keep bold white for required descriptions
+        required_option_name=ThemeStyle(fg='GREEN', bold=True),  # Green bold for required options
+        required_option_description=ThemeStyle(fg='WHITE'),  # White for required descriptions
+        required_asterisk=ThemeStyle(fg='YELLOW')  # Yellow for required asterisk markers
     )
 
 
@@ -237,11 +245,13 @@ def create_no_color_theme() -> ColorTheme:
         subtitle=ThemeStyle(),
         command_name=ThemeStyle(),
         command_description=ThemeStyle(),
+        group_command_name=ThemeStyle(),
         subcommand_name=ThemeStyle(),
         subcommand_description=ThemeStyle(),
         option_name=ThemeStyle(),
         option_description=ThemeStyle(),
         required_option_name=ThemeStyle(),
-        required_option_description=ThemeStyle()
+        required_option_description=ThemeStyle(),
+        required_asterisk=ThemeStyle()
     )
 
