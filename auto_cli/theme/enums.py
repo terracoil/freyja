@@ -1,6 +1,12 @@
 from enum import Enum
 
 
+class AdjustStrategy(Enum):
+    """Strategy for color adjustment calculations."""
+    PROPORTIONAL = "proportional"  # Scales adjustment based on color intensity
+    ABSOLUTE = "absolute"          # Direct percentage adjustment with clamping
+
+
 class Fore(Enum):
     """Foreground color constants."""
     BLACK = '#000000'

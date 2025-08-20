@@ -26,7 +26,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         self._arg_indent = 6  # Indentation for arguments
         self._desc_indent = 8  # Indentation for descriptions
 
-        # Theme support
+        # Themes support
         self._theme = theme
         if theme:
             from .theme import ColorFormatter
@@ -673,8 +673,8 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         :param description: The description text
         :param name_indent: Indentation for the name
         :param description_column: Column where description should start
-        :param style_name: Theme style for the name
-        :param style_description: Theme style for the description
+        :param style_name: Themes style for the name
+        :param style_description: Themes style for the description
         :return: List of formatted lines
         """
         if not description:

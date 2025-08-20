@@ -1,46 +1,11 @@
-"""Color theming system for CLI output using custom ANSI escape sequences."""
+"""Handles color application and terminal compatibility."""
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass
 from typing import Union
 
-from auto_cli.theme.enums import Back, Fore, ForeUniversal, Style
-
-
-
-@dataclass
-class ThemeStyle:
-    """
-    Individual style configuration for text formatting.
-    Supports foreground/background colors (named or hex) and text decorations.
-    """
-    fg: str | None = None          # Foreground color (name or hex)
-    bg: str | None = None          # Background color (name or hex)
-    bold: bool = False             # Bold text
-    italic: bool = False           # Italic text (may not work on all terminals)
-    dim: bool = False              # Dimmed/faint text
-    underline: bool = False        # Underlined text
-
-
-@dataclass
-class Theme:
-    """
-    Complete color theme configuration for CLI output.
-    Defines styling for all major UI elements in the help output.
-    """
-    title: ThemeStyle                      # Main CLI title/description
-    subtitle: ThemeStyle                   # Section headers (e.g., "Commands:")
-    command_name: ThemeStyle               # Command names
-    command_description: ThemeStyle        # Command descriptions
-    group_command_name: ThemeStyle         # Group command names (commands with subcommands)
-    subcommand_name: ThemeStyle            # Subcommand names
-    subcommand_description: ThemeStyle     # Subcommand descriptions
-    option_name: ThemeStyle                # Optional argument names (--flag)
-    option_description: ThemeStyle         # Optional argument descriptions
-    required_option_name: ThemeStyle       # Required argument names
-    required_option_description: ThemeStyle # Required argument descriptions
-    required_asterisk: ThemeStyle          # Required asterisk marker (*)
+from auto_cli.theme.enums import Style
+from auto_cli.theme.theme_style import ThemeStyle
 
 
 class ColorFormatter:
@@ -51,12 +16,8 @@ class ColorFormatter:
 
         :param enable_colors: Force enable/disable colors, or None for auto-detection
         """
-        if enable_colors is None:
-            # Auto-detect: enable colors for TTY terminals only
-            self.colors_enabled = self._is_color_terminal()
-        else:
-            self.colors_enabled = enable_colors
-
+        self.colors_enabled = self._is_color_terminal() if enable_colors is None else enable_colors
+        
         if self.colors_enabled:
             self.enable_windows_ansi_support()
 
@@ -73,8 +34,6 @@ class ColorFormatter:
         except Exception:
             # Fail silently on older Windows versions or permission issues
             pass
-
-
 
     def _is_color_terminal(self) -> bool:
         """Check if the current terminal supports colors."""
@@ -210,58 +169,3 @@ class ColorFormatter:
         :return: ANSI color code or empty string
         """
         return self._hex_to_ansi(color, is_background) if color.startswith('#') else ""
-
-
-def create_default_theme() -> Theme:
-    """Create a default color theme using universal colors for optimal cross-platform compatibility."""
-    return Theme(
-        title=ThemeStyle(fg=ForeUniversal.PURPLE.value, bg=Back.LIGHTWHITE_EX.value, bold=True),  # Purple bold with light gray background
-        subtitle=ThemeStyle(fg=ForeUniversal.GOLD.value, italic=True),  # Gold for subtitles
-        command_name=ThemeStyle(fg=ForeUniversal.BRIGHT_BLUE.value, bold=True),  # Bright blue bold for command names
-        command_description=ThemeStyle(fg=Fore.LIGHTRED_EX.value),  # Orange (LIGHTRED_EX) for descriptions
-        group_command_name=ThemeStyle(fg=ForeUniversal.BRIGHT_BLUE.value, bold=True),  # Bright blue bold for group command names
-        subcommand_name=ThemeStyle(fg=ForeUniversal.BRIGHT_BLUE.value, italic=True, bold=True),  # Bright blue italic bold for subcommand names
-        subcommand_description=ThemeStyle(fg=Fore.LIGHTRED_EX.value),  # Orange (LIGHTRED_EX) for subcommand descriptions
-        option_name=ThemeStyle(fg=ForeUniversal.FOREST_GREEN.value),  # FOREST_GREEN for all options
-        option_description=ThemeStyle(fg=ForeUniversal.GOLD.value),  # Gold for option descriptions
-        required_option_name=ThemeStyle(fg=ForeUniversal.FOREST_GREEN.value, bold=True),  # FOREST_GREEN bold for required options
-        required_option_description=ThemeStyle(fg=Fore.WHITE.value),  # White for required descriptions
-        required_asterisk=ThemeStyle(fg=ForeUniversal.GOLD.value)  # Gold for required asterisk markers
-    )
-
-
-def create_default_theme_colorful() -> Theme:
-    """Create a colorful theme with traditional terminal colors."""
-    return Theme(
-        title=ThemeStyle(fg=Fore.MAGENTA.value, bg=Back.LIGHTWHITE_EX.value, bold=True),  # Dark magenta bold with light gray background
-        subtitle=ThemeStyle(fg=Fore.YELLOW.value, italic=True),
-        command_name=ThemeStyle(fg=Fore.CYAN.value, bold=True),  # Cyan bold for command names
-        command_description=ThemeStyle(fg=Fore.LIGHTRED_EX.value),  # Orange (LIGHTRED_EX) for flat command descriptions
-        group_command_name=ThemeStyle(fg=Fore.CYAN.value, bold=True),  # Cyan bold for group command names
-        subcommand_name=ThemeStyle(fg=Fore.CYAN.value, italic=True, bold=True),  # Cyan italic bold for subcommand names
-        subcommand_description=ThemeStyle(fg=Fore.LIGHTRED_EX.value),  # Orange (LIGHTRED_EX) for subcommand descriptions
-        option_name=ThemeStyle(fg=Fore.GREEN.value),  # Green for all options
-        option_description=ThemeStyle(fg=Fore.YELLOW.value),  # Yellow for option descriptions
-        required_option_name=ThemeStyle(fg=Fore.GREEN.value, bold=True),  # Green bold for required options
-        required_option_description=ThemeStyle(fg=Fore.WHITE.value),  # White for required descriptions
-        required_asterisk=ThemeStyle(fg=Fore.YELLOW.value)  # Yellow for required asterisk markers
-    )
-
-
-def create_no_color_theme() -> Theme:
-    """Create a theme with no colors (fallback for non-color terminals)."""
-    return Theme(
-        title=ThemeStyle(),
-        subtitle=ThemeStyle(),
-        command_name=ThemeStyle(),
-        command_description=ThemeStyle(),
-        group_command_name=ThemeStyle(),
-        subcommand_name=ThemeStyle(),
-        subcommand_description=ThemeStyle(),
-        option_name=ThemeStyle(),
-        option_description=ThemeStyle(),
-        required_option_name=ThemeStyle(),
-        required_option_description=ThemeStyle(),
-        required_asterisk=ThemeStyle()
-    )
-
