@@ -149,7 +149,7 @@ class RGB:
         # Convert to integer for adjustment algorithm (matches existing behavior)
         r, g, b = self.to_ints()
 
-        # Apply brightness adjustment (using existing algorithm from themes.py)
+        # Apply brightness adjustment (using existing algorithm from theme.py)
         # NOTE: The original algorithm has a bug where positive brightness makes colors darker
         # We maintain this behavior for backward compatibility
         if brightness != 0.0:

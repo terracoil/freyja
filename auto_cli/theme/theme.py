@@ -7,8 +7,7 @@ from auto_cli.theme.enums import Back, Fore, ForeUniversal
 from auto_cli.theme.rgb import AdjustStrategy, RGB
 from auto_cli.theme.theme_style import ThemeStyle
 
-
-class Themes:
+class Theme:
   """
   Complete color theme configuration for CLI output with dynamic adjustment capabilities.
   Defines styling for all major UI elements in the help output with optional color adjustment.
@@ -37,12 +36,12 @@ class Themes:
     self.adjust_strategy = adjust_strategy
     self.adjust_percent = adjust_percent
 
-  def create_adjusted_copy(self, adjust_percent: float, adjust_strategy: Optional[AdjustStrategy] = None) -> 'Themes':
+  def create_adjusted_copy(self, adjust_percent: float, adjust_strategy: Optional[AdjustStrategy] = None) -> 'Theme':
     """Create a new theme with adjusted colors.
 
     :param adjust_percent: Adjustment percentage (-5.0 to 5.0)
     :param adjust_strategy: Optional strategy override
-    :return: New Themes instance with adjusted colors
+    :return: New Theme instance with adjusted colors
     """
     if adjust_percent < -5.0 or adjust_percent > 5.0:
       raise ValueError(f"adjust_percent must be between -5.0 and 5.0, got {adjust_percent}")
@@ -56,7 +55,7 @@ class Themes:
     self.adjust_strategy = strategy
 
     try:
-      new_theme = Themes(
+      new_theme = Theme(
         title=self.get_adjusted_style(self.title), subtitle=self.get_adjusted_style(self.subtitle),
         command_name=self.get_adjusted_style(self.command_name),
         command_description=self.get_adjusted_style(self.command_description),
@@ -97,9 +96,9 @@ class Themes:
     )
 
 
-def create_default_theme() -> Themes:
+def create_default_theme() -> Theme:
   """Create a default color theme using universal colors for optimal cross-platform compatibility."""
-  return Themes(
+  return Theme(
     adjust_percent=0.0,
     title=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.PURPLE.value), bg=RGB.from_rgb(Back.LIGHTWHITE_EX.value), bold=True),
     # Purple bold with light gray background
@@ -120,9 +119,9 @@ def create_default_theme() -> Themes:
   )
 
 
-def create_default_theme_colorful() -> Themes:
+def create_default_theme_colorful() -> Theme:
   """Create a colorful theme with traditional terminal colors."""
-  return Themes(
+  return Theme(
     title=ThemeStyle(fg=RGB.from_rgb(Fore.MAGENTA.value), bg=RGB.from_rgb(Back.LIGHTWHITE_EX.value), bold=True),
     # Dark magenta bold with light gray background
     subtitle=ThemeStyle(fg=RGB.from_rgb(Fore.YELLOW.value), italic=True),
@@ -140,9 +139,9 @@ def create_default_theme_colorful() -> Themes:
   )
 
 
-def create_no_color_theme() -> Themes:
+def create_no_color_theme() -> Theme:
   """Create a theme with no colors (fallback for non-color terminals)."""
-  return Themes(
+  return Theme(
     title=ThemeStyle(), subtitle=ThemeStyle(), command_name=ThemeStyle(), command_description=ThemeStyle(),
     group_command_name=ThemeStyle(), subcommand_name=ThemeStyle(), subcommand_description=ThemeStyle(),
     option_name=ThemeStyle(), option_description=ThemeStyle(), required_option_name=ThemeStyle(),

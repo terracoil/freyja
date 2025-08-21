@@ -54,7 +54,7 @@ cd auto-cli-py
 curl -sSL https://install.python-poetry.org | python3 -
 
 # Setup development environment
-./scripts/setup-dev.sh
+./bin/setup-dev.sh
 ```
 
 ### Development Commands
@@ -64,11 +64,11 @@ curl -sSL https://install.python-poetry.org | python3 -
 poetry install
 
 # Run tests
-./scripts/test.sh
+./bin/test.sh
 # Or directly: poetry run pytest
 
 # Run linting and formatting
-./scripts/lint.sh
+./bin/lint.sh
 
 # Run examples
 poetry run python examples.py
@@ -77,7 +77,7 @@ poetry run python examples.py
 poetry build
 
 # Publish to PyPI (maintainers only)
-./scripts/publish.sh
+./bin/publish.sh
 ```
 
 ### Code Quality
@@ -106,4 +106,3 @@ poetry run pytest -v
 
 - Python 3.13.5+
 - No runtime dependencies (uses only standard library)
-

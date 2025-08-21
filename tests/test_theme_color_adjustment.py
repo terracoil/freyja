@@ -2,11 +2,11 @@
 import pytest
 
 from auto_cli.theme import (
-    AdjustStrategy,
-    RGB,
-    Themes,
-    ThemeStyle,
-    create_default_theme,
+  AdjustStrategy,
+  RGB,
+  Theme,
+  ThemeStyle,
+  create_default_theme,
 )
 
 
@@ -25,7 +25,7 @@ class TestThemeColorAdjustment:
     def test_proportional_adjustment_positive(self):
         """Test proportional color adjustment with positive percentage."""
         style = ThemeStyle(fg=RGB.from_rgb(0x808080))  # Mid gray (128, 128, 128)
-        theme = Themes(
+        theme = Theme(
             title=style, subtitle=style, command_name=style, command_description=style,
             group_command_name=style, subcommand_name=style, subcommand_description=style,
             option_name=style, option_description=style, required_option_name=style,
@@ -45,7 +45,7 @@ class TestThemeColorAdjustment:
     def test_proportional_adjustment_negative(self):
         """Test proportional color adjustment with negative percentage."""
         style = ThemeStyle(fg=RGB.from_rgb(0x808080))  # Mid gray (128, 128, 128)
-        theme = Themes(
+        theme = Theme(
             title=style, subtitle=style, command_name=style, command_description=style,
             group_command_name=style, subcommand_name=style, subcommand_description=style,
             option_name=style, option_description=style, required_option_name=style,
@@ -65,7 +65,7 @@ class TestThemeColorAdjustment:
     def test_absolute_adjustment_positive(self):
         """Test absolute color adjustment with positive percentage."""
         style = ThemeStyle(fg=RGB.from_rgb(0x404040))  # Dark gray (64, 64, 64)
-        theme = Themes(
+        theme = Theme(
             title=style, subtitle=style, command_name=style, command_description=style,
             group_command_name=style, subcommand_name=style, subcommand_description=style,
             option_name=style, option_description=style, required_option_name=style,
@@ -85,7 +85,7 @@ class TestThemeColorAdjustment:
     def test_absolute_adjustment_with_clamping(self):
         """Test absolute adjustment with clamping at boundaries."""
         style = ThemeStyle(fg=RGB.from_rgb(0xF0F0F0))  # Light gray (240, 240, 240)
-        theme = Themes(
+        theme = Theme(
             title=style, subtitle=style, command_name=style, command_description=style,
             group_command_name=style, subcommand_name=style, subcommand_description=style,
             option_name=style, option_description=style, required_option_name=style,
@@ -104,7 +104,7 @@ class TestThemeColorAdjustment:
 
     @staticmethod
     def _theme_with_style(style):
-        return Themes(
+        return Theme(
             title=style, subtitle=style, command_name=style,
             command_description=style, group_command_name=style,
             subcommand_name=style, subcommand_description=style,
@@ -130,7 +130,7 @@ class TestThemeColorAdjustment:
         """Test that RGB colors are properly adjusted when possible."""
         # Use mid-gray which will definitely be adjusted
         style = ThemeStyle(fg=RGB.from_rgb(0x808080))  # Mid gray - will be adjusted
-        theme = Themes(
+        theme = Theme(
             title=style, subtitle=style, command_name=style, command_description=style,
             group_command_name=style, subcommand_name=style, subcommand_description=style,
             option_name=style, option_description=style, required_option_name=style,
@@ -147,7 +147,7 @@ class TestThemeColorAdjustment:
     def test_adjustment_with_zero_percent(self):
         """Test no adjustment when percent is 0."""
         style = ThemeStyle(fg=RGB.from_rgb(0xFF0000))
-        theme = Themes(
+        theme = Theme(
             title=style, subtitle=style, command_name=style, command_description=style,
             group_command_name=style, subcommand_name=style, subcommand_description=style,
             option_name=style, option_description=style, required_option_name=style,
@@ -172,7 +172,7 @@ class TestThemeColorAdjustment:
 
     def test_adjustment_edge_cases(self):
         """Test adjustment with edge case colors."""
-        theme = Themes(
+        theme = Theme(
             title=ThemeStyle(), subtitle=ThemeStyle(), command_name=ThemeStyle(),
             command_description=ThemeStyle(), group_command_name=ThemeStyle(),
             subcommand_name=ThemeStyle(), subcommand_description=ThemeStyle(),
@@ -201,11 +201,11 @@ class TestThemeColorAdjustment:
         assert adjusted_none_style.fg is None
 
     def test_adjust_percent_validation_in_init(self):
-        """Test adjust_percent validation in Themes.__init__."""
+        """Test adjust_percent validation in Theme.__init__."""
         style = ThemeStyle()
 
         # Valid range should work
-        Themes(
+        Theme(
             title=style, subtitle=style, command_name=style, command_description=style,
             group_command_name=style, subcommand_name=style, subcommand_description=style,
             option_name=style, option_description=style, required_option_name=style,
@@ -213,7 +213,7 @@ class TestThemeColorAdjustment:
             adjust_percent=-5.0  # Minimum valid
         )
 
-        Themes(
+        Theme(
             title=style, subtitle=style, command_name=style, command_description=style,
             group_command_name=style, subcommand_name=style, subcommand_description=style,
             option_name=style, option_description=style, required_option_name=style,
@@ -223,7 +223,7 @@ class TestThemeColorAdjustment:
 
         # Below minimum should raise exception
         with pytest.raises(ValueError, match="adjust_percent must be between -5.0 and 5.0, got -5.1"):
-            Themes(
+            Theme(
                 title=style, subtitle=style, command_name=style, command_description=style,
                 group_command_name=style, subcommand_name=style, subcommand_description=style,
                 option_name=style, option_description=style, required_option_name=style,
@@ -233,7 +233,7 @@ class TestThemeColorAdjustment:
 
         # Above maximum should raise exception
         with pytest.raises(ValueError, match="adjust_percent must be between -5.0 and 5.0, got 5.1"):
-            Themes(
+            Theme(
                 title=style, subtitle=style, command_name=style, command_description=style,
                 group_command_name=style, subcommand_name=style, subcommand_description=style,
                 option_name=style, option_description=style, required_option_name=style,

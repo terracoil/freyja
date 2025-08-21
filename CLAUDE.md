@@ -14,7 +14,7 @@ This is an active Python library (`auto-cli-py`) that automatically builds compl
 curl -sSL https://install.python-poetry.org | python3 -
 
 # Setup development environment
-./scripts/setup-dev.sh
+./bin/setup-dev.sh
 
 # Or manually:
 poetry install --with dev
@@ -35,7 +35,7 @@ pip install git+https://github.com/tangledpath/auto-cli-py.git@branch-name
 ### Testing
 ```bash
 # Run all tests with coverage
-./scripts/test.sh
+./bin/test.sh
 # Or: poetry run pytest
 
 # Run specific test file
@@ -48,7 +48,7 @@ poetry run pytest -v --tb=short
 ### Code Quality
 ```bash
 # Run all linters and formatters
-./scripts/lint.sh
+./bin/lint.sh
 
 # Individual tools:
 poetry run ruff check .              # Fast linting
@@ -67,7 +67,7 @@ poetry run ruff check . --fix
 poetry build
 
 # Publish to PyPI (maintainers only)
-./scripts/publish.sh
+./bin/publish.sh
 # Or: poetry publish
 
 # Install development version

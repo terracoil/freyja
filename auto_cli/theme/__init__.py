@@ -1,14 +1,14 @@
-"""Themes module for auto-cli-py color schemes."""
+"""Theme module for auto-cli-py color schemes."""
 
 from .color_formatter import ColorFormatter
 from .enums import Back, Fore, ForeUniversal, Style
 from .rgb import AdjustStrategy, RGB
 from .theme_style import ThemeStyle
-from .themes import (
-    Themes,
-    create_default_theme,
-    create_default_theme_colorful,
-    create_no_color_theme,
+from .theme import (
+  Theme,
+  create_default_theme,
+  create_default_theme_colorful,
+  create_no_color_theme,
 )
 
 __all__=[
@@ -19,7 +19,7 @@ __all__=[
   'ForeUniversal',
   'RGB',
   'Style',
-  'Themes',
+  'Theme',
   'ThemeStyle',
   'create_default_theme',
   'create_default_theme_colorful',
