@@ -6,7 +6,7 @@ to fine-tune color schemes with real-time preview and RGB export functionality.
 
 import os
 
-from auto_cli.theme import (AdjustStrategy, ColorFormatter, create_default_theme, create_default_theme_colorful, hex_to_rgb)
+from auto_cli.theme import (AdjustStrategy, ColorFormatter, create_default_theme, create_default_theme_colorful, RGB)
 
 
 class ThemeTuner:
@@ -96,10 +96,24 @@ class ThemeTuner:
     ]
 
     for name, color_code, description in color_map:
-      if color_code and color_code.startswith('#'):
+      if isinstance(color_code, RGB):
+        # RGB instance
+        r, g, b = color_code.to_ints()
+        hex_code = color_code.to_hex()
+        print(f"  {name:20} = rgb({r:3}, {g:3}, {b:3})  # {hex_code}")
+      elif color_code and isinstance(color_code, str) and color_code.startswith('#'):
+        # Hex string
         try:
-          r, g, b=hex_to_rgb(color_code)
-          print(f"  {name:20} = rgb({r:3}, {g:3}, {b:3})  # {color_code}")
+          hex_clean = color_code.strip().lstrip('#').upper()
+          if len(hex_clean) == 3:
+            hex_clean = ''.join(c * 2 for c in hex_clean)
+          if len(hex_clean) == 6 and all(c in '0123456789ABCDEF' for c in hex_clean):
+            hex_int = int(hex_clean, 16)
+            rgb = RGB.from_rgb(hex_int)
+            r, g, b = rgb.to_ints()
+            print(f"  {name:20} = rgb({r:3}, {g:3}, {b:3})  # {color_code}")
+          else:
+            print(f"  {name:20} = {color_code}")
         except ValueError:
           print(f"  {name:20} = {color_code}")
       elif color_code:

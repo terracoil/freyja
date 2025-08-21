@@ -2,17 +2,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from auto_cli.theme.rgb import RGB
 
 
 @dataclass
 class ThemeStyle:
   """
   Individual style configuration for text formatting.
-  Supports foreground/background colors (named or hex) and text decorations.
+  Supports foreground/background colors (RGB instances only) and text decorations.
   """
-  fg: str | None=None  # Foreground color (name or hex)
-  bg: str | None=None  # Background color (name or hex)
-  bold: bool=False  # Bold text
-  italic: bool=False  # Italic text (may not work on all terminals)
-  dim: bool=False  # Dimmed/faint text
-  underline: bool=False  # Underlined text
+  fg: 'RGB | None' = None  # Foreground color (RGB instance only)
+  bg: 'RGB | None' = None  # Background color (RGB instance only)
+  bold: bool = False  # Bold text
+  italic: bool = False  # Italic text (may not work on all terminals)
+  dim: bool = False  # Dimmed/faint text
+  underline: bool = False  # Underlined text
