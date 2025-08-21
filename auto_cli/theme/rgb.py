@@ -10,10 +10,12 @@ from auto_cli.math_utils import MathUtils
 
 class AdjustStrategy(Enum):
     """Strategy for color adjustment calculations."""
-    PROPORTIONAL = "proportional"  # Scales adjustment based on color intensity
-    ABSOLUTE = "absolute"  # Direct percentage adjustment with clamping
-    RELATIVE = "relative"  # Relative adjustment (legacy compatibility)
-
+    LINEAR = "linear"  # Relative adjustment (legacy compatibility)
+    COLOR_HSL = "color_hsl"
+    MULTIPLICATIVE = "multiplicative"
+    GAMMA = "gamma"
+    LUMINANCE = "luminance"
+    OVERLAY = "overlay"
 
 class RGB:
     """Immutable RGB color representation with values in range 0.0-1.0."""
@@ -128,7 +130,16 @@ class RGB:
         return f"{prefix}{ansi_code}m"
 
     def adjust(self, *, brightness: float = 0.0, saturation: float = 0.0,
-               strategy: AdjustStrategy = AdjustStrategy.RELATIVE) -> 'RGB':
+               strategy: AdjustStrategy = AdjustStrategy.LINEAR) -> 'RGB':
+        # TODO: Add additional stragies and implement
+        result: RGB
+        if strategy==AdjustStrategy.LINEAR:
+            result = self.linear_blend(brightness, saturation)
+        else:
+            result = self
+        return result
+
+    def linear_blend(self, brightness: float = 0.0, saturation: float = 0.0) -> 'RGB':
         """Adjust color brightness and/or saturation, returning new RGB instance.
 
         :param brightness: Brightness adjustment (-5.0 to 5.0)

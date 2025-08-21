@@ -394,17 +394,31 @@ def admin__system__maintenance_mode(enable: bool, message: str = "System mainten
 
 
 
+def completion__demo(config_file: str = "config.json", output_dir: str = "./output"):
+    """Demonstrate completion for file paths and configuration.
+
+    :param config_file: Configuration file path (demonstrates file completion)
+    :param output_dir: Output directory path (demonstrates directory completion)
+    """
+    print(f"🔧 Using config file: {config_file}")
+    print(f"📂 Output directory: {output_dir}")
+    print("✨ This command demonstrates file/directory path completion!")
+    print("💡 Try: python examples.py completion demo --config-file <TAB>")
+    print("💡 Try: python examples.py completion demo --output-dir <TAB>")
+
+
 if __name__ == '__main__':
     # Import theme functionality
     from auto_cli.theme import create_default_theme
 
-    # Create CLI with colored theme
+    # Create CLI with colored theme and completion enabled
     theme = create_default_theme()
     cli = CLI(
         sys.modules[__name__],
         title="Enhanced CLI - Hierarchical commands with double underscore delimiter",
         theme=theme,
-        theme_tuner=True
+        theme_tuner=True,
+        enable_completion=True  # Enable shell completion
     )
 
     # Run the CLI and exit with appropriate code

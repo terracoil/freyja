@@ -33,12 +33,109 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
       self._color_formatter=ColorFormatter()
     else:
       self._color_formatter=None
+    
+    # Cache for global column calculation
+    self._global_desc_column=None
 
   def _format_action(self, action):
-    """Format actions with proper indentation for subcommands."""
+    """Format actions with proper indentation for subcommands.""" 
     if isinstance(action, argparse._SubParsersAction):
       return self._format_subcommands(action)
+    
+    # Handle global options with fixed alignment
+    if action.option_strings and not isinstance(action, argparse._SubParsersAction):
+      return self._format_global_option_aligned(action)
+    
     return super()._format_action(action)
+    
+  def _ensure_global_column_calculated(self):
+    """Calculate and cache the global description column if not already done."""
+    if self._global_desc_column is not None:
+      return self._global_desc_column
+    
+    # Find subparsers action from parser actions that were passed to the formatter
+    subparsers_action = None
+    parser_actions = getattr(self, '_parser_actions', [])
+    
+    # Find subparsers action from parser actions
+    for act in parser_actions:
+      if isinstance(act, argparse._SubParsersAction):
+        subparsers_action = act
+        break
+    
+    if subparsers_action:
+      # Start with existing command option calculation  
+      self._global_desc_column = self._calculate_global_option_column(subparsers_action)
+      
+      # Also include global options in the calculation since they now use same indentation
+      for act in parser_actions:
+        if act.option_strings and act.dest != 'help' and not isinstance(act, argparse._SubParsersAction):
+          opt_name = act.option_strings[-1]
+          if act.nargs != 0 and getattr(act, 'metavar', None):
+            opt_display = f"{opt_name} {act.metavar}"
+          elif act.nargs != 0:
+            opt_metavar = act.dest.upper().replace('_', '-')
+            opt_display = f"{opt_name} {opt_metavar}"
+          else:
+            opt_display = opt_name
+          # Global options now use same 6-space indent as command options
+          total_width = len(opt_display) + self._arg_indent
+          # Update global column to accommodate global options too
+          self._global_desc_column = max(self._global_desc_column, total_width + 4)
+    else:
+      # Fallback: Use a reasonable default
+      self._global_desc_column = 40
+    
+    return self._global_desc_column
+
+  def _format_global_option_aligned(self, action):
+    """Format global options with consistent alignment using existing alignment logic."""
+    # Build option string
+    option_strings = action.option_strings
+    if not option_strings:
+      return super()._format_action(action)
+    
+    # Get option name (prefer long form)
+    option_name = option_strings[-1] if option_strings else ""
+    
+    # Add metavar if present  
+    if action.nargs != 0:
+      if hasattr(action, 'metavar') and action.metavar:
+        option_display = f"{option_name} {action.metavar}"
+      elif hasattr(action, 'choices') and action.choices:
+        # For choices, show them in help text, not in option name
+        option_display = option_name
+      else:
+        # Generate metavar from dest
+        metavar = action.dest.upper().replace('_', '-')
+        option_display = f"{option_name} {metavar}"
+    else:
+      option_display = option_name
+    
+    # Prepare help text
+    help_text = action.help or ""
+    if hasattr(action, 'choices') and action.choices and action.nargs != 0:
+      # Add choices info to help text
+      choices_str = ", ".join(str(c) for c in action.choices)
+      help_text = f"{help_text} (choices: {choices_str})"
+    
+    # Get the cached global description column
+    global_desc_column = self._ensure_global_column_calculated()
+    
+    # Use the existing _format_inline_description method for proper alignment and wrapping
+    # Use the same indentation as command options for consistent alignment
+    formatted_lines = self._format_inline_description(
+      name=option_display,
+      description=help_text,
+      name_indent=self._arg_indent,  # Use same 6-space indent as command options
+      description_column=global_desc_column,  # Use calculated global column
+      style_name='option_name',  # Use option_name style (will be handled by CLI theme)
+      style_description='option_description',  # Use option_description style
+      add_colon=False  # Options don't have colons
+    )
+    
+    # Join lines and add newline at end
+    return '\n'.join(formatted_lines) + '\n'
 
   def _calculate_global_option_column(self, action):
     """Calculate global option description column based on longest option across ALL commands."""
@@ -805,7 +902,7 @@ class CLI:
   """Automatically generates CLI from module functions using introspection."""
 
   def __init__(self, target_module, title: str, function_filter: Callable | None = None, theme=None,
-      theme_tuner: bool = False):
+      theme_tuner: bool = False, enable_completion: bool = True):
     """Initialize CLI generator with module functions, title, and optional customization.
 
     :param target_module: Module containing functions to generate CLI from
@@ -813,12 +910,15 @@ class CLI:
     :param function_filter: Optional filter function for selecting functions
     :param theme: Optional theme for colored output
     :param theme_tuner: If True, adds a built-in theme tuning command
+    :param enable_completion: If True, enables shell completion support
     """
     self.target_module=target_module
     self.title=title
     self.theme=theme
     self.theme_tuner=theme_tuner
+    self.enable_completion=enable_completion
     self.function_filter=function_filter or self._default_function_filter
+    self._completion_handler=None
     self._discover_functions()
 
   def _default_function_filter(self, name: str, obj: Any) -> bool:
@@ -857,6 +957,137 @@ class CLI:
 
     # Add to functions with a hierarchical name to keep it organized
     self.functions['cli__tune-theme']=tune_theme
+
+  def _init_completion(self, shell: str = None):
+    """Initialize completion handler if enabled.
+    
+    :param shell: Target shell (auto-detect if None)
+    """
+    if not self.enable_completion:
+      return
+    
+    try:
+      from .completion import get_completion_handler
+      self._completion_handler = get_completion_handler(self, shell)
+    except ImportError:
+      # Completion module not available
+      self.enable_completion = False
+
+  def _is_completion_request(self) -> bool:
+    """Check if this is a completion request."""
+    import os
+    return (
+      '--_complete' in sys.argv or 
+      os.environ.get('_AUTO_CLI_COMPLETE') is not None
+    )
+
+  def _handle_completion(self) -> None:
+    """Handle completion request and exit."""
+    if not self._completion_handler:
+      self._init_completion()
+    
+    if not self._completion_handler:
+      sys.exit(1)
+    
+    # Parse completion context from command line and environment
+    from .completion.base import CompletionContext
+    
+    # Get completion context
+    words = sys.argv[:]
+    current_word = ""
+    cursor_pos = 0
+    
+    # Handle --_complete flag
+    if '--_complete' in words:
+      complete_idx = words.index('--_complete')
+      words = words[:complete_idx]  # Remove --_complete and after
+      if complete_idx < len(sys.argv) - 1:
+        current_word = sys.argv[complete_idx + 1] if complete_idx + 1 < len(sys.argv) else ""
+    
+    # Extract subcommand path
+    subcommand_path = []
+    if len(words) > 1:
+      for word in words[1:]:
+        if not word.startswith('-'):
+          subcommand_path.append(word)
+    
+    # Create parser for context
+    parser = self.create_parser(no_color=True)
+    
+    # Create completion context
+    context = CompletionContext(
+      words=words,
+      current_word=current_word, 
+      cursor_position=cursor_pos,
+      subcommand_path=subcommand_path,
+      parser=parser,
+      cli=self
+    )
+    
+    # Get completions and output them
+    completions = self._completion_handler.get_completions(context)
+    for completion in completions:
+      print(completion)
+    
+    sys.exit(0)
+
+  def install_completion(self, shell: str = None, force: bool = False) -> bool:
+    """Install shell completion for this CLI.
+    
+    :param shell: Target shell (auto-detect if None)
+    :param force: Force overwrite existing completion
+    :return: True if installation successful
+    """
+    if not self.enable_completion:
+      print("Completion is disabled for this CLI.", file=sys.stderr)
+      return False
+    
+    if not self._completion_handler:
+      self._init_completion()
+    
+    if not self._completion_handler:
+      print("Completion handler not available.", file=sys.stderr)
+      return False
+    
+    from .completion.installer import CompletionInstaller
+    
+    # Extract program name from sys.argv[0]
+    prog_name = os.path.basename(sys.argv[0])
+    if prog_name.endswith('.py'):
+      prog_name = prog_name[:-3]
+    
+    installer = CompletionInstaller(self._completion_handler, prog_name)
+    return installer.install(shell, force)
+
+  def _show_completion_script(self, shell: str) -> int:
+    """Show completion script for specified shell.
+    
+    :param shell: Target shell
+    :return: Exit code (0 for success, 1 for error)
+    """
+    if not self.enable_completion:
+      print("Completion is disabled for this CLI.", file=sys.stderr)
+      return 1
+    
+    # Initialize completion handler for specific shell
+    self._init_completion(shell)
+    
+    if not self._completion_handler:
+      print("Completion handler not available.", file=sys.stderr)
+      return 1
+    
+    # Extract program name from sys.argv[0]
+    prog_name = os.path.basename(sys.argv[0])
+    if prog_name.endswith('.py'):
+      prog_name = prog_name[:-3]
+    
+    try:
+      script = self._completion_handler.generate_script(prog_name)
+      print(script)
+      return 0
+    except Exception as e:
+      print(f"Error generating completion script: {e}", file=sys.stderr)
+      return 1
 
   def _build_command_tree(self) -> dict[str, dict]:
     """Build hierarchical command tree from discovered functions."""
@@ -979,6 +1210,20 @@ class CLI:
       description=self.title,
       formatter_class=create_formatter_with_theme
     )
+    
+    # Store reference to parser in the formatter class so it can access all actions
+    # We'll do this after the parser is fully configured
+    def patch_formatter_with_parser_actions():
+      original_get_formatter = parser._get_formatter
+      def patched_get_formatter():
+        formatter = original_get_formatter()
+        # Give the formatter access to the parser's actions
+        formatter._parser_actions = parser._actions
+        return formatter
+      parser._get_formatter = patched_get_formatter
+    
+    # We need to patch this after the parser is fully set up
+    # Store the patch function for later use
 
     # Monkey-patch the parser to style the title
     original_format_help=parser.format_help
@@ -1013,6 +1258,26 @@ class CLI:
       help="Disable colored output"
     )
 
+    # Add completion-related hidden arguments
+    if self.enable_completion:
+      parser.add_argument(
+        "--_complete",
+        action="store_true",
+        help=argparse.SUPPRESS  # Hide from help
+      )
+      
+      parser.add_argument(
+        "--install-completion",
+        action="store_true", 
+        help="Install shell completion for this CLI"
+      )
+      
+      parser.add_argument(
+        "--show-completion",
+        metavar="SHELL",
+        help="Show completion script for specified shell (choices: bash, zsh, fish, powershell)"
+      )
+
     # Main subparsers
     subparsers=parser.add_subparsers(
       title='COMMANDS',
@@ -1027,6 +1292,9 @@ class CLI:
 
     # Add commands (flat, groups, and nested groups)
     self._add_commands_to_parser(subparsers, self.commands, [])
+
+    # Now that the parser is fully configured, patch the formatter to have access to actions
+    patch_formatter_with_parser_actions()
 
     return parser
 
@@ -1151,6 +1419,10 @@ class CLI:
 
   def run(self, args: list | None = None) -> Any:
     """Parse arguments and execute the appropriate function."""
+    # Check for completion requests early
+    if self.enable_completion and self._is_completion_request():
+      self._handle_completion()
+    
     # First, do a preliminary parse to check for --no-color flag
     # This allows us to disable colors before any help output is generated
     no_color=False
@@ -1161,6 +1433,19 @@ class CLI:
 
     try:
       parsed=parser.parse_args(args)
+
+      # Handle completion-related commands
+      if self.enable_completion:
+        if hasattr(parsed, 'install_completion') and parsed.install_completion:
+          return 0 if self.install_completion() else 1
+        
+        if hasattr(parsed, 'show_completion') and parsed.show_completion:
+          # Validate shell choice
+          valid_shells = ["bash", "zsh", "fish", "powershell"]
+          if parsed.show_completion not in valid_shells:
+            print(f"Error: Invalid shell '{parsed.show_completion}'. Valid choices: {', '.join(valid_shells)}", file=sys.stderr)
+            return 1
+          return self._show_completion_script(parsed.show_completion)
 
       # Handle missing command/subcommand scenarios
       if not hasattr(parsed, '_cli_function'):

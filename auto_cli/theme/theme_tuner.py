@@ -8,6 +8,7 @@ import os
 
 from typing import Dict, Set
 
+from auto_cli.ansi_string import AnsiString
 from auto_cli.theme import (AdjustStrategy, ColorFormatter, create_default_theme, create_default_theme_colorful, RGB)
 from auto_cli.theme.theme_style import ThemeStyle
 
@@ -248,16 +249,12 @@ class ThemeTuner:
             orig_hex = original_style.fg.to_hex()
             print(f"    Original: rgb({orig_r:3}, {orig_g:3}, {orig_b:3})  # {orig_hex}")
         
-        # Calculate proper alignment accounting for ANSI escape codes
-        # Find the longest component name for consistent alignment
+        # Calculate alignment width based on longest component name for clean f-string alignment
         max_component_name_length = max(len(comp_name) for comp_name, _ in self.theme_components)
-        target_white_section_width = len("    On white: ") + max_component_name_length + 2
+        white_field_width = max_component_name_length + 2  # +2 for spacing buffer
         
-        # Calculate current visual width (just the component name, not the ANSI codes)
-        current_white_section_width = len("    On white: ") + len(name)
-        padding_needed = target_white_section_width - current_white_section_width
-        
-        print(f"    On white: {colored_name_white}{' ' * padding_needed}On black: {colored_name_black}")
+        # Use AnsiString for proper f-string alignment with ANSI escape codes
+        print(f"    On white: {AnsiString(colored_name_white):<{white_field_width}}On black: {AnsiString(colored_name_black)}")
         print()
 
         # Build theme code line for this color
@@ -312,14 +309,12 @@ class ThemeTuner:
 
             print(f"  {padded_name} = rgb({r:3}, {g:3}, {b:3})  # {color_code}")
             
-            # Calculate proper alignment accounting for ANSI escape codes
+            # Calculate alignment width based on longest component name for clean f-string alignment
             max_component_name_length = max(len(comp_name) for comp_name, _ in self.theme_components)
-            target_white_section_width = len("    On white: ") + max_component_name_length + 2
+            white_field_width = max_component_name_length + 2  # +2 for spacing buffer
             
-            current_white_section_width = len("    On white: ") + len(name)
-            padding_needed = target_white_section_width - current_white_section_width
-            
-            print(f"    On white: {colored_name_white}{' ' * padding_needed}On black: {colored_name_black}")
+            # Use AnsiString for proper f-string alignment with ANSI escape codes
+            print(f"    On white: {AnsiString(colored_name_white):<{white_field_width}}On black: {AnsiString(colored_name_black)}")
             print()
 
             # Build theme code line
