@@ -8,15 +8,77 @@ import traceback
 from collections.abc import Callable
 from typing import Any, Union
 
-from .docstring_parser import extract_function_help
+from .docstring_parser import extract_function_help, parse_docstring
 from .formatter import HierarchicalHelpFormatter
 
 
 class CLI:
-  """Automatically generates CLI from module functions using introspection."""
+  """Automatically generates CLI from module functions or class methods using introspection."""
 
   # Class-level storage for command group descriptions
   _command_group_descriptions = {}
+
+  @staticmethod
+  def _extract_class_title(cls: type) -> str:
+    """Extract title from class docstring, similar to function docstring extraction."""
+    if cls.__doc__:
+      main_desc, _ = parse_docstring(cls.__doc__)
+      return main_desc or cls.__name__
+    return cls.__name__
+
+  @classmethod
+  def from_module(cls, target_module, title: str, function_filter: Callable | None = None, 
+                  theme=None, theme_tuner: bool = False, enable_completion: bool = True):
+    """Create CLI from module functions (same as current constructor).
+    
+    :param target_module: Module containing functions to generate CLI from
+    :param title: CLI application title
+    :param function_filter: Optional filter function for selecting functions
+    :param theme: Optional theme for colored output
+    :param theme_tuner: If True, adds a built-in theme tuning command
+    :param enable_completion: If True, enables shell completion support
+    :return: CLI instance configured for module-based commands
+    """
+    instance = cls.__new__(cls)
+    instance.target_module = target_module
+    instance.target_mode = 'module'
+    instance.target_class = None
+    instance.title = title
+    instance.theme = theme
+    instance.theme_tuner = theme_tuner
+    instance.enable_completion = enable_completion
+    instance.function_filter = function_filter or instance._default_function_filter
+    instance.method_filter = None
+    instance._completion_handler = None
+    instance._discover_functions()
+    return instance
+
+  @classmethod
+  def from_class(cls, target_class: type, title: str = None, method_filter: Callable | None = None,
+                 theme=None, theme_tuner: bool = False, enable_completion: bool = True):
+    """Create CLI from class methods.
+    
+    :param target_class: Class containing methods to generate CLI from
+    :param title: CLI application title (auto-generated from class docstring if None)
+    :param method_filter: Optional filter function for selecting methods
+    :param theme: Optional theme for colored output
+    :param theme_tuner: If True, adds a built-in theme tuning command
+    :param enable_completion: If True, enables shell completion support
+    :return: CLI instance configured for class-based commands
+    """
+    instance = cls.__new__(cls)
+    instance.target_class = target_class
+    instance.target_mode = 'class'
+    instance.target_module = None
+    instance.title = title or cls._extract_class_title(target_class)
+    instance.theme = theme
+    instance.theme_tuner = theme_tuner
+    instance.enable_completion = enable_completion
+    instance.method_filter = method_filter or instance._default_method_filter
+    instance.function_filter = None
+    instance._completion_handler = None
+    instance._discover_methods()
+    return instance
 
   @classmethod
   def CommandGroup(cls, description: str):
@@ -44,7 +106,7 @@ class CLI:
 
   def __init__(self, target_module, title: str, function_filter: Callable | None = None, theme=None,
       theme_tuner: bool = False, enable_completion: bool = True):
-    """Initialize CLI generator with module functions, title, and optional customization.
+    """Initialize CLI generator with module functions (backward compatibility - delegates to from_module).
 
     :param target_module: Module containing functions to generate CLI from
     :param title: CLI application title
@@ -53,12 +115,16 @@ class CLI:
     :param theme_tuner: If True, adds a built-in theme tuning command
     :param enable_completion: If True, enables shell completion support
     """
+    # Set up dual mode variables
     self.target_module=target_module
+    self.target_class=None
+    self.target_mode='module'
     self.title=title
     self.theme=theme
     self.theme_tuner=theme_tuner
     self.enable_completion=enable_completion
     self.function_filter=function_filter or self._default_function_filter
+    self.method_filter=None
     self._completion_handler=None
     self._discover_functions()
 
@@ -72,12 +138,46 @@ class CLI:
         obj.__module__ == self.target_module.__name__  # Exclude imported functions
     )
 
+  def _default_method_filter(self, name: str, obj: Any) -> bool:
+    """Default filter: include non-private callable methods defined in target class."""
+    return (
+        not name.startswith('_') and
+        callable(obj) and
+        (inspect.isfunction(obj) or inspect.ismethod(obj)) and
+        hasattr(obj, '__qualname__') and
+        self.target_class.__name__ in obj.__qualname__  # Check if class name is in qualname
+    )
+
   def _discover_functions(self):
     """Auto-discover functions from module using the filter."""
     self.functions={}
     for name, obj in inspect.getmembers(self.target_module):
       if self.function_filter(name, obj):
         self.functions[name]=obj
+
+    # Optionally add built-in theme tuner
+    if self.theme_tuner:
+      self._add_theme_tuner_function()
+
+    # Build hierarchical command structure
+    self.commands=self._build_command_tree()
+
+  def _discover_methods(self):
+    """Auto-discover methods from class using the method filter."""
+    self.functions={}
+    
+    # First, check if we can instantiate the class 
+    try:
+      temp_instance = self.target_class()
+    except TypeError as e:
+      raise RuntimeError(f"Cannot instantiate {self.target_class.__name__}: requires parameterless constructor") from e
+    
+    # Get all members from the class (not the instance) to get unbound methods
+    for name, obj in inspect.getmembers(self.target_class):
+      if self.method_filter(name, obj):
+        # Convert to bound method using our temp instance
+        bound_method = getattr(temp_instance, name)
+        self.functions[name] = bound_method
 
     # Optionally add built-in theme tuner
     if self.theme_tuner:
@@ -579,6 +679,7 @@ class CLI:
       no_color='--no-color' in args or '-n' in args
 
     parser=self.create_parser(no_color=no_color)
+    parsed=None
 
     try:
       parsed=parser.parse_args(args)
@@ -608,7 +709,11 @@ class CLI:
       raise
     except Exception as e:
       # Handle execution errors gracefully
-      return self._handle_execution_error(parsed, e)
+      if parsed is not None:
+        return self._handle_execution_error(parsed, e)
+      else:
+        # If parsing failed, this is likely an argparse error - re-raise as SystemExit
+        raise SystemExit(1)
 
   def _handle_missing_command(self, parser: argparse.ArgumentParser, parsed) -> int:
     """Handle cases where no command or subcommand was provided."""
@@ -677,25 +782,60 @@ class CLI:
 
   def _execute_command(self, parsed) -> Any:
     """Execute the parsed command with its arguments."""
-    fn=parsed._cli_function
-    sig=inspect.signature(fn)
+    if self.target_mode == 'module':
+      # Existing function execution logic
+      fn=parsed._cli_function
+      sig=inspect.signature(fn)
 
-    # Build kwargs from parsed arguments
-    kwargs={}
-    for param_name in sig.parameters:
-      # Skip *args and **kwargs - they can't be CLI arguments
-      param=sig.parameters[param_name]
-      if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
-        continue
+      # Build kwargs from parsed arguments
+      kwargs={}
+      for param_name in sig.parameters:
+        # Skip *args and **kwargs - they can't be CLI arguments
+        param=sig.parameters[param_name]
+        if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+          continue
 
-      # Convert kebab-case back to snake_case for function call
-      attr_name=param_name.replace('-', '_')
-      if hasattr(parsed, attr_name):
-        value=getattr(parsed, attr_name)
-        kwargs[param_name]=value
+        # Convert kebab-case back to snake_case for function call
+        attr_name=param_name.replace('-', '_')
+        if hasattr(parsed, attr_name):
+          value=getattr(parsed, attr_name)
+          kwargs[param_name]=value
 
-    # Execute function and return result
-    return fn(**kwargs)
+      # Execute function and return result
+      return fn(**kwargs)
+
+    elif self.target_mode == 'class':
+      # New method execution logic
+      method=parsed._cli_function
+      
+      # Create class instance (requires parameterless constructor)
+      try:
+        class_instance = self.target_class()
+      except TypeError as e:
+        raise RuntimeError(f"Cannot instantiate {self.target_class.__name__}: requires parameterless constructor") from e
+      
+      # Get bound method
+      bound_method = getattr(class_instance, method.__name__)
+      
+      # Execute with same argument logic
+      sig = inspect.signature(bound_method)
+      kwargs = {}
+      for param_name in sig.parameters:
+        # Skip *args and **kwargs - they can't be CLI arguments
+        param = sig.parameters[param_name]
+        if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+          continue
+
+        # Convert kebab-case back to snake_case for method call
+        attr_name = param_name.replace('-', '_')
+        if hasattr(parsed, attr_name):
+          value = getattr(parsed, attr_name)
+          kwargs[param_name] = value
+
+      return bound_method(**kwargs)
+    
+    else:
+      raise RuntimeError(f"Unknown target mode: {self.target_mode}")
 
   def _handle_execution_error(self, parsed, error: Exception) -> int:
     """Handle execution errors gracefully."""
