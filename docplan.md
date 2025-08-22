@@ -1,5 +1,17 @@
 # Auto-CLI-Py Documentation Plan
 
+## Table of Contents
+- [Overview](#overview)
+- [Architecture Principles](#architecture-principles)
+- [Document Structure](#document-structure)
+- [Navigation Patterns](#navigation-patterns)
+- [Content Guidelines](#content-guidelines)
+- [Implementation Phases](#implementation-phases)
+- [Maintenance Strategy](#maintenance-strategy)
+- [Success Metrics](#success-metrics)
+- [File Organization](#file-organization)
+- [Summary](#summary)
+
 ## Overview
 
 This plan outlines a comprehensive documentation structure for auto-cli-py, a Python library that automatically builds CLI commands from functions using introspection and type annotations. The documentation will follow a hub-and-spoke model with `help.md` as the central navigation hub, connected to topic-specific documents covering all features and use cases.

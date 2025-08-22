@@ -1,45 +1,81 @@
 # auto-cli-py
-Python Library that builds a complete CLI given one or more functions using introspection.
+
+## Table of Contents
+- [Documentation](#documentation)
+- [Quick Start](#quick-start)
+- [Two CLI Creation Modes](#two-cli-creation-modes)
+- [Development](#development)
+
+Python Library that builds complete CLI applications from your existing code using introspection and type annotations. Supports both **module-based** and **class-based** CLI creation.
 
 Most options are set using introspection/signature and annotation functionality, so very little configuration has to be done. The library analyzes your function signatures and automatically creates command-line interfaces with proper argument parsing, type checking, and help text generation.
 
+## 📚 Documentation
+**[→ Complete Documentation Hub](docs/help.md)** - Comprehensive guides and examples
+
 ## Quick Start
+**[→ Quick Start](docs/quick-start.md#installation)** - Comprehensive guides and examples
 
-### Installation
-```bash
-# Install from PyPI
-pip install auto-cli-py
+### Quick Links
+- **[Module-based CLI Guide](docs/module-cli-guide.md)** - Create CLIs from module functions  
+- **[Class-based CLI Guide](docs/class-cli-guide.md)** - Create CLIs from class methods
+- **[Getting Started](docs/getting-started/quick-start.md)** - 5-minute introduction
 
-# See example code and output
-python examples.py
-```
+## Two CLI Creation Modes
 
-### Basic Usage
+### 🗂️ Module-based CLI (Original)
+Perfect for functional programming styles and simple utilities:
 
 ```python
-#!/usr/bin/env python
+# Create CLI from module functions
+from auto_cli import CLI
 import sys
-from auto_cli.cli import CLI
 
-
-def greet(name: str = "World", count: int = 1):
-  """Greet someone multiple times."""
-  for _ in range(count):
-    print(f"Hello, {name}!")
-
+def greet(name: str = "World", excited: bool = False) -> None:
+    """Greet someone by name."""
+    greeting = f"Hello, {name}!"
+    if excited:
+        greeting += " 🎉"
+    print(greeting)
 
 if __name__ == '__main__':
-  fn_opts = {
-    'greet': {'description': 'Greet someone'}
-  }
-  cli = CLI(sys.modules[__name__], function_opts=fn_opts, title="My CLI")
-  cli.display()
+    cli = CLI.from_module(sys.modules[__name__], title="My CLI")
+    cli.display()
 ```
 
-This automatically generates a CLI with:
-- `--name` parameter (string, default: "World")  
-- `--count` parameter (integer, default: 1)
-- Proper help text and error handling
+### 🏗️ Class-based CLI (New)
+Ideal for stateful applications and object-oriented designs:
+
+```python
+# Create CLI from class methods  
+from auto_cli import CLI
+
+class UserManager:
+    """User management CLI application."""
+    
+    def __init__(self):
+        self.users = []
+    
+    def add_user(self, username: str, email: str, active: bool = True) -> None:
+        """Add a new user to the system."""
+        user = {"username": username, "email": email, "active": active}
+        self.users.append(user)
+        print(f"Added user: {username}")
+
+if __name__ == '__main__':
+    cli = CLI.from_class(UserManager)
+    cli.display()
+```
+
+### Choose Your Approach
+
+Both approaches automatically generate CLIs with:
+- Proper argument parsing from type annotations
+- Help text generation from docstrings  
+- Type checking and validation
+- Built-in themes and customization options
+
+**See [Complete Documentation](docs/help.md) for detailed guides and examples.**
 
 ## Development
 
@@ -73,7 +109,8 @@ poetry install
 ./bin/lint.sh
 
 # Run examples
-poetry run python examples.py
+poetry run python mod_example.py  # Module-based CLI
+poetry run python cls_example.py  # Class-based CLI
 
 # Build package
 poetry build
