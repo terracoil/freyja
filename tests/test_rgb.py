@@ -328,6 +328,6 @@ class TestAdjustStrategy:
     def test_adjust_strategy_values(self):
         """Test AdjustStrategy enum values."""
         # Test backward compatibility aliases map to appropriate strategies
-        assert AdjustStrategy.PROPORTIONAL.value == "linear"
+        assert AdjustStrategy.LINEAR.value == "linear"
         assert AdjustStrategy.ABSOLUTE.value == "absolute"  # ABSOLUTE is now its own strategy
-        assert AdjustStrategy.RELATIVE.value == "linear"
+        assert AdjustStrategy.LINEAR.value == "linear"

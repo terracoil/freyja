@@ -17,10 +17,10 @@ class TestThemeColorAdjustment:
         """Test creating theme with adjustment parameters."""
         theme = create_default_theme()
         theme.adjust_percent = 0.3
-        theme.adjust_strategy = AdjustStrategy.PROPORTIONAL
+        theme.adjust_strategy = AdjustStrategy.LINEAR
 
         assert theme.adjust_percent == 0.3
-        assert theme.adjust_strategy == AdjustStrategy.PROPORTIONAL
+        assert theme.adjust_strategy == AdjustStrategy.LINEAR
 
     def test_proportional_adjustment_positive(self):
         """Test proportional color adjustment with positive percentage."""
@@ -30,7 +30,7 @@ class TestThemeColorAdjustment:
             group_command_name=style, subcommand_name=style, subcommand_description=style,
             option_name=style, option_description=style, required_option_name=style,
             required_option_description=style, required_asterisk=style,
-            adjust_strategy=AdjustStrategy.PROPORTIONAL,
+            adjust_strategy=AdjustStrategy.LINEAR,
             adjust_percent=0.25  # 25% adjustment (actually darkens due to current implementation)
         )
 
@@ -50,7 +50,7 @@ class TestThemeColorAdjustment:
             group_command_name=style, subcommand_name=style, subcommand_description=style,
             option_name=style, option_description=style, required_option_name=style,
             required_option_description=style, required_asterisk=style,
-            adjust_strategy=AdjustStrategy.PROPORTIONAL,
+            adjust_strategy=AdjustStrategy.LINEAR,
             adjust_percent=-0.25  # 25% darker
         )
 
@@ -111,7 +111,7 @@ class TestThemeColorAdjustment:
             option_name=style, option_description=style,
             required_option_name=style, required_option_description=style,
             required_asterisk=style,
-            adjust_strategy=AdjustStrategy.PROPORTIONAL,
+            adjust_strategy=AdjustStrategy.LINEAR,
             adjust_percent=0.25
         )
 
@@ -135,7 +135,7 @@ class TestThemeColorAdjustment:
             group_command_name=style, subcommand_name=style, subcommand_description=style,
             option_name=style, option_description=style, required_option_name=style,
             required_option_description=style, required_asterisk=style,
-            adjust_strategy=AdjustStrategy.PROPORTIONAL,
+            adjust_strategy=AdjustStrategy.LINEAR,
             adjust_percent=0.25
         )
 
@@ -179,7 +179,7 @@ class TestThemeColorAdjustment:
             option_name=ThemeStyle(), option_description=ThemeStyle(),
             required_option_name=ThemeStyle(), required_option_description=ThemeStyle(),
             required_asterisk=ThemeStyle(),
-            adjust_strategy=AdjustStrategy.PROPORTIONAL,
+            adjust_strategy=AdjustStrategy.LINEAR,
             adjust_percent=0.5
         )
 

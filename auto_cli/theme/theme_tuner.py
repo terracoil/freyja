@@ -122,8 +122,8 @@ class ThemeTuner:
     print("=" * min(self.console_width, 60))
 
     # Current settings
-    strategy_name="PROPORTIONAL" if self.adjust_strategy == AdjustStrategy.PROPORTIONAL else "ABSOLUTE"
-    theme_name="COLORFUL" if self.use_colorful_theme else "UNIVERSAL"
+    strategy_name = self.adjust_strategy.name
+    theme_name = "COLORFUL" if self.use_colorful_theme else "UNIVERSAL"
 
     print(f"Theme: {theme_name}")
     print(f"Strategy: {strategy_name}")
@@ -508,6 +508,59 @@ class ThemeTuner:
     self.individual_color_overrides.clear()
     self.modified_components.clear()
 
+  def _select_adjustment_strategy(self):
+    """Allow user to select from all available adjustment strategies."""
+    strategies = list(AdjustStrategy)
+    
+    print("\n🎯 SELECT ADJUSTMENT STRATEGY")
+    print("=" * 40)
+    
+    # Display current strategy
+    current_index = strategies.index(self.adjust_strategy)
+    print(f"Current strategy: {self.adjust_strategy.name}")
+    print()
+    
+    # Display all available strategies with numbers
+    print("Available strategies:")
+    strategy_descriptions = {
+      AdjustStrategy.LINEAR: "Linear blend adjustment (legacy compatibility)",
+      AdjustStrategy.COLOR_HSL: "HSL-based lightness adjustment",
+      AdjustStrategy.MULTIPLICATIVE: "Simple RGB value scaling",
+      AdjustStrategy.GAMMA: "Gamma correction for perceptual uniformity",
+      AdjustStrategy.LUMINANCE: "ITU-R BT.709 perceived brightness adjustment",
+      AdjustStrategy.OVERLAY: "Photoshop-style overlay blend mode",
+      AdjustStrategy.ABSOLUTE: "Legacy absolute color adjustment"
+    }
+    
+    for i, strategy in enumerate(strategies, 1):
+      marker = "→" if strategy == self.adjust_strategy else " "
+      description = strategy_descriptions.get(strategy, "Color adjustment strategy")
+      print(f"{marker} [{i}] {strategy.name}: {description}")
+    
+    print()
+    print("  [Enter] Keep current strategy")
+    print("  [q] Cancel")
+    
+    try:
+      choice = input("\nSelect strategy (1-7): ").strip().lower()
+      
+      if choice == '' or choice == 'q':
+        return  # Keep current strategy
+      
+      try:
+        strategy_index = int(choice) - 1
+        if 0 <= strategy_index < len(strategies):
+          old_strategy = self.adjust_strategy.name
+          self.adjust_strategy = strategies[strategy_index]
+          print(f"✅ Strategy changed from {old_strategy} to {self.adjust_strategy.name}")
+        else:
+          print("❌ Invalid strategy number. Strategy unchanged.")
+      except ValueError:
+        print("❌ Invalid input. Strategy unchanged.")
+        
+    except (EOFError, KeyboardInterrupt):
+      print("\n❌ Selection cancelled.")
+
   def run_interactive_menu(self):
     """Run a simple menu-based theme tuner."""
     print("🎛️  THEME TUNER")
@@ -522,7 +575,7 @@ class ThemeTuner:
       print("Available commands:")
       print(f"  [+] Increase adjustment by {self.ADJUSTMENT_INCREMENT}")
       print(f"  [-] Decrease adjustment by {self.ADJUSTMENT_INCREMENT}")
-      print("  [s] Toggle strategy")
+      print("  [s] Select adjustment strategy")
       print("  [t] Toggle theme (universal/colorful)")
       print("  [e] Edit individual colors")
       print("  [r] Show RGB values")
@@ -540,9 +593,7 @@ class ThemeTuner:
           self.adjust_percent=max(-5.0, self.adjust_percent - self.ADJUSTMENT_INCREMENT)
           print(f"Adjustment decreased to {self.adjust_percent:.2f}")
         elif choice == 's':
-          self.adjust_strategy=AdjustStrategy.ABSOLUTE if self.adjust_strategy == AdjustStrategy.PROPORTIONAL else AdjustStrategy.PROPORTIONAL
-          strategy_name="ABSOLUTE" if self.adjust_strategy == AdjustStrategy.ABSOLUTE else "PROPORTIONAL"
-          print(f"Strategy changed to {strategy_name}")
+          self._select_adjustment_strategy()
         elif choice == 't':
           self.use_colorful_theme=not self.use_colorful_theme
           theme_name="COLORFUL" if self.use_colorful_theme else "UNIVERSAL"

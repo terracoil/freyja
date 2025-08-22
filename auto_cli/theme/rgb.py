@@ -9,17 +9,13 @@ from auto_cli.math_utils import MathUtils
 
 class AdjustStrategy(Enum):
     """Strategy for color adjustment calculations."""
-    LINEAR = "linear"  # Relative adjustment (legacy compatibility)
+    LINEAR = "linear"
     COLOR_HSL = "color_hsl"
     MULTIPLICATIVE = "multiplicative"
     GAMMA = "gamma"
     LUMINANCE = "luminance"
     OVERLAY = "overlay"
     ABSOLUTE = "absolute"  # Legacy absolute adjustment
-    
-    # Backward compatibility aliases
-    PROPORTIONAL = "linear"  # Maps to LINEAR for backward compatibility
-    RELATIVE = "linear"      # Maps to LINEAR for backward compatibility
 
 class RGB:
     """Immutable RGB color representation with values in range 0.0-1.0."""
@@ -161,7 +157,7 @@ class RGB:
 
         # Initialize result
         result = self
-        
+
         # Apply adjustments only if needed
         if brightness != 0.0 or saturation != 0.0:
             # Convert to integer for adjustment algorithm (matches existing behavior)
@@ -187,18 +183,18 @@ class RGB:
             # For now, just brightness adjustment to match existing behavior
 
             result = RGB.from_ints(r, g, b)
-            
+
         return result
 
     def hsl(self, adjust_pct: float) -> 'RGB':
         """HSL method: Adjust lightness while preserving hue and saturation."""
         r, g, b = self.to_ints()
         h, s, l = self._rgb_to_hsl(r, g, b)
-        
+
         # Adjust lightness
         l = l + (1.0 - l) * adjust_pct if adjust_pct >= 0 else l * (1 + adjust_pct)
         l = max(0.0, min(1.0, l))  # Clamp to valid range
-        
+
         r_new, g_new, b_new = self._hsl_to_rgb(h, s, l)
         return RGB.from_ints(r_new, g_new, b_new)
 
@@ -237,7 +233,7 @@ class RGB:
         def overlay_blend(base: float, overlay: float) -> float:
             """Apply overlay blend formula."""
             return 2 * base * overlay if base < 0.5 else 1 - 2 * (1 - base) * (1 - overlay)
-        
+
         overlay_val = 0.5 + adjust_pct * 0.5  # Maps to 0.0-1.0 range
         return RGB.from_ints(
             max(0, min(255, int(255 * overlay_blend(self._r, overlay_val)))),
@@ -260,20 +256,20 @@ class RGB:
     def _rgb_to_hsl(r: int, g: int, b: int) -> Tuple[float, float, float]:
         """Convert RGB to HSL color space."""
         r_norm, g_norm, b_norm = r / 255.0, g / 255.0, b / 255.0
-        
+
         max_val = max(r_norm, g_norm, b_norm)
         min_val = min(r_norm, g_norm, b_norm)
         diff = max_val - min_val
-        
+
         # Lightness
         l = (max_val + min_val) / 2.0
-        
+
         if diff == 0:
             h = s = 0  # Achromatic
         else:
             # Saturation
             s = diff / (2 - max_val - min_val) if l > 0.5 else diff / (max_val + min_val)
-            
+
             # Hue
             if max_val == r_norm:
                 h = (g_norm - b_norm) / diff + (6 if g_norm < b_norm else 0)
@@ -282,7 +278,7 @@ class RGB:
             else:
                 h = (r_norm - g_norm) / diff + 4
             h /= 6
-        
+
         return h, s, l
 
     @staticmethod
@@ -291,16 +287,16 @@ class RGB:
         def hue_to_rgb(p: float, q: float, t: float) -> float:
             """Convert hue to RGB component."""
             t = t + 1 if t < 0 else t - 1 if t > 1 else t
-            if t < 1/6: 
+            if t < 1/6:
                 result = p + (q - p) * 6 * t
-            elif t < 1/2: 
+            elif t < 1/2:
                 result = q
-            elif t < 2/3: 
+            elif t < 2/3:
                 result = p + (q - p) * (2/3 - t) * 6
             else:
                 result = p
             return result
-        
+
         if s == 0:
             r = g = b = l  # Achromatic
         else:
@@ -309,7 +305,7 @@ class RGB:
             r = hue_to_rgb(p, q, h + 1/3)
             g = hue_to_rgb(p, q, h)
             b = hue_to_rgb(p, q, h - 1/3)
-        
+
         return int(r * 255), int(g * 255), int(b * 255)
 
     def _rgb_to_ansi256(self, r: int, g: int, b: int) -> int:

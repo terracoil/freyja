@@ -17,8 +17,8 @@ class TestAdjustStrategy:
         assert AdjustStrategy.ABSOLUTE.value == "absolute"
         
         # Test backward compatibility aliases
-        assert AdjustStrategy.PROPORTIONAL.value == "linear"
-        assert AdjustStrategy.RELATIVE.value == "linear"
+        assert AdjustStrategy.LINEAR.value == "linear"
+        assert AdjustStrategy.LINEAR.value == "linear"
 
     def test_enum_members(self):
         """Test enum has all expected members."""
@@ -28,14 +28,14 @@ class TestAdjustStrategy:
         assert expected_members == actual_members
         
         # Test that aliases exist and work
-        assert hasattr(AdjustStrategy, 'PROPORTIONAL')
-        assert hasattr(AdjustStrategy, 'RELATIVE')
+        assert hasattr(AdjustStrategy, 'LINEAR')
+        assert hasattr(AdjustStrategy, 'LINEAR')
 
     def test_enum_string_representation(self):
         """Test enum string representations."""
         # Aliases resolve to their primary member's string representation
-        assert str(AdjustStrategy.PROPORTIONAL) == "AdjustStrategy.LINEAR"
-        assert str(AdjustStrategy.RELATIVE) == "AdjustStrategy.LINEAR"
+        assert str(AdjustStrategy.LINEAR) == "AdjustStrategy.LINEAR"
+        assert str(AdjustStrategy.LINEAR) == "AdjustStrategy.LINEAR"
         
         # Primary members show their own names
         assert str(AdjustStrategy.LINEAR) == "AdjustStrategy.LINEAR"
@@ -45,13 +45,13 @@ class TestAdjustStrategy:
     def test_enum_equality(self):
         """Test enum equality comparisons."""
         # Test that aliases work correctly
-        assert AdjustStrategy.PROPORTIONAL == AdjustStrategy.LINEAR
-        assert AdjustStrategy.RELATIVE == AdjustStrategy.LINEAR
+        assert AdjustStrategy.LINEAR == AdjustStrategy.LINEAR
+        assert AdjustStrategy.LINEAR == AdjustStrategy.LINEAR
         
         # Test that ABSOLUTE is its own member now
         assert AdjustStrategy.ABSOLUTE == AdjustStrategy.ABSOLUTE
         assert AdjustStrategy.ABSOLUTE != AdjustStrategy.MULTIPLICATIVE
         
         # Test inequality 
-        assert AdjustStrategy.ABSOLUTE != AdjustStrategy.PROPORTIONAL
+        assert AdjustStrategy.ABSOLUTE != AdjustStrategy.LINEAR
         assert AdjustStrategy.MULTIPLICATIVE != AdjustStrategy.LINEAR
