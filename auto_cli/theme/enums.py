@@ -56,27 +56,35 @@ class Style(Enum):
 
 
 class ForeUniversal(Enum):
-  """Universal foreground colors that work well on both light and dark backgrounds."""
-  # Blues (excellent on both)
-  BRIGHT_BLUE=0x8080FF  # Bright blue
-  ROYAL_BLUE=0x0000FF  # Blue
+  """Universal foreground color palette with carefully curated colors."""
 
-  # Greens (great visibility)
-  EMERALD=0x80FF80  # Bright green
-  FOREST_GREEN=0x008000  # Green
+  # Blues
+  BLUE = 0x2196F3         # Material Blue 500
+  OKABE_BLUE = 0x0072B2   # Okabe-Ito Blue
+  INDIGO = 0x3F51B5       # Material Indigo 500
+  SKY_BLUE = 0x56B4E9     # Sky Blue
 
-  # Reds (high contrast)
-  CRIMSON=0xFF8080  # Bright red
-  FIRE_RED=0xFF0000  # Red
+  # Greens
+  BLUISH_GREEN = 0x009E73 # Bluish Green
+  GREEN = 0x4CAF50        # Material Green 500
+  DARK_GREEN = 0x08780D   # Dark green
+  TEAL = 0x009688         # Material Teal 500
 
-  # Purples/Magentas
-  PURPLE=0xFF80FF  # Bright magenta
-  MAGENTA=0xFF00FF  # Magenta
+  # Orange/Yellow
+  ORANGE = 0xE69F00       # Okabe-Ito Orange
+  MATERIAL_ORANGE = 0xFF9800 # Material Orange 500
+  GOLD = 0xF39C12         # Muted Gold
 
-  # Oranges/Yellows
-  ORANGE=0xFFA500  # Orange
-  GOLD=0xFFFF80  # Bright yellow
+  # Red/Magenta
+  VERMILION = 0xD55E00    # Okabe-Ito Vermilion
+  REDDISH_PURPLE = 0xCC79A7 # Reddish Purple
 
-  # Cyans (excellent contrast)
-  CYAN=0x00FFFF  # Cyan
-  TEAL=0x80FFFF  # Bright cyan
+  # Purple
+  PURPLE = 0x9C27B0       # Material Purple 500
+  DEEP_PURPLE = 0x673AB7  # Material Deep Purple 500
+
+  # Neutrals
+  BLUE_GREY = 0x607D8B    # Material Blue Grey 500
+  BROWN = 0x795548        # Material Brown 500
+  MEDIUM_GREY = 0x757575  # Medium Grey
+  IBM_GREY = 0x8D8D8D     # IBM Gray 50

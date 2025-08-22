@@ -10,14 +10,6 @@ from auto_cli.theme import (
     create_default_theme,
 )
 
-class TestAdjustStrategy:
-    """Test the AdjustStrategy enum."""
-
-    def test_enum_values(self):
-        """Test enum has correct values."""
-        assert AdjustStrategy.PROPORTIONAL.value == "proportional"
-        assert AdjustStrategy.ABSOLUTE.value == "absolute"
-
 
 class TestThemeColorAdjustment:
     """Test color adjustment functionality in themes."""

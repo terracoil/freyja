@@ -25,7 +25,7 @@ class ThemeTuner:
     :param base_theme_name: Base theme to start with ("universal" or "colorful")
     """
     self.adjust_percent=0.0
-    self.adjust_strategy=AdjustStrategy.PROPORTIONAL
+    self.adjust_strategy=AdjustStrategy.LINEAR
     self.use_colorful_theme=base_theme_name.lower() == "colorful"
     self.formatter=ColorFormatter(enable_colors=True)
 
@@ -86,7 +86,7 @@ class ThemeTuner:
     theme_styles = {}
     for component_name, _ in self.theme_components:
       original_style = getattr(theme, component_name)
-      
+
       if component_name in self.individual_color_overrides:
         # Create new ThemeStyle with overridden color but preserve other attributes
         override_color = self.individual_color_overrides[component_name]
@@ -128,7 +128,7 @@ class ThemeTuner:
     print(f"Theme: {theme_name}")
     print(f"Strategy: {strategy_name}")
     print(f"Adjust: {self.adjust_percent:.2f}")
-    
+
     # Show modification status
     if self.individual_color_overrides:
       modified_count = len(self.individual_color_overrides)
@@ -187,7 +187,7 @@ class ThemeTuner:
       if isinstance(color_code, RGB):
         # Check if this component has been modified
         is_modified = name in self.individual_color_overrides
-        
+
         # RGB instance - show name in the actual color
         r, g, b = color_code.to_ints()
         hex_code = color_code.to_hex()
@@ -195,7 +195,7 @@ class ThemeTuner:
 
         # Get the complete theme style for this component (includes bold, italic, etc.)
         current_theme_style = getattr(theme, name)
-        
+
         # Create styled versions using the complete theme style with different backgrounds
         # Only the white/black background versions should be styled
         white_bg_style = ThemeStyle(
@@ -227,7 +227,7 @@ class ThemeTuner:
         modifier_indicator = " [CUSTOM]" if is_modified else ""
 
         print(f"  {padded_name} = rgb({r:3}, {g:3}, {b:3})  # {hex_code}{modifier_indicator}")
-        
+
         # Show original color if modified
         if is_modified:
           # Get the original color (before override)
@@ -242,17 +242,17 @@ class ThemeTuner:
               adjusted_base = base_theme
           else:
             adjusted_base = base_theme
-          
+
           original_style = getattr(adjusted_base, name)
           if original_style.fg and isinstance(original_style.fg, RGB):
             orig_r, orig_g, orig_b = original_style.fg.to_ints()
             orig_hex = original_style.fg.to_hex()
             print(f"    Original: rgb({orig_r:3}, {orig_g:3}, {orig_b:3})  # {orig_hex}")
-        
+
         # Calculate alignment width based on longest component name for clean f-string alignment
         max_component_name_length = max(len(comp_name) for comp_name, _ in self.theme_components)
         white_field_width = max_component_name_length + 2  # +2 for spacing buffer
-        
+
         # Use AnsiString for proper f-string alignment with ANSI escape codes
         print(f"    On white: {AnsiString(colored_name_white):<{white_field_width}}On black: {AnsiString(colored_name_black)}")
         print()
@@ -308,11 +308,11 @@ class ThemeTuner:
             padded_name = name + ' ' * padding
 
             print(f"  {padded_name} = rgb({r:3}, {g:3}, {b:3})  # {color_code}")
-            
+
             # Calculate alignment width based on longest component name for clean f-string alignment
             max_component_name_length = max(len(comp_name) for comp_name, _ in self.theme_components)
             white_field_width = max_component_name_length + 2  # +2 for spacing buffer
-            
+
             # Use AnsiString for proper f-string alignment with ANSI escape codes
             print(f"    On white: {AnsiString(colored_name_white):<{white_field_width}}On black: {AnsiString(colored_name_black)}")
             print()
@@ -359,14 +359,14 @@ class ThemeTuner:
       print("\n" + "=" * min(self.console_width, 60))
       print("🎨 EDIT INDIVIDUAL COLOR")
       print("=" * min(self.console_width, 60))
-      
+
       # Display components with modification indicators
       for i, (component_name, description) in enumerate(self.theme_components, 1):
         is_modified = component_name in self.individual_color_overrides
         status = " [MODIFIED]" if is_modified else ""
         print(f"  {i:2d}. {component_name:<25} {status}")
         print(f"      {description}")
-        
+
         # Show current color
         current_theme = self.get_current_theme()
         current_style = getattr(current_theme, component_name)
@@ -384,14 +384,14 @@ class ThemeTuner:
 
       try:
         choice = input("\nChoice: ").lower().strip()
-        
+
         if choice == 'q':
           break
         elif choice == 'x':
           self._reset_all_individual_colors()
           print("All individual color overrides reset!")
           continue
-        
+
         # Try to parse as component number
         try:
           component_index = int(choice) - 1
@@ -402,7 +402,7 @@ class ThemeTuner:
             print(f"Invalid choice. Please enter 1-{len(self.theme_components)}")
         except ValueError:
           print("Invalid input. Please enter a number or command.")
-          
+
       except (KeyboardInterrupt, EOFError):
         break
 
@@ -412,18 +412,18 @@ class ThemeTuner:
     current_theme = self.get_current_theme()
     current_style = getattr(current_theme, component_name)
     current_color = current_style.fg if current_style.fg else RGB.from_rgb(0x808080)
-    
+
     is_modified = component_name in self.individual_color_overrides
-    
+
     print(f"\n🎨 EDITING: {component_name}")
     print(f"Description: {description}")
-    
+
     if isinstance(current_color, RGB):
       hex_color = current_color.to_hex()
       r, g, b = current_color.to_ints()
       colored_preview = self.formatter.apply_style("██████", ThemeStyle(fg=current_color))
       print(f"Current: {colored_preview} rgb({r:3}, {g:3}, {b:3}) {hex_color}")
-    
+
     if is_modified:
       print("(This color has been customized)")
 
@@ -434,7 +434,7 @@ class ThemeTuner:
 
     try:
       method = input("\nChoose input method: ").lower().strip()
-      
+
       if method == 'q':
         return
       elif method == 'r':
@@ -445,7 +445,7 @@ class ThemeTuner:
         self._hex_color_input(component_name, current_color)
       else:
         print("Invalid choice.")
-        
+
     except (KeyboardInterrupt, EOFError):
       return
 
@@ -454,35 +454,35 @@ class ThemeTuner:
     print(f"\nCurrent color: {current_color.to_hex()}")
     print("Enter new hex color (without #):")
     print("Examples: FF8080, ff8080, F80 (short form)")
-    
+
     try:
       hex_input = input("Hex color: ").strip()
-      
+
       if not hex_input:
         print("No input provided, canceling.")
         return
-        
+
       # Normalize hex input
       hex_clean = hex_input.upper().lstrip('#')
-      
+
       # Handle 3-character hex (e.g., F80 -> FF8800)
       if len(hex_clean) == 3:
         hex_clean = ''.join(c * 2 for c in hex_clean)
-      
+
       # Validate hex
       if len(hex_clean) != 6 or not all(c in '0123456789ABCDEF' for c in hex_clean):
         print("Invalid hex color format. Please use 6 digits (e.g., FF8080)")
         return
-      
+
       # Convert to RGB
       hex_int = int(hex_clean, 16)
       new_color = RGB.from_rgb(hex_int)
-      
+
       # Preview the new color
       r, g, b = new_color.to_ints()
       colored_preview = self.formatter.apply_style("██████", ThemeStyle(fg=new_color))
       print(f"\nPreview: {colored_preview} rgb({r:3}, {g:3}, {b:3}) #{hex_clean}")
-      
+
       # Confirm
       confirm = input("Apply this color? [y/N]: ").lower().strip()
       if confirm in ('y', 'yes'):
@@ -491,7 +491,7 @@ class ThemeTuner:
         print(f"✅ Applied new color to {component_name}!")
       else:
         print("Color change canceled.")
-        
+
     except (KeyboardInterrupt, EOFError):
       print("\nColor editing canceled.")
     except ValueError as e:

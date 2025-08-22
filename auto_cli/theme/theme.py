@@ -17,7 +17,7 @@ class Theme:
                group_command_name: ThemeStyle, subcommand_name: ThemeStyle, subcommand_description: ThemeStyle,
                option_name: ThemeStyle, option_description: ThemeStyle, required_option_name: ThemeStyle,
                required_option_description: ThemeStyle, required_asterisk: ThemeStyle,  # New adjustment parameters
-               adjust_strategy: AdjustStrategy = AdjustStrategy.PROPORTIONAL, adjust_percent: float = 0.0):
+               adjust_strategy: AdjustStrategy = AdjustStrategy.LINEAR, adjust_percent: float = 0.0):
     """Initialize theme with optional color adjustment settings."""
     if adjust_percent < -5.0 or adjust_percent > 5.0:
       raise ValueError(f"adjust_percent must be between -5.0 and 5.0, got {adjust_percent}")
@@ -101,21 +101,17 @@ def create_default_theme() -> Theme:
   return Theme(
     adjust_percent=0.0,
     title=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.PURPLE.value), bg=RGB.from_rgb(Back.LIGHTWHITE_EX.value), bold=True),
-    # Purple bold with light gray background
-    subtitle=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.GOLD.value), italic=True),  # Gold for subtitles
-    command_name=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.BRIGHT_BLUE.value), bold=True),  # Bright blue bold for command names
-    command_description=ThemeStyle(fg=RGB.from_rgb(Fore.LIGHTRED_EX.value)),  # Orange (LIGHTRED_EX) for descriptions
-    group_command_name=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.BRIGHT_BLUE.value), bold=True),
-    # Bright blue bold for group command names
-    subcommand_name=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.BRIGHT_BLUE.value), italic=True, bold=True),
-    # Bright blue italic bold for subcommand names
-    subcommand_description=ThemeStyle(fg=RGB.from_rgb(Fore.LIGHTRED_EX.value)),  # Orange (LIGHTRED_EX) for subcommand descriptions
-    option_name=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.FOREST_GREEN.value)),  # FOREST_GREEN for all options
-    option_description=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.GOLD.value)),  # Gold for option descriptions
-    required_option_name=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.FOREST_GREEN.value), bold=True),
-    # FOREST_GREEN bold for required options
-    required_option_description=ThemeStyle(fg=RGB.from_rgb(Fore.WHITE.value)),  # White for required descriptions
-    required_asterisk=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.GOLD.value))  # Gold for required asterisk markers
+    subtitle=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.BROWN.value), italic=True),
+    command_name=ThemeStyle(bold=True),
+    command_description=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.OKABE_BLUE.value)),
+    group_command_name=ThemeStyle(bold=True),
+    subcommand_name=ThemeStyle(italic=True, bold=True),
+    subcommand_description=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.OKABE_BLUE.value)),
+    option_name=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.DARK_GREEN.value)),
+    option_description=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.BROWN.value)),
+    required_option_name=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.DARK_GREEN.value), bold=True),
+    required_option_description=ThemeStyle(fg=RGB.from_rgb(Fore.WHITE.value)),
+    required_asterisk=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.BROWN.value))
   )
 
 
@@ -127,7 +123,7 @@ def create_default_theme_colorful() -> Theme:
     subtitle=ThemeStyle(fg=RGB.from_rgb(Fore.YELLOW.value), italic=True),
     command_name=ThemeStyle(fg=RGB.from_rgb(Fore.CYAN.value), bold=True),
     # Cyan bold for command names
-    command_description=ThemeStyle(fg=RGB.from_rgb(Fore.LIGHTRED_EX.value)),  # Orange (LIGHTRED_EX) for flat command descriptions
+    command_description=ThemeStyle(fg=RGB.from_rgb(Fore.LIGHTRED_EX.value)),
     group_command_name=ThemeStyle(fg=RGB.from_rgb(Fore.CYAN.value), bold=True),  # Cyan bold for group command names
     subcommand_name=ThemeStyle(fg=RGB.from_rgb(Fore.CYAN.value), italic=True, bold=True),  # Cyan italic bold for subcommand names
     subcommand_description=ThemeStyle(fg=RGB.from_rgb(Fore.LIGHTRED_EX.value)),  # Orange (LIGHTRED_EX) for subcommand descriptions

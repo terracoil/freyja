@@ -347,9 +347,17 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     styled_name=self._apply_style(command_name, name_style)
 
     if help_text:
-      styled_description=self._apply_style(help_text, desc_style)
-      # For flat commands, put description right after command name with colon
-      lines.append(f"{' ' * base_indent}{styled_name}: {styled_description}")
+      # Use the same wrapping logic as subcommands
+      formatted_lines = self._format_inline_description(
+        name=command_name,
+        description=help_text,
+        name_indent=base_indent,
+        description_column=0,  # Not used for colons
+        style_name=name_style,
+        style_description=desc_style,
+        add_colon=True
+      )
+      lines.extend(formatted_lines)
     else:
       # Just the command name with styling
       lines.append(f"{' ' * base_indent}{styled_name}")
