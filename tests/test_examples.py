@@ -77,13 +77,13 @@ class TestClassExample:
 
         assert result.returncode == 0
         assert "Usage:" in result.stdout or "usage:" in result.stdout
-        assert "Data processing utility" in result.stdout
+        assert "Enhanced data processing utility" in result.stdout
 
     def test_class_example_process_file(self):
-        """Test the process-file command in cls_example.py."""
+        """Test the file-operations process-single command in cls_example.py."""
         examples_path = Path(__file__).parent.parent / "cls_example.py"
         result = subprocess.run(
-            [sys.executable, str(examples_path), "process-file", "--input-file", "test.txt"],
+            [sys.executable, str(examples_path), "file-operations", "process-single", "--input-file", "test.txt"],
             capture_output=True,
             text=True,
             timeout=10
@@ -93,10 +93,10 @@ class TestClassExample:
         assert "Processing file: test.txt" in result.stdout
 
     def test_class_example_config_command(self):
-        """Test hierarchical config command in cls_example.py."""
+        """Test hierarchical config-management command in cls_example.py."""
         examples_path = Path(__file__).parent.parent / "cls_example.py"
         result = subprocess.run(
-            [sys.executable, str(examples_path), "config", "set-default-mode", "--mode", "FAST"],
+            [sys.executable, str(examples_path), "config-management", "set-default-mode", "--mode", "FAST"],
             capture_output=True,
             text=True,
             timeout=10
@@ -106,10 +106,10 @@ class TestClassExample:
         assert "Setting default processing mode to: fast" in result.stdout
 
     def test_class_example_config_help(self):
-        """Test config command help in cls_example.py."""
+        """Test config-management command help in cls_example.py."""
         examples_path = Path(__file__).parent.parent / "cls_example.py"
         result = subprocess.run(
-            [sys.executable, str(examples_path), "config", "--help"],
+            [sys.executable, str(examples_path), "config-management", "--help"],
             capture_output=True,
             text=True,
             timeout=10

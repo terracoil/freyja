@@ -166,6 +166,72 @@ class CLI:
     """Auto-discover methods from class using the method filter."""
     self.functions={}
     
+    # Check for inner classes first (new pattern)
+    inner_classes = self._discover_inner_classes()
+    
+    if inner_classes:
+      # Use inner class pattern
+      self._discover_methods_from_inner_classes(inner_classes)
+    else:
+      # Use traditional dunder pattern
+      self._discover_methods_traditional()
+
+    # Optionally add built-in theme tuner
+    if self.theme_tuner:
+      self._add_theme_tuner_function()
+
+    # Build hierarchical command structure
+    self.commands=self._build_command_tree()
+
+  def _discover_inner_classes(self) -> dict[str, type]:
+    """Discover inner classes that should be treated as command groups."""
+    inner_classes = {}
+    
+    for name, obj in inspect.getmembers(self.target_class):
+      if (inspect.isclass(obj) and 
+          not name.startswith('_') and 
+          obj.__qualname__.startswith(self.target_class.__name__ + '.')):
+        inner_classes[name] = obj
+    
+    return inner_classes
+
+  def _discover_methods_from_inner_classes(self, inner_classes: dict[str, type]):
+    """Discover methods from inner classes for the new pattern."""
+    from .str_utils import StrUtils
+    
+    # Store inner class info for later use in parsing/execution
+    self.inner_classes = inner_classes
+    self.use_inner_class_pattern = True
+    
+    # For each inner class, discover its methods
+    for class_name, inner_class in inner_classes.items():
+      command_name = StrUtils.kebab_case(class_name)
+      
+      # Get methods from the inner class
+      for method_name, method_obj in inspect.getmembers(inner_class):
+        if (not method_name.startswith('_') and 
+            callable(method_obj) and 
+            method_name != '__init__' and
+            inspect.isfunction(method_obj)):
+          
+          # Create hierarchical name: command__subcommand
+          hierarchical_name = f"{command_name}__{method_name}"
+          self.functions[hierarchical_name] = method_obj
+          
+          # Store metadata for execution
+          if not hasattr(self, 'inner_class_metadata'):
+            self.inner_class_metadata = {}
+          self.inner_class_metadata[hierarchical_name] = {
+            'inner_class': inner_class,
+            'inner_class_name': class_name,
+            'command_name': command_name,
+            'method_name': method_name
+          }
+
+  def _discover_methods_traditional(self):
+    """Discover methods using traditional dunder pattern."""
+    self.use_inner_class_pattern = False
+    
     # First, check if we can instantiate the class 
     try:
       temp_instance = self.target_class()
@@ -178,13 +244,6 @@ class CLI:
         # Convert to bound method using our temp instance
         bound_method = getattr(temp_instance, name)
         self.functions[name] = bound_method
-
-    # Optionally add built-in theme tuner
-    if self.theme_tuner:
-      self._add_theme_tuner_function()
-
-    # Build hierarchical command structure
-    self.commands=self._build_command_tree()
 
   def _add_theme_tuner_function(self):
     """Add built-in theme tuner function to available commands."""
@@ -364,21 +423,119 @@ class CLI:
       path.append(cli_part)
 
       if cli_part not in current_level:
-        current_level[cli_part]={
+        group_info = {
           'type':'group',
           'subcommands':{}
         }
+        
+        # Add inner class description if using inner class pattern
+        if (hasattr(self, 'use_inner_class_pattern') and 
+            self.use_inner_class_pattern and 
+            hasattr(self, 'inner_class_metadata') and
+            func_name in self.inner_class_metadata):
+          metadata = self.inner_class_metadata[func_name]
+          if metadata['command_name'] == cli_part:
+            inner_class = metadata['inner_class']
+            if inner_class.__doc__:
+              from .docstring_parser import parse_docstring
+              main_desc, _ = parse_docstring(inner_class.__doc__)
+              group_info['description'] = main_desc
+        
+        current_level[cli_part] = group_info
 
       current_level=current_level[cli_part]['subcommands']
 
     # Add the final command
     final_command=parts[-1].replace('_', '-')
-    current_level[final_command]={
+    command_info = {
       'type':'command',
       'function':func_obj,
       'original_name':func_name,
       'command_path':path + [final_command]
     }
+    
+    # Add inner class metadata if available
+    if (hasattr(self, 'inner_class_metadata') and 
+        func_name in self.inner_class_metadata):
+      command_info['inner_class_metadata'] = self.inner_class_metadata[func_name]
+    
+    current_level[final_command] = command_info
+
+  def _add_global_class_args(self, parser: argparse.ArgumentParser):
+    """Add global arguments from main class constructor."""
+    # Get the constructor signature
+    init_method = self.target_class.__init__
+    sig = inspect.signature(init_method)
+    
+    # Extract docstring help for constructor parameters
+    _, param_help = extract_function_help(init_method)
+    
+    for param_name, param in sig.parameters.items():
+      # Skip self parameter
+      if param_name == 'self':
+        continue
+        
+      # Skip *args and **kwargs
+      if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+        continue
+      
+      arg_config = {
+        'dest': f'_global_{param_name}',  # Prefix to avoid conflicts
+        'help': param_help.get(param_name, f"Global {param_name} parameter")
+      }
+      
+      # Handle type annotations
+      if param.annotation != param.empty:
+        type_config = self._get_arg_type_config(param.annotation)
+        arg_config.update(type_config)
+      
+      # Handle defaults
+      if param.default != param.empty:
+        arg_config['default'] = param.default
+      else:
+        arg_config['required'] = True
+      
+      # Add argument with global- prefix to distinguish from sub-global args
+      flag = f"--global-{param_name.replace('_', '-')}"
+      parser.add_argument(flag, **arg_config)
+
+  def _add_subglobal_class_args(self, parser: argparse.ArgumentParser, inner_class: type, command_name: str):
+    """Add sub-global arguments from inner class constructor."""
+    # Get the constructor signature
+    init_method = inner_class.__init__
+    sig = inspect.signature(init_method)
+    
+    # Extract docstring help for constructor parameters
+    _, param_help = extract_function_help(init_method)
+    
+    for param_name, param in sig.parameters.items():
+      # Skip self parameter
+      if param_name == 'self':
+        continue
+        
+      # Skip *args and **kwargs
+      if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+        continue
+      
+      arg_config = {
+        'dest': f'_subglobal_{command_name}_{param_name}',  # Prefix to avoid conflicts
+        'help': param_help.get(param_name, f"{command_name} {param_name} parameter")
+      }
+      
+      # Handle type annotations
+      if param.annotation != param.empty:
+        type_config = self._get_arg_type_config(param.annotation)
+        arg_config.update(type_config)
+      
+      # Handle defaults
+      if param.default != param.empty:
+        arg_config['default'] = param.default
+      else:
+        arg_config['required'] = True
+      
+      # Add argument with command-specific prefix
+      flag = f"--{param_name.replace('_', '-')}"
+      parser.add_argument(flag, **arg_config)
 
   def _get_arg_type_config(self, annotation: type) -> dict[str, Any]:
     """Convert type annotation to argparse configuration."""
@@ -414,6 +571,10 @@ class CLI:
     _, param_help=extract_function_help(fn)
 
     for name, param in sig.parameters.items():
+      # Skip self parameter for class methods
+      if name == 'self':
+        continue
+        
       # Skip *args and **kwargs - they can't be CLI arguments
       if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
         continue
@@ -520,6 +681,12 @@ class CLI:
         help="Show completion script for specified shell (choices: bash, zsh, fish, powershell)"
       )
 
+    # Add global arguments from main class constructor (for inner class pattern)
+    if (self.target_mode == 'class' and 
+        hasattr(self, 'use_inner_class_pattern') and 
+        self.use_inner_class_pattern):
+      self._add_global_class_args(parser)
+
     # Main subparsers
     subparsers=parser.add_subparsers(
       title='COMMANDS',
@@ -577,11 +744,26 @@ class CLI:
 
   def _add_command_group(self, subparsers, name: str, info: dict, path: list):
     """Add a command group with subcommands (supports nesting)."""
-    # Check for CommandGroup decorator description, otherwise use default
-    if name in self._command_group_descriptions:
+    # Check for inner class description first, then CommandGroup decorator
+    group_help = None
+    inner_class = None
+    
+    if 'description' in info:
+      group_help = info['description']
+    elif name in self._command_group_descriptions:
       group_help = self._command_group_descriptions[name]
     else:
       group_help=f"{name.title().replace('-', ' ')} operations"
+
+    # Find the inner class for this command group (for sub-global arguments)
+    if (hasattr(self, 'use_inner_class_pattern') and 
+        self.use_inner_class_pattern and 
+        hasattr(self, 'inner_classes')):
+      for class_name, cls in self.inner_classes.items():
+        from .str_utils import StrUtils
+        if StrUtils.kebab_case(class_name) == name:
+          inner_class = cls
+          break
 
     # Get the formatter class from the parent parser to ensure consistency
     effective_theme=getattr(subparsers, '_theme', self.theme)
@@ -595,9 +777,15 @@ class CLI:
       formatter_class=create_formatter_with_theme
     )
 
+    # Add sub-global arguments from inner class constructor
+    if inner_class:
+      self._add_subglobal_class_args(group_parser, inner_class, name)
+
     # Store CommandGroup description for formatter to use
     if name in self._command_group_descriptions:
       group_parser._command_group_description = self._command_group_descriptions[name]
+    elif 'description' in info:
+      group_parser._command_group_description = info['description']
     group_parser._command_type='group'
 
     # Store theme reference for consistency
@@ -805,37 +993,121 @@ class CLI:
       return fn(**kwargs)
 
     elif self.target_mode == 'class':
-      # New method execution logic
-      method=parsed._cli_function
-      
-      # Create class instance (requires parameterless constructor)
-      try:
-        class_instance = self.target_class()
-      except TypeError as e:
-        raise RuntimeError(f"Cannot instantiate {self.target_class.__name__}: requires parameterless constructor") from e
-      
-      # Get bound method
-      bound_method = getattr(class_instance, method.__name__)
-      
-      # Execute with same argument logic
-      sig = inspect.signature(bound_method)
-      kwargs = {}
-      for param_name in sig.parameters:
-        # Skip *args and **kwargs - they can't be CLI arguments
-        param = sig.parameters[param_name]
-        if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
-          continue
-
-        # Convert kebab-case back to snake_case for method call
-        attr_name = param_name.replace('-', '_')
-        if hasattr(parsed, attr_name):
-          value = getattr(parsed, attr_name)
-          kwargs[param_name] = value
-
-      return bound_method(**kwargs)
+      # Check if using inner class pattern
+      if (hasattr(self, 'use_inner_class_pattern') and 
+          self.use_inner_class_pattern and
+          hasattr(parsed, '_cli_function') and
+          hasattr(self, 'inner_class_metadata')):
+        return self._execute_inner_class_command(parsed)
+      else:
+        return self._execute_traditional_class_command(parsed)
     
     else:
       raise RuntimeError(f"Unknown target mode: {self.target_mode}")
+
+  def _execute_inner_class_command(self, parsed) -> Any:
+    """Execute command using inner class pattern."""
+    method = parsed._cli_function
+    original_name = parsed._function_name
+    
+    # Get metadata for this command
+    if original_name not in self.inner_class_metadata:
+      raise RuntimeError(f"No metadata found for command: {original_name}")
+    
+    metadata = self.inner_class_metadata[original_name]
+    inner_class = metadata['inner_class']
+    command_name = metadata['command_name']
+    
+    # 1. Create main class instance with global arguments
+    main_kwargs = {}
+    main_sig = inspect.signature(self.target_class.__init__)
+    
+    for param_name, param in main_sig.parameters.items():
+      if param_name == 'self':
+        continue
+      if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+        continue
+      
+      # Look for global argument
+      global_attr = f'_global_{param_name}'
+      if hasattr(parsed, global_attr):
+        value = getattr(parsed, global_attr)
+        main_kwargs[param_name] = value
+    
+    try:
+      main_instance = self.target_class(**main_kwargs)
+    except TypeError as e:
+      raise RuntimeError(f"Cannot instantiate {self.target_class.__name__} with global args: {e}") from e
+    
+    # 2. Create inner class instance with sub-global arguments
+    inner_kwargs = {}
+    inner_sig = inspect.signature(inner_class.__init__)
+    
+    for param_name, param in inner_sig.parameters.items():
+      if param_name == 'self':
+        continue
+      if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+        continue
+      
+      # Look for sub-global argument
+      subglobal_attr = f'_subglobal_{command_name}_{param_name}'
+      if hasattr(parsed, subglobal_attr):
+        value = getattr(parsed, subglobal_attr)
+        inner_kwargs[param_name] = value
+    
+    try:
+      inner_instance = inner_class(**inner_kwargs)
+    except TypeError as e:
+      raise RuntimeError(f"Cannot instantiate {inner_class.__name__} with sub-global args: {e}") from e
+    
+    # 3. Get method from inner instance and execute with command arguments
+    bound_method = getattr(inner_instance, metadata['method_name'])
+    method_sig = inspect.signature(bound_method)
+    method_kwargs = {}
+    
+    for param_name, param in method_sig.parameters.items():
+      if param_name == 'self':
+        continue
+      if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+        continue
+      
+      # Look for method argument (no prefix, just the parameter name)
+      attr_name = param_name.replace('-', '_')
+      if hasattr(parsed, attr_name):
+        value = getattr(parsed, attr_name)
+        method_kwargs[param_name] = value
+    
+    return bound_method(**method_kwargs)
+
+  def _execute_traditional_class_command(self, parsed) -> Any:
+    """Execute command using traditional dunder pattern."""
+    method = parsed._cli_function
+    
+    # Create class instance (requires parameterless constructor)
+    try:
+      class_instance = self.target_class()
+    except TypeError as e:
+      raise RuntimeError(f"Cannot instantiate {self.target_class.__name__}: requires parameterless constructor") from e
+    
+    # Get bound method
+    bound_method = getattr(class_instance, method.__name__)
+    
+    # Execute with same argument logic
+    sig = inspect.signature(bound_method)
+    kwargs = {}
+    for param_name in sig.parameters:
+      # Skip *args and **kwargs - they can't be CLI arguments
+      param = sig.parameters[param_name]
+      if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+        continue
+
+      # Convert kebab-case back to snake_case for method call
+      attr_name = param_name.replace('-', '_')
+      if hasattr(parsed, attr_name):
+        value = getattr(parsed, attr_name)
+        kwargs[param_name] = value
+
+    return bound_method(**kwargs)
 
   def _handle_execution_error(self, parsed, error: Exception) -> int:
     """Handle execution errors gracefully."""
