@@ -9,7 +9,7 @@ from .base import CompletionContext, CompletionHandler
 
 class BashCompletionHandler(CompletionHandler):
     """Bash-specific completion handler."""
-    
+
     def generate_script(self, prog_name: str) -> str:
         """Generate bash completion script."""
         script = f'''#!/bin/bash
@@ -43,51 +43,51 @@ _{prog_name}_completion()
 complete -F _{prog_name}_completion {prog_name}
 '''
         return script
-    
+
     def get_completions(self, context: CompletionContext) -> List[str]:
         """Get bash-specific completions."""
         return self._get_generic_completions(context)
-    
+
     def install_completion(self, prog_name: str) -> bool:
         """Install bash completion."""
         from .installer import CompletionInstaller
         installer = CompletionInstaller(self, prog_name)
         return installer.install('bash')
-    
+
     def _get_generic_completions(self, context: CompletionContext) -> List[str]:
         """Get generic completions that work across shells."""
         completions = []
-        
+
         # Get the appropriate parser for current context
         parser = context.parser
         if context.subcommand_path:
             parser = self.get_subcommand_parser(parser, context.subcommand_path)
             if not parser:
                 return []
-        
+
         # Determine what we're completing
         current_word = context.current_word
-        
+
         # Check if we're completing an option value
         if len(context.words) >= 2:
             prev_word = context.words[-2] if len(context.words) >= 2 else ""
-            
+
             # If previous word is an option, complete its values
             if prev_word.startswith('--'):
                 option_values = self.get_option_values(parser, prev_word, current_word)
                 if option_values:
                     return option_values
-        
+
         # Complete options if current word starts with --
         if current_word.startswith('--'):
             options = self.get_available_options(parser)
             return self.complete_partial_word(options, current_word)
-        
+
         # Complete commands/subcommands
         commands = self.get_available_commands(parser)
         if commands:
             return self.complete_partial_word(commands, current_word)
-        
+
         return completions
 
 
@@ -95,20 +95,20 @@ def handle_bash_completion() -> None:
     """Handle bash completion request from environment variables."""
     if os.environ.get('_AUTO_CLI_COMPLETE') != 'bash':
         return
-    
+
     # Parse completion context from environment
     words_str = os.environ.get('COMP_WORDS_STR', '')
     cword_num = int(os.environ.get('COMP_CWORD_NUM', '0'))
-    
+
     if not words_str:
         return
-    
+
     words = words_str.split()
     if not words or cword_num >= len(words):
         return
-    
+
     current_word = words[cword_num] if cword_num < len(words) else ""
-    
+
     # Extract subcommand path (everything between program name and current word)
     subcommand_path = []
     if len(words) > 1:
@@ -116,10 +116,10 @@ def handle_bash_completion() -> None:
             word = words[i]
             if not word.startswith('-'):
                 subcommand_path.append(word)
-    
+
     # Import here to avoid circular imports
     from .. import CLI
-    
+
     # This would need to be set up by the CLI instance
     # For now, just output basic completions
     print("--help --verbose --no-color")

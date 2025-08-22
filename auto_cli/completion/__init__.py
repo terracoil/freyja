@@ -12,10 +12,10 @@ from .powershell import PowerShellCompletionHandler
 from .installer import CompletionInstaller
 
 __all__ = [
-    'CompletionContext', 
+    'CompletionContext',
     'CompletionHandler',
     'BashCompletionHandler',
-    'ZshCompletionHandler', 
+    'ZshCompletionHandler',
     'FishCompletionHandler',
     'PowerShellCompletionHandler',
     'CompletionInstaller'
@@ -24,7 +24,7 @@ __all__ = [
 
 def get_completion_handler(cli, shell: str = None) -> CompletionHandler:
     """Get appropriate completion handler for shell.
-    
+
     :param cli: CLI instance
     :param shell: Target shell (auto-detect if None)
     :return: Completion handler instance
@@ -33,7 +33,7 @@ def get_completion_handler(cli, shell: str = None) -> CompletionHandler:
         # Try to detect shell
         handler = BashCompletionHandler(cli)  # Use bash as fallback
         shell = handler.detect_shell() or 'bash'
-    
+
     if shell == 'bash':
         return BashCompletionHandler(cli)
     elif shell == 'zsh':

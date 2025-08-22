@@ -511,15 +511,15 @@ class ThemeTuner:
   def _select_adjustment_strategy(self):
     """Allow user to select from all available adjustment strategies."""
     strategies = list(AdjustStrategy)
-    
+
     print("\n🎯 SELECT ADJUSTMENT STRATEGY")
     print("=" * 40)
-    
+
     # Display current strategy
     current_index = strategies.index(self.adjust_strategy)
     print(f"Current strategy: {self.adjust_strategy.name}")
     print()
-    
+
     # Display all available strategies with numbers
     print("Available strategies:")
     strategy_descriptions = {
@@ -531,22 +531,22 @@ class ThemeTuner:
       AdjustStrategy.OVERLAY: "Photoshop-style overlay blend mode",
       AdjustStrategy.ABSOLUTE: "Legacy absolute color adjustment"
     }
-    
+
     for i, strategy in enumerate(strategies, 1):
       marker = "→" if strategy == self.adjust_strategy else " "
       description = strategy_descriptions.get(strategy, "Color adjustment strategy")
       print(f"{marker} [{i}] {strategy.name}: {description}")
-    
+
     print()
     print("  [Enter] Keep current strategy")
     print("  [q] Cancel")
-    
+
     try:
       choice = input("\nSelect strategy (1-7): ").strip().lower()
-      
+
       if choice == '' or choice == 'q':
         return  # Keep current strategy
-      
+
       try:
         strategy_index = int(choice) - 1
         if 0 <= strategy_index < len(strategies):
@@ -557,7 +557,7 @@ class ThemeTuner:
           print("❌ Invalid strategy number. Strategy unchanged.")
       except ValueError:
         print("❌ Invalid input. Strategy unchanged.")
-        
+
     except (EOFError, KeyboardInterrupt):
       print("\n❌ Selection cancelled.")
 

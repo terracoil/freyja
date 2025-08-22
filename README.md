@@ -21,17 +21,19 @@ python examples.py
 import sys
 from auto_cli.cli import CLI
 
+
 def greet(name: str = "World", count: int = 1):
-    """Greet someone multiple times."""
-    for _ in range(count):
-        print(f"Hello, {name}!")
+  """Greet someone multiple times."""
+  for _ in range(count):
+    print(f"Hello, {name}!")
+
 
 if __name__ == '__main__':
-    fn_opts = {
-        'greet': {'description': 'Greet someone'}
-    }
-    cli = CLI(sys.modules[__name__], function_opts=fn_opts, title="My CLI")
-    cli.display()
+  fn_opts = {
+    'greet': {'description': 'Greet someone'}
+  }
+  cli = CLI(sys.modules[__name__], function_opts=fn_opts, title="My CLI")
+  cli.display()
 ```
 
 This automatically generates a CLI with:

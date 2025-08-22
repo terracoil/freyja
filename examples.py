@@ -79,96 +79,6 @@ def count_animals(count: int = 20, animal: AnimalType = AnimalType.BEE):
     return count
 
 
-def process_file(
-    input_path: Path,
-    output_path: Path | None = None,
-    encoding: str = "utf-8",
-    log_level: LogLevel = LogLevel.INFO,
-    backup: bool = True
-):
-    """Process a text file with various configuration options.
-
-    :param input_path: Path to the input file to process
-    :param output_path: Optional output file path (defaults to input_path.processed)
-    :param encoding: Character encoding to use when reading/writing files
-    :param log_level: Logging verbosity level for processing output
-    :param backup: Create backup of original file before processing
-    """
-    # Set default output path if not provided
-    if output_path is None:
-        output_path = input_path.with_suffix(f"{input_path.suffix}.processed")
-
-    config = {
-        "Processing file": input_path,
-        "Output to": output_path,
-        "Encoding": encoding,
-        "Log level": log_level.value,
-        "Backup enabled": backup
-    }
-    print('\n'.join(f"{k}: {v}" for k, v in config.items()))
-
-    # Simulate file processing
-    if input_path.exists():
-        try:
-            content = input_path.read_text(encoding=encoding)
-
-            # Create backup if requested
-            if backup:
-                backup_path = input_path.with_suffix(f"{input_path.suffix}.backup")
-                backup_path.write_text(content, encoding=encoding)
-                print(f"Backup created: {backup_path}")
-
-            # Process and write output
-            processed_content = f"[PROCESSED] {content}"
-            output_path.write_text(processed_content, encoding=encoding)
-            print("✓ File processing completed successfully")
-
-        except UnicodeDecodeError:
-            print(f"✗ Error: Could not read file with {encoding} encoding")
-        except Exception as e:
-            print(f"✗ Error during processing: {e}")
-    else:
-        print(f"✗ Error: Input file '{input_path}' does not exist")
-
-
-def batch_convert(
-    pattern: str = "*.txt",
-    recursive: bool = False,
-    dry_run: bool = False,
-    workers: int = 4,
-    output_format: str = "processed"
-):
-    """Convert multiple files matching a pattern in batch mode.
-
-    :param pattern: Glob pattern to match files for processing
-    :param recursive: Search directories recursively for matching files
-    :param dry_run: Show what would be done without actually modifying files
-    :param workers: Number of parallel workers for processing files
-    :param output_format: Output format identifier to append to filenames
-    """
-    search_mode = "recursive" if recursive else "current directory"
-    print(f"Batch conversion using pattern: '{pattern}'")
-    print(f"Search mode: {search_mode}")
-    print(f"Workers: {workers}")
-    print(f"Output format: {output_format}")
-
-    if dry_run:
-        print("\n🔍 DRY RUN MODE - No files will be modified")
-
-    # Simulate file discovery and processing
-    found_files = [
-        "document1.txt",
-        "readme.txt",
-        "notes.txt",
-        "subdir/info.txt" if recursive else None
-    ]
-    found_files = [f for f in found_files if f is not None]
-
-    print(f"\nFound {len(found_files)} files matching pattern:")
-    for file_path in found_files:
-        action = "Would convert" if dry_run else "Converting"
-        output_name = f"{file_path}.{output_format}"
-        print(f"  {action}: {file_path} → {output_name}")
 
 
 def advanced_demo(
@@ -209,6 +119,7 @@ def advanced_demo(
 
 
 # Database subcommands using double underscore (db__)
+@CLI.CommandGroup("Database operations and management")
 def db__create(
     name: str,
     engine: str = "postgres",
@@ -279,92 +190,10 @@ def db__backup_restore(
     print("✓ Operation completed successfully")
 
 
-# User management subcommands using double underscore (user__)
-def user__create(
-    username: str,
-    email: str,
-    role: str = "user",
-    active: bool = True,
-    send_welcome: bool = False
-):
-    """Create a new user account.
-
-    :param username: Unique username for the account
-    :param email: User's email address
-    :param role: User role (user, admin, moderator)
-    :param active: Set account as active immediately
-    :param send_welcome: Send welcome email to the user
-    """
-    status = "active" if active else "inactive"
-    print(f"Creating {status} user account:")
-    print(f"  Username: {username}")
-    print(f"  Email: {email}")
-    print(f"  Role: {role}")
-
-    if send_welcome:
-        print(f"📧 Sending welcome email to {email}")
-
-    print("✓ User created successfully")
-
-
-def user__list(
-    role_filter: str = "all",
-    active_only: bool = False,
-    output_format: str = "table",
-    limit: int = 50
-):
-    """List user accounts with filtering options.
-
-    :param role_filter: Filter by role (all, user, admin, moderator)
-    :param active_only: Show only active accounts
-    :param output_format: Output format (table, json, csv)
-    :param limit: Maximum number of users to display
-    """
-    filters = []
-    if role_filter != "all":
-        filters.append(f"role={role_filter}")
-    if active_only:
-        filters.append("status=active")
-
-    filter_text = f" with filters: {', '.join(filters)}" if filters else ""
-    print(f"Listing up to {limit} users in {output_format} format{filter_text}")
-
-    # Simulate user list
-    sample_users = [
-        ("alice", "alice@example.com", "admin", "active"),
-        ("bob", "bob@example.com", "user", "active"),
-        ("charlie", "charlie@example.com", "moderator", "inactive")
-    ]
-
-    if output_format == "table":
-        print("\nUsername | Email              | Role      | Status")
-        print("-" * 50)
-        for username, email, role, status in sample_users[:limit]:
-            if (role_filter == "all" or role == role_filter) and \
-               (not active_only or status == "active"):
-                print(f"{username:<8} | {email:<18} | {role:<9} | {status}")
-
-
-def user__delete(
-    username: str,
-    force: bool = False,
-    backup_data: bool = True
-):
-    """Delete a user account.
-
-    :param username: Username of the account to delete
-    :param force: Skip confirmation prompt
-    :param backup_data: Create backup of user data before deletion
-    """
-    if backup_data:
-        print(f"📦 Creating backup of data for user '{username}'")
-
-    confirmation = "(forced)" if force else "(with confirmation)"
-    print(f"Deleting user '{username}' {confirmation}")
-    print("✓ User deleted successfully")
 
 
 # Multi-level admin operations using triple underscore (admin__*)
+@CLI.CommandGroup("Administrative operations and system management")
 def admin__user__reset_password(username: str, notify_user: bool = True):
     """Reset a user's password (admin operation).
 
