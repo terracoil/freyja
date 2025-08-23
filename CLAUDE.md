@@ -17,10 +17,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an active Python library (`auto-cli-py`) that automatically builds complete CLI applications from Python functions AND class methods using introspection and type annotations. The library supports multiple modes:
 
-1. **Module-based CLI**: `CLI.from_module()` - Create CLI from module functions
-2. **Class-based CLI**: `CLI.from_class()` - Create CLI from class methods with two patterns:
-   - **Inner Class Pattern** (NEW): Use inner classes for command grouping with hierarchical arguments
-   - **Traditional Pattern**: Use dunder notation (method__submethod) for backward compatibility
+1. **Module-based CLI**: `CLI()` - Create CLI from module functions
+2. **Class-based CLI**: `CLI(YourClass)` - Create CLI from class methods with two organizational patterns:
+   - **Direct Methods**: Simple flat commands from class methods
+   - **Inner Classes**: Hierarchical command groups with sub-global arguments
 
 The library generates argument parsers and command-line interfaces with minimal configuration by analyzing function/method signatures. Published on PyPI at https://pypi.org/project/auto-cli-py/
 
@@ -144,7 +144,7 @@ def analyze_logs(log_file: str, pattern: str, max_lines: int = 1000) -> None:
     print(f"Analyzing {log_file} for pattern: {pattern}")
 
 if __name__ == '__main__':
-    cli = CLI.from_module(sys.modules[__name__], title="Data Tools")
+    cli = CLI(sys.modules[__name__], title="Data Tools")
     cli.display()
 ```
 
@@ -158,7 +158,42 @@ python script.py analyze-logs --log-file app.log --pattern "ERROR" --max-lines 5
 
 **When to use:** Stateful applications, configuration management, complex workflows
 
-#### **🆕 Inner Class Pattern (Recommended)**
+#### **Direct Methods Pattern (Simple)**
+
+Use direct methods for simple, flat command structures:
+
+```python
+from auto_cli import CLI
+
+class SimpleCalculator:
+    """Simple calculator commands."""
+    
+    def __init__(self):
+        """Initialize calculator."""
+        pass
+    
+    def add(self, a: float, b: float) -> None:
+        """Add two numbers."""
+        result = a + b
+        print(f"{a} + {b} = {result}")
+    
+    def multiply(self, a: float, b: float) -> None:
+        """Multiply two numbers."""
+        result = a * b
+        print(f"{a} * {b} = {result}")
+
+if __name__ == '__main__':
+    cli = CLI(SimpleCalculator, title="Simple Calculator")
+    cli.display()
+```
+
+**Usage:**
+```bash
+python calculator.py add --a 5 --b 3
+python calculator.py multiply --a 4 --b 7
+```
+
+#### **🆕 Inner Class Pattern (Hierarchical)**
 
 Use inner classes for command grouping with hierarchical argument support:
 
@@ -240,7 +275,7 @@ class ProjectManager:
                 print(f"Output file: {output_file}")
 
 if __name__ == '__main__':
-    cli = CLI.from_class(ProjectManager, theme_name="colorful")
+    cli = CLI(ProjectManager, theme_name="colorful")
     cli.display()
 ```
 
@@ -287,7 +322,7 @@ class ProjectManager:
         print(f"📋 Listing tasks (completed: {show_completed})")
 
 if __name__ == '__main__':
-    cli = CLI.from_class(ProjectManager)
+    cli = CLI(ProjectManager)
     cli.display()
 ```
 
@@ -450,7 +485,7 @@ def export_data(data: str, format: OutputFormat = OutputFormat.JSON) -> None:
 
 ```python
 # Custom configuration
-cli = CLI.from_module(
+cli = CLI(
     sys.modules[__name__],
     title="Custom CLI Title",
     function_opts={
@@ -465,7 +500,7 @@ cli = CLI.from_module(
 )
 
 # Class-based with custom options
-cli = CLI.from_class(
+cli = CLI(
     MyClass,
     function_opts={
         'method_name': {
@@ -526,6 +561,60 @@ def simple_function(callback_name: str) -> None:  # Use string lookup
 def safe_function(items: List[str] = None) -> None:
     if items is None:
         items = []
+```
+
+### Constructor Parameter Requirements
+
+**CRITICAL**: For class-based CLIs, all constructor parameters (both main class and inner class constructors) **MUST** have default values.
+
+#### ✅ Correct Class Constructors
+
+```python
+class MyClass:
+    def __init__(self, config_file: str = "config.json", debug: bool = False):
+        """All parameters have defaults - ✅ GOOD"""
+        self.config_file = config_file
+        self.debug = debug
+    
+    class InnerClass:
+        def __init__(self, database_url: str = "sqlite:///app.db"):
+            """All parameters have defaults - ✅ GOOD"""
+            self.database_url = database_url
+        
+        def some_method(self):
+            pass
+```
+
+#### ❌ Invalid Class Constructors
+
+```python
+class BadClass:
+    def __init__(self, required_param: str):  # ❌ NO DEFAULT VALUE
+        """This will cause CLI creation to fail"""
+        self.required_param = required_param
+    
+    class BadInnerClass:
+        def __init__(self, required_config: str):  # ❌ NO DEFAULT VALUE
+            """This will also cause CLI creation to fail"""
+            self.required_config = required_config
+        
+        def some_method(self):
+            pass
+```
+
+#### Why This Requirement Exists
+
+- **Global Arguments**: Main class constructor parameters become global CLI arguments
+- **Sub-Global Arguments**: Inner class constructor parameters become sub-global CLI arguments
+- **CLI Usability**: Users should be able to run commands without specifying every parameter
+- **Error Prevention**: Ensures CLI can instantiate classes during command execution
+
+#### Error Messages
+
+If constructor parameters lack defaults, you'll see errors like:
+```
+ValueError: Constructor for main class 'MyClass' has parameters without default values: required_param. 
+All constructor parameters must have default values to be used as CLI arguments.
 ```
 
 ### Quick Reference Links

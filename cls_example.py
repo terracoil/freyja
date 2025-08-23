@@ -223,7 +223,7 @@ if __name__ == '__main__':
     
     # Create CLI from class with colored theme
     theme = create_default_theme()
-    cli = CLI.from_class(
+    cli = CLI(
         DataProcessor,
         theme=theme,
         theme_tuner=True,

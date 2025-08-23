@@ -119,7 +119,6 @@ def advanced_demo(
 
 
 # Database subcommands using double underscore (db__)
-@CLI.CommandGroup("Database operations and management")
 def db__create(
     name: str,
     engine: str = "postgres",
@@ -193,7 +192,6 @@ def db__backup_restore(
 
 
 # Multi-level admin operations using triple underscore (admin__*)
-@CLI.CommandGroup("Administrative operations and system management")
 def admin__user__reset_password(username: str, notify_user: bool = True):
     """Reset a user's password (admin operation).
 

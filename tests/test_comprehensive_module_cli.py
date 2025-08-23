@@ -183,7 +183,7 @@ class TestModuleCLI:
     
     def create_test_cli(self):
         """Create CLI from current module for testing."""
-        return CLI.from_module(sys.modules[__name__], "Test Module CLI")
+        return CLI(sys.modules[__name__], "Test Module CLI")
     
     def test_module_function_discovery(self):
         """Test that module functions are discovered correctly."""
@@ -365,8 +365,8 @@ class TestModuleCLIFiltering:
                    callable(obj) and 
                    not name.startswith('_'))
         
-        cli = CLI.from_module(sys.modules[__name__], "Filtered CLI", 
-                             function_filter=custom_filter)
+        cli = CLI(sys.modules[__name__], "Filtered CLI", 
+                 function_filter=custom_filter)
         
         # Should only have process_data function
         assert 'process_data' in cli.functions
@@ -375,7 +375,7 @@ class TestModuleCLIFiltering:
     
     def test_default_function_filter(self):
         """Test default function filtering behavior."""
-        cli = CLI.from_module(sys.modules[__name__], "Test CLI")
+        cli = CLI(sys.modules[__name__], "Test CLI")
         
         # Should exclude private functions
         assert '_private_helper' not in cli.functions
@@ -394,7 +394,7 @@ class TestModuleCLIErrorHandling:
     
     def test_missing_required_parameter(self):
         """Test handling of missing required parameters."""
-        cli = CLI.from_module(sys.modules[__name__], "Test CLI")
+        cli = CLI(sys.modules[__name__], "Test CLI")
         
         # Should raise SystemExit when required parameter is missing
         with pytest.raises(SystemExit):
@@ -402,7 +402,7 @@ class TestModuleCLIErrorHandling:
     
     def test_invalid_enum_value(self):
         """Test handling of invalid enum values."""
-        cli = CLI.from_module(sys.modules[__name__], "Test CLI")
+        cli = CLI(sys.modules[__name__], "Test CLI")
         
         # Should raise SystemExit for invalid enum value
         with pytest.raises(SystemExit):
@@ -411,7 +411,7 @@ class TestModuleCLIErrorHandling:
     
     def test_invalid_command(self):
         """Test handling of invalid commands."""
-        cli = CLI.from_module(sys.modules[__name__], "Test CLI")
+        cli = CLI(sys.modules[__name__], "Test CLI")
         
         # Should raise SystemExit for invalid command
         with pytest.raises(SystemExit):
@@ -419,7 +419,7 @@ class TestModuleCLIErrorHandling:
     
     def test_invalid_subcommand(self):
         """Test handling of invalid subcommands."""
-        cli = CLI.from_module(sys.modules[__name__], "Test CLI")
+        cli = CLI(sys.modules[__name__], "Test CLI")
         
         # Should raise SystemExit for invalid subcommand
         with pytest.raises(SystemExit):
@@ -431,7 +431,7 @@ class TestModuleCLITypeConversion:
     
     def test_integer_conversion(self):
         """Test integer parameter conversion."""
-        cli = CLI.from_module(sys.modules[__name__], "Test CLI")
+        cli = CLI(sys.modules[__name__], "Test CLI")
         
         test_args = ['simple-function', '--name', 'Bob', '--age', '45']
         result = cli.run(test_args)
@@ -441,7 +441,7 @@ class TestModuleCLITypeConversion:
     
     def test_boolean_conversion(self):
         """Test boolean parameter conversion."""
-        cli = CLI.from_module(sys.modules[__name__], "Test CLI")
+        cli = CLI(sys.modules[__name__], "Test CLI")
         
         # Test boolean flag set
         test_args = ['process-data', '--input-file', 'test.txt', '--verbose']
@@ -459,7 +459,7 @@ class TestModuleCLITypeConversion:
     
     def test_path_conversion(self):
         """Test Path type conversion."""
-        cli = CLI.from_module(sys.modules[__name__], "Test CLI")
+        cli = CLI(sys.modules[__name__], "Test CLI")
         
         test_args = ['process-data', '--input-file', '/path/to/file.txt']
         result = cli.run(test_args)
@@ -473,7 +473,7 @@ class TestModuleCLICommandGrouping:
     
     def test_hierarchical_command_grouping(self):
         """Test that functions with double underscores create command groups."""
-        cli = CLI.from_module(sys.modules[__name__], "Test CLI")
+        cli = CLI(sys.modules[__name__], "Test CLI")
         
         # Should create backup command group
         assert 'backup' in cli.commands
@@ -497,7 +497,7 @@ class TestModuleCLICommandGrouping:
     
     def test_mixed_flat_and_hierarchical_commands(self):
         """Test that flat and hierarchical commands coexist."""
-        cli = CLI.from_module(sys.modules[__name__], "Test CLI")
+        cli = CLI(sys.modules[__name__], "Test CLI")
         
         # Should have both flat commands
         assert 'simple-function' in cli.commands

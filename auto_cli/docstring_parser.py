@@ -10,7 +10,6 @@ class ParamDoc:
   description: str
   type_hint: str | None=None
 
-
 def parse_docstring(docstring: str) -> tuple[str, dict[str, ParamDoc]]:
   """Extract main description and parameter docs from docstring.
 

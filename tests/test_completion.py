@@ -150,21 +150,21 @@ class TestCompletionIntegration:
     def test_completion_request_detection(self):
         """Test completion request detection."""
         cli = CLI(sys.modules[__name__], "Test CLI", enable_completion=True)
-        assert cli._is_completion_request() is True
+        assert cli._CLI__is_completion_request() is True
 
     def test_show_completion_script(self):
         """Test showing completion script."""
         cli = CLI(sys.modules[__name__], "Test CLI", enable_completion=True)
 
         with patch('sys.argv', ['test_cli']):
-            exit_code = cli._show_completion_script('bash')
+            exit_code = cli._CLI__show_completion_script('bash')
             assert exit_code == 0
 
     def test_completion_disabled_error(self):
         """Test error when completion is disabled."""
         cli = CLI(sys.modules[__name__], "Test CLI", enable_completion=False)
 
-        exit_code = cli._show_completion_script('bash')
+        exit_code = cli._CLI__show_completion_script('bash')
         assert exit_code == 1
 
 

@@ -186,7 +186,7 @@ class TestInnerClassCLI:
     
     def test_inner_class_discovery(self):
         """Test that inner classes are discovered correctly."""
-        cli = CLI.from_class(InnerClassCLI)
+        cli = CLI(InnerClassCLI)
         
         # Should detect inner class pattern
         assert hasattr(cli, 'use_inner_class_pattern')
@@ -200,7 +200,7 @@ class TestInnerClassCLI:
     
     def test_command_structure(self):
         """Test command structure generation."""
-        cli = CLI.from_class(InnerClassCLI)
+        cli = CLI(InnerClassCLI)
         
         # Should have hierarchical commands
         expected_commands = {
@@ -214,7 +214,7 @@ class TestInnerClassCLI:
     
     def test_global_arguments_parsing(self):
         """Test global arguments from main class constructor."""
-        cli = CLI.from_class(InnerClassCLI)
+        cli = CLI(InnerClassCLI)
         parser = cli.create_parser()
         
         # Test global arguments exist
@@ -233,7 +233,7 @@ class TestInnerClassCLI:
     
     def test_subglobal_arguments_parsing(self):
         """Test sub-global arguments from inner class constructor."""
-        cli = CLI.from_class(InnerClassCLI)
+        cli = CLI(InnerClassCLI)
         parser = cli.create_parser()
         
         # Test sub-global arguments exist
@@ -252,7 +252,7 @@ class TestInnerClassCLI:
     
     def test_command_execution_with_all_arguments(self):
         """Test command execution with global, sub-global, and command arguments."""
-        cli = CLI.from_class(InnerClassCLI)
+        cli = CLI(InnerClassCLI)
         
         # Mock sys.argv for testing
         test_args = [
@@ -278,7 +278,7 @@ class TestInnerClassCLI:
     
     def test_command_group_without_subglobal_args(self):
         """Test command group without sub-global arguments."""
-        cli = CLI.from_class(InnerClassCLI)
+        cli = CLI(InnerClassCLI)
         
         test_args = ['config-management', 'set-mode', '--mode', 'THOROUGH']
         result = cli.run(test_args)
@@ -287,7 +287,7 @@ class TestInnerClassCLI:
     
     def test_enum_parameter_handling(self):
         """Test enum parameters are handled correctly."""
-        cli = CLI.from_class(InnerClassCLI)
+        cli = CLI(InnerClassCLI)
         
         test_args = ['export-operations', 'export-data', '--format', 'XML', '--compress']
         result = cli.run(test_args)
@@ -297,7 +297,7 @@ class TestInnerClassCLI:
     
     def test_help_display(self):
         """Test help display at various levels."""
-        cli = CLI.from_class(InnerClassCLI)
+        cli = CLI(InnerClassCLI)
         parser = cli.create_parser()
         
         # Main help should show command groups
@@ -318,14 +318,14 @@ class TestTraditionalCLI:
     
     def test_traditional_pattern_detection(self):
         """Test that traditional pattern is detected correctly."""
-        cli = CLI.from_class(TraditionalCLI)
+        cli = CLI(TraditionalCLI)
         
         # Should not use inner class pattern
         assert not hasattr(cli, 'use_inner_class_pattern') or not cli.use_inner_class_pattern
     
     def test_dunder_command_structure(self):
         """Test dunder command structure generation."""
-        cli = CLI.from_class(TraditionalCLI)
+        cli = CLI(TraditionalCLI)
         
         # Should have flat and hierarchical commands
         assert 'simple-command' in cli.commands
@@ -338,7 +338,7 @@ class TestTraditionalCLI:
     
     def test_flat_command_execution(self):
         """Test flat command execution."""
-        cli = CLI.from_class(TraditionalCLI)
+        cli = CLI(TraditionalCLI)
         
         test_args = ['simple-command', '--name', 'test', '--count', '10']
         result = cli.run(test_args)
@@ -348,7 +348,7 @@ class TestTraditionalCLI:
     
     def test_hierarchical_command_execution(self):
         """Test hierarchical command execution."""
-        cli = CLI.from_class(TraditionalCLI)
+        cli = CLI(TraditionalCLI)
         
         test_args = ['data', 'process', '--input-file', 'test.txt', '--mode', 'FAST']
         result = cli.run(test_args)
@@ -358,7 +358,7 @@ class TestTraditionalCLI:
     
     def test_optional_parameters(self):
         """Test optional parameters with defaults."""
-        cli = CLI.from_class(TraditionalCLI)
+        cli = CLI(TraditionalCLI)
         
         # Test with optional parameter
         test_args = ['data', 'export', '--format', 'CSV', '--output-file', 'output.csv']
@@ -383,8 +383,8 @@ class TestPatternCompatibility:
     def test_both_patterns_coexist(self):
         """Test that both patterns can coexist in the same codebase."""
         # Both should work without interference
-        inner_cli = CLI.from_class(InnerClassCLI)
-        traditional_cli = CLI.from_class(TraditionalCLI)
+        inner_cli = CLI(InnerClassCLI)
+        traditional_cli = CLI(TraditionalCLI)
         
         # Inner class CLI should use new pattern
         assert hasattr(inner_cli, 'use_inner_class_pattern')
@@ -395,8 +395,8 @@ class TestPatternCompatibility:
     
     def test_same_interface_different_implementations(self):
         """Test same CLI interface with different internal implementations."""
-        inner_cli = CLI.from_class(InnerClassCLI)
-        traditional_cli = CLI.from_class(TraditionalCLI)
+        inner_cli = CLI(InnerClassCLI)
+        traditional_cli = CLI(TraditionalCLI)
         
         # Both should have the same external interface
         assert hasattr(inner_cli, 'run')
@@ -412,7 +412,7 @@ class TestErrorHandling:
     
     def test_missing_required_argument(self):
         """Test handling of missing required arguments."""
-        cli = CLI.from_class(InnerClassCLI)
+        cli = CLI(InnerClassCLI)
         
         # Should raise SystemExit when required argument is missing
         with pytest.raises(SystemExit):
@@ -420,7 +420,7 @@ class TestErrorHandling:
     
     def test_invalid_enum_value(self):
         """Test handling of invalid enum values."""
-        cli = CLI.from_class(InnerClassCLI)
+        cli = CLI(InnerClassCLI)
         
         # Should raise SystemExit when invalid enum value is provided
         with pytest.raises(SystemExit):
@@ -428,7 +428,7 @@ class TestErrorHandling:
     
     def test_invalid_command(self):
         """Test handling of invalid commands."""
-        cli = CLI.from_class(InnerClassCLI)
+        cli = CLI(InnerClassCLI)
         
         # Should raise SystemExit when invalid command is provided
         with pytest.raises(SystemExit):
@@ -442,7 +442,7 @@ class TestTypeAnnotations:
     
     def test_path_type_annotation(self):
         """Test Path type annotations."""
-        cli = CLI.from_class(InnerClassCLI)
+        cli = CLI(InnerClassCLI)
         
         test_args = ['data-operations', 'process', '--input-file', '/path/to/file.txt']
         result = cli.run(test_args)
@@ -452,7 +452,7 @@ class TestTypeAnnotations:
     
     def test_optional_type_annotation(self):
         """Test Optional type annotations."""
-        cli = CLI.from_class(TraditionalCLI)
+        cli = CLI(TraditionalCLI)
         
         # Test with value
         test_args = ['data', 'export', '--format', 'JSON', '--output-file', 'out.json']
@@ -466,7 +466,7 @@ class TestTypeAnnotations:
     
     def test_boolean_type_annotation(self):
         """Test boolean type annotations."""
-        cli = CLI.from_class(InnerClassCLI)
+        cli = CLI(InnerClassCLI)
         
         # Test boolean flag
         test_args = ['data-operations', 'batch-process', '--pattern', '*.txt', '--parallel']

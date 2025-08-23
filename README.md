@@ -41,12 +41,35 @@ def greet(name: str = "World", excited: bool = False) -> None:
     print(greeting)
 
 if __name__ == '__main__':
-    cli = CLI.from_module(sys.modules[__name__], title="My CLI")
+    cli = CLI(sys.modules[__name__], title="My CLI")
     cli.display()
 ```
 
 ### 🏗️ Class-based CLI (Enhanced)
-Ideal for stateful applications and object-oriented designs. **🆕 NEW**: Now supports inner class patterns for hierarchical command organization:
+Ideal for stateful applications and object-oriented designs. Supports both **direct methods** (simple) and **inner class patterns** (hierarchical):
+
+#### Direct Methods (Simple Commands)
+```python
+from auto_cli import CLI
+
+class Calculator:
+    """Simple calculator."""
+    
+    def __init__(self):
+        pass
+    
+    def add(self, a: float, b: float) -> None:
+        """Add two numbers."""
+        print(f"{a} + {b} = {a + b}")
+
+if __name__ == '__main__':
+    cli = CLI(Calculator)
+    cli.display()
+
+# Usage: python calc.py add --a 5 --b 3
+```
+
+#### Inner Classes (Hierarchical Commands)
 
 ```python
 # Inner Class Pattern (NEW) - Hierarchical organization
@@ -69,7 +92,7 @@ class UserManager:
             print(f"Creating user: {username}")
 
 if __name__ == '__main__':
-    cli = CLI.from_class(UserManager)  
+    cli = CLI(UserManager)  
     cli.display()
 
 # Usage: python app.py --config-file prod.json user-operations --database-url postgres://... create --username alice --email alice@test.com
@@ -83,6 +106,8 @@ All approaches automatically generate CLIs with:
 - Type checking and validation
 - Built-in themes and customization options
 - **NEW**: Hierarchical argument scoping (global → sub-global → command) for class-based CLIs
+
+**📋 Class-based CLI Requirements**: All constructor parameters (main class and inner classes) must have default values.
 
 **See [Complete Documentation](docs/help.md) for detailed guides and examples.**
 
