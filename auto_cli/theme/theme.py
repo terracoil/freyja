@@ -7,6 +7,7 @@ from auto_cli.theme.enums import Back, Fore, ForeUniversal
 from auto_cli.theme.rgb import AdjustStrategy, RGB
 from auto_cli.theme.theme_style import ThemeStyle
 
+
 class Theme:
   """
   Complete color theme configuration for CLI output with dynamic adjustment capabilities.
@@ -125,8 +126,10 @@ def create_default_theme_colorful() -> Theme:
     # Cyan bold for command names
     command_description=ThemeStyle(fg=RGB.from_rgb(Fore.LIGHTRED_EX.value)),
     group_command_name=ThemeStyle(fg=RGB.from_rgb(Fore.CYAN.value), bold=True),  # Cyan bold for group command names
-    subcommand_name=ThemeStyle(fg=RGB.from_rgb(Fore.CYAN.value), italic=True, bold=True),  # Cyan italic bold for subcommand names
-    subcommand_description=ThemeStyle(fg=RGB.from_rgb(Fore.LIGHTRED_EX.value)),  # Orange (LIGHTRED_EX) for subcommand descriptions
+    subcommand_name=ThemeStyle(fg=RGB.from_rgb(Fore.CYAN.value), italic=True, bold=True),
+    # Cyan italic bold for subcommand names
+    subcommand_description=ThemeStyle(fg=RGB.from_rgb(Fore.LIGHTRED_EX.value)),
+    # Orange (LIGHTRED_EX) for subcommand descriptions
     option_name=ThemeStyle(fg=RGB.from_rgb(Fore.GREEN.value)),  # Green for all options
     option_description=ThemeStyle(fg=RGB.from_rgb(Fore.YELLOW.value)),  # Yellow for option descriptions
     required_option_name=ThemeStyle(fg=RGB.from_rgb(Fore.GREEN.value), bold=True),  # Green bold for required options

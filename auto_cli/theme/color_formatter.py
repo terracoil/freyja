@@ -17,7 +17,7 @@ class ColorFormatter:
 
     :param enable_colors: Force enable/disable colors, or None for auto-detection
     """
-    self.colors_enabled=self._is_color_terminal() if enable_colors is None else enable_colors
+    self.colors_enabled = self._is_color_terminal() if enable_colors is None else enable_colors
 
     if self.colors_enabled:
       self.enable_windows_ansi_support()
@@ -30,7 +30,7 @@ class ColorFormatter:
 
     try:
       import ctypes
-      kernel32=ctypes.windll.kernel32
+      kernel32 = ctypes.windll.kernel32
       kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
     except Exception:
       # Fail silently on older Windows versions or permission issues
@@ -40,33 +40,33 @@ class ColorFormatter:
     """Check if the current terminal supports colors."""
     import os
 
-    result=True
+    result = True
 
     # Check for explicit disable first
     if os.environ.get('NO_COLOR') or os.environ.get('CLICOLOR') == '0':
-      result=False
+      result = False
     elif os.environ.get('FORCE_COLOR') or os.environ.get('CLICOLOR'):
       # Check for explicit enable
-      result=True
+      result = True
     elif not sys.stdout.isatty():
       # Check if stdout is a TTY (not redirected to file/pipe)
-      result=False
+      result = False
     else:
       # Check environment variables that indicate color support
-      term=sys.platform
+      term = sys.platform
       if term == 'win32':
         # Windows terminal color support
-        result=True
+        result = True
       else:
         # Unix-like systems
-        term_env=os.environ.get('TERM', '').lower()
+        term_env = os.environ.get('TERM', '').lower()
         if 'color' in term_env or term_env in ('xterm', 'xterm-256color', 'screen'):
-          result=True
+          result = True
         elif term_env in ('dumb', ''):
           # Default for dumb terminals or empty TERM
-          result=False
+          result = False
         else:
-          result=True
+          result = True
 
     return result
 
@@ -77,11 +77,11 @@ class ColorFormatter:
     :param style: ThemeStyle configuration to apply
     :return: Styled text (or original text if colors disabled)
     """
-    result=text
+    result = text
 
     if self.colors_enabled and text:
       # Build color codes
-      codes=[]
+      codes = []
 
       # Foreground color - handle RGB instances and ANSI strings
       if style.fg:
@@ -116,7 +116,7 @@ class ColorFormatter:
         codes.append(Style.ANSI_UNDERLINE.value)  # ANSI underline code
 
       if codes:
-        result=''.join(codes) + text + Style.RESET_ALL.value
+        result = ''.join(codes) + text + Style.RESET_ALL.value
 
     return result
 

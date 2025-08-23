@@ -17,10 +17,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an active Python library (`auto-cli-py`) that automatically builds complete CLI applications from Python functions AND class methods using introspection and type annotations. The library supports multiple modes:
 
-1. **Module-based CLI**: `CLI()` - Create CLI from module functions
-2. **Class-based CLI**: `CLI(YourClass)` - Create CLI from class methods with two organizational patterns:
-   - **Direct Methods**: Simple flat commands from class methods
-   - **Inner Classes**: Hierarchical command groups with sub-global arguments
+1. **Module-based CLI**: `CLI()` - Create flat CLI commands from module functions (no subcommands/groups)
+2. **Class-based CLI**: `CLI(YourClass)` - Create CLI from class methods with organizational patterns:
+   - **Direct Methods**: Simple flat commands from class methods  
+   - **Inner Classes**: Flat commands with double-dash notation (e.g., `command--subcommand`) supporting global and sub-global arguments
+
+**IMPORTANT**: All commands are now FLAT - no hierarchical command groups. Inner class methods become flat commands using double-dash notation (e.g., `data-operations--process`).
 
 The library generates argument parsers and command-line interfaces with minimal configuration by analyzing function/method signatures. Published on PyPI at https://pypi.org/project/auto-cli-py/
 
@@ -102,9 +104,9 @@ poetry run python mod_example.py --help
 poetry run python cls_example.py
 poetry run python cls_example.py --help
 
-# Try example commands
+# Try example commands (all commands are flat)
 poetry run python mod_example.py hello --name "Alice" --excited
-poetry run python cls_example.py add-user --username john --email john@test.com
+poetry run python cls_example.py file-operations--process-single --input-file "test.txt"
 ```
 
 ## Creating auto-cli-py CLIs in Other Projects
@@ -127,6 +129,8 @@ pip install auto-cli-py  # Ensure auto-cli-py is available
 ### Module-based CLI Pattern (Functions)
 
 **When to use:** Simple utilities, data processing, functional programming style
+
+**IMPORTANT:** Module-based CLIs now only support flat commands. No subcommands or grouping - each function becomes a direct command.
 
 ```python
 # At the end of any Python file with functions
@@ -193,18 +197,18 @@ python calculator.py add --a 5 --b 3
 python calculator.py multiply --a 4 --b 7
 ```
 
-#### **🆕 Inner Class Pattern (Hierarchical)**
+#### **🆕 Inner Class Pattern (Flat with Double-Dash Notation)**
 
-Use inner classes for command grouping with hierarchical argument support:
+Use inner classes for organized command structure with flat double-dash commands:
 
 ```python
 from auto_cli import CLI
 from pathlib import Path
 
 class ProjectManager:
-    """Project Management CLI with hierarchical commands.
+    """Project Management CLI with flat double-dash commands.
     
-    Manage projects with organized command groups and argument levels.
+    Manage projects with organized flat commands and global/sub-global arguments.
     """
     
     def __init__(self, config_file: str = "config.json", debug: bool = False):
@@ -279,59 +283,23 @@ if __name__ == '__main__':
     cli.display()
 ```
 
-**Usage with Three Argument Levels:**
+**Usage with Flat Double-Dash Commands:**
 ```bash
-# Global + Sub-global + Command arguments
+# Global + Sub-global + Command arguments (all flat commands)
 python project_mgr.py --config-file prod.json --debug \
-  project-operations --workspace /prod/projects --auto-save \
-  create --name "web-app" --description "Production web app"
+  project-operations--create --workspace /prod/projects --auto-save \
+  --name "web-app" --description "Production web app"
 
-# Command group without sub-global arguments  
-python project_mgr.py report-generation summary --detailed
+# Commands without sub-global arguments  
+python project_mgr.py report-generation--summary --detailed
 
-# Help at different levels
-python project_mgr.py --help                              # Shows command groups + global args
-python project_mgr.py project-operations --help          # Shows sub-global args + subcommands  
-python project_mgr.py project-operations create --help   # Shows command arguments
-```
+# All commands are flat with double-dash notation
+python project_mgr.py project-operations--create --name "my-project"
+python project_mgr.py task-management--add --title "New task" --priority "high"
+python project_mgr.py report-generation--export --format "json"
 
-#### **Traditional Pattern (Backward Compatible)**
-
-Use dunder notation for existing applications:
-
-```python
-from auto_cli import CLI
-
-class ProjectManager:
-    """Traditional dunder-based CLI pattern."""
-    
-    def create_project(self, name: str, description: str = "") -> None:
-        """Create a new project."""
-        print(f"✅ Created project: {name}")
-    
-    def project__delete(self, project_id: str) -> None:
-        """Delete a project."""
-        print(f"🗑️ Deleted project: {project_id}")
-    
-    def task__add(self, title: str, priority: str = "medium") -> None:
-        """Add task to project."""
-        print(f"✅ Added task: {title}")
-    
-    def task__list(self, show_completed: bool = False) -> None:
-        """List project tasks."""
-        print(f"📋 Listing tasks (completed: {show_completed})")
-
-if __name__ == '__main__':
-    cli = CLI(ProjectManager)
-    cli.display()
-```
-
-**Usage:**
-```bash
-python project_mgr.py create-project --name "web-app" --description "New app"
-python project_mgr.py project delete --project-id "web-app"  
-python project_mgr.py task add --title "Setup database" --priority "high"
-python project_mgr.py task list --show-completed
+# Help shows all flat commands
+python project_mgr.py --help  # Shows all available flat commands
 ```
 
 ### Common Patterns by Use Case
@@ -378,11 +346,11 @@ def validate_files(directory: str, extensions: List[str]) -> None:
     """Validate files in directory."""
     pass
 
-def batch__process(pattern: str, max_files: int = 100) -> None:
+def batch_process(pattern: str, max_files: int = 100) -> None:
     """Process multiple files matching pattern."""
     pass
 
-def batch__validate(directory: str, parallel: bool = False) -> None:
+def batch_validate(directory: str, parallel: bool = False) -> None:
     """Validate files in batch."""
     pass
 ```
@@ -646,7 +614,10 @@ All constructor parameters must have default values to be used as CLI arguments.
 - Default values become argument defaults
 - Parameter names become CLI option names (--param_name)
 
-**Subcommand Architecture**: Each function becomes a subcommand with its own help and arguments.
+**Flat Command Architecture**: 
+- Module functions become flat commands (no subcommands/groups)
+- Class methods become flat commands  
+- Inner class methods become flat commands with double-dash notation (e.g., `class-name--method-name`)
 
 ### Usage Pattern
 ```python

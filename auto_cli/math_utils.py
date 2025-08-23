@@ -21,7 +21,7 @@ class MathUtils:
     return max(min_val, min(value, max_val))
 
   @classmethod
-  def minmax_range(cls, args: [Numeric], negative_lower:bool=False) -> Tuple[Numeric, Numeric]:
+  def minmax_range(cls, args: [Numeric], negative_lower: bool = False) -> Tuple[Numeric, Numeric]:
     print(f"minmax_range: {args} with negative_lower: {negative_lower}")
     lower, upper = cls.minmax(*args)
 
@@ -42,7 +42,7 @@ class MathUtils:
     return min(args), max(args)
 
   @classmethod
-  def safe_negative(cls, value: Numeric, neg:bool=True) -> Numeric:
+  def safe_negative(cls, value: Numeric, neg: bool = True) -> Numeric:
     """
     Return the negative of a dynamic number only if neg is True.
     :param value: Value to check and convert
