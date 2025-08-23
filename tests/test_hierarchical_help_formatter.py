@@ -311,6 +311,7 @@ class TestHierarchicalFormatterWithCommandGroups:
             name="db",
             parser=group_parser,
             base_indent=2,
+            unified_cmd_desc_column=25,  # Add unified command description column
             global_option_column=40
         )
 
@@ -332,6 +333,7 @@ class TestHierarchicalFormatterWithCommandGroups:
             name="admin",
             parser=group_parser,
             base_indent=2,
+            unified_cmd_desc_column=25,  # Add unified command description column
             global_option_column=40
         )
 

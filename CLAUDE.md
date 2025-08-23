@@ -15,10 +15,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an active Python library (`auto-cli-py`) that automatically builds complete CLI applications from Python functions AND class methods using introspection and type annotations. The library supports two modes:
+This is an active Python library (`auto-cli-py`) that automatically builds complete CLI applications from Python functions AND class methods using introspection and type annotations. The library supports multiple modes:
 
 1. **Module-based CLI**: `CLI.from_module()` - Create CLI from module functions
-2. **Class-based CLI**: `CLI.from_class()` - Create CLI from class methods
+2. **Class-based CLI**: `CLI.from_class()` - Create CLI from class methods with two patterns:
+   - **Inner Class Pattern** (NEW): Use inner classes for command grouping with hierarchical arguments
+   - **Traditional Pattern**: Use dunder notation (method__submethod) for backward compatibility
 
 The library generates argument parsers and command-line interfaces with minimal configuration by analyzing function/method signatures. Published on PyPI at https://pypi.org/project/auto-cli-py/
 
@@ -156,81 +158,182 @@ python script.py analyze-logs --log-file app.log --pattern "ERROR" --max-lines 5
 
 **When to use:** Stateful applications, configuration management, complex workflows
 
+#### **🆕 Inner Class Pattern (Recommended)**
+
+Use inner classes for command grouping with hierarchical argument support:
+
 ```python
 from auto_cli import CLI
+from pathlib import Path
 
 class ProjectManager:
-    """Project Management CLI
+    """Project Management CLI with hierarchical commands.
     
-    Manage projects with persistent state between commands.
+    Manage projects with organized command groups and argument levels.
     """
     
-    def __init__(self):
-        self.current_project = None
+    def __init__(self, config_file: str = "config.json", debug: bool = False):
+        """Initialize project manager with global settings.
+        
+        :param config_file: Configuration file path (global argument)
+        :param debug: Enable debug mode (global argument)
+        """
+        self.config_file = config_file
+        self.debug = debug
         self.projects = {}
     
-    def create_project(self, name: str, description: str = "") -> None:
-        """Create a new project."""
-        self.projects[name] = {
-            'description': description,
-            'tasks': [],
-            'created': True
-        }
-        self.current_project = name
-        print(f"✅ Created project: {name}")
-    
-    def add_task(self, title: str, priority: str = "medium") -> None:
-        """Add task to current project."""
-        if not self.current_project:
-            print("❌ No current project. Create one first.")
-            return
+    class ProjectOperations:
+        """Project creation and management operations."""
         
-        task = {'title': title, 'priority': priority}
-        self.projects[self.current_project]['tasks'].append(task)
-        print(f"✅ Added task: {title}")
+        def __init__(self, workspace: str = "./projects", auto_save: bool = True):
+            """Initialize project operations.
+            
+            :param workspace: Workspace directory (sub-global argument)
+            :param auto_save: Auto-save changes (sub-global argument)
+            """
+            self.workspace = workspace
+            self.auto_save = auto_save
+        
+        def create(self, name: str, description: str = "") -> None:
+            """Create a new project."""
+            print(f"Creating project '{name}' in workspace: {self.workspace}")
+            print(f"Description: {description}")
+            print(f"Auto-save enabled: {self.auto_save}")
+        
+        def delete(self, project_id: str, force: bool = False) -> None:
+            """Delete an existing project."""
+            action = "Force deleting" if force else "Deleting"
+            print(f"{action} project {project_id} from {self.workspace}")
     
-    def list_projects(self, show_tasks: bool = False) -> None:
-        """List all projects with optional task details."""
-        for name, project in self.projects.items():
-            marker = "📁" if name == self.current_project else "📂"
-            print(f"{marker} {name}: {project['description']}")
-            if show_tasks:
-                for task in project['tasks']:
-                    print(f"    - {task['title']} [{task['priority']}]")
+    class TaskManagement:
+        """Task operations within projects."""
+        
+        def __init__(self, priority_filter: str = "all"):
+            """Initialize task management.
+            
+            :param priority_filter: Default priority filter (sub-global argument)
+            """
+            self.priority_filter = priority_filter
+        
+        def add(self, title: str, priority: str = "medium") -> None:
+            """Add task to project."""
+            print(f"Adding task: {title} (priority: {priority})")
+            print(f"Using filter: {self.priority_filter}")
+        
+        def list_tasks(self, show_completed: bool = False) -> None:
+            """List project tasks."""
+            print(f"Listing tasks (filter: {self.priority_filter})")
+            print(f"Include completed: {show_completed}")
+    
+    class ReportGeneration:
+        """Report generation without sub-global arguments."""
+        
+        def summary(self, detailed: bool = False) -> None:
+            """Generate project summary report."""
+            detail_level = "detailed" if detailed else "basic"
+            print(f"Generating {detail_level} summary report")
+        
+        def export(self, format: str = "json", output_file: Path = None) -> None:
+            """Export project data."""
+            print(f"Exporting to {format} format")
+            if output_file:
+                print(f"Output file: {output_file}")
 
 if __name__ == '__main__':
     cli = CLI.from_class(ProjectManager, theme_name="colorful")
     cli.display()
 ```
 
+**Usage with Three Argument Levels:**
+```bash
+# Global + Sub-global + Command arguments
+python project_mgr.py --config-file prod.json --debug \
+  project-operations --workspace /prod/projects --auto-save \
+  create --name "web-app" --description "Production web app"
+
+# Command group without sub-global arguments  
+python project_mgr.py report-generation summary --detailed
+
+# Help at different levels
+python project_mgr.py --help                              # Shows command groups + global args
+python project_mgr.py project-operations --help          # Shows sub-global args + subcommands  
+python project_mgr.py project-operations create --help   # Shows command arguments
+```
+
+#### **Traditional Pattern (Backward Compatible)**
+
+Use dunder notation for existing applications:
+
+```python
+from auto_cli import CLI
+
+class ProjectManager:
+    """Traditional dunder-based CLI pattern."""
+    
+    def create_project(self, name: str, description: str = "") -> None:
+        """Create a new project."""
+        print(f"✅ Created project: {name}")
+    
+    def project__delete(self, project_id: str) -> None:
+        """Delete a project."""
+        print(f"🗑️ Deleted project: {project_id}")
+    
+    def task__add(self, title: str, priority: str = "medium") -> None:
+        """Add task to project."""
+        print(f"✅ Added task: {title}")
+    
+    def task__list(self, show_completed: bool = False) -> None:
+        """List project tasks."""
+        print(f"📋 Listing tasks (completed: {show_completed})")
+
+if __name__ == '__main__':
+    cli = CLI.from_class(ProjectManager)
+    cli.display()
+```
+
 **Usage:**
 ```bash
-python project_mgr.py create-project --name "web-app" --description "New web application"
-python project_mgr.py add-task --title "Setup database" --priority "high"
-python project_mgr.py add-task --title "Create login page"
-python project_mgr.py list-projects --show-tasks
+python project_mgr.py create-project --name "web-app" --description "New app"
+python project_mgr.py project delete --project-id "web-app"  
+python project_mgr.py task add --title "Setup database" --priority "high"
+python project_mgr.py task list --show-completed
 ```
 
 ### Common Patterns by Use Case
 
-#### 1. Configuration Management
+#### 1. Configuration Management (Inner Class Pattern)
 ```python
 class ConfigManager:
-    """Application configuration CLI."""
+    """Application configuration CLI with hierarchical structure."""
     
-    def __init__(self):
-        self.config = {}
+    def __init__(self, config_file: str = "app.config"):
+        """Initialize with global configuration file."""
+        self.config_file = config_file
     
-    def set_config(self, key: str, value: str, config_type: str = "string") -> None:
-        """Set configuration value with type conversion."""
-        pass
+    class SystemConfig:
+        """System-level configuration."""
+        
+        def __init__(self, backup_on_change: bool = True):
+            """Initialize system config operations."""
+            self.backup_on_change = backup_on_change
+        
+        def set_value(self, key: str, value: str, config_type: str = "string") -> None:
+            """Set system configuration value."""
+            pass
+        
+        def get_value(self, key: str) -> None:
+            """Get system configuration value."""
+            pass
     
-    def get_config(self, key: str) -> None:
-        """Get configuration value."""
-        pass
+    class UserConfig:
+        """User-level configuration."""
+        
+        def set_preference(self, key: str, value: str) -> None:
+            """Set user preference."""
+            pass
 ```
 
-#### 2. File Processing Pipeline
+#### 2. File Processing Pipeline (Module Pattern)
 ```python
 def convert_files(input_dir: str, output_dir: str, format_type: str = "json") -> None:
     """Convert files between formats."""
@@ -239,41 +342,84 @@ def convert_files(input_dir: str, output_dir: str, format_type: str = "json") ->
 def validate_files(directory: str, extensions: List[str]) -> None:
     """Validate files in directory."""
     pass
+
+def batch__process(pattern: str, max_files: int = 100) -> None:
+    """Process multiple files matching pattern."""
+    pass
+
+def batch__validate(directory: str, parallel: bool = False) -> None:
+    """Validate files in batch."""
+    pass
 ```
 
-#### 3. API Client Tool
+#### 3. API Client Tool (Inner Class Pattern)
 ```python
 class APIClient:
-    """REST API client CLI."""
+    """REST API client CLI with organized endpoints."""
     
-    def __init__(self):
-        self.base_url = None
-        self.auth_token = None
+    def __init__(self, base_url: str, timeout: int = 30):
+        """Initialize API client with global settings."""
+        self.base_url = base_url
+        self.timeout = timeout
     
-    def configure(self, base_url: str, token: str = None) -> None:
-        """Configure API connection."""
-        pass
+    class UserEndpoints:
+        """User-related API operations."""
+        
+        def __init__(self, auth_token: str = None):
+            """Initialize user endpoints with authentication."""
+            self.auth_token = auth_token
+        
+        def get_user(self, user_id: str) -> None:
+            """Get user by ID."""
+            pass
+        
+        def create_user(self, username: str, email: str) -> None:
+            """Create new user."""
+            pass
     
-    def get_resource(self, endpoint: str, params: List[str] = None) -> None:
-        """GET request to API endpoint."""
-        pass
+    class DataEndpoints:
+        """Data-related API operations."""
+        
+        def get_data(self, endpoint: str, params: List[str] = None) -> None:
+            """GET request to data endpoint."""
+            pass
 ```
 
-#### 4. Database Operations
+#### 4. Database Operations (Inner Class Pattern)
 ```python
 class DatabaseCLI:
-    """Database management CLI."""
+    """Database management CLI with organized operations."""
     
-    def __init__(self):
-        self.connection = None
+    def __init__(self, connection_string: str, debug: bool = False):
+        """Initialize with global database settings."""
+        self.connection_string = connection_string
+        self.debug = debug
     
-    def connect(self, host: str, database: str, port: int = 5432) -> None:
-        """Connect to database."""
-        pass
+    class QueryOperations:
+        """SQL query operations."""
+        
+        def __init__(self, timeout: int = 30):
+            """Initialize query operations."""
+            self.timeout = timeout
+        
+        def execute(self, sql: str, limit: int = 100) -> None:
+            """Execute SQL query."""
+            pass
+        
+        def explain(self, sql: str) -> None:
+            """Explain query execution plan."""
+            pass
     
-    def execute_query(self, sql: str, limit: int = 100) -> None:
-        """Execute SQL query."""
-        pass
+    class SchemaOperations:
+        """Database schema operations."""
+        
+        def create_table(self, table_name: str, schema: str) -> None:
+            """Create database table."""
+            pass
+        
+        def drop_table(self, table_name: str, force: bool = False) -> None:
+            """Drop database table."""
+            pass
 ```
 
 ### Type Annotation Patterns

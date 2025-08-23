@@ -6,9 +6,11 @@
 - [Two CLI Creation Modes](#two-cli-creation-modes)
 - [Development](#development)
 
-Python Library that builds complete CLI applications from your existing code using introspection and type annotations. Supports both **module-based** and **class-based** CLI creation.
+Python Library that builds complete CLI applications from your existing code using introspection and type annotations. Supports **module-based** and **class-based** CLI creation with hierarchical command organization.
 
 Most options are set using introspection/signature and annotation functionality, so very little configuration has to be done. The library analyzes your function signatures and automatically creates command-line interfaces with proper argument parsing, type checking, and help text generation.
+
+**🆕 NEW**: Class-based CLIs now support **inner class patterns** for hierarchical command organization with three-level argument scoping (global → sub-global → command).
 
 ## 📚 Documentation
 **[→ Complete Documentation Hub](docs/help.md)** - Comprehensive guides and examples
@@ -43,37 +45,44 @@ if __name__ == '__main__':
     cli.display()
 ```
 
-### 🏗️ Class-based CLI (New)
-Ideal for stateful applications and object-oriented designs:
+### 🏗️ Class-based CLI (Enhanced)
+Ideal for stateful applications and object-oriented designs. **🆕 NEW**: Now supports inner class patterns for hierarchical command organization:
 
 ```python
-# Create CLI from class methods  
+# Inner Class Pattern (NEW) - Hierarchical organization
 from auto_cli import CLI
 
 class UserManager:
-    """User management CLI application."""
+    """User management with organized command groups."""
     
-    def __init__(self):
-        self.users = []
+    def __init__(self, config_file: str = "config.json"):  # Global arguments
+        self.config_file = config_file
     
-    def add_user(self, username: str, email: str, active: bool = True) -> None:
-        """Add a new user to the system."""
-        user = {"username": username, "email": email, "active": active}
-        self.users.append(user)
-        print(f"Added user: {username}")
+    class UserOperations:
+        """User account operations."""
+        
+        def __init__(self, database_url: str = "sqlite:///users.db"):  # Sub-global arguments  
+            self.database_url = database_url
+        
+        def create(self, username: str, email: str, active: bool = True) -> None:  # Command arguments
+            """Create a new user account."""
+            print(f"Creating user: {username}")
 
 if __name__ == '__main__':
-    cli = CLI.from_class(UserManager)
+    cli = CLI.from_class(UserManager)  
     cli.display()
+
+# Usage: python app.py --config-file prod.json user-operations --database-url postgres://... create --username alice --email alice@test.com
 ```
 
 ### Choose Your Approach
 
-Both approaches automatically generate CLIs with:
+All approaches automatically generate CLIs with:
 - Proper argument parsing from type annotations
 - Help text generation from docstrings  
 - Type checking and validation
 - Built-in themes and customization options
+- **NEW**: Hierarchical argument scoping (global → sub-global → command) for class-based CLIs
 
 **See [Complete Documentation](docs/help.md) for detailed guides and examples.**
 

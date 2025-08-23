@@ -36,15 +36,64 @@ cli.display()
 ```
 
 ### 🏗️ Class-based CLI
-Create CLIs from class methods - ideal for stateful applications and object-oriented designs.
+Create CLIs from class methods - ideal for stateful applications and object-oriented designs. Supports two patterns:
+
+#### **🆕 Inner Class Pattern (Recommended)**
+Use inner classes for hierarchical command organization with three argument levels:
 
 ```python
 # cls_example.py
 class UserManager:
-    """User management CLI application."""
+    """User management CLI with hierarchical commands."""
     
-    def __init__(self):
-        self.users = []
+    def __init__(self, config_file: str = "config.json", debug: bool = False):
+        """Initialize with global arguments.
+        
+        :param config_file: Configuration file (global argument)
+        :param debug: Enable debug mode (global argument)
+        """
+        self.config_file = config_file
+        self.debug = debug
+    
+    class UserOperations:
+        """User account operations."""
+        
+        def __init__(self, database_url: str = "sqlite:///users.db"):
+            """Initialize user operations.
+            
+            :param database_url: Database connection URL (sub-global argument)
+            """
+            self.database_url = database_url
+        
+        def create(self, username: str, email: str, active: bool = True) -> None:
+            """Create a new user account.
+            
+            :param username: Username for new account
+            :param email: Email address
+            :param active: Whether account is active
+            """
+            print(f"Creating user {username} with {email}")
+            print(f"Database: {self.database_url}")
+    
+    class ReportGeneration:
+        """User reporting without sub-global arguments."""
+        
+        def summary(self, include_inactive: bool = False) -> None:
+            """Generate user summary report."""
+            print(f"Generating summary (inactive: {include_inactive})")
+
+# Usage with three argument levels
+# python user_mgr.py --config-file prod.json --debug \
+#   user-operations --database-url postgresql://... \
+#   create --username alice --email alice@example.com
+```
+
+#### **Traditional Pattern (Backward Compatible)**
+Use dunder notation for existing applications:
+
+```python
+class UserManager:
+    """Traditional dunder-based CLI pattern."""
     
     def add_user(self, username: str, email: str, active: bool = True) -> None:
         """Add a new user to the system."""

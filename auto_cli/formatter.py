@@ -33,6 +33,12 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     # Cache for global column calculation
     self._global_desc_column=None
 
+  def _format_actions(self, actions):
+    """Override to capture parser actions for unified column calculation."""
+    # Store actions for unified column calculation
+    self._parser_actions = actions
+    return super()._format_actions(actions)
+
   def _format_action(self, action):
     """Format actions with proper indentation for subcommands."""
     if isinstance(action, argparse._SubParsersAction):
@@ -45,7 +51,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     return super()._format_action(action)
 
   def _ensure_global_column_calculated(self):
-    """Calculate and cache the global description column if not already done."""
+    """Calculate and cache the unified description column if not already done."""
     if self._global_desc_column is not None:
       return self._global_desc_column
 
@@ -60,24 +66,8 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         break
 
     if subparsers_action:
-      # Start with existing command option calculation
-      self._global_desc_column = self._calculate_global_option_column(subparsers_action)
-
-      # Also include global options in the calculation since they now use same indentation
-      for act in parser_actions:
-        if act.option_strings and act.dest != 'help' and not isinstance(act, argparse._SubParsersAction):
-          opt_name = act.option_strings[-1]
-          if act.nargs != 0 and getattr(act, 'metavar', None):
-            opt_display = f"{opt_name} {act.metavar}"
-          elif act.nargs != 0:
-            opt_metavar = act.dest.upper().replace('_', '-')
-            opt_display = f"{opt_name} {opt_metavar}"
-          else:
-            opt_display = opt_name
-          # Global options now use same 6-space indent as command options
-          total_width = len(opt_display) + self._arg_indent
-          # Update global column to accommodate global options too
-          self._global_desc_column = max(self._global_desc_column, total_width + 4)
+      # Use the unified command description column for consistency - this already includes all options
+      self._global_desc_column = self._calculate_unified_command_description_column(subparsers_action)
     else:
       # Fallback: Use a reasonable default
       self._global_desc_column = 40
@@ -124,7 +114,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
       name=option_display,
       description=help_text,
       name_indent=self._arg_indent,  # Use same 6-space indent as command options
-      description_column=global_desc_column,  # Use calculated global column
+      description_column=global_desc_column,  # Use calculated global column for global options
       style_name='option_name',  # Use option_name style (will be handled by CLI theme)
       style_description='option_description',  # Use option_description style
       add_colon=False  # Options don't have colons
@@ -163,6 +153,68 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     # Ensure we don't exceed terminal width (leave room for descriptions)
     return min(global_opt_desc_column, self._console_width // 2)
 
+  def _calculate_unified_command_description_column(self, action):
+    """Calculate unified description column for ALL elements (global options, commands, subcommands, AND options)."""
+    max_width=self._cmd_indent
+
+    # Include global options in the calculation
+    parser_actions = getattr(self, '_parser_actions', [])
+    for act in parser_actions:
+      if act.option_strings and act.dest != 'help' and not isinstance(act, argparse._SubParsersAction):
+        opt_name = act.option_strings[-1]
+        if act.nargs != 0 and getattr(act, 'metavar', None):
+          opt_display = f"{opt_name} {act.metavar}"
+        elif act.nargs != 0:
+          opt_metavar = act.dest.upper().replace('_', '-')
+          opt_display = f"{opt_name} {opt_metavar}"
+        else:
+          opt_display = opt_name
+        # Global options use same 6-space indent as command options
+        global_opt_width = len(opt_display) + self._arg_indent
+        max_width = max(max_width, global_opt_width)
+
+    # Scan all flat commands and their options
+    for choice, subparser in action.choices.items():
+      if not hasattr(subparser, '_command_type') or subparser._command_type != 'group':
+        # Calculate command width: indent + name + colon
+        cmd_width=self._cmd_indent + len(choice) + 1  # +1 for colon
+        max_width=max(max_width, cmd_width)
+        
+        # Also check option widths in flat commands
+        _, optional_args=self._analyze_arguments(subparser)
+        for arg_name, _ in optional_args:
+          opt_width=len(arg_name) + self._arg_indent
+          max_width=max(max_width, opt_width)
+
+    # Scan all group commands and their subcommands/options
+    for choice, subparser in action.choices.items():
+      if hasattr(subparser, '_command_type') and subparser._command_type == 'group':
+        # Calculate group command width: indent + name + colon
+        cmd_width=self._cmd_indent + len(choice) + 1  # +1 for colon
+        max_width=max(max_width, cmd_width)
+        
+        # Also check subcommands within groups
+        if hasattr(subparser, '_subcommands'):
+          subcommand_indent=self._cmd_indent + 2
+          for subcmd_name in subparser._subcommands.keys():
+            # Calculate subcommand width: subcommand_indent + name + colon
+            subcmd_width=subcommand_indent + len(subcmd_name) + 1  # +1 for colon
+            max_width=max(max_width, subcmd_width)
+            
+            # Also check option widths in subcommands
+            subcmd_parser=self._find_subparser(subparser, subcmd_name)
+            if subcmd_parser:
+              _, optional_args=self._analyze_arguments(subcmd_parser)
+              for arg_name, _ in optional_args:
+                opt_width=len(arg_name) + self._arg_indent
+                max_width=max(max_width, opt_width)
+
+    # Add padding for description (4 spaces minimum)
+    unified_desc_column=max_width + 4
+
+    # Ensure we don't exceed terminal width (leave room for descriptions)
+    return min(unified_desc_column, self._console_width // 2)
+
   def _format_subcommands(self, action):
     """Format subcommands with clean list-based display."""
     parts=[]
@@ -170,6 +222,9 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     flat_commands={}
     has_required_args=False
 
+    # Calculate unified command description column for consistent alignment across ALL command types
+    unified_cmd_desc_column=self._calculate_unified_command_description_column(action)
+    
     # Calculate global option column for consistent alignment across all commands
     global_option_column=self._calculate_global_option_column(action)
 
@@ -183,9 +238,9 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
       else:
         flat_commands[choice]=subparser
 
-    # Add flat commands with global option column alignment
+    # Add flat commands with unified command description column alignment
     for choice, subparser in sorted(flat_commands.items()):
-      command_section=self._format_command_with_args_global(choice, subparser, self._cmd_indent, global_option_column)
+      command_section=self._format_command_with_args_global(choice, subparser, self._cmd_indent, unified_cmd_desc_column, global_option_column)
       parts.extend(command_section)
       # Check if this command has required args
       required_args, _=self._analyze_arguments(subparser)
@@ -199,7 +254,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
       for choice, subparser in sorted(groups.items()):
         group_section=self._format_group_with_subcommands_global(
-          choice, subparser, self._cmd_indent, global_option_column
+          choice, subparser, self._cmd_indent, unified_cmd_desc_column, global_option_column
           )
         parts.extend(group_section)
         # Check subcommands for required args too
@@ -224,8 +279,8 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     return "\n".join(parts)
 
-  def _format_command_with_args_global(self, name, parser, base_indent, global_option_column):
-    """Format a command with global option alignment."""
+  def _format_command_with_args_global(self, name, parser, base_indent, unified_cmd_desc_column, global_option_column):
+    """Format a command with unified command description column alignment."""
     lines=[]
 
     # Get required and optional arguments
@@ -238,17 +293,17 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     name_style='command_name'
     desc_style='command_description'
 
-    # Format description for flat command (with colon)
+    # Format description for flat command (with colon and unified column alignment)
     help_text=parser.description or getattr(parser, 'help', '')
     styled_name=self._apply_style(command_name, name_style)
 
     if help_text:
-      # Use the same wrapping logic as subcommands
+      # Use unified command description column for consistent alignment
       formatted_lines = self._format_inline_description(
         name=command_name,
         description=help_text,
         name_indent=base_indent,
-        description_column=0,  # Not used for colons
+        description_column=unified_cmd_desc_column,  # Use unified column for consistency
         style_name=name_style,
         style_description=desc_style,
         add_colon=True
@@ -265,17 +320,17 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         styled_asterisk=self._apply_style(" *", 'required_asterisk')
         lines.append(f"{' ' * self._arg_indent}{styled_req}{styled_asterisk}")
 
-    # Add optional arguments with global alignment
+    # Add optional arguments with unified command description column alignment
     if optional_args:
       for arg_name, arg_help in optional_args:
         styled_opt=self._apply_style(arg_name, 'option_name')
         if arg_help:
-          # Use global column for all option descriptions
+          # Use unified command description column for ALL descriptions (commands and options)
           opt_lines=self._format_inline_description(
             name=arg_name,
             description=arg_help,
             name_indent=self._arg_indent,
-            description_column=global_option_column,  # Global column for consistency
+            description_column=unified_cmd_desc_column,  # Use same column as command descriptions
             style_name='option_name',
             style_description='option_description'
           )
@@ -286,8 +341,8 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     return lines
 
-  def _format_group_with_subcommands_global(self, name, parser, base_indent, global_option_column):
-    """Format a command group with global option alignment."""
+  def _format_group_with_subcommands_global(self, name, parser, base_indent, unified_cmd_desc_column, global_option_column):
+    """Format a command group with unified command description column alignment."""
     lines=[]
     indent_str=" " * base_indent
 
@@ -297,12 +352,12 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     # Check for CommandGroup description
     group_description = getattr(parser, '_command_group_description', None)
     if group_description:
-      # Use _format_inline_description for consistent formatting
+      # Use unified command description column for consistent formatting
       formatted_lines = self._format_inline_description(
         name=name,
         description=group_description,
         name_indent=base_indent,
-        description_column=0,  # Not used for colons
+        description_column=unified_cmd_desc_column,  # Use unified column for consistency
         style_name='group_command_name',
         style_description='command_description',  # Reuse command description style
         add_colon=True
@@ -318,14 +373,9 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         wrapped_desc=self._wrap_text(help_text, self._desc_indent, self._console_width)
         lines.extend(wrapped_desc)
 
-    # Find and format subcommands with global option alignment
+    # Find and format subcommands with unified command description column alignment
     if hasattr(parser, '_subcommands'):
       subcommand_indent=base_indent + 2
-
-      # Calculate dynamic columns for subcommand descriptions (but use global for options)
-      group_cmd_desc_col, _=self._calculate_group_dynamic_columns(
-        parser, subcommand_indent, self._arg_indent
-      )
 
       for subcmd, subcmd_help in sorted(parser._subcommands.items()):
         # Find the actual subparser
@@ -333,7 +383,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         if subcmd_parser:
           subcmd_section=self._format_command_with_args_global_subcommand(
             subcmd, subcmd_parser, subcommand_indent,
-            group_cmd_desc_col, global_option_column
+            unified_cmd_desc_column, global_option_column
           )
           lines.extend(subcmd_section)
         else:
@@ -379,8 +429,8 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     return max_cmd_desc, max_opt_desc
 
-  def _format_command_with_args_global_subcommand(self, name, parser, base_indent, cmd_desc_col, global_option_column):
-    """Format a subcommand with global option alignment."""
+  def _format_command_with_args_global_subcommand(self, name, parser, base_indent, unified_cmd_desc_column, global_option_column):
+    """Format a subcommand with unified command description column alignment."""
     lines=[]
 
     # Get required and optional arguments
@@ -393,17 +443,17 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     name_style='subcommand_name'
     desc_style='subcommand_description'
 
-    # Format description with dynamic column for subcommands but global column for options
+    # Format description with unified command description column for consistency
     help_text=parser.description or getattr(parser, 'help', '')
     styled_name=self._apply_style(command_name, name_style)
 
     if help_text:
-      # Use aligned description formatting with command-specific column and colon
+      # Use unified command description column for consistent alignment with all commands
       formatted_lines=self._format_inline_description(
         name=command_name,
         description=help_text,
         name_indent=base_indent,
-        description_column=cmd_desc_col,  # Command-specific column for subcommand descriptions
+        description_column=unified_cmd_desc_column,  # Unified column for consistency across all command types
         style_name=name_style,
         style_description=desc_style,
         add_colon=True  # Add colon for subcommands
@@ -420,17 +470,17 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         styled_asterisk=self._apply_style(" *", 'required_asterisk')
         lines.append(f"{' ' * self._arg_indent}{styled_req}{styled_asterisk}")
 
-    # Add optional arguments with global alignment
+    # Add optional arguments with unified command description column alignment
     if optional_args:
       for arg_name, arg_help in optional_args:
         styled_opt=self._apply_style(arg_name, 'option_name')
         if arg_help:
-          # Use global column for option descriptions across all commands
+          # Use unified command description column for ALL descriptions (commands and options)
           opt_lines=self._format_inline_description(
             name=arg_name,
             description=arg_help,
             name_indent=self._arg_indent,
-            description_column=global_option_column,  # Global column for consistency
+            description_column=unified_cmd_desc_column,  # Use same column as command descriptions
             style_name='option_name',
             style_description='option_description'
           )
