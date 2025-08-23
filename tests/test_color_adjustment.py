@@ -28,9 +28,9 @@ class TestThemeColorAdjustment:
     style = ThemeStyle(fg=original_rgb)
     theme = Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
-      group_command_name=style, subcommand_name=style, subcommand_description=style,
-      option_name=style, option_description=style, required_option_name=style,
-      required_option_description=style, required_asterisk=style,
+      command_group_name=style, grouped_command_name=style, grouped_command_description=style,
+      option_name=style, option_description=style, command_group_option_name=style,
+      command_group_option_description=style, required_asterisk=style,
       adjust_strategy=AdjustStrategy.LINEAR,
       adjust_percent=0.25  # 25% adjustment
     )
@@ -49,9 +49,9 @@ class TestThemeColorAdjustment:
     style = ThemeStyle(fg=original_rgb)
     theme = Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
-      group_command_name=style, subcommand_name=style, subcommand_description=style,
-      option_name=style, option_description=style, required_option_name=style,
-      required_option_description=style, required_asterisk=style,
+      command_group_name=style, grouped_command_name=style, grouped_command_description=style,
+      option_name=style, option_description=style, command_group_option_name=style,
+      command_group_option_description=style, required_asterisk=style,
       adjust_strategy=AdjustStrategy.LINEAR,
       adjust_percent=-0.25  # 25% darker
     )
@@ -70,9 +70,9 @@ class TestThemeColorAdjustment:
     style = ThemeStyle(fg=original_rgb)
     theme = Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
-      group_command_name=style, subcommand_name=style, subcommand_description=style,
-      option_name=style, option_description=style, required_option_name=style,
-      required_option_description=style, required_asterisk=style,
+      command_group_name=style, grouped_command_name=style, grouped_command_description=style,
+      option_name=style, option_description=style, command_group_option_name=style,
+      command_group_option_description=style, required_asterisk=style,
       adjust_strategy=AdjustStrategy.ABSOLUTE,
       adjust_percent=0.5  # 50% adjustment (actually darkens due to current implementation)
     )
@@ -91,9 +91,9 @@ class TestThemeColorAdjustment:
     style = ThemeStyle(fg=original_rgb)
     theme = Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
-      group_command_name=style, subcommand_name=style, subcommand_description=style,
-      option_name=style, option_description=style, required_option_name=style,
-      required_option_description=style, required_asterisk=style,
+      command_group_name=style, grouped_command_name=style, grouped_command_description=style,
+      option_name=style, option_description=style, command_group_option_name=style,
+      command_group_option_description=style, required_asterisk=style,
       adjust_strategy=AdjustStrategy.ABSOLUTE,
       adjust_percent=0.5  # 50% adjustment (actually darkens due to current implementation)
     )
@@ -110,10 +110,10 @@ class TestThemeColorAdjustment:
   def _theme_with_style(style):
     return Theme(
       title=style, subtitle=style, command_name=style,
-      command_description=style, group_command_name=style,
-      subcommand_name=style, subcommand_description=style,
+      command_description=style, command_group_name=style,
+      grouped_command_name=style, grouped_command_description=style,
       option_name=style, option_description=style,
-      required_option_name=style, required_option_description=style,
+      command_group_option_name=style, command_group_option_description=style,
       required_asterisk=style,
       adjust_strategy=AdjustStrategy.LINEAR,
       adjust_percent=0.25
@@ -137,9 +137,9 @@ class TestThemeColorAdjustment:
     style = ThemeStyle(fg=original_rgb, bold=True, underline=True)
     theme = Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
-      group_command_name=style, subcommand_name=style, subcommand_description=style,
-      option_name=style, option_description=style, required_option_name=style,
-      required_option_description=style, required_asterisk=style,
+      command_group_name=style, grouped_command_name=style, grouped_command_description=style,
+      option_name=style, option_description=style, command_group_option_name=style,
+      command_group_option_description=style, required_asterisk=style,
       adjust_strategy=AdjustStrategy.LINEAR,
       adjust_percent=0.25
     )
@@ -157,9 +157,9 @@ class TestThemeColorAdjustment:
     style = ThemeStyle(fg=original_rgb)
     theme = Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
-      group_command_name=style, subcommand_name=style, subcommand_description=style,
-      option_name=style, option_description=style, required_option_name=style,
-      required_option_description=style, required_asterisk=style,
+      command_group_name=style, grouped_command_name=style, grouped_command_description=style,
+      option_name=style, option_description=style, command_group_option_name=style,
+      command_group_option_description=style, required_asterisk=style,
       adjust_percent=0.0  # No adjustment
     )
 
@@ -182,10 +182,10 @@ class TestThemeColorAdjustment:
     """Test adjustment with edge case RGB colors."""
     theme = Theme(
       title=ThemeStyle(), subtitle=ThemeStyle(), command_name=ThemeStyle(),
-      command_description=ThemeStyle(), group_command_name=ThemeStyle(),
-      subcommand_name=ThemeStyle(), subcommand_description=ThemeStyle(),
+      command_description=ThemeStyle(), command_group_name=ThemeStyle(),
+      grouped_command_name=ThemeStyle(), grouped_command_description=ThemeStyle(),
       option_name=ThemeStyle(), option_description=ThemeStyle(),
-      required_option_name=ThemeStyle(), required_option_description=ThemeStyle(),
+      command_group_option_name=ThemeStyle(), command_group_option_description=ThemeStyle(),
       required_asterisk=ThemeStyle(),
       adjust_strategy=AdjustStrategy.LINEAR,
       adjust_percent=0.5
@@ -215,17 +215,17 @@ class TestThemeColorAdjustment:
     # Valid range should work
     Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
-      group_command_name=style, subcommand_name=style, subcommand_description=style,
-      option_name=style, option_description=style, required_option_name=style,
-      required_option_description=style, required_asterisk=style,
+      command_group_name=style, grouped_command_name=style, grouped_command_description=style,
+      option_name=style, option_description=style, command_group_option_name=style,
+      command_group_option_description=style, required_asterisk=style,
       adjust_percent=-5.0  # Minimum valid
     )
 
     Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
-      group_command_name=style, subcommand_name=style, subcommand_description=style,
-      option_name=style, option_description=style, required_option_name=style,
-      required_option_description=style, required_asterisk=style,
+      command_group_name=style, grouped_command_name=style, grouped_command_description=style,
+      option_name=style, option_description=style, command_group_option_name=style,
+      command_group_option_description=style, required_asterisk=style,
       adjust_percent=5.0  # Maximum valid
     )
 
@@ -233,9 +233,9 @@ class TestThemeColorAdjustment:
     with pytest.raises(ValueError, match="adjust_percent must be between -5.0 and 5.0, got -5.1"):
       Theme(
         title=style, subtitle=style, command_name=style, command_description=style,
-        group_command_name=style, subcommand_name=style, subcommand_description=style,
-        option_name=style, option_description=style, required_option_name=style,
-        required_option_description=style, required_asterisk=style,
+        command_group_name=style, grouped_command_name=style, grouped_command_description=style,
+        option_name=style, option_description=style, command_group_option_name=style,
+        command_group_option_description=style, required_asterisk=style,
         adjust_percent=-5.1
       )
 
@@ -243,9 +243,9 @@ class TestThemeColorAdjustment:
     with pytest.raises(ValueError, match="adjust_percent must be between -5.0 and 5.0, got 5.1"):
       Theme(
         title=style, subtitle=style, command_name=style, command_description=style,
-        group_command_name=style, subcommand_name=style, subcommand_description=style,
-        option_name=style, option_description=style, required_option_name=style,
-        required_option_description=style, required_asterisk=style,
+        command_group_name=style, grouped_command_name=style, grouped_command_description=style,
+        option_name=style, option_description=style, command_group_option_name=style,
+        command_group_option_description=style, required_asterisk=style,
         adjust_percent=5.1
       )
 

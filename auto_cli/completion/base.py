@@ -15,7 +15,7 @@ class CompletionContext:
   words: List[str]  # All words in current command line
   current_word: str  # Word being completed (partial)
   cursor_position: int  # Position in current word
-  subcommand_path: List[str]  # Path to current subcommand (e.g., ['db', 'backup'])
+  command_group_path: List[str]  # Path to current command group (e.g., ['db', 'backup'])
   parser: argparse.ArgumentParser  # Current parser context
   cli: CLI  # CLI instance for introspection
 
@@ -67,24 +67,24 @@ class CompletionHandler(ABC):
       return 'powershell'
     return None
 
-  def get_subcommand_parser(self, parser: argparse.ArgumentParser,
-                            subcommand_path: List[str]) -> Optional[argparse.ArgumentParser]:
-    """Navigate to subcommand parser following the path.
+  def get_command_group_parser(self, parser: argparse.ArgumentParser,
+                               command_group_path: List[str]) -> Optional[argparse.ArgumentParser]:
+    """Navigate to command group parser following the path.
 
     :param parser: Root parser to start from
-    :param subcommand_path: Path to target subcommand
+    :param command_group_path: Path to target command group
     :return: Target parser or None if not found
     """
     current_parser = parser
 
-    for subcommand in subcommand_path:
+    for command_group in command_group_path:
       found_parser = None
 
-      # Look for subcommand in parser actions
+      # Look for command group in parser actions
       for action in current_parser._actions:
         if isinstance(action, argparse._SubParsersAction):
-          if subcommand in action.choices:
-            found_parser = action.choices[subcommand]
+          if command_group in action.choices:
+            found_parser = action.choices[command_group]
             break
 
       if not found_parser:

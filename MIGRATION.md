@@ -11,9 +11,9 @@ This guide helps you migrate from auto-cli-py's old hierarchical command structu
 
 ### 1. All Commands Are Now Flat
 
-- **Module-based CLIs**: Functions become direct commands (no subcommand grouping)
+- **Module-based CLIs**: Functions become direct commands (no command group grouping)
 - **Class-based CLIs**: All methods become flat commands using double-dash notation
-- **No More Command Groups**: No hierarchical structures like `app.py group subcommand`
+- **No More Command Groups**: No hierarchical structures like `app.py group command`
 
 ### 2. Double-Dash Notation for Inner Classes
 
@@ -21,13 +21,13 @@ Inner class methods now use the format: `class-name--method-name`
 
 ### 3. Removed Dunder Notation Support
 
-Method names like `user__create` are no longer supported for creating subcommands.
+Method names like `user__create` are no longer supported for creating command groups.
 
 ## Migration Steps
 
 ### Step 1: Update Module-Based CLIs
 
-**OLD (with dunder notation for subcommands):**
+**OLD (with dunder notation for command groups):**
 ```python
 def user__create(name: str, email: str) -> None:
     """Create a user."""
@@ -118,7 +118,7 @@ cli = CLI(MyClass, enable_completion=True)
 **OLD (hierarchical help):**
 ```bash
 python app.py --help          # Shows command groups
-python app.py user --help     # Shows user subcommands  
+python app.py user --help     # Shows user command groups  
 python app.py user create --help  # Shows create command help
 ```
 

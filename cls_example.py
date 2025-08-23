@@ -27,7 +27,7 @@ class DataProcessor:
 
   This class demonstrates the new inner class pattern where each inner class
   represents a command group with its own sub-global options, and methods
-  within those classes become subcommands.
+  within those classes become command groups (sub-commands).
   """
 
   def __init__(self, config_file: str = "config.json", verbose: bool = False):

@@ -39,9 +39,9 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     return super()._format_actions(actions)
 
   def _format_action(self, action):
-    """Format actions with proper indentation for subcommands."""
+    """Format actions with proper indentation for command groups."""
     if isinstance(action, argparse._SubParsersAction):
-      return self._format_subcommands(action)
+      return self._format_command_groups(action)
 
     # Handle global options with fixed alignment
     if action.option_strings and not isinstance(action, argparse._SubParsersAction):
@@ -108,12 +108,11 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     global_desc_column = self._ensure_global_column_calculated()
 
     # Use the existing _format_inline_description method for proper alignment and wrapping
-    # Use the same indentation as command options for consistent alignment
     formatted_lines = self._format_inline_description(
       name=option_display,
       description=help_text,
-      name_indent=self._arg_indent,  # Use same 6-space indent as command options
-      description_column=global_desc_column,  # Use calculated global column for global options
+      name_indent=self._arg_indent + 2,  # Global options indented +2 more spaces (entire line)
+      description_column=global_desc_column + 4,  # Global option descriptions +4 spaces (2 for line indent + 2 for desc)
       style_name='option_name',  # Use option_name style (will be handled by CLI theme)
       style_description='option_description',  # Use option_description style
       add_colon=False  # Options don't have colons
@@ -134,14 +133,14 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
           opt_width = len(arg_name) + self._arg_indent
           max_opt_width = max(max_opt_width, opt_width)
 
-    # Scan all group subcommands
+    # Scan all group command groups
     for choice, subparser in action.choices.items():
       if hasattr(subparser, '_command_type') and subparser._command_type == 'group':
-        if hasattr(subparser, '_subcommands'):
-          for subcmd_name in subparser._subcommands.keys():
-            subcmd_parser = self._find_subparser(subparser, subcmd_name)
-            if subcmd_parser:
-              _, optional_args = self._analyze_arguments(subcmd_parser)
+        if hasattr(subparser, '_commands'):
+          for cmd_name in subparser._commands.keys():
+            cmd_parser = self._find_subparser(subparser, cmd_name)
+            if cmd_parser:
+              _, optional_args = self._analyze_arguments(cmd_parser)
               for arg_name, _ in optional_args:
                 opt_width = len(arg_name) + self._arg_indent
                 max_opt_width = max(max_opt_width, opt_width)
@@ -153,7 +152,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     return min(global_opt_desc_column, self._console_width // 2)
 
   def _calculate_unified_command_description_column(self, action):
-    """Calculate unified description column for ALL elements (global options, commands, subcommands, AND options)."""
+    """Calculate unified description column for ALL elements (global options, commands, command groups, AND options)."""
     max_width = self._cmd_indent
 
     # Include global options in the calculation
@@ -168,7 +167,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
           opt_display = f"{opt_name} {opt_metavar}"
         else:
           opt_display = opt_name
-        # Global options use same 6-space indent as command options
+        # Global options use standard arg indentation
         global_opt_width = len(opt_display) + self._arg_indent
         max_width = max(max_width, global_opt_width)
 
@@ -185,25 +184,31 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
           opt_width = len(arg_name) + self._arg_indent
           max_width = max(max_width, opt_width)
 
-    # Scan all group commands and their subcommands/options
+    # Scan all group commands and their command groups/options
     for choice, subparser in action.choices.items():
       if hasattr(subparser, '_command_type') and subparser._command_type == 'group':
         # Calculate group command width: indent + name + colon
         cmd_width = self._cmd_indent + len(choice) + 1  # +1 for colon
         max_width = max(max_width, cmd_width)
 
-        # Also check subcommands within groups
-        if hasattr(subparser, '_subcommands'):
-          subcommand_indent = self._cmd_indent + 2
-          for subcmd_name in subparser._subcommands.keys():
-            # Calculate subcommand width: subcommand_indent + name + colon
-            subcmd_width = subcommand_indent + len(subcmd_name) + 1  # +1 for colon
-            max_width = max(max_width, subcmd_width)
+        # Check group-level options
+        _, optional_args = self._analyze_arguments(subparser)
+        for arg_name, _ in optional_args:
+          opt_width = len(arg_name) + self._arg_indent
+          max_width = max(max_width, opt_width)
 
-            # Also check option widths in subcommands
-            subcmd_parser = self._find_subparser(subparser, subcmd_name)
-            if subcmd_parser:
-              _, optional_args = self._analyze_arguments(subcmd_parser)
+        # Also check command groups within groups
+        if hasattr(subparser, '_commands'):
+          command_indent = self._cmd_indent + 2
+          for cmd_name in subparser._commands.keys():
+            # Calculate command width: command_indent + name + colon
+            cmd_width = command_indent + len(cmd_name) + 1  # +1 for colon
+            max_width = max(max_width, cmd_width)
+
+            # Also check option widths in command groups
+            cmd_parser = self._find_subparser(subparser, cmd_name)
+            if cmd_parser:
+              _, optional_args = self._analyze_arguments(cmd_parser)
               for arg_name, _ in optional_args:
                 opt_width = len(arg_name) + self._arg_indent
                 max_width = max(max_width, opt_width)
@@ -214,8 +219,8 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     # Ensure we don't exceed terminal width (leave room for descriptions)
     return min(unified_desc_column, self._console_width // 2)
 
-  def _format_subcommands(self, action):
-    """Format subcommands with clean list-based display."""
+  def _format_command_groups(self, action):
+    """Format command groups (sub-commands) with clean list-based display."""
     parts = []
     system_groups = {}
     regular_groups = {}
@@ -246,14 +251,14 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     if system_groups:
       system_items = sorted(system_groups.items()) if self._alphabetize else list(system_groups.items())
       for choice, subparser in system_items:
-        group_section = self._format_group_with_subcommands_global(
+        group_section = self._format_group_with_command_groups_global(
           choice, subparser, self._cmd_indent, unified_cmd_desc_column, global_option_column
         )
         parts.extend(group_section)
-        # Check subcommands for required args too
-        if hasattr(subparser, '_subcommand_details'):
-          for subcmd_info in subparser._subcommand_details.values():
-            if subcmd_info.get('type') == 'command' and 'function' in subcmd_info:
+        # Check command groups for required args too
+        if hasattr(subparser, '_command_details'):
+          for cmd_info in subparser._command_details.values():
+            if cmd_info.get('type') == 'command' and 'function' in cmd_info:
               # This is a bit tricky - we'd need to check the function signature
               # For now, assume nested commands might have required args
               has_required_args = True
@@ -269,21 +274,21 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
       if required_args:
         has_required_args = True
 
-    # Add regular groups with their subcommands
+    # Add regular groups with their command groups
     if regular_groups:
       if flat_commands or system_groups:
         parts.append("")  # Empty line separator
 
       regular_items = sorted(regular_groups.items()) if self._alphabetize else list(regular_groups.items())
       for choice, subparser in regular_items:
-        group_section = self._format_group_with_subcommands_global(
+        group_section = self._format_group_with_command_groups_global(
           choice, subparser, self._cmd_indent, unified_cmd_desc_column, global_option_column
         )
         parts.extend(group_section)
-        # Check subcommands for required args too
-        if hasattr(subparser, '_subcommand_details'):
-          for subcmd_info in subparser._subcommand_details.values():
-            if subcmd_info.get('type') == 'command' and 'function' in subcmd_info:
+        # Check command groups for required args too
+        if hasattr(subparser, '_command_details'):
+          for cmd_info in subparser._command_details.values():
+            if cmd_info.get('type') == 'command' and 'function' in cmd_info:
               # This is a bit tricky - we'd need to check the function signature
               # For now, assume nested commands might have required args
               has_required_args = True
@@ -338,10 +343,27 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     # Add required arguments as a list (now on separate lines)
     if required_args:
-      for arg_name in required_args:
-        styled_req = self._apply_style(arg_name, 'required_option_name')
-        styled_asterisk = self._apply_style(" *", 'required_asterisk')
-        lines.append(f"{' ' * self._arg_indent}{styled_req}{styled_asterisk}")
+      for arg_name, arg_help in required_args:
+        if arg_help:
+          # Required argument with description
+          opt_lines = self._format_inline_description(
+            name=arg_name,
+            description=arg_help,
+            name_indent=self._arg_indent + 2,  # Required flat command options +2 spaces (entire line)
+            description_column=unified_cmd_desc_column + 4,  # Required flat command option descriptions +4 spaces (2 for line + 2 for desc)
+            style_name='option_name',
+            style_description='option_description'
+          )
+          lines.extend(opt_lines)
+          # Add asterisk to the last line
+          if opt_lines:
+            styled_asterisk = self._apply_style(" *", 'required_asterisk')
+            lines[-1] += styled_asterisk
+        else:
+          # Required argument without description - just name and asterisk
+          styled_req = self._apply_style(arg_name, 'option_name')
+          styled_asterisk = self._apply_style(" *", 'required_asterisk')
+          lines.append(f"{' ' * (self._arg_indent + 2)}{styled_req}{styled_asterisk}")  # Flat command options +2 spaces
 
     # Add optional arguments with unified command description column alignment
     if optional_args:
@@ -349,40 +371,42 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         styled_opt = self._apply_style(arg_name, 'option_name')
         if arg_help:
           # Use unified command description column for ALL descriptions (commands and options)
+          # Option descriptions should be indented 2 more spaces than option names
           opt_lines = self._format_inline_description(
             name=arg_name,
             description=arg_help,
-            name_indent=self._arg_indent,
-            description_column=unified_cmd_desc_column,  # Use same column as command descriptions
+            name_indent=self._arg_indent + 2,  # Flat command options +2 spaces (entire line)
+            description_column=unified_cmd_desc_column + 4,  # Flat command option descriptions +4 spaces (2 for line + 2 for desc)
             style_name='option_name',
             style_description='option_description'
           )
           lines.extend(opt_lines)
         else:
           # Just the option name with styling
-          lines.append(f"{' ' * self._arg_indent}{styled_opt}")
+          lines.append(f"{' ' * (self._arg_indent + 2)}{styled_opt}")  # Flat command options +2 spaces
 
     return lines
 
-  def _format_group_with_subcommands_global(self, name, parser, base_indent, unified_cmd_desc_column,
+  def _format_group_with_command_groups_global(self, name, parser, base_indent, unified_cmd_desc_column,
                                             global_option_column):
     """Format a command group with unified command description column alignment."""
     lines = []
     indent_str = " " * base_indent
 
     # Group header with special styling for group commands
-    styled_group_name = self._apply_style(name, 'group_command_name')
+    styled_group_name = self._apply_style(name, 'grouped_command_name')
 
     # Check for CommandGroup description
     group_description = getattr(parser, '_command_group_description', None)
     if group_description:
       # Use unified command description column for consistent formatting
+      # Top-level group command descriptions use standard column (no extra indent)
       formatted_lines = self._format_inline_description(
         name=name,
         description=group_description,
         name_indent=base_indent,
-        description_column=unified_cmd_desc_column,  # Use unified column for consistency
-        style_name='group_command_name',
+        description_column=unified_cmd_desc_column,  # Top-level group commands use standard column
+        style_name='grouped_command_name',
         style_description='command_description',  # Reuse command description style
         add_colon=True
       )
@@ -394,77 +418,109 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
       # Group description
       help_text = parser.description or getattr(parser, 'help', '')
       if help_text:
+        # Top-level group descriptions use standard indent (no extra spaces)
         wrapped_desc = self._wrap_text(help_text, self._desc_indent, self._console_width)
         lines.extend(wrapped_desc)
 
     # Add sub-global options from the group parser (inner class constructor args)
+    # Group command options use same base indentation but descriptions are +2 spaces
     required_args, optional_args = self._analyze_arguments(parser)
     if required_args or optional_args:
       # Add required arguments
       if required_args:
-        for arg_name in required_args:
-          styled_req = self._apply_style(arg_name, 'required_option_name')
-          styled_asterisk = self._apply_style(" *", 'required_asterisk')
-          lines.append(f"{' ' * self._arg_indent}{styled_req}{styled_asterisk}")
-      
-      # Add optional arguments
-      if optional_args:
-        for arg_name, arg_help in optional_args:
-          styled_opt = self._apply_style(arg_name, 'option_name')
+        for arg_name, arg_help in required_args:
           if arg_help:
-            # Use unified command description column for sub-global options
+            # Required argument with description
             opt_lines = self._format_inline_description(
               name=arg_name,
               description=arg_help,
-              name_indent=self._arg_indent,
-              description_column=unified_cmd_desc_column,
-              style_name='option_name',
-              style_description='option_description'
+              name_indent=self._arg_indent,  # Required group options at base arg indent
+              description_column=unified_cmd_desc_column + 2,  # Required group option descriptions +2 spaces for desc
+              style_name='command_group_option_name',
+              style_description='command_group_option_description'
+            )
+            lines.extend(opt_lines)
+            # Add asterisk to the last line
+            if opt_lines:
+              styled_asterisk = self._apply_style(" *", 'required_asterisk')
+              lines[-1] += styled_asterisk
+          else:
+            # Required argument without description - just name and asterisk
+            styled_req = self._apply_style(arg_name, 'command_group_option_name')
+            styled_asterisk = self._apply_style(" *", 'required_asterisk')
+            lines.append(f"{' ' * self._arg_indent}{styled_req}{styled_asterisk}")  # Group options at base indent
+
+      # Add optional arguments
+      if optional_args:
+        for arg_name, arg_help in optional_args:
+          styled_opt = self._apply_style(arg_name, 'command_group_option_name')
+          if arg_help:
+            # Use unified command description column for sub-global options
+            # Group command option descriptions should be indented 2 more spaces
+            opt_lines = self._format_inline_description(
+              name=arg_name,
+              description=arg_help,
+              name_indent=self._arg_indent,  # Group options at base arg indent
+              description_column=unified_cmd_desc_column + 2,  # Group option descriptions +2 spaces for desc
+              style_name='command_group_option_name',
+              style_description='command_group_option_description'
             )
             lines.extend(opt_lines)
           else:
             # Just the option name with styling
-            lines.append(f"{' ' * self._arg_indent}{styled_opt}")
+            lines.append(f"{' ' * self._arg_indent}{styled_opt}")  # Group options at base indent
 
-    # Find and format subcommands with unified command description column alignment
-    if hasattr(parser, '_subcommands'):
-      subcommand_indent = base_indent + 2
+    # Find and format command groups with unified command description column alignment
+    if hasattr(parser, '_commands'):
+      command_indent = base_indent + 2
 
-      subcommand_items = sorted(parser._subcommands.items()) if self._alphabetize else list(parser._subcommands.items())
-      for subcmd, subcmd_help in subcommand_items:
+      command_items = sorted(parser._commands.items()) if self._alphabetize else list(parser._commands.items())
+      for cmd, cmd_help in command_items:
         # Find the actual subparser
-        subcmd_parser = self._find_subparser(parser, subcmd)
-        if subcmd_parser:
-          subcmd_section = self._format_command_with_args_global_subcommand(
-            subcmd, subcmd_parser, subcommand_indent,
-            unified_cmd_desc_column, global_option_column
-          )
-          lines.extend(subcmd_section)
+        cmd_parser = self._find_subparser(parser, cmd)
+        if cmd_parser:
+          # Check if this is a nested group or a final command
+          if (hasattr(cmd_parser, '_command_type') and 
+              getattr(cmd_parser, '_command_type') == 'group' and
+              hasattr(cmd_parser, '_commands') and 
+              cmd_parser._commands):
+            # This is a nested group - format it as a group recursively
+            cmd_section = self._format_group_with_command_groups_global(
+              cmd, cmd_parser, command_indent,
+              unified_cmd_desc_column, global_option_column
+            )
+          else:
+            # This is a final command - format it as a command
+            cmd_section = self._format_command_with_args_global_command(
+              cmd, cmd_parser, command_indent,
+              unified_cmd_desc_column, global_option_column
+            )
+          lines.extend(cmd_section)
         else:
           # Fallback for cases where we can't find the parser
-          lines.append(f"{' ' * subcommand_indent}{subcmd}")
-          if subcmd_help:
-            wrapped_help = self._wrap_text(subcmd_help, subcommand_indent + 2, self._console_width)
+          lines.append(f"{' ' * command_indent}{cmd}")
+          if cmd_help:
+            wrapped_help = self._wrap_text(cmd_help, command_indent + 2, self._console_width)
             lines.extend(wrapped_help)
 
     return lines
 
   def _calculate_group_dynamic_columns(self, group_parser, cmd_indent, opt_indent):
-    """Calculate dynamic columns for an entire group of subcommands."""
+    """Calculate dynamic columns for an entire group of command groups."""
     max_cmd_width = 0
     max_opt_width = 0
 
-    # Analyze all subcommands in the group
-    if hasattr(group_parser, '_subcommands'):
-      for subcmd_name in group_parser._subcommands.keys():
-        subcmd_parser = self._find_subparser(group_parser, subcmd_name)
-        if subcmd_parser:
+    # Analyze all command groups in the group
+    if hasattr(group_parser, '_commands'):
+      for cmd_name in group_parser._commands.keys():
+        cmd_parser = self._find_subparser(group_parser, cmd_name)
+        if cmd_parser:
           # Check command name width
-          cmd_width = len(subcmd_name) + cmd_indent
+          cmd_width = len(cmd_name) + cmd_indent
           max_cmd_width = max(max_cmd_width, cmd_width)
 
           # Check option widths
-          _, optional_args = self._analyze_arguments(subcmd_parser)
+          _, optional_args = self._analyze_arguments(cmd_parser)
           for arg_name, _ in optional_args:
             opt_width = len(arg_name) + opt_indent
             max_opt_width = max(max_opt_width, opt_width)
@@ -483,9 +539,9 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     return max_cmd_desc, max_opt_desc
 
-  def _format_command_with_args_global_subcommand(self, name, parser, base_indent, unified_cmd_desc_column,
+  def _format_command_with_args_global_command(self, name, parser, base_indent, unified_cmd_desc_column,
                                                   global_option_column):
-    """Format a subcommand with unified command description column alignment."""
+    """Format a command group with unified command description column alignment."""
     lines = []
 
     # Get required and optional arguments
@@ -494,9 +550,9 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     # Command line (keep name only, move required args to separate lines)
     command_name = name
 
-    # These are always subcommands when using this method
-    name_style = 'subcommand_name'
-    desc_style = 'subcommand_description'
+    # These are always command groups when using this method
+    name_style = 'command_group_name'
+    desc_style = 'grouped_command_description'
 
     # Format description with unified command description column for consistency
     help_text = parser.description or getattr(parser, 'help', '')
@@ -504,14 +560,15 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     if help_text:
       # Use unified command description column for consistent alignment with all commands
+      # Command group command descriptions should be indented 2 more spaces
       formatted_lines = self._format_inline_description(
         name=command_name,
         description=help_text,
         name_indent=base_indent,
-        description_column=unified_cmd_desc_column,  # Unified column for consistency across all command types
+        description_column=unified_cmd_desc_column + 2,  # Command group command descriptions +2 more spaces
         style_name=name_style,
         style_description=desc_style,
-        add_colon=True  # Add colon for subcommands
+        add_colon=True  # Add colon for command groups
       )
       lines.extend(formatted_lines)
     else:
@@ -520,10 +577,27 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     # Add required arguments as a list (now on separate lines)
     if required_args:
-      for arg_name in required_args:
-        styled_req = self._apply_style(arg_name, 'required_option_name')
-        styled_asterisk = self._apply_style(" *", 'required_asterisk')
-        lines.append(f"{' ' * self._arg_indent}{styled_req}{styled_asterisk}")
+      for arg_name, arg_help in required_args:
+        if arg_help:
+          # Required argument with description
+          opt_lines = self._format_inline_description(
+            name=arg_name,
+            description=arg_help,
+            name_indent=self._arg_indent + 2,  # Required command group options +2 spaces (entire line)
+            description_column=unified_cmd_desc_column + 4,  # Required command group option descriptions +4 spaces (2 for line + 2 for desc)
+            style_name='option_name',
+            style_description='option_description'
+          )
+          lines.extend(opt_lines)
+          # Add asterisk to the last line
+          if opt_lines:
+            styled_asterisk = self._apply_style(" *", 'required_asterisk')
+            lines[-1] += styled_asterisk
+        else:
+          # Required argument without description - just name and asterisk
+          styled_req = self._apply_style(arg_name, 'option_name')
+          styled_asterisk = self._apply_style(" *", 'required_asterisk')
+          lines.append(f"{' ' * (self._arg_indent + 2)}{styled_req}{styled_asterisk}")  # Command group options +2 spaces
 
     # Add optional arguments with unified command description column alignment
     if optional_args:
@@ -531,18 +605,19 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         styled_opt = self._apply_style(arg_name, 'option_name')
         if arg_help:
           # Use unified command description column for ALL descriptions (commands and options)
+          # Command group command option descriptions should be indented 2 more spaces
           opt_lines = self._format_inline_description(
             name=arg_name,
             description=arg_help,
-            name_indent=self._arg_indent,
-            description_column=unified_cmd_desc_column,  # Use same column as command descriptions
+            name_indent=self._arg_indent + 2,  # Command group options +2 spaces (entire line)
+            description_column=unified_cmd_desc_column + 4,  # Command group option descriptions +4 spaces (2 for line + 2 for desc)
             style_name='option_name',
             style_description='option_description'
           )
           lines.extend(opt_lines)
         else:
           # Just the option name with styling
-          lines.append(f"{' ' * self._arg_indent}{styled_opt}")
+          lines.append(f"{' ' * (self._arg_indent + 2)}{styled_opt}")  # Command group options +2 spaces
 
     return lines
 
@@ -572,17 +647,17 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
           arg_name = f"--{action.dest.replace('_', '-')}"
       else:
         arg_name = f"--{action.dest.replace('_', '-')}"
-        
+
       arg_help = getattr(action, 'help', '')
 
       if hasattr(action, 'required') and action.required:
         # Required argument - we'll add styled asterisk later in formatting
         if hasattr(action, 'metavar') and action.metavar:
-          required_args.append(f"{arg_name} {action.metavar}")
+          required_args.append((f"{arg_name} {action.metavar}", arg_help))
         else:
           # Use clean parameter name for metavar if available, otherwise use dest
           metavar_base = clean_param_name if clean_param_name else action.dest
-          required_args.append(f"{arg_name} {metavar_base.upper()}")
+          required_args.append((f"{arg_name} {metavar_base.upper()}", arg_help))
       elif action.option_strings:
         # Optional argument - add to list display
         if action.nargs == 0 or getattr(action, 'action', None) == 'store_true':
@@ -600,7 +675,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     # Sort arguments alphabetically if alphabetize is enabled
     if self._alphabetize:
-      required_args.sort()
+      required_args.sort(key=lambda x: x[0])  # Sort by argument name (first element of tuple)
       optional_args.sort(key=lambda x: x[0])  # Sort by argument name (first element of tuple)
 
     return required_args, optional_args
@@ -635,13 +710,13 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
       'subtitle': self._theme.subtitle,
       'command_name': self._theme.command_name,
       'command_description': self._theme.command_description,
-      'group_command_name': self._theme.group_command_name,
-      'subcommand_name': self._theme.subcommand_name,
-      'subcommand_description': self._theme.subcommand_description,
+      'grouped_command_name': self._theme.group_command_name,
+      'command_group_name': self._theme.command_group_name,
+      'grouped_command_description': self._theme.command_group_description,
       'option_name': self._theme.option_name,
       'option_description': self._theme.option_description,
-      'required_option_name': self._theme.required_option_name,
-      'required_option_description': self._theme.required_option_description,
+      'command_group_option_name': self._theme.group_command_option_name,
+      'command_group_option_description': self._theme.group_command_option_description,
       'required_asterisk': self._theme.required_asterisk
     }
 
@@ -696,7 +771,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     name_display_width = name_indent + self._get_display_width(name) + (1 if add_colon else 0)
 
     # Calculate spacing needed to reach description column
-    # All descriptions (commands, subcommands, and options) use the same column alignment
+    # All descriptions (commands, command groups, and options) use the same column alignment
     spacing_needed = description_column - name_display_width
     spacing = description_column
 
@@ -745,7 +820,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     # Fallback: put description on separate lines (name too long or not enough space)
     lines = [name_part]
 
-    # All descriptions (commands, subcommands, and options) use the same alignment
+    # All descriptions (commands, command groups, and options) use the same alignment
     desc_indent = spacing
 
     available_width = self._console_width - desc_indent
@@ -784,6 +859,24 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
           return f"{styled_title}\n\n{usage_text}"
 
     return usage_text
+
+  def start_section(self, heading):
+    """Override to customize section headers with theming and capitalization."""
+    if heading and heading.lower() == 'options':
+      # Capitalize options to OPTIONS and apply subtitle theme
+      styled_heading = self._apply_style('OPTIONS', 'subtitle')
+      super().start_section(styled_heading)
+    elif heading and heading == 'COMMANDS':
+      # Apply subtitle theme to COMMANDS
+      styled_heading = self._apply_style('COMMANDS', 'subtitle')
+      super().start_section(styled_heading)
+    else:
+      # For other sections, apply subtitle theme if available
+      if heading and self._theme:
+        styled_heading = self._apply_style(heading, 'subtitle')
+        super().start_section(styled_heading)
+      else:
+        super().start_section(heading)
 
   def _find_subparser(self, parent_parser, subcmd_name):
     """Find a subparser by name in the parent parser."""

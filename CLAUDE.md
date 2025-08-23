@@ -17,10 +17,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an active Python library (`auto-cli-py`) that automatically builds complete CLI applications from Python functions AND class methods using introspection and type annotations. The library supports multiple modes:
 
-1. **Module-based CLI**: `CLI()` - Create flat CLI commands from module functions (no subcommands/groups)
+1. **Module-based CLI**: `CLI()` - Create flat CLI commands from module functions (no command groups/groups)
 2. **Class-based CLI**: `CLI(YourClass)` - Create CLI from class methods with organizational patterns:
    - **Direct Methods**: Simple flat commands from class methods  
-   - **Inner Classes**: Flat commands with double-dash notation (e.g., `command--subcommand`) supporting global and sub-global arguments
+   - **Inner Classes**: Flat commands with double-dash notation (e.g., `command--command-group`) supporting global and sub-global arguments
 
 **IMPORTANT**: All commands are now FLAT - no hierarchical command groups. Inner class methods become flat commands using double-dash notation (e.g., `data-operations--process`).
 
@@ -130,7 +130,7 @@ pip install auto-cli-py  # Ensure auto-cli-py is available
 
 **When to use:** Simple utilities, data processing, functional programming style
 
-**IMPORTANT:** Module-based CLIs now only support flat commands. No subcommands or grouping - each function becomes a direct command.
+**IMPORTANT:** Module-based CLIs now only support flat commands. No command groups (sub-commands) or grouping - each function becomes a direct command.
 
 ```python
 # At the end of any Python file with functions
@@ -615,7 +615,7 @@ All constructor parameters must have default values to be used as CLI arguments.
 - Parameter names become CLI option names (--param_name)
 
 **Flat Command Architecture**: 
-- Module functions become flat commands (no subcommands/groups)
+- Module functions become flat commands (no command groups (sub-commands)/groups)
 - Class methods become flat commands  
 - Inner class methods become flat commands with double-dash notation (e.g., `class-name--method-name`)
 

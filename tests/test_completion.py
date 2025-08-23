@@ -68,13 +68,13 @@ class TestCompletionHandler:
       words=["prog", "test-function", "--name"],
       current_word="",
       cursor_position=0,
-      subcommand_path=["test-function"],
+      command_group_path=["test-function"],
       parser=parser,
       cli=cli
     )
 
     assert context.words == ["prog", "test-function", "--name"]
-    assert context.subcommand_path == ["test-function"]
+    assert context.command_group_path == ["test-function"]
     assert context.cli == cli
 
   def test_get_available_commands(self):
@@ -93,8 +93,8 @@ class TestCompletionHandler:
     handler = BashCompletionHandler(cli)
     parser = cli.create_parser(no_color=True)
 
-    # Navigate to test-function subcommand
-    subparser = handler.get_subcommand_parser(parser, ["test-function"])
+    # Navigate to test-function command group
+    subparser = handler.get_command_group_parser(parser, ["test-function"])
     assert subparser is not None
 
     options = handler.get_available_options(subparser)

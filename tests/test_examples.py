@@ -80,7 +80,7 @@ class TestClassExample:
     assert "Enhanced data processing utility" in result.stdout
 
   def test_class_example_process_file(self):
-    """Test the file-operations process-single hierarchical command in cls_example.py."""
+    """Test the file-operations process-single command group in cls_example.py."""
     examples_path = Path(__file__).parent.parent / "cls_example.py"
     result = subprocess.run(
       [sys.executable, str(examples_path), "file-operations", "process-single", "--input-file", "test.txt"],
@@ -93,7 +93,7 @@ class TestClassExample:
     assert "Processing file: test.txt" in result.stdout
 
   def test_class_example_config_command(self):
-    """Test config-management set-default-mode hierarchical command in cls_example.py."""
+    """Test config-management set-default-mode command group in cls_example.py."""
     examples_path = Path(__file__).parent.parent / "cls_example.py"
     result = subprocess.run(
       [sys.executable, str(examples_path), "config-management", "set-default-mode", "--mode", "FAST"],
@@ -117,4 +117,4 @@ class TestClassExample:
 
     assert result.returncode == 0
     assert "config-management" in result.stdout  # Command group should appear
-    assert "set-default-mode" in result.stdout   # Subcommand should appear
+    assert "set-default-mode" in result.stdout   # Command group command should appear

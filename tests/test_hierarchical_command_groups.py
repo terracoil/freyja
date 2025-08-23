@@ -1,4 +1,4 @@
-"""Tests for hierarchical subcommands functionality with double underscore delimiter."""
+"""Tests for hierarchical command groups functionality with double underscore delimiter."""
 
 import enum
 import sys
@@ -82,8 +82,8 @@ def admin__system__backup(compress: bool = True):
 test_module = sys.modules[__name__]
 
 
-class TestHierarchicalSubcommands:
-  """Test hierarchical subcommand functionality."""
+class TestHierarchicalCommandGroups:
+  """Test hierarchical command group functionality."""
 
   def setup_method(self):
     """Set up test CLI instance."""
@@ -291,7 +291,7 @@ class TestHierarchicalSubcommands:
 
 
 class TestHierarchicalEdgeCases:
-  """Test edge cases for hierarchical subcommands."""
+  """Test edge cases for hierarchical command groups."""
 
   def test_empty_double_underscore(self):
     """Test handling of functions with empty parts in double underscore."""

@@ -2,13 +2,27 @@
 
 [← Back to README](../README.md) | [⚙️ Development Guide](../CLAUDE.md)
 
+## Documentation Structure
+
+### 📚 Core Documentation
+- **[Getting Started](getting-started/index.md)** - Installation, quick start, and basics
+- **[User Guide](user-guide/index.md)** - Comprehensive guides for both CLI modes
+- **[Features](features/index.md)** - Type annotations, themes, completion, and more
+- **[Advanced Topics](advanced/index.md)** - State management, testing, migration
+- **[API Reference](reference/index.md)** - Complete API documentation
+
+### 🛠️ Resources
+- **[Guides](guides/index.md)** - Troubleshooting, best practices, examples
+- **[FAQ](faq.md)** - Frequently asked questions
+- **[Development](development/index.md)** - For contributors and maintainers
+
 ## Table of Contents
 - [Overview](#overview)
 - [Two CLI Creation Modes](#two-cli-creation-modes)
 - [Quick Comparison](#quick-comparison)
 - [Getting Started](#getting-started)
-- [Feature Guides](#feature-guides)
-- [Reference Documentation](#reference-documentation)
+- [Feature Highlights](#feature-highlights)
+- [Next Steps](#next-steps)
 
 ## Overview
 
@@ -131,43 +145,40 @@ cli.display()
 ## Getting Started
 
 ### 📚 New to Auto-CLI-Py?
-- [Quick Start Guide](getting-started/quick-start.md) - Get running in 5 minutes
-- [Installation Guide](getting-started/installation.md) - Detailed setup instructions
-- [Basic Usage Patterns](getting-started/basic-usage.md) - Core concepts and examples
-
-### 🎯 Choose Your Mode
-- [**Module-based CLI Guide**](module-cli-guide.md) - Complete guide to function-based CLIs
-- [**Class-based CLI Guide**](class-cli-guide.md) - Complete guide to method-based CLIs
+- **[Quick Start Guide](getting-started/quick-start.md)** - Get running in 5 minutes
+- **[Installation Guide](getting-started/installation.md)** - Detailed setup instructions
+- **[Basic Usage Patterns](getting-started/basic-usage.md)** - Core concepts and examples
+- **[Choosing CLI Mode](getting-started/choosing-cli-mode.md)** - Module vs Class decision guide
 
 ## Feature Guides
 
 Both CLI modes support the same advanced features:
 
-### 🎨 Theming & Appearance
-- [Theme System](features/themes.md) - Color schemes and visual customization
-- [Theme Tuner](features/theme-tuner.md) - Interactive theme customization tool
+- **Type-driven interface generation** - Automatic CLI from type annotations
+- **Zero configuration** - Works out of the box with sensible defaults
+- **Beautiful help text** - Auto-generated from docstrings
+- **Shell completion** - Tab completion for all shells
+- **Colored output** - With theme support and NO_COLOR compliance
 
-### ⚡ Advanced Features  
-- [Type Annotations](features/type-annotations.md) - Supported types and validation
-- [Subcommands](features/subcommands.md) - Hierarchical command structures
-- [Autocompletion](features/autocompletion.md) - Shell completion setup
+## Next Steps
 
-### 📖 User Guides
-- [Complete Examples](guides/examples.md) - Real-world usage patterns
-- [Best Practices](guides/best-practices.md) - Recommended approaches
-- [Migration Guide](guides/migration.md) - Upgrading between versions
+### 🚀 For New Users
+1. Start with **[Installation](getting-started/installation.md)**
+2. Follow the **[Quick Start](getting-started/quick-start.md)**
+3. Choose your mode: **[Module vs Class](getting-started/choosing-cli-mode.md)**
+4. Read the appropriate guide: **[Module CLI](user-guide/module-cli.md)** or **[Class CLI](user-guide/class-cli.md)**
 
-## Reference Documentation
+### 📖 For Learning
+- **[User Guide](user-guide/index.md)** - Comprehensive documentation
+- **[Features](features/index.md)** - Explore all capabilities
+- **[Examples](guides/examples.md)** - Real-world use cases
+- **[FAQ](faq.md)** - Common questions answered
 
-### 📋 API Reference
-- [CLI Class API](reference/api.md) - Complete method reference
-- [Configuration Options](reference/configuration.md) - All available settings
-- [Command-line Options](reference/cli-options.md) - Built-in CLI flags
-
-### 🔧 Development
-- [Architecture Overview](development/architecture.md) - Internal design
-- [Contributing Guide](development/contributing.md) - How to contribute
-- [Testing Guide](development/testing.md) - Test setup and guidelines
+### 🔧 For Advanced Users
+- **[Advanced Topics](advanced/index.md)** - Complex patterns and techniques
+- **[API Reference](reference/index.md)** - Complete API documentation
+- **[Troubleshooting](guides/troubleshooting.md)** - Solve common problems
+- **[Contributing](development/contributing.md)** - Help improve Auto-CLI-Py
 
 ---
 

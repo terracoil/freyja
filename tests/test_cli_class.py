@@ -212,7 +212,7 @@ class TestClassBasedCLI:
     # System class uses inner class pattern, so should have hierarchical commands
     assert 'tune-theme' in cli.commands
     assert cli.commands['tune-theme']['type'] == 'group'
-    assert 'increase-adjustment' in cli.commands['tune-theme']['subcommands']
+    assert 'increase-adjustment' in cli.commands['tune-theme']['commands']
 
   def test_completion_integration(self):
     """Test that completion works with class-based CLI."""
@@ -451,7 +451,7 @@ class TestConstructorParameterValidation:
     # Inner class methods become hierarchical commands with proper nesting
     assert 'good-inner-class' in cli.commands
     assert cli.commands['good-inner-class']['type'] == 'group'
-    assert 'create-item' in cli.commands['good-inner-class']['subcommands']
+    assert 'create-item' in cli.commands['good-inner-class']['commands']
 
   def test_inner_class_pattern_with_bad_inner_class_fails(self):
     """Test that inner class pattern fails when inner class has required parameters."""

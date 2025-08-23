@@ -289,7 +289,7 @@ class TestHierarchicalFormatterWithCommandGroups:
     # Create mock group parser
     group_parser = Mock()
     group_parser._command_group_description = "Database operations and management"
-    group_parser._subcommands = {'create': 'Create database', 'migrate': 'Run migrations'}
+    group_parser._commands = {'create': 'Create database', 'migrate': 'Run migrations'}
     group_parser.description = "Default description"
 
     # Mock _find_subparser to return mock subparsers
@@ -302,10 +302,10 @@ class TestHierarchicalFormatterWithCommandGroups:
 
     # Mock other required methods
     self.formatter._calculate_group_dynamic_columns = Mock(return_value=(20, 30))
-    self.formatter._format_command_with_args_global_subcommand = Mock(return_value=['  subcmd: description'])
+    self.formatter._format_command_with_args_global_command = Mock(return_value=['  cmd_group: description'])
 
     # Test the formatting
-    lines = self.formatter._format_group_with_subcommands_global(
+    lines = self.formatter._format_group_with_command_groups_global(
       name="db",
       parser=group_parser,
       base_indent=2,
@@ -329,9 +329,9 @@ class TestHierarchicalFormatterWithCommandGroups:
     group_parser._command_group_description = None
     group_parser.description = "Default group description"
     group_parser.help = ""  # Ensure help is a string, not a Mock
-    group_parser._subcommands = {}
+    group_parser._commands = {}
 
-    lines = self.formatter._format_group_with_subcommands_global(
+    lines = self.formatter._format_group_with_command_groups_global(
       name="admin",
       parser=group_parser,
       base_indent=2,
@@ -350,11 +350,11 @@ class TestHierarchicalFormatterIntegration:
     """Test _format_action with SubParsersAction."""
     formatter = HierarchicalHelpFormatter(prog='test_cli')
 
-    # Create parser with subcommands
+    # Create parser with command groups
     parser = argparse.ArgumentParser(formatter_class=lambda *args, **kwargs: formatter)
     subparsers = parser.add_subparsers(dest='command')
 
-    # Add a simple subcommand
+    # Add a simple command group
     sub = subparsers.add_parser('test-cmd', help='Test command')
     sub.add_argument('--option', help='Test option')
 
@@ -412,7 +412,7 @@ class TestHierarchicalFormatterIntegration:
     parser.add_argument('--verbose', action='store_true', help='Enable verbose output')
     parser.add_argument('--config', metavar='FILE', help='Configuration file')
 
-    # Add subcommands
+    # Add command groups
     subparsers = parser.add_subparsers(title='COMMANDS', dest='command')
 
     # Flat command
@@ -422,7 +422,7 @@ class TestHierarchicalFormatterIntegration:
     # Group command (simulate what CLI creates)
     user_group = subparsers.add_parser('user', help='User management operations')
     user_group._command_type = 'group'
-    user_group._subcommands = {'create': 'Create user', 'delete': 'Delete user'}
+    user_group._commands = {'create': 'Create user', 'delete': 'Delete user'}
 
     # Test that help can be generated without errors
     help_text = parser.format_help()

@@ -60,8 +60,8 @@ complete -F _{prog_name}_completion {prog_name}
 
     # Get the appropriate parser for current context
     parser = context.parser
-    if context.subcommand_path:
-      parser = self.get_subcommand_parser(parser, context.subcommand_path)
+    if context.command_group_path:
+      parser = self.get_command_group_parser(parser, context.command_group_path)
       if not parser:
         return []
 
@@ -83,7 +83,7 @@ complete -F _{prog_name}_completion {prog_name}
       options = self.get_available_options(parser)
       return self.complete_partial_word(options, current_word)
 
-    # Complete commands/subcommands
+    # Complete commands/command groups
     commands = self.get_available_commands(parser)
     if commands:
       return self.complete_partial_word(commands, current_word)
@@ -109,13 +109,13 @@ def handle_bash_completion() -> None:
 
   current_word = words[cword_num] if cword_num < len(words) else ""
 
-  # Extract subcommand path (everything between program name and current word)
-  subcommand_path = []
+  # Extract command group path (everything between program name and current word)
+  command_group_path = []
   if len(words) > 1:
     for i in range(1, min(cword_num, len(words))):
       word = words[i]
       if not word.startswith('-'):
-        subcommand_path.append(word)
+        command_group_path.append(word)
 
   # Import here to avoid circular imports
 

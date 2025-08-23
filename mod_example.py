@@ -116,7 +116,7 @@ def advanced_demo(
     print(f"Result {i + 1}: {result}")
 
 
-# Database operations (converted from subcommands to flat commands)
+# Database operations (converted from command groups to flat commands)
 def create_database(
     name: str,
     engine: str = "postgres",
@@ -193,7 +193,7 @@ def restore_database(
   print("✓ Restore completed successfully")
 
 
-# Admin operations (converted from nested subcommands to flat commands)
+# Admin operations (converted from nested command groups to flat commands)
 def reset_user_password(username: str, notify_user: bool = True):
   """Reset a user's password (admin operation).
 

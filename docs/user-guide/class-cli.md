@@ -844,11 +844,11 @@ class DocumentedApp:
 
 ## See Also
 
-- [Module-based CLI Guide](module-cli-guide.md) - For functional approaches
-- [Type Annotations](features/type-annotations.md) - Detailed type system guide
-- [Theme System](features/themes.md) - Customizing appearance  
-- [Complete Examples](guides/examples.md) - More real-world examples
-- [Best Practices](guides/best-practices.md) - General CLI development tips
+- [Module-based CLI Guide](module-cli.md) - For functional approaches
+- [Type Annotations](../features/type-annotations.md) - Detailed type system guide
+- [Theme System](../features/themes.md) - Customizing appearance  
+- [Complete Examples](../guides/examples.md) - More real-world examples
+- [Best Practices](../guides/best-practices.md) - General CLI development tips
 
 ---
 

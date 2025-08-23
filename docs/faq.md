@@ -125,7 +125,7 @@ Auto-CLI-Py is built on top of argparse but eliminates the boilerplate:
 | **Code amount** | ~5 lines | ~20+ lines |
 | **Type validation** | Automatic | Manual |
 | **Help generation** | From docstrings | Manual strings |
-| **Subcommands** | Automatic | Complex setup |
+| **Command Groups** | Automatic | Complex setup |
 | **Error handling** | Built-in | Manual |
 
 ### When should I use other CLI libraries instead?

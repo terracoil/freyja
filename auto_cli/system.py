@@ -47,13 +47,13 @@ class System:
         ("subtitle", "Section headers (COMMANDS:, OPTIONS:)"),
         ("command_name", "Command names"),
         ("command_description", "Command descriptions"),
-        ("group_command_name", "Group command names"),
-        ("subcommand_name", "Subcommand names"),
-        ("subcommand_description", "Subcommand descriptions"),
+        ("command_group_name", "Group command names"),
+        ("grouped_command_name", "Command group names"),
+        ("grouped_command_description", "Command group descriptions"),
         ("option_name", "Option flags (--name)"),
         ("option_description", "Option descriptions"),
-        ("required_option_name", "Required option flags"),
-        ("required_option_description", "Required option descriptions"),
+        ("command_group_option_name", "Group command option flags"),
+        ("command_group_option_description", "Group command option descriptions"),
         ("required_asterisk", "Required field markers (*)")
       ]
 
@@ -204,7 +204,7 @@ class System:
         f"  {current_formatter.apply_style('--name NAME', theme.option_name)}: {current_formatter.apply_style('Specify name', theme.option_description)}"
       )
       print(
-        f"  {current_formatter.apply_style('--email EMAIL', theme.required_option_name)} {current_formatter.apply_style('*', theme.required_asterisk)}: {current_formatter.apply_style('Required email', theme.required_option_description)}"
+        f"  {current_formatter.apply_style('--email EMAIL', theme.option_name)} {current_formatter.apply_style('*', theme.required_asterisk)}: {current_formatter.apply_style('Required email', theme.option_description)}"
       )
       print()
 
@@ -222,13 +222,13 @@ class System:
         ("subtitle", theme.subtitle.fg, "Subtitle color"),
         ("command_name", theme.command_name.fg, "Command name"),
         ("command_description", theme.command_description.fg, "Command description"),
-        ("group_command_name", theme.group_command_name.fg, "Group command name"),
-        ("subcommand_name", theme.subcommand_name.fg, "Subcommand name"),
-        ("subcommand_description", theme.subcommand_description.fg, "Subcommand description"),
+        ("command_group_name", theme.group_command_name.fg, "Group command name"),
+        ("grouped_command_name", theme.command_group_name.fg, "Command group name"),
+        ("grouped_command_description", theme.command_group_description.fg, "Command group description"),
         ("option_name", theme.option_name.fg, "Option name"),
         ("option_description", theme.option_description.fg, "Option description"),
-        ("required_option_name", theme.required_option_name.fg, "Required option name"),
-        ("required_option_description", theme.required_option_description.fg, "Required option description"),
+        ("command_group_option_name", theme.group_command_option_name.fg, "Group command option name"),
+        ("command_group_option_description", theme.group_command_option_description.fg, "Group command option description"),
         ("required_asterisk", theme.required_asterisk.fg, "Required asterisk"),
       ]
 
@@ -749,12 +749,12 @@ class System:
             if complete_idx < len(sys.argv) - 1:
               current_word = sys.argv[complete_idx + 1] if complete_idx + 1 < len(sys.argv) else ""
 
-          # Extract subcommand path
-          subcommand_path = []
+          # Extract command group path
+          command_group_path = []
           if len(words) > 1:
             for word in words[1:]:
               if not word.startswith('-'):
-                subcommand_path.append(word)
+                command_group_path.append(word)
 
           # Create parser for context
           parser = self._cli_instance.create_parser(no_color=True) if self._cli_instance else None
@@ -764,7 +764,7 @@ class System:
             words=words,
             current_word=current_word,
             cursor_position=cursor_pos,
-            subcommand_path=subcommand_path,
+            command_group_path=command_group_path,
             parser=parser,
             cli=self._cli_instance
           )

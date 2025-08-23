@@ -254,41 +254,41 @@ class TestSystemCLIGeneration:
     # Groups should have hierarchical structure
     tune_theme_group = cli.commands['tune-theme']
     assert tune_theme_group['type'] == 'group'
-    assert 'increase-adjustment' in tune_theme_group['subcommands']
-    assert 'decrease-adjustment' in tune_theme_group['subcommands']
+    assert 'increase-adjustment' in tune_theme_group['command groups']
+    assert 'decrease-adjustment' in tune_theme_group['command groups']
 
     completion_group = cli.commands['completion']
     assert completion_group['type'] == 'group'
-    assert 'install' in completion_group['subcommands']
-    assert 'show' in completion_group['subcommands']
+    assert 'install' in completion_group['command groups']
+    assert 'show' in completion_group['command groups']
 
   def test_system_tune_theme_methods(self):
-    """Test System CLI includes TuneTheme methods as hierarchical subcommands."""
+    """Test System CLI includes TuneTheme methods as hierarchical command groups."""
     cli = CLI(System)
 
-    # Check that TuneTheme methods are included as subcommands under tune-theme group
+    # Check that TuneTheme methods are included as command groups under tune-theme group
     tune_theme_group = cli.commands['tune-theme']
-    expected_subcommands = [
+    expected_command groups = [
       'increase-adjustment', 'decrease-adjustment',
       'select-strategy', 'toggle-theme',
       'edit-colors', 'show-rgb', 'run-interactive'
     ]
 
-    for subcommand in expected_subcommands:
-      assert subcommand in tune_theme_group['subcommands']
-      assert tune_theme_group['subcommands'][subcommand]['type'] == 'command'
+    for command group in expected_command groups:
+      assert command group in tune_theme_group['command groups']
+      assert tune_theme_group['command groups'][command group]['type'] == 'command'
 
   def test_system_completion_methods(self):
-    """Test System CLI includes Completion methods as hierarchical subcommands."""
+    """Test System CLI includes Completion methods as hierarchical command groups."""
     cli = CLI(System)
 
-    # Check that Completion methods are included as subcommands under completion group
+    # Check that Completion methods are included as command groups under completion group
     completion_group = cli.commands['completion']
-    expected_subcommands = ['install', 'show']
+    expected_command groups = ['install', 'show']
 
-    for subcommand in expected_subcommands:
-      assert subcommand in completion_group['subcommands']
-      assert completion_group['subcommands'][subcommand]['type'] == 'command'
+    for command group in expected_command groups:
+      assert command group in completion_group['command groups']
+      assert completion_group['command groups'][command group]['type'] == 'command'
 
   def test_system_cli_execution(self):
     """Test System CLI can execute commands."""
@@ -319,12 +319,12 @@ class TestSystemIntegration:
     assert "tune-theme" in help_text
     assert "completion" in help_text
 
-  def test_system_subcommand_help(self):
-    """Test System CLI subcommand help generation."""
+  def test_system_command group_help(self):
+    """Test System CLI command group help generation."""
     cli = CLI(System)
     parser = cli.create_parser()
 
-    # Test that parsing to subcommand level works (help would exit)
+    # Test that parsing to command group level works (help would exit)
     with pytest.raises(SystemExit):
       parser.parse_args(['tune-theme', '--help'])
 

@@ -8,7 +8,6 @@ import types
 from collections.abc import Callable
 from typing import Any, Optional, Type, Union
 
-from jedi.debug import enable_speed
 
 from .docstring_parser import extract_function_help, parse_docstring
 from .formatter import HierarchicalHelpFormatter
@@ -91,7 +90,7 @@ class CLI:
     try:
       parsed = parser.parse_args(args)
 
-      # Handle missing command/subcommand scenarios
+      # Handle missing command/command group scenarios
       if not hasattr(parsed, '_cli_function'):
         return self.__handle_missing_command(parser, parsed)
 
@@ -252,7 +251,7 @@ class CLI:
             method_name != '__init__' and
             inspect.isfunction(method_obj)):
 
-          # Create hierarchical name: command__subcommand
+          # Create hierarchical name: command__command
           hierarchical_name = f"{command_name}__{method_name}"
           self.functions[hierarchical_name] = method_obj
 
@@ -395,14 +394,14 @@ class CLI:
               
               groups[cli_group_name] = {
                 'type': 'group',
-                'subcommands': {},
+                'commands': {},
                 'description': description or f"{cli_group_name.title().replace('-', ' ')} operations",
                 'inner_class': system_inner_classes.get(original_class_name),  # Store class reference
                 'is_system_command': True  # Mark as system command
               }
             
-            # Add method as subcommand in the group
-            groups[cli_group_name]['subcommands'][cli_method_name] = {
+            # Add method as command in the group
+            groups[cli_group_name]['commands'][cli_method_name] = {
               'type': 'command',
               'function': func_obj,
               'original_name': func_name,
@@ -419,13 +418,20 @@ class CLI:
     """Build command tree from discovered functions.
 
     For module-based CLIs: Creates flat structure with all commands at top level.
-    For class-based CLIs: Creates hierarchical structure with command groups and subcommands.
+    For class-based CLIs: Creates hierarchical structure with command groups and commands.
     """
     commands = {}
 
     # First, inject System commands if enabled (they appear first in help)
     system_commands = self.__build_system_commands()
-    commands.update(system_commands)
+    if system_commands:
+      # Group all system commands under a "system" parent group
+      commands['system'] = {
+        'type': 'group',
+        'commands': system_commands,
+        'description': 'System utilities and configuration',
+        'is_system_command': True
+      }
 
     if self.target_mode == TargetMode.MODULE:
       # Module mode: Always flat structure
@@ -476,12 +482,12 @@ class CLI:
 
                 groups[cli_group_name] = {
                   'type': 'group',
-                  'subcommands': {},
+                  'commands': {},
                   'description': description or f"{cli_group_name.title().replace('-', ' ')} operations"
                 }
 
-              # Add method as subcommand in the group
-              groups[cli_group_name]['subcommands'][cli_method_name] = {
+              # Add method as command in the group
+              groups[cli_group_name]['commands'][cli_method_name] = {
                 'type': 'command',
                 'function': func_obj,
                 'original_name': func_name,
@@ -654,7 +660,7 @@ class CLI:
       parser.add_argument(flag, **arg_config)
 
   def create_parser(self, no_color: bool = False) -> argparse.ArgumentParser:
-    """Create argument parser with hierarchical subcommand support."""
+    """Create argument parser with hierarchical command group support."""
     # Create a custom formatter class that includes the theme (or no theme if no_color)
     effective_theme = None if no_color else self.theme
 
@@ -759,7 +765,7 @@ class CLI:
         self.__add_leaf_command(subparsers, name, info)
 
   def __add_command_group(self, subparsers, name: str, info: dict, path: list):
-    """Add a command group with subcommands (supports nesting)."""
+    """Add a command group with commands (supports nesting)."""
     # Check for inner class description
     group_help = None
     inner_class = None
@@ -770,9 +776,12 @@ class CLI:
       group_help = f"{name.title().replace('-', ' ')} operations"
 
     # Find the inner class for this command group (for sub-global arguments)
-    if (hasattr(self, 'use_inner_class_pattern') and
-        self.use_inner_class_pattern and
-        hasattr(self, 'inner_classes')):
+    # First check if it's provided directly in the info (for system commands)
+    if 'inner_class' in info and info['inner_class']:
+      inner_class = info['inner_class']
+    elif (hasattr(self, 'use_inner_class_pattern') and
+          self.use_inner_class_pattern and
+          hasattr(self, 'inner_classes')):
       for class_name, cls in self.inner_classes.items():
         from .str_utils import StrUtils
         if StrUtils.kebab_case(class_name) == name:
@@ -807,22 +816,25 @@ class CLI:
     # Store theme reference for consistency
     group_parser._theme = effective_theme
 
-    # Store subcommand info for help formatting
-    subcommand_help = {}
-    for subcmd_name, subcmd_info in info['subcommands'].items():
-      if subcmd_info['type'] == 'command':
-        func = subcmd_info['function']
+    # Store command info for help formatting
+    command_help = {}
+    for cmd_name, cmd_info in info['commands'].items():
+      if cmd_info['type'] == 'command':
+        func = cmd_info['function']
         desc, _ = extract_function_help(func)
-        subcommand_help[subcmd_name] = desc
-      elif subcmd_info['type'] == 'group':
-        # For nested groups, show as group with subcommands
-        subcommand_help[subcmd_name] = f"{subcmd_name.title().replace('-', ' ')} operations"
+        command_help[cmd_name] = desc
+      elif cmd_info['type'] == 'group':
+        # For nested groups, use their actual description if available
+        if 'description' in cmd_info and cmd_info['description']:
+          command_help[cmd_name] = cmd_info['description']
+        else:
+          command_help[cmd_name] = f"{cmd_name.title().replace('-', ' ')} operations"
 
-    group_parser._subcommands = subcommand_help
-    group_parser._subcommand_details = info['subcommands']
+    group_parser._commands = command_help
+    group_parser._command_details = info['commands']
 
-    # Create subcommand parsers with enhanced help
-    dest_name = '_'.join(path) + '_subcommand' if len(path) > 1 else 'subcommand'
+    # Create command parsers with enhanced help
+    dest_name = '_'.join(path) + '_command' if len(path) > 1 else 'command'
     sub_subparsers = group_parser.add_subparsers(
       title=f'{name.title().replace("-", " ")} COMMANDS',
       dest=dest_name,
@@ -833,13 +845,13 @@ class CLI:
 
     # Store reference for enhanced help formatting
     sub_subparsers._enhanced_help = True
-    sub_subparsers._subcommand_details = info['subcommands']
+    sub_subparsers._command_details = info['commands']
 
     # Store theme reference for consistency in nested subparsers
     sub_subparsers._theme = effective_theme
 
-    # Recursively add subcommands
-    self.__add_commands_to_parser(sub_subparsers, info['subcommands'], path)
+    # Recursively add commands
+    self.__add_commands_to_parser(sub_subparsers, info['commands'], path)
 
   def __add_leaf_command(self, subparsers, name: str, info: dict):
     """Add a leaf command (actual executable function)."""
@@ -880,31 +892,48 @@ class CLI:
     sub.set_defaults(**defaults)
 
   def __handle_missing_command(self, parser: argparse.ArgumentParser, parsed) -> int:
-    """Handle cases where no command or subcommand was provided."""
+    """Handle cases where no command or command group was provided."""
     # Analyze parsed arguments to determine what level of help to show
     command_parts = []
     result = 0
 
-    # Check for command and nested subcommands
+    # Check for command and nested command groups
     if hasattr(parsed, 'command') and parsed.command:
-      command_parts.append(parsed.command)
-
-      # Check for nested subcommands
+      # Check if this is a system command by looking for system_*_command attributes
+      is_system_command = False
       for attr_name in dir(parsed):
-        if attr_name.endswith('_subcommand') and getattr(parsed, attr_name):
-          # Extract command path from attribute names
-          if attr_name == 'subcommand':
-            # Simple case: user subcommand
-            subcommand = getattr(parsed, attr_name)
-            if subcommand:
-              command_parts.append(subcommand)
-          else:
-            # Complex case: user_subcommand for nested groups
-            path_parts = attr_name.replace('_subcommand', '').split('_')
-            command_parts.extend(path_parts)
-            subcommand = getattr(parsed, attr_name)
-            if subcommand:
-              command_parts.append(subcommand)
+        if attr_name.startswith('system_') and attr_name.endswith('_command'):
+          is_system_command = True
+          # This is a system command path: system -> [command] -> [subcommand]
+          command_parts.append('system')
+          command_parts.append(parsed.command)
+          
+          # Check if there's a specific subcommand
+          subcommand = getattr(parsed, attr_name)
+          if subcommand:
+            command_parts.append(subcommand)
+          break
+      
+      if not is_system_command:
+        # Regular command path
+        command_parts.append(parsed.command)
+
+        # Check for nested command groups
+        for attr_name in dir(parsed):
+          if attr_name.endswith('_command') and getattr(parsed, attr_name):
+            # Extract command path from attribute names
+            if attr_name == 'command':
+              # Simple case: user command
+              command = getattr(parsed, attr_name)
+              if command:
+                command_parts.append(command)
+            else:
+              # Complex case: user_command for nested groups
+              path_parts = attr_name.replace('_command', '').split('_')
+              command_parts.extend(path_parts)
+              command = getattr(parsed, attr_name)
+              if command:
+                command_parts.append(command)
 
     if command_parts:
       # Show contextual help for partial command
@@ -940,9 +969,31 @@ class CLI:
         break
 
     if result == 0:
+      # Check for special case: system tune-theme should default to run-interactive
+      if (len(command_parts) == 2 and 
+          command_parts[0] == 'system' and 
+          command_parts[1] == 'tune-theme'):
+        # Execute tune-theme run-interactive by default
+        return self.__execute_default_tune_theme()
+      
       current_parser.print_help()
 
     return result
+
+  def __execute_default_tune_theme(self) -> int:
+    """Execute the default tune-theme command (run-interactive)."""
+    from .system import System
+    
+    # Create System instance
+    system_instance = System()
+    
+    # Create TuneTheme instance with default arguments
+    tune_theme_instance = System.TuneTheme()
+    
+    # Execute run_interactive method
+    tune_theme_instance.run_interactive()
+    
+    return 0
 
   def __execute_command(self, parsed) -> Any:
     """Execute the parsed command with its arguments."""

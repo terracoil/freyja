@@ -1,6 +1,6 @@
 # 🗂️ Module-Based CLI Guide
 
-[← Back to Help](../help.md) | [🏠 Home](../help.md) | [🏗️ Class-Based Guide](class-cli-guide.md)
+[← Back to User Guide](index.md) | [↑ Documentation Hub](../help.md) | [Class CLI Guide →](class-cli.md)
 
 ## Table of Contents
 - [Overview](#overview)
@@ -671,13 +671,12 @@ if __name__ == "__main__":
 
 ## See Also
 
-- [Class-Based CLI Guide](class-cli-guide.md) - Alternative approach using classes
+- [Class-Based CLI Guide](class-cli.md) - Alternative approach using classes
 - [Mode Comparison](mode-comparison.md) - Detailed comparison of both modes
 - [Type Annotations](../features/type-annotations.md) - Supported types
-- [Hierarchical Commands](../features/hierarchical-commands.md) - Command organization
-- [Examples](examples.md) - More real-world examples
+- [Examples](../guides/examples.md) - More real-world examples
 - [API Reference](../reference/api.md) - Complete API documentation
 
 ---
 
-**Navigation**: [← Help](../help.md) | [Class-Based Guide →](class-cli-guide.md)
+**Navigation**: [← User Guide](index.md) | [↑ Documentation Hub](../help.md) | [Class CLI Guide →](class-cli.md)
