@@ -61,8 +61,8 @@ class UserManager:
     """User management CLI with hierarchical commands."""
     
     def __init__(self, config_file: str = "config.json", debug: bool = False):
-        """Initialize with global arguments.
-        
+        """
+            Initialize with global arguments.        
         :param config_file: Configuration file (global argument)
         :param debug: Enable debug mode (global argument)
         """
@@ -73,15 +73,15 @@ class UserManager:
         """User account operations."""
         
         def __init__(self, database_url: str = "sqlite:///users.db"):
-            """Initialize user operations.
-            
+            """
+                Initialize user operations.            
             :param database_url: Database connection URL (sub-global argument)
             """
             self.database_url = database_url
         
         def create(self, username: str, email: str, active: bool = True) -> None:
-            """Create a new user account.
-            
+            """
+                Create a new user account.            
             :param username: Username for new account
             :param email: Email address
             :param active: Whether account is active

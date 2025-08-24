@@ -91,8 +91,8 @@ from auto_cli import CLI
 from typing import List
 
 class TaskManager:
-    """Task Management Application
-    
+    """
+        Task Management Application    
     A simple CLI for managing your daily tasks.
     """
     

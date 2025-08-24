@@ -57,8 +57,8 @@ from auto_cli.cli import CLI
 2. **Define your functions with type hints:**
 ```python
 def greet(name: str, times: int = 1, excited: bool = False):
-    """Greet someone multiple times.
-    
+    """
+        Greet someone multiple times.    
     :param name: Person's name to greet
     :param times: Number of greetings
     :param excited: Add excitement to greeting
@@ -148,8 +148,8 @@ def deploy(
     version: str = "latest",
     dry_run: bool = False
 ):
-    """Deploy application to specified environment.
-    
+    """
+        Deploy application to specified environment.    
     This function handles the deployment process including
     validation, backup, and rollout.
     
@@ -289,8 +289,8 @@ def analyze_logs(
     output_format: str = "json",
     max_results: int = 100
 ):
-    """Analyze multiple log files.
-    
+    """
+        Analyze multiple log files.    
     :param log_files: List of log files to analyze
     :param pattern: Search pattern (regex)
     :param output_format: Output format (json, csv, table)
@@ -351,8 +351,8 @@ def list_files(
     recursive: bool = False,
     sort_by: SortOrder = SortOrder.NAME
 ):
-    """List files in a directory.
-    
+    """
+        List files in a directory.    
     :param directory: Directory to list
     :param pattern: File pattern to match
     :param recursive: Include subdirectories
@@ -374,8 +374,8 @@ def copy_file(
     overwrite: bool = False,
     preserve_metadata: bool = True
 ):
-    """Copy a file to destination.
-    
+    """
+        Copy a file to destination.    
     :param source: Source file path
     :param destination: Destination path
     :param overwrite: Overwrite if exists
@@ -393,8 +393,8 @@ def archive__create(
     compression: CompressionType = CompressionType.ZIP,
     level: int = 6
 ):
-    """Create an archive from files.
-    
+    """
+        Create an archive from files.    
     :param files: Files to archive
     :param output: Output archive path
     :param compression: Compression type
@@ -411,8 +411,8 @@ def archive__extract(
     destination: str = ".",
     files: Optional[List[str]] = None
 ):
-    """Extract files from archive.
-    
+    """
+        Extract files from archive.    
     :param archive: Archive file path
     :param destination: Extract destination
     :param files: Specific files to extract (all if none)
@@ -431,8 +431,8 @@ def sync__folders(
     delete: bool = False,
     dry_run: bool = False
 ):
-    """Synchronize two folders.
-    
+    """
+        Synchronize two folders.    
     :param source: Source folder
     :param destination: Destination folder
     :param delete: Delete files not in source
@@ -448,8 +448,8 @@ def admin__cleanup(
     pattern: str = "*.tmp",
     force: bool = False
 ):
-    """Clean up old temporary files.
-    
+    """
+        Clean up old temporary files.    
     :param older_than_days: Age threshold in days
     :param pattern: File pattern to match
     :param force: Skip confirmation
@@ -654,8 +654,8 @@ from auto_cli.cli import CLI
 import sys
 
 def greet(name: str = "World", count: int = 1, excited: bool = False):
-    """Greet someone multiple times.
-    
+    """
+        Greet someone multiple times.    
     :param name: Name to greet
     :param count: Number of greetings  
     :param excited: Add excitement

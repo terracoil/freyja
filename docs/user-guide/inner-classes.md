@@ -51,8 +51,8 @@ class ProjectManager:
     """Project Management CLI with organized flat commands."""
     
     def __init__(self, config_file: str = "config.json", debug: bool = False):
-        """Initialize with global settings.
-        
+        """
+            Initialize with global settings.        
         Args:
             config_file: Configuration file path (global argument)
             debug: Enable debug mode (global argument)
@@ -77,8 +77,8 @@ class ProjectManager:
         """Project creation and management operations."""
         
         def __init__(self, workspace: str = "./projects", auto_save: bool = True):
-            """Initialize project operations.
-            
+            """
+                Initialize project operations.            
             Args:
                 workspace: Workspace directory (sub-global argument)
                 auto_save: Auto-save changes (sub-global argument)
@@ -87,8 +87,8 @@ class ProjectManager:
             self.auto_save = auto_save
         
         def create(self, name: str, template: str = "default", tags: List[str] = None) -> None:
-            """Create a new project.
-            
+            """
+                Create a new project.            
             Args:
                 name: Project name
                 template: Project template to use
@@ -102,8 +102,8 @@ class ProjectManager:
                 print("✅ Auto-save enabled")
         
         def delete(self, project_id: str, force: bool = False) -> None:
-            """Delete an existing project.
-            
+            """
+                Delete an existing project.            
             Args:
                 project_id: ID of project to delete
                 force: Skip confirmation
@@ -115,8 +115,8 @@ class ProjectManager:
                 print(f"Deleting project {project_id}")
         
         def list_projects(self, filter_tag: str = None, show_archived: bool = False) -> None:
-            """List all projects in workspace.
-            
+            """
+                List all projects in workspace.            
             Args:
                 filter_tag: Filter by tag
                 show_archived: Include archived projects
@@ -130,8 +130,8 @@ class ProjectManager:
         """Task operations within projects."""
         
         def __init__(self, default_priority: str = "medium", notify: bool = True):
-            """Initialize task management.
-            
+            """
+                Initialize task management.            
             Args:
                 default_priority: Default priority for new tasks
                 notify: Send notifications on changes
@@ -140,8 +140,8 @@ class ProjectManager:
             self.notify = notify
         
         def add(self, title: str, project: str, priority: str = None, assignee: str = None) -> None:
-            """Add task to project.
-            
+            """
+                Add task to project.            
             Args:
                 title: Task title
                 project: Project ID
@@ -158,8 +158,8 @@ class ProjectManager:
                 print("📧 Notification sent")
         
         def update(self, task_id: str, status: str, comment: str = None) -> None:
-            """Update task status.
-            
+            """
+                Update task status.            
             Args:
                 task_id: Task identifier
                 status: New status
@@ -174,8 +174,8 @@ class ProjectManager:
         """Report generation without sub-global arguments."""
         
         def summary(self, format: str = "text", detailed: bool = False) -> None:
-            """Generate project summary report.
-            
+            """
+                Generate project summary report.            
             Args:
                 format: Output format (text, json, html)
                 detailed: Include detailed statistics
@@ -184,8 +184,8 @@ class ProjectManager:
             print(f"Format: {format}")
         
         def export(self, output_file: Path, include_tasks: bool = True) -> None:
-            """Export project data.
-            
+            """
+                Export project data.            
             Args:
                 output_file: Output file path
                 include_tasks: Include task data in export

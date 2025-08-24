@@ -114,7 +114,8 @@ unset NO_COLOR
 **Solution**: Add docstrings
 ```python
 def process_data(input_file: str) -> None:
-    """Process data from input file.
+    """
+    Process data from input file.
     
     This function reads and processes the specified file.
     

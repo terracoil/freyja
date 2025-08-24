@@ -6,28 +6,29 @@ import sys
 import traceback
 import types
 from collections.abc import Callable
-from typing import Any, Optional, Type, Union
-
+from typing import Any, List, Optional, Type, Union, Sequence
 
 from .command_executor import CommandExecutor
 from .command_builder import CommandBuilder
 from .docstring_parser import extract_function_help, parse_docstring
-from .formatter import HierarchicalHelpFormatter
+from .help_formatter import HierarchicalHelpFormatter
+from .multi_class_handler import MultiClassHandler
 
-Target = Union[types.ModuleType, Type[Any]]
+Target = Union[types.ModuleType, Type[Any], Sequence[Type[Any]]]
 
 
 class TargetMode(enum.Enum):
   """Target mode enum for CLI generation."""
   MODULE = 'module'
   CLASS = 'class'
+  MULTI_CLASS = 'multi_class'
 
 
 class CLI:
   """Automatically generates CLI from module functions or class methods using introspection."""
 
   def __init__(self, target: Target, title: Optional[str] = None, function_filter: Optional[Callable] = None,
-               method_filter: Optional[Callable] = None, theme=None, alphabetize: bool = True, 
+               method_filter: Optional[Callable] = None, theme=None, alphabetize: bool = True,
                enable_completion: bool = False):
     """Initialize CLI generator with auto-detection of target type.
 
@@ -40,9 +41,38 @@ class CLI:
     :param enable_completion: Enable shell completion support
     """
     # Auto-detect target type
-    if inspect.isclass(target):
+    if isinstance(target, list):
+      # Multi-class mode
+      if not target:
+        raise ValueError("Class list cannot be empty")
+
+      # Validate all items are classes
+      for item in target:
+        if not inspect.isclass(item):
+          raise ValueError(f"All items in list must be classes, got {type(item).__name__}")
+
+      if len(target) == 1:
+        # Single class in list - treat as regular class mode
+        self.target_mode = TargetMode.CLASS
+        self.target_class = target[0]
+        self.target_classes = None
+        self.target_module = None
+        self.title = title or self.__extract_class_title(target[0])
+        self.method_filter = method_filter or self.__default_method_filter
+        self.function_filter = None
+      else:
+        # Multiple classes - multi-class mode
+        self.target_mode = TargetMode.MULTI_CLASS
+        self.target_class = None
+        self.target_classes = target
+        self.target_module = None
+        self.title = title or self.__generate_multi_class_title(target)
+        self.method_filter = method_filter or self.__default_method_filter
+        self.function_filter = None
+    elif inspect.isclass(target):
       self.target_mode = TargetMode.CLASS
       self.target_class = target
+      self.target_classes = None
       self.target_module = None
       self.title = title or self.__extract_class_title(target)
       self.method_filter = method_filter or self.__default_method_filter
@@ -51,11 +81,12 @@ class CLI:
       self.target_mode = TargetMode.MODULE
       self.target_module = target
       self.target_class = None
+      self.target_classes = None
       self.title = title or "CLI Application"
       self.function_filter = function_filter or self.__default_function_filter
       self.method_filter = None
     else:
-      raise ValueError(f"Target must be a module or class, got {type(target).__name__}")
+      raise ValueError(f"Target must be a module, class, or list of classes, got {type(target).__name__}")
 
     self.theme = theme
     self.alphabetize = alphabetize
@@ -64,15 +95,30 @@ class CLI:
     # Discover functions/methods based on target mode
     if self.target_mode == TargetMode.MODULE:
       self.__discover_functions()
+    elif self.target_mode == TargetMode.MULTI_CLASS:
+      self.__discover_multi_class_methods()
     else:
       self.__discover_methods()
 
-    # Initialize command executor after metadata is set up
-    self.command_executor = CommandExecutor(
-        target_class=self.target_class,
-        target_module=self.target_module,
-        inner_class_metadata=getattr(self, 'inner_class_metadata', {})
-    )
+    # Initialize command executor(s) after metadata is set up
+    if self.target_mode == TargetMode.MULTI_CLASS:
+      # Create separate executors for each class
+      self.command_executors = []
+      for target_class in self.target_classes:
+        executor = CommandExecutor(
+            target_class=target_class,
+            target_module=self.target_module,
+            inner_class_metadata=getattr(self, 'inner_class_metadata', {})
+        )
+        self.command_executors.append(executor)
+      self.command_executor = None  # For compatibility
+    else:
+      self.command_executor = CommandExecutor(
+          target_class=self.target_class,
+          target_module=self.target_module,
+          inner_class_metadata=getattr(self, 'inner_class_metadata', {})
+      )
+      self.command_executors = None
 
   def display(self):
     """Legacy method for backward compatibility - runs the CLI."""
@@ -105,18 +151,22 @@ class CLI:
             if isinstance(action, argparse._SubParsersAction) and parsed.command in action.choices:
               action.choices[parsed.command].print_help()
               return 0
-        
-        # No command or unknown command, show main help  
+
+        # No command or unknown command, show main help
         parser.print_help()
         return 0
       else:
         # Execute the command using CommandExecutor
-        return self.command_executor.execute_command(
-            parsed, 
-            self.target_mode, 
-            getattr(self, 'use_inner_class_pattern', False),
-            getattr(self, 'inner_class_metadata', {})
-        )
+        if self.target_mode == TargetMode.MULTI_CLASS:
+          # For multi-class mode, determine which executor to use based on the command
+          return self._execute_multi_class_command(parsed)
+        else:
+          return self.command_executor.execute_command(
+              parsed,
+              self.target_mode,
+              getattr(self, 'use_inner_class_pattern', False),
+              getattr(self, 'inner_class_metadata', {})
+          )
 
     except SystemExit:
       # Let argparse handle its own exits (help, errors, etc.)
@@ -124,7 +174,16 @@ class CLI:
     except Exception as e:
       # Handle execution errors gracefully
       if parsed is not None:
-        return self.command_executor.handle_execution_error(parsed, e)
+        if self.target_mode == TargetMode.MULTI_CLASS:
+          # For multi-class mode, we need to determine the right executor for error handling
+          executor = self._get_executor_for_command(parsed)
+          if executor:
+            return executor.handle_execution_error(parsed, e)
+          else:
+            print(f"Error: {e}")
+            return 1
+        else:
+          return self.command_executor.handle_execution_error(parsed, e)
       else:
         # If parsing failed, this is likely an argparse error - re-raise as SystemExit
         raise SystemExit(1)
@@ -135,6 +194,178 @@ class CLI:
       main_desc, _ = parse_docstring(cls.__doc__)
       return main_desc or cls.__name__
     return cls.__name__
+
+  def __generate_multi_class_title(self, classes: List[Type]) -> str:
+    """Generate title for multi-class CLI using the last class passed."""
+    # Use the title from the last class in the list
+    return self.__extract_class_title(classes[-1])
+
+  def __discover_multi_class_methods(self):
+    """Discover methods from multiple classes by applying __discover_methods to each."""
+    self.functions = {}
+    self.multi_class_handler = MultiClassHandler()
+
+    # First pass: collect all commands from all classes and apply prefixing
+    all_class_commands = {}  # class -> {prefixed_command_name: function_obj}
+
+    for target_class in self.target_classes:
+      # Temporarily set target_class to current class
+      original_target_class = self.target_class
+      self.target_class = target_class
+
+      # Discover methods for this class (but don't build commands yet)
+      self.__discover_methods_without_building_commands()
+
+      # Prefix command names with class name for multi-class mode
+      from .string_utils import StringUtils
+      class_prefix = StringUtils.kebab_case(target_class.__name__)
+
+      prefixed_functions = {}
+      for command_name, function_obj in self.functions.items():
+        prefixed_name = f"{class_prefix}--{command_name}"
+        prefixed_functions[prefixed_name] = function_obj
+
+      # Store prefixed commands for this class
+      all_class_commands[target_class] = prefixed_functions
+
+      # Restore original target_class
+      self.target_class = original_target_class
+
+    # Second pass: track all commands by their clean names and detect collisions
+    for target_class, class_functions in all_class_commands.items():
+      from .string_utils import StringUtils
+      class_prefix = StringUtils.kebab_case(target_class.__name__) + '--'
+      
+      for prefixed_name in class_functions.keys():
+        # Get clean command name for collision detection
+        if prefixed_name.startswith(class_prefix):
+          clean_name = prefixed_name[len(class_prefix):]
+        else:
+          clean_name = prefixed_name
+        self.multi_class_handler.track_command(clean_name, target_class)
+
+    # Check for collisions (should be rare since we prefix with class names)
+    if self.multi_class_handler.has_collisions():
+      raise ValueError(self.multi_class_handler.format_collision_error())
+
+    # Merge all prefixed functions in the order classes were provided
+    # Within each class, commands will be alphabetized by the CommandBuilder
+    self.functions = {}
+    for target_class in self.target_classes:  # Use original order from target_classes
+      class_functions = all_class_commands[target_class]
+      # Sort commands within this class alphabetically
+      sorted_class_functions = dict(sorted(class_functions.items()))
+      self.functions.update(sorted_class_functions)
+
+    # Build commands once after all functions are discovered and prefixed
+    # For multi-class mode, we need to build commands in class order
+    self.commands = self._build_multi_class_commands_in_order(all_class_commands)
+
+  def _build_multi_class_commands_in_order(self, all_class_commands: dict) -> dict:
+    """Build commands in class order, preserving class grouping."""
+    commands = {}
+    
+    # Process classes in the order they were provided
+    for target_class in self.target_classes:
+      class_functions = all_class_commands[target_class]
+      
+      # Remove class prefixes for clean CLI names but keep original prefixed function objects
+      unprefixed_functions = {}
+      from .string_utils import StringUtils
+      class_prefix = StringUtils.kebab_case(target_class.__name__) + '--'
+      
+      for prefixed_name, func_obj in class_functions.items():
+        # Remove the class prefix for CLI display
+        if prefixed_name.startswith(class_prefix):
+          clean_name = prefixed_name[len(class_prefix):]
+          unprefixed_functions[clean_name] = func_obj
+        else:
+          unprefixed_functions[prefixed_name] = func_obj
+      
+      # Sort commands within this class alphabetically if alphabetize is True
+      if self.alphabetize:
+        sorted_class_functions = dict(sorted(unprefixed_functions.items()))
+      else:
+        sorted_class_functions = unprefixed_functions
+      
+      # Build commands for this specific class using clean names
+      class_builder = CommandBuilder(
+        target_mode=self.target_mode,
+        functions=sorted_class_functions,
+        inner_classes=getattr(self, 'inner_classes', {}),
+        use_inner_class_pattern=getattr(self, 'use_inner_class_pattern', False)
+      )
+      class_commands = class_builder.build_command_tree()
+      
+      # Add this class's commands to the final commands dict (preserving order)
+      commands.update(class_commands)
+    
+    return commands
+
+  def _execute_multi_class_command(self, parsed) -> Any:
+    """Execute command in multi-class mode by finding the appropriate executor."""
+    # Determine which class this command belongs to based on the function name
+    function_name = getattr(parsed, '_function_name', None)
+    if not function_name:
+      raise RuntimeError("Cannot determine function name for multi-class command execution")
+    
+    # Find the source class for this function
+    source_class = self._find_source_class_for_function(function_name)
+    if not source_class:
+      raise RuntimeError(f"Cannot find source class for function: {function_name}")
+    
+    # Find the corresponding executor
+    executor = self._get_executor_for_class(source_class)
+    if not executor:
+      raise RuntimeError(f"Cannot find executor for class: {source_class.__name__}")
+    
+    # Execute using the appropriate executor
+    return executor.execute_command(
+        parsed,
+        TargetMode.CLASS,  # Individual executors use CLASS mode
+        getattr(self, 'use_inner_class_pattern', False),
+        getattr(self, 'inner_class_metadata', {})
+    )
+
+  def _get_executor_for_command(self, parsed) -> Optional[CommandExecutor]:
+    """Get the appropriate executor for a command in multi-class mode."""
+    function_name = getattr(parsed, '_function_name', None)
+    if not function_name:
+      return None
+    
+    source_class = self._find_source_class_for_function(function_name)
+    if not source_class:
+      return None
+    
+    return self._get_executor_for_class(source_class)
+
+  def _find_source_class_for_function(self, function_name: str) -> Optional[Type]:
+    """Find which class a function belongs to based on its original prefixed name."""
+    # Check if function_name is already prefixed or clean
+    for target_class in self.target_classes:
+      from .string_utils import StringUtils
+      class_prefix = StringUtils.kebab_case(target_class.__name__) + '--'
+      
+      # If function name starts with this class prefix, it belongs to this class
+      if function_name.startswith(class_prefix):
+        return target_class
+      
+      # Check if this clean function name exists in this class
+      # (for cases where function_name is already clean)
+      for prefixed_func_name in self.functions.keys():
+        if prefixed_func_name.startswith(class_prefix):
+          clean_func_name = prefixed_func_name[len(class_prefix):]
+          if clean_func_name == function_name:
+            return target_class
+    
+    return None
+
+  def _get_executor_for_class(self, target_class: Type) -> Optional[CommandExecutor]:
+    """Get the executor for a specific class."""
+    for executor in self.command_executors:
+      if executor.target_class == target_class:
+        return executor
+    return None
 
   def __default_function_filter(self, name: str, obj: Any) -> bool:
     """Default filter: include non-private callable functions defined in this module."""
@@ -168,6 +399,12 @@ class CLI:
 
   def __discover_methods(self):
     """Auto-discover methods from class using inner class pattern or direct methods."""
+    self.__discover_methods_without_building_commands()
+    # Build hierarchical command structure using CommandBuilder
+    self.commands = self._build_commands()
+
+  def __discover_methods_without_building_commands(self):
+    """Auto-discover methods from class without building commands - used for multi-class mode."""
     self.functions = {}
 
     # Check for inner classes first (hierarchical organization)
@@ -191,9 +428,6 @@ class CLI:
 
       self.__discover_direct_methods()
       self.use_inner_class_pattern = False
-
-    # Build hierarchical command structure using CommandBuilder
-    self.commands = self._build_commands()
 
   def __discover_inner_classes(self) -> dict[str, type]:
     """Discover inner classes that should be treated as command groups."""
@@ -219,7 +453,7 @@ class CLI:
 
   def __discover_methods_from_inner_classes(self, inner_classes: dict[str, type]):
     """Discover methods from inner classes for the new pattern."""
-    from .str_utils import StrUtils
+    from .string_utils import StringUtils
 
     # Store inner class info for later use in parsing/execution
     self.inner_classes = inner_classes
@@ -227,7 +461,7 @@ class CLI:
 
     # For each inner class, discover its methods
     for class_name, inner_class in inner_classes.items():
-      command_name = StrUtils.kebab_case(class_name)
+      command_name = StringUtils.kebab_case(class_name)
 
       # Get methods from the inner class
       for method_name, method_obj in inspect.getmembers(inner_class):
@@ -307,9 +541,12 @@ class CLI:
     """Create argument parser with hierarchical command group support."""
     # Create a custom formatter class that includes the theme (or no theme if no_color)
     effective_theme = None if no_color else self.theme
+    
+    # For multi-class mode, disable alphabetization to preserve class order
+    effective_alphabetize = self.alphabetize and (self.target_mode != TargetMode.MULTI_CLASS)
 
     def create_formatter_with_theme(*args, **kwargs):
-      formatter = HierarchicalHelpFormatter(*args, theme=effective_theme, alphabetize=self.alphabetize, **kwargs)
+      formatter = HierarchicalHelpFormatter(*args, theme=effective_theme, alphabetize=effective_alphabetize, **kwargs)
       return formatter
 
     parser = argparse.ArgumentParser(
@@ -429,8 +666,8 @@ class CLI:
           self.use_inner_class_pattern and
           hasattr(self, 'inner_classes')):
       for class_name, cls in self.inner_classes.items():
-        from .str_utils import StrUtils
-        if StrUtils.kebab_case(class_name) == name:
+        from .string_utils import StringUtils
+        if StringUtils.kebab_case(class_name) == name:
           inner_class = cls
           break
 
@@ -539,6 +776,3 @@ class CLI:
       defaults['_is_system_command'] = info['is_system_command']
 
     sub.set_defaults(**defaults)
-
-
-

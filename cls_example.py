@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from auto_cli.cli import CLI
+from auto_cli.system import System
 
 
 class ProcessingMode(enum.Enum):
@@ -76,7 +77,7 @@ class DataProcessor:
       print(f"Working directory: {self.work_dir}")
       print(f"Mode: {mode.value}")
       print(f"Backup enabled: {self.backup}")
-      
+
       if self.main_instance.verbose:
         print(f"📝 Verbose: Using global settings from {self.main_instance.config_file}")
         print(f"📝 Verbose: Main instance processed count: {self.main_instance.processed_count}")
@@ -100,7 +101,7 @@ class DataProcessor:
       print(f"Working directory: {self.work_dir}")
       print(f"Processing mode: {processing_mode}")
       print(f"Backup enabled: {self.backup}")
-      
+
       if self.main_instance.verbose:
         print(f"📝 Verbose: Batch processing using global config from {self.main_instance.config_file}")
 
@@ -170,7 +171,7 @@ class DataProcessor:
 
     def __init__(self, main_instance):
       """Initialize configuration management.
-      
+
       :param main_instance: Main DataProcessor instance with global configuration
       """
       self.main_instance = main_instance
@@ -249,7 +250,7 @@ if __name__ == '__main__':
   # Create CLI from class with colored theme
   theme = create_default_theme()
   cli = CLI(
-    DataProcessor,
+    [System, DataProcessor],
     theme=theme,
     enable_completion=True
   )

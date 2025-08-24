@@ -206,13 +206,15 @@ from auto_cli import CLI
 from pathlib import Path
 
 class ProjectManager:
-    """Project Management CLI with flat double-dash commands.
+    """
+    Project Management CLI with flat double-dash commands.
     
     Manage projects with organized flat commands and global/sub-global arguments.
     """
     
     def __init__(self, config_file: str = "config.json", debug: bool = False):
-        """Initialize project manager with global settings.
+        """
+        Initialize project manager with global settings.
         
         :param config_file: Configuration file path (global argument)
         :param debug: Enable debug mode (global argument)
@@ -225,7 +227,8 @@ class ProjectManager:
         """Project creation and management operations."""
         
         def __init__(self, workspace: str = "./projects", auto_save: bool = True):
-            """Initialize project operations.
+            """
+            Initialize project operations.
             
             :param workspace: Workspace directory (sub-global argument)
             :param auto_save: Auto-save changes (sub-global argument)
@@ -248,7 +251,8 @@ class ProjectManager:
         """Task operations within projects."""
         
         def __init__(self, priority_filter: str = "all"):
-            """Initialize task management.
+            """
+            Initialize task management.
             
             :param priority_filter: Default priority filter (sub-global argument)
             """

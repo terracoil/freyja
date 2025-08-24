@@ -3,7 +3,7 @@ import argparse
 import os
 import textwrap
 
-from .formatting_engine import FormattingEngine
+from .help_formatting_engine import HelpFormattingEngine
 
 
 class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
@@ -21,7 +21,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     self._desc_indent = 8  # Indentation for descriptions
     
     # Initialize formatting engine
-    self._formatting_engine = FormattingEngine(
+    self._formatting_engine = HelpFormattingEngine(
         console_width=self._console_width,
         theme=theme,
         color_formatter=getattr(self, '_color_formatter', None)
@@ -249,24 +249,28 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     # Calculate global option column for consistent alignment across all commands
     global_option_column = self._calculate_global_option_column(action)
 
-    # Separate System groups, regular groups, and flat commands
+    # Collect all commands in insertion order, treating flat commands like any other command
+    all_commands = []
     for choice, subparser in action.choices.items():
+      command_type = 'flat'
+      is_system = False
+      
       if hasattr(subparser, '_command_type'):
         if subparser._command_type == 'group':
+          command_type = 'group'
           # Check if this is a System command group
           if hasattr(subparser, '_is_system_command') and getattr(subparser, '_is_system_command', False):
-            system_groups[choice] = subparser
-          else:
-            regular_groups[choice] = subparser
-        else:
-          flat_commands[choice] = subparser
-      else:
-        flat_commands[choice] = subparser
+            is_system = True
+      
+      all_commands.append((choice, subparser, command_type, is_system))
 
-    # Add System groups first (they appear at the top)
-    if system_groups:
-      system_items = sorted(system_groups.items()) if self._alphabetize else list(system_groups.items())
-      for choice, subparser in system_items:
+    # Sort alphabetically if alphabetize is enabled, otherwise preserve insertion order
+    if self._alphabetize:
+      all_commands.sort(key=lambda x: x[0])  # Sort by command name
+
+    # Format all commands in unified order - use same formatting for both flat and group commands
+    for choice, subparser, command_type, is_system in all_commands:
+      if command_type == 'group':
         group_section = self._format_group_with_command_groups_global(
           choice, subparser, self._cmd_indent, unified_cmd_desc_column, global_option_column
         )
@@ -278,30 +282,16 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
               # This is a bit tricky - we'd need to check the function signature
               # For now, assume nested commands might have required args
               has_required_args = True
-
-    # Add flat commands with unified command description column alignment
-    flat_items = sorted(flat_commands.items()) if self._alphabetize else list(flat_commands.items())
-    for choice, subparser in flat_items:
-      command_section = self._format_command_with_args_global(choice, subparser, self._cmd_indent,
-                                                              unified_cmd_desc_column, global_option_column)
-      parts.extend(command_section)
-      # Check if this command has required args
-      required_args, _ = self._analyze_arguments(subparser)
-      if required_args:
-        has_required_args = True
-
-    # Add regular groups with their command groups
-    if regular_groups:
-      if flat_commands or system_groups:
-        parts.append("")  # Empty line separator
-
-      regular_items = sorted(regular_groups.items()) if self._alphabetize else list(regular_groups.items())
-      for choice, subparser in regular_items:
-        group_section = self._format_group_with_command_groups_global(
+      else:
+        # Flat command - format exactly like a group command
+        command_section = self._format_group_with_command_groups_global(
           choice, subparser, self._cmd_indent, unified_cmd_desc_column, global_option_column
         )
-        parts.extend(group_section)
-        # Check command groups for required args too
+        parts.extend(command_section)
+        # Check if this command has required args
+        required_args, _ = self._analyze_arguments(subparser)
+        if required_args:
+          has_required_args = True
         if hasattr(subparser, '_command_details'):
           for cmd_info in subparser._command_details.values():
             if cmd_info.get('type') == 'command' and 'function' in cmd_info:
@@ -412,8 +402,12 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     # Group header with special styling for group commands
     styled_group_name = self._apply_style(name, 'grouped_command_name')
 
-    # Check for CommandGroup description
+    # Check for CommandGroup description or use parser description/help for flat commands
     group_description = getattr(parser, '_command_group_description', None)
+    if not group_description:
+      # For flat commands, use the parser's description or help
+      group_description = parser.description or getattr(parser, 'help', '')
+    
     if group_description:
       # Use unified command description column for consistent formatting
       # Top-level group command descriptions use standard column (no extra indent)
@@ -909,3 +903,4 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
           result = action.choices[subcmd_name]
           break
     return result
+

@@ -106,8 +106,8 @@ from typing import List
 import json
 
 class ConfigManager:
-    """Configuration Management CLI
-    
+    """
+        Configuration Management CLI    
     Manage application configuration with persistent state.
     """
     
