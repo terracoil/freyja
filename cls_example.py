@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Class-based CLI example demonstrating inner class flat command organization."""
+"""Class-based CLI example demonstrating inner class hierarchical command organization."""
 
 import enum
 import sys
