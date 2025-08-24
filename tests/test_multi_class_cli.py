@@ -153,7 +153,7 @@ class TestMultiClassCLI:
             CLI([MockDataProcessor, MockFileManager])
         
         assert "Command name collisions detected" in str(exc_info.value)
-        assert "process_data" in str(exc_info.value)
+        assert "process-data" in str(exc_info.value)
     
     def test_multi_class_command_structure(self):
         """Test command structure for multi-class CLI."""

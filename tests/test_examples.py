@@ -80,10 +80,10 @@ class TestClassExample:
     assert "Enhanced data processing utility" in result.stdout
 
   def test_class_example_process_file(self):
-    """Test the file-operations process-single command group in cls_example.py."""
+    """Test the data-processor--file-operations process-single command group in cls_example.py."""
     examples_path = Path(__file__).parent.parent / "cls_example.py"
     result = subprocess.run(
-      [sys.executable, str(examples_path), "file-operations", "process-single", "--input-file", "test.txt"],
+      [sys.executable, str(examples_path), "data-processor--file-operations", "process-single", "--input-file", "test.txt"],
       capture_output=True,
       text=True,
       timeout=10
@@ -93,10 +93,10 @@ class TestClassExample:
     assert "Processing file: test.txt" in result.stdout
 
   def test_class_example_config_command(self):
-    """Test config-management set-default-mode command group in cls_example.py."""
+    """Test data-processor--config-management set-default-mode command group in cls_example.py."""
     examples_path = Path(__file__).parent.parent / "cls_example.py"
     result = subprocess.run(
-      [sys.executable, str(examples_path), "config-management", "set-default-mode", "--mode", "FAST"],
+      [sys.executable, str(examples_path), "data-processor--config-management", "set-default-mode", "--mode", "FAST"],
       capture_output=True,
       text=True,
       timeout=10

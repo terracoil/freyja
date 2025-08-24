@@ -21,7 +21,7 @@ class CommandBuilder:
 
     def build_command_tree(self) -> Dict[str, Dict]:
         """Build flat command structure from discovered functions based on target mode."""
-        from .cli import TargetMode
+        from .command_discovery import TargetMode
 
         if self.target_mode == TargetMode.MODULE:
             return self._build_module_commands()
@@ -141,7 +141,7 @@ class CommandBuilder:
                 parts = func_name.split('__', 1)
                 if len(parts) == 2:
                     group_name, method_name = parts
-                    if group_name.replace('_', '-') == cli_group_name:
+                    if StringUtils.kebab_case(group_name) == cli_group_name:
                         cli_method_name = StringUtils.kebab_case(method_name)
                         group_commands[cli_method_name] = {
                             'type': 'command',
