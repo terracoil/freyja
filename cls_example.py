@@ -250,8 +250,7 @@ if __name__ == '__main__':
   cli = CLI(
     DataProcessor,
     theme=theme,
-    enable_completion=True,
-    enable_theme_tuner=True  # Show both System commands in example
+    enable_completion=True
   )
 
   # Run the CLI and exit with appropriate code

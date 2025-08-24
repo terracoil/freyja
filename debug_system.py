@@ -7,7 +7,7 @@ from auto_cli.cli import CLI
 import argparse
 
 # Create a debug version to see what's happening
-cli = CLI(DataProcessor, enable_completion=True, enable_theme_tuner=True)
+cli = CLI(DataProcessor, enable_completion=True)
 parser = cli.create_parser()
 
 # Find both parsers

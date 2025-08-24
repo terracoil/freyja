@@ -53,15 +53,7 @@ class ValidationService:
 
     @staticmethod
     def validate_inner_class_constructor_parameters(cls: Type, context: str) -> None:
-        """Validate inner class constructor - first param should be main_instance, rest should have defaults.
-        
-        Inner classes receive the main instance as their first parameter, followed by sub-global arguments.
-        All sub-global parameters must have default values.
-        
-        :param cls: The inner class to validate
-        :param context: Context string for error messages (e.g., "inner class 'UserOps'")
-        :raises ValueError: If constructor has incorrect signature
-        """
+        """Inner classes need main instance injection while supporting optional sub-global arguments."""
         try:
             init_method = cls.__init__
             sig = inspect.signature(init_method)
@@ -113,13 +105,7 @@ class ValidationService:
 
     @staticmethod
     def validate_function_signature(func: Any) -> bool:
-        """Verify function compatibility with automatic CLI generation.
-        
-        Type annotations are required to determine appropriate CLI argument types.
-        
-        :param func: Function to validate
-        :return: True if function is valid for CLI generation
-        """
+        """Type annotations enable automatic CLI argument type mapping without manual configuration."""
         try:
             sig = inspect.signature(func)
             
@@ -140,14 +126,7 @@ class ValidationService:
 
     @staticmethod
     def get_validation_errors(cls: Type, functions: dict[str, Any]) -> List[str]:
-        """Generate comprehensive CLI compatibility report.
-        
-        Early validation prevents runtime errors during CLI generation and execution.
-        
-        :param cls: Class to validate (can be None for module-based)
-        :param functions: Dictionary of functions to validate
-        :return: List of validation error messages
-        """
+        """Early validation prevents runtime failures during CLI generation and command execution."""
         errors = []
         
         # Validate class constructor if provided

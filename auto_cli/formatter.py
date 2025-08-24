@@ -3,6 +3,8 @@ import argparse
 import os
 import textwrap
 
+from .formatting_engine import FormattingEngine
+
 
 class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
   """Custom formatter providing clean hierarchical command display."""
@@ -17,6 +19,13 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     self._cmd_indent = 2  # Base indentation for commands
     self._arg_indent = 4  # Indentation for arguments (reduced from 6 to 4)
     self._desc_indent = 8  # Indentation for descriptions
+    
+    # Initialize formatting engine
+    self._formatting_engine = FormattingEngine(
+        console_width=self._console_width,
+        theme=theme,
+        color_formatter=getattr(self, '_color_formatter', None)
+    )
 
     # Theme support
     self._theme = theme

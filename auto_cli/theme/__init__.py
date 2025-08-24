@@ -9,12 +9,13 @@ from .theme import (
   create_default_theme_colorful,
   create_no_color_theme,
 )
-from .theme_style import ThemeStyle
+from .theme_style import ThemeStyle, CommandStyleSection
 
 __all__ = [
   'AdjustStrategy',
   'Back',
   'ColorFormatter',
+  'CommandStyleSection',
   'Fore',
   'ForeUniversal',
   'RGB',
