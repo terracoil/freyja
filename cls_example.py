@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Class-based CLI example demonstrating inner class command grouping."""
+"""Class-based CLI example demonstrating inner class flat command organization."""
 
 import enum
 import sys
@@ -23,11 +23,12 @@ class OutputFormat(enum.Enum):
 
 
 class DataProcessor:
-  """Enhanced data processing utility with hierarchical command structure.
+  """Enhanced data processing utility with hierarchical organization.
 
-  This class demonstrates the new inner class pattern where each inner class
-  represents a command group with its own sub-global options, and methods
-  within those classes become command groups (sub-commands).
+  This class demonstrates the inner class pattern where each inner class
+  provides command organization. Methods within inner classes become
+  hierarchical commands (e.g., file-operations process-single) with
+  proper command groups and subcommands.
   """
 
   def __init__(self, config_file: str = "config.json", verbose: bool = False):

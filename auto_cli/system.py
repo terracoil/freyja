@@ -110,7 +110,7 @@ class System:
       input("\nPress Enter to continue...")
 
     def run_interactive(self) -> None:
-      """Run the interactive theme tuner (main entry point)."""
+      """Run the interactive theme tuner."""
       self.run_interactive_menu()
 
     def get_current_theme(self):

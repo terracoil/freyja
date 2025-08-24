@@ -1,26 +1,26 @@
 """Command tree building service for CLI applications.
 
 Consolidates all command structure generation logic for both module-based and class-based CLIs.
-Handles flat commands, hierarchical groups, and inner class method organization.
+Handles flat commands and hierarchical command organization through inner class patterns.
 """
 
 from typing import Dict, Any, Type, Optional
 
 
 class CommandBuilder:
-    """Centralized service for building command trees from discovered functions/methods."""
+    """Centralized service for building command structures from discovered functions/methods."""
 
     def __init__(self, target_mode: Any, functions: Dict[str, Any], 
                  inner_classes: Optional[Dict[str, Type]] = None,
                  use_inner_class_pattern: bool = False):
-        """Command tree building requires function discovery and organizational metadata."""
+        """Flat command building requires function discovery and organizational metadata."""
         self.target_mode = target_mode
         self.functions = functions
         self.inner_classes = inner_classes or {}
         self.use_inner_class_pattern = use_inner_class_pattern
 
     def build_command_tree(self) -> Dict[str, Dict]:
-        """Build command tree from discovered functions based on target mode."""
+        """Build flat command structure from discovered functions based on target mode."""
         from .cli import TargetMode
         
         if self.target_mode == TargetMode.MODULE:

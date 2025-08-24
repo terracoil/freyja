@@ -17,12 +17,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an active Python library (`auto-cli-py`) that automatically builds complete CLI applications from Python functions AND class methods using introspection and type annotations. The library supports multiple modes:
 
-1. **Module-based CLI**: `CLI()` - Create flat CLI commands from module functions (no command groups/groups)
+1. **Module-based CLI**: `CLI()` - Create flat CLI commands from module functions
 2. **Class-based CLI**: `CLI(YourClass)` - Create CLI from class methods with organizational patterns:
    - **Direct Methods**: Simple flat commands from class methods  
-   - **Inner Classes**: Flat commands with double-dash notation (e.g., `command--command-group`) supporting global and sub-global arguments
+   - **Inner Classes**: Hierarchical commands (e.g., `data-operations process-single`) supporting global and sub-global arguments
 
-**IMPORTANT**: All commands are now FLAT - no hierarchical command groups. Inner class methods become flat commands using double-dash notation (e.g., `data-operations--process`).
+**IMPORTANT**: Inner class methods create hierarchical commands (e.g., `data-operations process-single`) with proper command groups and subcommands.
 
 The library generates argument parsers and command-line interfaces with minimal configuration by analyzing function/method signatures. Published on PyPI at https://pypi.org/project/auto-cli-py/
 
@@ -130,7 +130,7 @@ pip install auto-cli-py  # Ensure auto-cli-py is available
 
 **When to use:** Simple utilities, data processing, functional programming style
 
-**IMPORTANT:** Module-based CLIs now only support flat commands. No command groups (sub-commands) or grouping - each function becomes a direct command.
+**IMPORTANT:** Module-based CLIs support flat commands - each function becomes a direct command.
 
 ```python
 # At the end of any Python file with functions
@@ -307,7 +307,7 @@ python project_mgr.py --help  # Shows all available flat commands
 #### 1. Configuration Management (Inner Class Pattern)
 ```python
 class ConfigManager:
-    """Application configuration CLI with hierarchical structure."""
+    """Application configuration CLI with hierarchical organization using flat commands."""
     
     def __init__(self, config_file: str = "app.config"):
         """Initialize with global configuration file."""
@@ -614,10 +614,10 @@ All constructor parameters must have default values to be used as CLI arguments.
 - Default values become argument defaults
 - Parameter names become CLI option names (--param_name)
 
-**Flat Command Architecture**: 
-- Module functions become flat commands (no command groups (sub-commands)/groups)
+**Command Architecture**: 
+- Module functions become flat commands
 - Class methods become flat commands  
-- Inner class methods become flat commands with double-dash notation (e.g., `class-name--method-name`)
+- Inner class methods become hierarchical commands (e.g., `class-name method-name`)
 
 ### Usage Pattern
 ```python
