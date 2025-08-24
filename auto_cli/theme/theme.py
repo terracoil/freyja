@@ -15,9 +15,12 @@ class Theme:
   """
 
   def __init__(self, title: ThemeStyle, subtitle: ThemeStyle, command_name: ThemeStyle, command_description: ThemeStyle,
-               command_group_name: ThemeStyle, grouped_command_name: ThemeStyle, grouped_command_description: ThemeStyle,
-               option_name: ThemeStyle, option_description: ThemeStyle, command_group_option_name: ThemeStyle,
-               command_group_option_description: ThemeStyle, required_asterisk: ThemeStyle,
+               command_group_name: ThemeStyle, command_group_description: ThemeStyle,
+               grouped_command_name: ThemeStyle, grouped_command_description: ThemeStyle,
+               option_name: ThemeStyle, option_description: ThemeStyle,
+               command_group_option_name: ThemeStyle, command_group_option_description: ThemeStyle,
+               grouped_command_option_name: ThemeStyle, grouped_command_option_description: ThemeStyle,
+               required_asterisk: ThemeStyle,
                adjust_strategy: AdjustStrategy = AdjustStrategy.LINEAR, adjust_percent: float = 0.0):
     """Initialize theme with optional color adjustment settings."""
     if adjust_percent < -5.0 or adjust_percent > 5.0:
@@ -26,13 +29,20 @@ class Theme:
     self.subtitle = subtitle
     self.command_name = command_name
     self.command_description = command_description
-    self.group_command_name = command_group_name
-    self.command_group_name = grouped_command_name
-    self.command_group_description = grouped_command_description
+    # Command Group Level (inner class level)
+    self.command_group_name = command_group_name
+    self.command_group_description = command_group_description
+    # Grouped Command Level (commands within the group)
+    self.grouped_command_name = grouped_command_name
+    self.grouped_command_description = grouped_command_description
     self.option_name = option_name
     self.option_description = option_description
-    self.group_command_option_name = command_group_option_name
-    self.group_command_option_description = command_group_option_description
+    # Command Group Options
+    self.command_group_option_name = command_group_option_name
+    self.command_group_option_description = command_group_option_description
+    # Grouped Command Options
+    self.grouped_command_option_name = grouped_command_option_name
+    self.grouped_command_option_description = grouped_command_option_description
     self.required_asterisk = required_asterisk
     self.adjust_strategy = adjust_strategy
     self.adjust_percent = adjust_percent
@@ -57,17 +67,22 @@ class Theme:
 
     try:
       new_theme = Theme(
-        title=self.get_adjusted_style(self.title), subtitle=self.get_adjusted_style(self.subtitle),
+        title=self.get_adjusted_style(self.title),
+        subtitle=self.get_adjusted_style(self.subtitle),
         command_name=self.get_adjusted_style(self.command_name),
         command_description=self.get_adjusted_style(self.command_description),
-        command_group_name=self.get_adjusted_style(self.group_command_name),
-        grouped_command_name=self.get_adjusted_style(self.command_group_name),
-        grouped_command_description=self.get_adjusted_style(self.command_group_description),
+        command_group_name=self.get_adjusted_style(self.command_group_name),
+        command_group_description=self.get_adjusted_style(self.command_group_description),
+        grouped_command_name=self.get_adjusted_style(self.grouped_command_name),
+        grouped_command_description=self.get_adjusted_style(self.grouped_command_description),
         option_name=self.get_adjusted_style(self.option_name),
         option_description=self.get_adjusted_style(self.option_description),
-        command_group_option_name=self.get_adjusted_style(self.group_command_option_name),
-        command_group_option_description=self.get_adjusted_style(self.group_command_option_description),
-        required_asterisk=self.get_adjusted_style(self.required_asterisk), adjust_strategy=strategy,
+        command_group_option_name=self.get_adjusted_style(self.command_group_option_name),
+        command_group_option_description=self.get_adjusted_style(self.command_group_option_description),
+        grouped_command_option_name=self.get_adjusted_style(self.grouped_command_option_name),
+        grouped_command_option_description=self.get_adjusted_style(self.grouped_command_option_description),
+        required_asterisk=self.get_adjusted_style(self.required_asterisk),
+        adjust_strategy=strategy,
         adjust_percent=adjust_percent
       )
     finally:
@@ -105,13 +120,20 @@ def create_default_theme() -> Theme:
     subtitle=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.TEAL.value), bold=True, italic=True),
     command_name=ThemeStyle(bold=True),
     command_description=ThemeStyle(bold=True),
+    # Command Group Level (inner class level)
     command_group_name=ThemeStyle(bold=True),
-    command_group_option_name=ThemeStyle(),
-    command_group_option_description=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.BROWN.value), bold=True),
-    grouped_command_description=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.BROWN.value), bold=True, italic=True),
+    command_group_description=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.BROWN.value), bold=True),
+    # Grouped Command Level (commands within the group)
     grouped_command_name=ThemeStyle(),
+    grouped_command_description=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.BROWN.value), bold=True, italic=True),
     option_name=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.TEAL.value)),
     option_description=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.BROWN.value), bold=True),
+    # Command Group Options
+    command_group_option_name=ThemeStyle(),
+    command_group_option_description=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.BROWN.value), bold=True),
+    # Grouped Command Options
+    grouped_command_option_name=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.TEAL.value)),
+    grouped_command_option_description=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.BROWN.value), bold=True),
     required_asterisk=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.GOLD.value))
   )
 
@@ -120,21 +142,24 @@ def create_default_theme_colorful() -> Theme:
   """Create a colorful theme with traditional terminal colors."""
   return Theme(
     title=ThemeStyle(fg=RGB.from_rgb(Fore.MAGENTA.value), bg=RGB.from_rgb(Back.LIGHTWHITE_EX.value), bold=True),
-    # Dark magenta bold with light gray background
     subtitle=ThemeStyle(fg=RGB.from_rgb(Fore.YELLOW.value), italic=True),
+
     command_name=ThemeStyle(fg=RGB.from_rgb(Fore.CYAN.value), bold=True),
-    # Cyan bold for command names
     command_description=ThemeStyle(fg=RGB.from_rgb(Fore.LIGHTRED_EX.value)),
-    command_group_name=ThemeStyle(fg=RGB.from_rgb(Fore.CYAN.value), bold=True),  # Cyan bold for group command names
+    option_name=ThemeStyle(fg=RGB.from_rgb(Fore.GREEN.value)),
+    option_description=ThemeStyle(fg=RGB.from_rgb(Fore.YELLOW.value)),
+
     grouped_command_name=ThemeStyle(fg=RGB.from_rgb(Fore.CYAN.value), italic=True, bold=True),
-    # Cyan italic bold for command group names
     grouped_command_description=ThemeStyle(fg=RGB.from_rgb(Fore.LIGHTRED_EX.value)),
-    # Orange (LIGHTRED_EX) for command group descriptions
-    option_name=ThemeStyle(fg=RGB.from_rgb(Fore.GREEN.value)),  # Green for all options
-    option_description=ThemeStyle(fg=RGB.from_rgb(Fore.YELLOW.value)),  # Yellow for option descriptions
-    command_group_option_name=ThemeStyle(fg=RGB.from_rgb(Fore.GREEN.value)),  # Green for group command options
-    command_group_option_description=ThemeStyle(fg=RGB.from_rgb(Fore.YELLOW.value)),  # Yellow for group command option descriptions
-    required_asterisk=ThemeStyle(fg=RGB.from_rgb(Fore.YELLOW.value))  # Yellow for required asterisk markers
+    grouped_command_option_name=ThemeStyle(fg=RGB.from_rgb(Fore.GREEN.value)),
+    grouped_command_option_description=ThemeStyle(fg=RGB.from_rgb(Fore.YELLOW.value)),
+
+    command_group_name=ThemeStyle(fg=RGB.from_rgb(Fore.CYAN.value), bold=True),
+    command_group_description=ThemeStyle(fg=RGB.from_rgb(Fore.LIGHTRED_EX.value)),
+    command_group_option_name=ThemeStyle(fg=RGB.from_rgb(Fore.GREEN.value)),
+    command_group_option_description=ThemeStyle(fg=RGB.from_rgb(Fore.YELLOW.value)),
+
+    required_asterisk=ThemeStyle(fg=RGB.from_rgb(Fore.YELLOW.value))
   )
 
 
@@ -142,7 +167,10 @@ def create_no_color_theme() -> Theme:
   """Create a theme with no colors (fallback for non-color terminals)."""
   return Theme(
     title=ThemeStyle(), subtitle=ThemeStyle(), command_name=ThemeStyle(), command_description=ThemeStyle(),
-    command_group_name=ThemeStyle(), grouped_command_name=ThemeStyle(), grouped_command_description=ThemeStyle(),
-    option_name=ThemeStyle(), option_description=ThemeStyle(), command_group_option_name=ThemeStyle(),
-    command_group_option_description=ThemeStyle(), required_asterisk=ThemeStyle()
+    command_group_name=ThemeStyle(), command_group_description=ThemeStyle(),
+    grouped_command_name=ThemeStyle(), grouped_command_description=ThemeStyle(),
+    option_name=ThemeStyle(), option_description=ThemeStyle(),
+    command_group_option_name=ThemeStyle(), command_group_option_description=ThemeStyle(),
+    grouped_command_option_name=ThemeStyle(), grouped_command_option_description=ThemeStyle(),
+    required_asterisk=ThemeStyle()
   )

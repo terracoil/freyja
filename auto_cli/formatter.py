@@ -40,14 +40,17 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
   def _format_action(self, action):
     """Format actions with proper indentation for command groups."""
+    result = None
+    
     if isinstance(action, argparse._SubParsersAction):
-      return self._format_command_groups(action)
-
-    # Handle global options with fixed alignment
-    if action.option_strings and not isinstance(action, argparse._SubParsersAction):
-      return self._format_global_option_aligned(action)
-
-    return super()._format_action(action)
+      result = self._format_command_groups(action)
+    elif action.option_strings and not isinstance(action, argparse._SubParsersAction):
+      # Handle global options with fixed alignment
+      result = self._format_global_option_aligned(action)
+    else:
+      result = super()._format_action(action)
+    
+    return result
 
   def _ensure_global_column_calculated(self):
     """Calculate and cache the unified description column if not already done."""
@@ -77,49 +80,53 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     """Format global options with consistent alignment using existing alignment logic."""
     # Build option string
     option_strings = action.option_strings
+    result = None
+    
     if not option_strings:
-      return super()._format_action(action)
-
-    # Get option name (prefer long form)
-    option_name = option_strings[-1] if option_strings else ""
-
-    # Add metavar if present
-    if action.nargs != 0:
-      if hasattr(action, 'metavar') and action.metavar:
-        option_display = f"{option_name} {action.metavar}"
-      elif hasattr(action, 'choices') and action.choices:
-        # For choices, show them in help text, not in option name
-        option_display = option_name
-      else:
-        # Generate metavar from dest
-        metavar = action.dest.upper().replace('_', '-')
-        option_display = f"{option_name} {metavar}"
+      result = super()._format_action(action)
     else:
-      option_display = option_name
+      # Get option name (prefer long form)
+      option_name = option_strings[-1] if option_strings else ""
 
-    # Prepare help text
-    help_text = action.help or ""
-    if hasattr(action, 'choices') and action.choices and action.nargs != 0:
-      # Add choices info to help text
-      choices_str = ", ".join(str(c) for c in action.choices)
-      help_text = f"{help_text} (choices: {choices_str})"
+      # Add metavar if present
+      if action.nargs != 0:
+        if hasattr(action, 'metavar') and action.metavar:
+          option_display = f"{option_name} {action.metavar}"
+        elif hasattr(action, 'choices') and action.choices:
+          # For choices, show them in help text, not in option name
+          option_display = option_name
+        else:
+          # Generate metavar from dest
+          metavar = action.dest.upper().replace('_', '-')
+          option_display = f"{option_name} {metavar}"
+      else:
+        option_display = option_name
 
-    # Get the cached global description column
-    global_desc_column = self._ensure_global_column_calculated()
+      # Prepare help text
+      help_text = action.help or ""
+      if hasattr(action, 'choices') and action.choices and action.nargs != 0:
+        # Add choices info to help text
+        choices_str = ", ".join(str(c) for c in action.choices)
+        help_text = f"{help_text} (choices: {choices_str})"
 
-    # Use the existing _format_inline_description method for proper alignment and wrapping
-    formatted_lines = self._format_inline_description(
-      name=option_display,
-      description=help_text,
-      name_indent=self._arg_indent + 2,  # Global options indented +2 more spaces (entire line)
-      description_column=global_desc_column + 4,  # Global option descriptions +4 spaces (2 for line indent + 2 for desc)
-      style_name='option_name',  # Use option_name style (will be handled by CLI theme)
-      style_description='option_description',  # Use option_description style
-      add_colon=False  # Options don't have colons
-    )
+      # Get the cached global description column
+      global_desc_column = self._ensure_global_column_calculated()
 
-    # Join lines and add newline at end
-    return '\n'.join(formatted_lines) + '\n'
+      # Use the existing _format_inline_description method for proper alignment and wrapping
+      formatted_lines = self._format_inline_description(
+        name=option_display,
+        description=help_text,
+        name_indent=self._arg_indent + 2,  # Global options indented +2 more spaces (entire line)
+        description_column=global_desc_column + 4,  # Global option descriptions +4 spaces (2 for line indent + 2 for desc)
+        style_name='option_name',  # Use option_name style (will be handled by CLI theme)
+        style_description='option_description',  # Use option_description style
+        add_colon=False  # Options don't have colons
+      )
+
+      # Join lines and add newline at end
+      result = '\n'.join(formatted_lines) + '\n'
+    
+    return result
 
   def _calculate_global_option_column(self, action):
     """Calculate global option description column based on longest option across ALL commands."""
@@ -710,13 +717,18 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
       'subtitle': self._theme.subtitle,
       'command_name': self._theme.command_name,
       'command_description': self._theme.command_description,
-      'grouped_command_name': self._theme.group_command_name,
+      # Command Group Level (inner class level)
       'command_group_name': self._theme.command_group_name,
-      'grouped_command_description': self._theme.command_group_description,
+      'command_group_description': self._theme.command_group_description,
+      'command_group_option_name': self._theme.command_group_option_name,
+      'command_group_option_description': self._theme.command_group_option_description,
+      # Grouped Command Level (commands within the group)
+      'grouped_command_name': self._theme.grouped_command_name,
+      'grouped_command_description': self._theme.grouped_command_description,
+      'grouped_command_option_name': self._theme.grouped_command_option_name,
+      'grouped_command_option_description': self._theme.grouped_command_option_description,
       'option_name': self._theme.option_name,
       'option_description': self._theme.option_description,
-      'command_group_option_name': self._theme.group_command_option_name,
-      'command_group_option_description': self._theme.group_command_option_description,
       'required_asterisk': self._theme.required_asterisk
     }
 
@@ -756,91 +768,92 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     :param style_description: Theme style for the description
     :return: List of formatted lines
     """
+    lines = []
+    
     if not description:
       # No description, just return the styled name (with colon if requested)
       styled_name = self._apply_style(name, style_name)
       display_name = f"{styled_name}:" if add_colon else styled_name
-      return [f"{' ' * name_indent}{display_name}"]
+      lines = [f"{' ' * name_indent}{display_name}"]
+    else:
+      styled_name = self._apply_style(name, style_name)
+      styled_description = self._apply_style(description, style_description)
 
-    styled_name = self._apply_style(name, style_name)
-    styled_description = self._apply_style(description, style_description)
+      # Create the full line with proper spacing (add colon if requested)
+      display_name = f"{styled_name}:" if add_colon else styled_name
+      name_part = f"{' ' * name_indent}{display_name}"
+      name_display_width = name_indent + self._get_display_width(name) + (1 if add_colon else 0)
 
-    # Create the full line with proper spacing (add colon if requested)
-    display_name = f"{styled_name}:" if add_colon else styled_name
-    name_part = f"{' ' * name_indent}{display_name}"
-    name_display_width = name_indent + self._get_display_width(name) + (1 if add_colon else 0)
+      # Calculate spacing needed to reach description column
+      # All descriptions (commands, command groups, and options) use the same column alignment
+      spacing_needed = description_column - name_display_width
+      spacing = description_column
 
-    # Calculate spacing needed to reach description column
-    # All descriptions (commands, command groups, and options) use the same column alignment
-    spacing_needed = description_column - name_display_width
-    spacing = description_column
+      if name_display_width >= description_column:
+        # Name is too long, use minimum spacing (4 spaces)
+        spacing_needed = 4
+        spacing = name_display_width + spacing_needed
 
-    if name_display_width >= description_column:
-      # Name is too long, use minimum spacing (4 spaces)
-      spacing_needed = 4
-      spacing = name_display_width + spacing_needed
+      # Try to fit everything on first line
+      first_line = f"{name_part}{' ' * spacing_needed}{styled_description}"
 
-    # Try to fit everything on first line
-    first_line = f"{name_part}{' ' * spacing_needed}{styled_description}"
+      # Check if first line fits within console width
+      if self._get_display_width(first_line) <= self._console_width:
+        # Everything fits on one line
+        lines = [first_line]
+      else:
+        # Need to wrap - start with name and first part of description on same line
+        available_width_first_line = self._console_width - name_display_width - spacing_needed
 
-    # Check if first line fits within console width
-    if self._get_display_width(first_line) <= self._console_width:
-      # Everything fits on one line
-      return [first_line]
+        if available_width_first_line >= 20:  # Minimum readable width for first line
+          # For wrapping, we need to work with the unstyled description text to get proper line breaks
+          # then apply styling to each wrapped line
+          wrapper = textwrap.TextWrapper(
+            width=available_width_first_line,
+            break_long_words=False,
+            break_on_hyphens=False
+          )
+          desc_lines = wrapper.wrap(description)  # Use unstyled description for accurate wrapping
 
-    # Need to wrap - start with name and first part of description on same line
-    available_width_first_line = self._console_width - name_display_width - spacing_needed
+          if desc_lines:
+            # First line with name and first part of description (apply styling to first line)
+            styled_first_desc = self._apply_style(desc_lines[0], style_description)
+            lines = [f"{name_part}{' ' * spacing_needed}{styled_first_desc}"]
 
-    if available_width_first_line >= 20:  # Minimum readable width for first line
-      # For wrapping, we need to work with the unstyled description text to get proper line breaks
-      # then apply styling to each wrapped line
-      wrapper = textwrap.TextWrapper(
-        width=available_width_first_line,
-        break_long_words=False,
-        break_on_hyphens=False
-      )
-      desc_lines = wrapper.wrap(description)  # Use unstyled description for accurate wrapping
+            # Continuation lines with remaining description
+            if len(desc_lines) > 1:
+              # Calculate where the description text actually starts on the first line
+              desc_start_position = name_display_width + spacing_needed
+              continuation_indent = " " * desc_start_position
+              for desc_line in desc_lines[1:]:
+                styled_desc_line = self._apply_style(desc_line, style_description)
+                lines.append(f"{continuation_indent}{styled_desc_line}")
+        
+        if not lines:  # Fallback if wrapping didn't work
+          # Fallback: put description on separate lines (name too long or not enough space)
+          lines = [name_part]
 
-      if desc_lines:
-        # First line with name and first part of description (apply styling to first line)
-        styled_first_desc = self._apply_style(desc_lines[0], style_description)
-        lines = [f"{name_part}{' ' * spacing_needed}{styled_first_desc}"]
+          # All descriptions (commands, command groups, and options) use the same alignment
+          desc_indent = spacing
 
-        # Continuation lines with remaining description
-        if len(desc_lines) > 1:
-          # Calculate where the description text actually starts on the first line
-          desc_start_position = name_display_width + spacing_needed
-          continuation_indent = " " * desc_start_position
-          for desc_line in desc_lines[1:]:
+          available_width = self._console_width - desc_indent
+          if available_width < 20:  # Minimum readable width
+            available_width = 20
+            desc_indent = self._console_width - available_width
+
+          # Wrap the description text (use unstyled text for accurate wrapping)
+          wrapper = textwrap.TextWrapper(
+            width=available_width,
+            break_long_words=False,
+            break_on_hyphens=False
+          )
+
+          desc_lines = wrapper.wrap(description)  # Use unstyled description for accurate wrapping
+          indent_str = " " * desc_indent
+
+          for desc_line in desc_lines:
             styled_desc_line = self._apply_style(desc_line, style_description)
-            lines.append(f"{continuation_indent}{styled_desc_line}")
-
-        return lines
-
-    # Fallback: put description on separate lines (name too long or not enough space)
-    lines = [name_part]
-
-    # All descriptions (commands, command groups, and options) use the same alignment
-    desc_indent = spacing
-
-    available_width = self._console_width - desc_indent
-    if available_width < 20:  # Minimum readable width
-      available_width = 20
-      desc_indent = self._console_width - available_width
-
-    # Wrap the description text (use unstyled text for accurate wrapping)
-    wrapper = textwrap.TextWrapper(
-      width=available_width,
-      break_long_words=False,
-      break_on_hyphens=False
-    )
-
-    desc_lines = wrapper.wrap(description)  # Use unstyled description for accurate wrapping
-    indent_str = " " * desc_indent
-
-    for desc_line in desc_lines:
-      styled_desc_line = self._apply_style(desc_line, style_description)
-      lines.append(f"{indent_str}{styled_desc_line}")
+            lines.append(f"{indent_str}{styled_desc_line}")
 
     return lines
 
@@ -880,8 +893,10 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
   def _find_subparser(self, parent_parser, subcmd_name):
     """Find a subparser by name in the parent parser."""
+    result = None
     for action in parent_parser._actions:
       if isinstance(action, argparse._SubParsersAction):
         if subcmd_name in action.choices:
-          return action.choices[subcmd_name]
-    return None
+          result = action.choices[subcmd_name]
+          break
+    return result

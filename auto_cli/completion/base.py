@@ -57,15 +57,18 @@ class CompletionHandler(ABC):
   def detect_shell(self) -> Optional[str]:
     """Detect current shell from environment."""
     shell = os.environ.get('SHELL', '')
+    result = None
+    
     if 'bash' in shell:
-      return 'bash'
+      result = 'bash'
     elif 'zsh' in shell:
-      return 'zsh'
+      result = 'zsh'
     elif 'fish' in shell:
-      return 'fish'
+      result = 'fish'
     elif os.name == 'nt' or 'pwsh' in shell or 'powershell' in shell:
-      return 'powershell'
-    return None
+      result = 'powershell'
+    
+    return result
 
   def get_command_group_parser(self, parser: argparse.ArgumentParser,
                                command_group_path: List[str]) -> Optional[argparse.ArgumentParser]:
@@ -76,6 +79,7 @@ class CompletionHandler(ABC):
     :return: Target parser or None if not found
     """
     current_parser = parser
+    result = current_parser
 
     for command_group in command_group_path:
       found_parser = None
@@ -88,11 +92,13 @@ class CompletionHandler(ABC):
             break
 
       if not found_parser:
-        return None
-
+        result = None
+        break
+      
       current_parser = found_parser
-
-    return current_parser
+      result = current_parser
+    
+    return result
 
   def get_available_commands(self, parser: argparse.ArgumentParser) -> List[str]:
     """Get list of available commands from parser.
@@ -135,6 +141,8 @@ class CompletionHandler(ABC):
     :param partial: Partial value being completed
     :return: List of possible values
     """
+    result = []
+    
     for action in parser._actions:
       if option_name in action.option_strings:
         # Handle enum choices
@@ -143,23 +151,23 @@ class CompletionHandler(ABC):
             # For enum types, get the names
             try:
               choices = [choice.name for choice in action.choices]
-              return self.complete_partial_word(choices, partial)
+              result = self.complete_partial_word(choices, partial)
             except AttributeError:
               # Regular choices list
               choices = list(action.choices)
-              return self.complete_partial_word(choices, partial)
-
-        # Handle boolean flags
-        if getattr(action, 'action', None) == 'store_true':
-          return []  # No completions for boolean flags
-
-        # Handle file paths
-        if getattr(action, 'type', None):
+              result = self.complete_partial_word(choices, partial)
+        elif getattr(action, 'action', None) == 'store_true':
+          # Handle boolean flags
+          result = []  # No completions for boolean flags
+        elif getattr(action, 'type', None):
+          # Handle file paths
           type_name = getattr(action.type, '__name__', str(action.type))
           if 'Path' in type_name or action.type == str:
-            return self._complete_file_path(partial)
+            result = self._complete_file_path(partial)
+        
+        break  # Exit loop once we find the matching action
 
-    return []
+    return result
 
   def _complete_file_path(self, partial: str) -> List[str]:
     """Complete file paths.

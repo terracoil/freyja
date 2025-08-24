@@ -49,12 +49,14 @@ class DataProcessor:
   class FileOperations:
     """File processing operations with batch capabilities."""
 
-    def __init__(self, work_dir: str = "./data", backup: bool = True):
+    def __init__(self, main_instance, work_dir: str = "./data", backup: bool = True):
       """Initialize file operations with working directory settings.
 
+      :param main_instance: Main DataProcessor instance with global configuration
       :param work_dir: Working directory for file operations
       :param backup: Create backup copies before processing
       """
+      self.main_instance = main_instance
       self.work_dir = work_dir
       self.backup = backup
 
@@ -69,9 +71,14 @@ class DataProcessor:
       """
       action = "Would process" if dry_run else "Processing"
       print(f"{action} file: {input_file}")
+      print(f"Global config: {self.main_instance.config_file}")
       print(f"Working directory: {self.work_dir}")
       print(f"Mode: {mode.value}")
       print(f"Backup enabled: {self.backup}")
+      
+      if self.main_instance.verbose:
+        print(f"📝 Verbose: Using global settings from {self.main_instance.config_file}")
+        print(f"📝 Verbose: Main instance processed count: {self.main_instance.processed_count}")
 
       if not dry_run:
         print(f"✓ File processed successfully")
@@ -88,9 +95,13 @@ class DataProcessor:
       """
       processing_mode = "parallel" if parallel else "sequential"
       print(f"Batch processing {max_files} files matching '{pattern}'")
+      print(f"Global config: {self.main_instance.config_file}")
       print(f"Working directory: {self.work_dir}")
       print(f"Processing mode: {processing_mode}")
       print(f"Backup enabled: {self.backup}")
+      
+      if self.main_instance.verbose:
+        print(f"📝 Verbose: Batch processing using global config from {self.main_instance.config_file}")
 
       # Simulate processing
       for i in range(min(3, max_files)):  # Demo with just 3 files
@@ -102,11 +113,13 @@ class DataProcessor:
   class ExportOperations:
     """Data export operations with format conversion."""
 
-    def __init__(self, output_dir: str = "./exports"):
+    def __init__(self, main_instance, output_dir: str = "./exports"):
       """Initialize export operations.
 
+      :param main_instance: Main DataProcessor instance with global configuration
       :param output_dir: Output directory for exported files
       """
+      self.main_instance = main_instance
       self.output_dir = output_dir
 
     def export_results(self, format: OutputFormat = OutputFormat.JSON,
@@ -154,7 +167,12 @@ class DataProcessor:
   class ConfigManagement:
     """Configuration management operations."""
 
-    # No constructor args - demonstrates command group without sub-global options
+    def __init__(self, main_instance):
+      """Initialize configuration management.
+      
+      :param main_instance: Main DataProcessor instance with global configuration
+      """
+      self.main_instance = main_instance
 
     def set_default_mode(self, mode: ProcessingMode):
       """Set the default processing mode for future operations.
@@ -185,11 +203,13 @@ class DataProcessor:
   class Statistics:
     """Processing statistics and reporting."""
 
-    def __init__(self, include_history: bool = False):
+    def __init__(self, main_instance, include_history: bool = False):
       """Initialize statistics reporting.
 
+      :param main_instance: Main DataProcessor instance with global configuration
       :param include_history: Include historical statistics in reports
       """
+      self.main_instance = main_instance
       self.include_history = include_history
 
     def summary(self, detailed: bool = False):

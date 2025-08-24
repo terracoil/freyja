@@ -121,25 +121,23 @@ class RGB:
   def adjust(self, *, brightness: float = 0.0, saturation: float = 0.0,
              strategy: AdjustStrategy = AdjustStrategy.LINEAR) -> 'RGB':
     """Adjust color using specified strategy."""
-    result: RGB
     # Handle strategies by their string values to support aliases
     if strategy.value == "linear":
-      result = self.linear_blend(brightness, saturation)
+      return self.linear_blend(brightness, saturation)
     elif strategy.value == "color_hsl":
-      result = self.hsl(brightness)
+      return self.hsl(brightness)
     elif strategy.value == "multiplicative":
-      result = self.multiplicative(brightness)
+      return self.multiplicative(brightness)
     elif strategy.value == "gamma":
-      result = self.gamma(brightness)
+      return self.gamma(brightness)
     elif strategy.value == "luminance":
-      result = self.luminance(brightness)
+      return self.luminance(brightness)
     elif strategy.value == "overlay":
-      result = self.overlay(brightness)
+      return self.overlay(brightness)
     elif strategy.value == "absolute":
-      result = self.absolute(brightness)
+      return self.absolute(brightness)
     else:
-      result = self
-    return result
+      return self
 
   def linear_blend(self, brightness: float = 0.0, saturation: float = 0.0) -> 'RGB':
     """Adjust color brightness and/or saturation, returning new RGB instance.
@@ -155,36 +153,33 @@ class RGB:
     if not (-5.0 <= saturation <= 5.0):
       raise ValueError(f"Saturation must be between -5.0 and 5.0, got {saturation}")
 
-    # Initialize result
-    result = self
-
     # Apply adjustments only if needed
-    if brightness != 0.0 or saturation != 0.0:
-      # Convert to integer for adjustment algorithm (matches existing behavior)
-      r, g, b = self.to_ints()
+    if brightness == 0.0 and saturation == 0.0:
+      return self
 
-      # Apply brightness adjustment (using existing algorithm from theme.py)
-      # NOTE: The original algorithm has a bug where positive brightness makes colors darker
-      # We maintain this behavior for backward compatibility
-      if brightness != 0.0:
-        factor = -brightness
-        if brightness >= 0:
-          # Original buggy behavior: negative factor makes colors darker
-          r, g, b = [int(v + (255 - v) * factor) for v in (r, g, b)]
-        else:
-          # Darker - blend with black (0, 0, 0)
-          factor = 1 + brightness  # brightness is negative, so this reduces values
-          r, g, b = [int(v * factor) for v in (r, g, b)]
+    # Convert to integer for adjustment algorithm (matches existing behavior)
+    r, g, b = self.to_ints()
 
-      # Clamp to valid range
-      r, g, b = [int(MathUtils.clamp(v, 0, 255)) for v in (r, g, b)]
+    # Apply brightness adjustment (using existing algorithm from theme.py)
+    # NOTE: The original algorithm has a bug where positive brightness makes colors darker
+    # We maintain this behavior for backward compatibility
+    if brightness != 0.0:
+      factor = -brightness
+      if brightness >= 0:
+        # Original buggy behavior: negative factor makes colors darker
+        r, g, b = [int(v + (255 - v) * factor) for v in (r, g, b)]
+      else:
+        # Darker - blend with black (0, 0, 0)
+        factor = 1 + brightness  # brightness is negative, so this reduces values
+        r, g, b = [int(v * factor) for v in (r, g, b)]
 
-      # TODO: Add saturation adjustment when needed
-      # For now, just brightness adjustment to match existing behavior
+    # Clamp to valid range
+    r, g, b = [int(MathUtils.clamp(v, 0, 255)) for v in (r, g, b)]
 
-      result = RGB.from_ints(r, g, b)
+    # TODO: Add saturation adjustment when needed
+    # For now, just brightness adjustment to match existing behavior
 
-    return result
+    return RGB.from_ints(r, g, b)
 
   def hsl(self, adjust_pct: float) -> 'RGB':
     """HSL method: Adjust lightness while preserving hue and saturation."""
@@ -323,8 +318,7 @@ class RGB:
       # Use grayscale palette (24 shades)
       gray = (r + g + b) // 3
       # Map to grayscale range
-      result = 16 if gray < 8 else 231 if gray > 238 else 232 + (gray - 8) * 23 // 230
-      return result
+      return 16 if gray < 8 else 231 if gray > 238 else 232 + (gray - 8) * 23 // 230
 
     # Use 6x6x6 color cube (colors 16-231)
     # Map RGB values to 6-level scale (0-5)

@@ -11,6 +11,7 @@ from typing import Any, Optional, Type, Union
 
 from .docstring_parser import extract_function_help, parse_docstring
 from .formatter import HierarchicalHelpFormatter
+from .system import System
 
 Target = Union[types.ModuleType, Type[Any]]
 
@@ -89,24 +90,29 @@ class CLI:
 
     try:
       parsed = parser.parse_args(args)
+      result = None
 
       # Handle missing command/command group scenarios
       if not hasattr(parsed, '_cli_function'):
-        return self.__handle_missing_command(parser, parsed)
+        result = self.__handle_missing_command(parser, parsed)
+      else:
+        # Execute the command
+        result = self.__execute_command(parsed)
 
-      # Execute the command
-      return self.__execute_command(parsed)
+      return result
 
     except SystemExit:
       # Let argparse handle its own exits (help, errors, etc.)
       raise
     except Exception as e:
       # Handle execution errors gracefully
+      result = None
       if parsed is not None:
-        return self.__handle_execution_error(parsed, e)
+        result = self.__handle_execution_error(parsed, e)
       else:
         # If parsing failed, this is likely an argparse error - re-raise as SystemExit
         raise SystemExit(1)
+      return result
 
   def __extract_class_title(self, cls: type) -> str:
     """Extract title from class docstring, similar to function docstring extraction."""
@@ -157,7 +163,7 @@ class CLI:
       # Validate main class and inner class constructors
       self.__validate_constructor_parameters(self.target_class, "main class")
       for class_name, inner_class in inner_classes.items():
-        self.__validate_constructor_parameters(inner_class, f"inner class '{class_name}'")
+        self.__validate_inner_class_constructor_parameters(inner_class, f"inner class '{class_name}'")
 
       # Discover both direct methods and inner class methods
       self.__discover_direct_methods()  # Direct methods on main class
@@ -187,50 +193,14 @@ class CLI:
     return inner_classes
 
   def __validate_constructor_parameters(self, cls: type, context: str, allow_parameterless_only: bool = False):
-    """Validate that constructor parameters all have default values.
+    """Validate constructor parameters using ValidationService."""
+    from .validation import ValidationService
+    ValidationService.validate_constructor_parameters(cls, context, allow_parameterless_only)
 
-    :param cls: The class to validate
-    :param context: Context string for error messages (e.g., "main class", "inner class 'UserOps'")
-    :param allow_parameterless_only: If True, allows only parameterless constructors (for direct method pattern)
-    """
-    try:
-      init_method = cls.__init__
-      sig = inspect.signature(init_method)
-
-      params_without_defaults = []
-
-      for param_name, param in sig.parameters.items():
-        # Skip self parameter
-        if param_name == 'self':
-          continue
-
-        # Skip *args and **kwargs
-        if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
-          continue
-
-        # Check if parameter has no default value
-        if param.default == param.empty:
-          params_without_defaults.append(param_name)
-
-      if params_without_defaults:
-        param_list = ', '.join(params_without_defaults)
-        class_name = cls.__name__
-        if allow_parameterless_only:
-          # Direct method pattern requires truly parameterless constructor
-          error_msg = (f"Constructor for {context} '{class_name}' has parameters without default values: {param_list}. "
-                       "For classes using direct methods, the constructor must be parameterless or all parameters must have default values.")
-        else:
-          # Inner class pattern allows parameters but they must have defaults
-          error_msg = (f"Constructor for {context} '{class_name}' has parameters without default values: {param_list}. "
-                       "All constructor parameters must have default values to be used as CLI arguments.")
-        raise ValueError(error_msg)
-
-    except Exception as e:
-      if isinstance(e, ValueError):
-        raise e
-      # Re-raise other exceptions as ValueError with context
-      error_msg = f"Error validating constructor for {context} '{cls.__name__}': {e}"
-      raise ValueError(error_msg) from e
+  def __validate_inner_class_constructor_parameters(self, cls: type, context: str):
+    """Validate inner class constructor parameters - first parameter should be main_instance."""
+    from .validation import ValidationService
+    ValidationService.validate_inner_class_constructor_parameters(cls, context)
 
   def __discover_methods_from_inner_classes(self, inner_classes: dict[str, type]):
     """Discover methods from inner classes for the new pattern."""
@@ -290,63 +260,35 @@ class CLI:
 
   def _is_completion_request(self) -> bool:
     """Check if this is a completion request."""
-    from .system import System
     completion = System.Completion(cli_instance=self)
     return completion.is_completion_request()
 
   def _handle_completion(self) -> None:
     """Handle completion request and exit."""
-    from .system import System
     completion = System.Completion(cli_instance=self)
     completion.handle_completion()
 
-  def install_completion(self, shell: str = None, force: bool = False) -> bool:
-    """Install shell completion for this CLI.
-
-    :param shell: Target shell (auto-detect if None)
-    :param force: Force overwrite existing completion
-    :return: True if installation successful
-    """
-    from .system import System
-    completion = System.Completion(cli_instance=self)
-    return completion.install(shell, force)
-
-  def _show_completion_script(self, shell: str) -> int:
-    """Show completion script for specified shell.
-
-    :param shell: Target shell
-    :return: Exit code (0 for success, 1 for error)
-    """
-    from .system import System
-    completion = System.Completion(cli_instance=self)
-    try:
-      completion.show(shell)
-      return 0
-    except Exception:
-      return 1
-
   def __build_system_commands(self) -> dict[str, dict]:
     """Build System commands when theme tuner or completion is enabled.
-    
+
     Uses the same hierarchical command building logic as regular classes.
     """
-    from .system import System
-    
+
     system_commands = {}
-    
+
     # Only inject commands if they're enabled
     if not self.enable_theme_tuner and not self.enable_completion:
       return system_commands
-    
+
     # Discover System inner classes and their methods
     system_inner_classes = {}
     system_functions = {}
-    
+
     # Check TuneTheme if theme tuner is enabled
     if self.enable_theme_tuner and hasattr(System, 'TuneTheme'):
       tune_theme_class = System.TuneTheme
       system_inner_classes['TuneTheme'] = tune_theme_class
-      
+
       # Get methods from TuneTheme class
       for attr_name in dir(tune_theme_class):
         if not attr_name.startswith('_') and callable(getattr(tune_theme_class, attr_name)):
@@ -354,12 +296,12 @@ class CLI:
           if callable(attr) and hasattr(attr, '__self__') is False:  # Unbound method
             method_name = f"TuneTheme__{attr_name}"
             system_functions[method_name] = attr
-    
+
     # Check Completion if completion is enabled
     if self.enable_completion and hasattr(System, 'Completion'):
       completion_class = System.Completion
       system_inner_classes['Completion'] = completion_class
-      
+
       # Get methods from Completion class
       for attr_name in dir(completion_class):
         if not attr_name.startswith('_') and callable(getattr(completion_class, attr_name)):
@@ -367,7 +309,7 @@ class CLI:
           if callable(attr) and hasattr(attr, '__self__') is False:  # Unbound method
             method_name = f"Completion__{attr_name}"
             system_functions[method_name] = attr
-    
+
     # Build hierarchical structure using the same logic as regular classes
     if system_functions:
       groups = {}
@@ -377,11 +319,11 @@ class CLI:
           parts = func_name.split('__', 1)
           if len(parts) == 2:
             group_name, method_name = parts
-            # Convert class names to kebab-case 
+            # Convert class names to kebab-case
             from .str_utils import StrUtils
             cli_group_name = StrUtils.kebab_case(group_name)
             cli_method_name = method_name.replace('_', '-')
-            
+
             if cli_group_name not in groups:
               # Get inner class description
               description = None
@@ -391,7 +333,7 @@ class CLI:
                 if inner_class.__doc__:
                   from .docstring_parser import parse_docstring
                   description, _ = parse_docstring(inner_class.__doc__)
-              
+
               groups[cli_group_name] = {
                 'type': 'group',
                 'commands': {},
@@ -399,7 +341,7 @@ class CLI:
                 'inner_class': system_inner_classes.get(original_class_name),  # Store class reference
                 'is_system_command': True  # Mark as system command
               }
-            
+
             # Add method as command in the group
             groups[cli_group_name]['commands'][cli_method_name] = {
               'type': 'command',
@@ -408,10 +350,10 @@ class CLI:
               'command_path': [cli_group_name, cli_method_name],
               'is_system_command': True  # Mark as system command
             }
-      
+
       # Add groups to system commands
       system_commands.update(groups)
-    
+
     return system_commands
 
   def __build_command_tree(self) -> dict[str, dict]:
@@ -450,7 +392,8 @@ class CLI:
         # Add direct methods as top-level commands
         for func_name, func_obj in self.functions.items():
           if '__' not in func_name:  # Direct method on main class
-            cli_name = func_name.replace('_', '-')
+            from .string_utils import StringUtils
+            cli_name = StringUtils.snake_to_kebab(func_name)
             commands[cli_name] = {
               'type': 'command',
               'function': func_obj,
@@ -500,7 +443,8 @@ class CLI:
       else:
         # Class mode without inner classes: Flat structure
         for func_name, func_obj in self.functions.items():
-          cli_name = func_name.replace('_', '-')
+          from .string_utils import StringUtils
+          cli_name = StringUtils.snake_to_kebab(func_name)
           commands[cli_name] = {
             'type': 'command',
             'function': func_obj,
@@ -510,154 +454,19 @@ class CLI:
     return commands
 
   def __add_global_class_args(self, parser: argparse.ArgumentParser):
-    """Add global arguments from main class constructor."""
-    # Get the constructor signature
-    init_method = self.target_class.__init__
-    sig = inspect.signature(init_method)
-
-    # Extract docstring help for constructor parameters
-    _, param_help = extract_function_help(init_method)
-
-    for param_name, param in sig.parameters.items():
-      # Skip self parameter
-      if param_name == 'self':
-        continue
-
-      # Skip *args and **kwargs
-      if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
-        continue
-
-      arg_config = {
-        'dest': f'_global_{param_name}',  # Prefix to avoid conflicts
-        'help': param_help.get(param_name, f"Global {param_name} parameter")
-      }
-
-      # Handle type annotations
-      if param.annotation != param.empty:
-        type_config = self.__get_arg_type_config(param.annotation)
-        arg_config.update(type_config)
-
-      # Handle defaults
-      if param.default != param.empty:
-        arg_config['default'] = param.default
-      else:
-        arg_config['required'] = True
-
-      # Add argument without prefix (user requested no global- prefix)
-      flag = f"--{param_name.replace('_', '-')}"
-
-      # Check for conflicts with built-in CLI options
-      built_in_options = {'verbose', 'no-color', 'help'}
-      if param_name.replace('_', '-') in built_in_options:
-        # Skip built-in options to avoid conflicts
-        continue
-
-      parser.add_argument(flag, **arg_config)
+    """Add global arguments from main class constructor using ArgumentParserService."""
+    from .argument_parser import ArgumentParserService
+    ArgumentParserService.add_global_class_args(parser, self.target_class)
 
   def __add_subglobal_class_args(self, parser: argparse.ArgumentParser, inner_class: type, command_name: str):
-    """Add sub-global arguments from inner class constructor."""
-    # Get the constructor signature
-    init_method = inner_class.__init__
-    sig = inspect.signature(init_method)
+    """Add sub-global arguments from inner class constructor using ArgumentParserService."""
+    from .argument_parser import ArgumentParserService
+    ArgumentParserService.add_subglobal_class_args(parser, inner_class, command_name)
 
-    # Extract docstring help for constructor parameters
-    _, param_help = extract_function_help(init_method)
-
-    for param_name, param in sig.parameters.items():
-      # Skip self parameter
-      if param_name == 'self':
-        continue
-
-      # Skip *args and **kwargs
-      if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
-        continue
-
-      arg_config = {
-        'dest': f'_subglobal_{command_name}_{param_name}',  # Prefix to avoid conflicts
-        'help': param_help.get(param_name, f"{command_name} {param_name} parameter")
-      }
-
-      # Handle type annotations
-      if param.annotation != param.empty:
-        type_config = self.__get_arg_type_config(param.annotation)
-        arg_config.update(type_config)
-      
-      # Set clean metavar if not already set by type config (e.g., enums set their own metavar)
-      if 'metavar' not in arg_config and 'action' not in arg_config:
-        arg_config['metavar'] = param_name.upper()
-
-      # Handle defaults
-      if param.default != param.empty:
-        arg_config['default'] = param.default
-      else:
-        arg_config['required'] = True
-
-      # Add argument with command-specific prefix
-      flag = f"--{param_name.replace('_', '-')}"
-      parser.add_argument(flag, **arg_config)
-
-  def __get_arg_type_config(self, annotation: type) -> dict[str, Any]:
-    """Convert type annotation to argparse configuration."""
-    from pathlib import Path
-    from typing import get_args, get_origin
-
-    # Handle Optional[Type] -> get the actual type
-    # Handle both typing.Union and types.UnionType (Python 3.10+)
-    origin = get_origin(annotation)
-    if origin is Union or str(origin) == "<class 'types.UnionType'>":
-      args = get_args(annotation)
-      # Optional[T] is Union[T, NoneType]
-      if len(args) == 2 and type(None) in args:
-        annotation = next(arg for arg in args if arg is not type(None))
-
-    if annotation in (str, int, float):
-      return {'type': annotation}
-    elif annotation == bool:
-      return {'action': 'store_true'}
-    elif annotation == Path:
-      return {'type': Path}
-    elif inspect.isclass(annotation) and issubclass(annotation, enum.Enum):
-      return {
-        'type': lambda x: annotation[x.split('.')[-1]],
-        'choices': list(annotation),
-        'metavar': f"{{{','.join(e.name for e in annotation)}}}"
-      }
-    return {}
-
-  def __add_function_args(self, parser: argparse.ArgumentParser, fn: Callable):
-    """Add function parameters as CLI arguments with help from docstring."""
-    sig = inspect.signature(fn)
-    _, param_help = extract_function_help(fn)
-
-    for name, param in sig.parameters.items():
-      # Skip self parameter for class methods
-      if name == 'self':
-        continue
-
-      # Skip *args and **kwargs - they can't be CLI arguments
-      if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
-        continue
-
-      arg_config: dict[str, Any] = {
-        'dest': name,
-        'help': param_help.get(name, f"{name} parameter")
-      }
-
-      # Handle type annotations
-      if param.annotation != param.empty:
-        type_config = self.__get_arg_type_config(param.annotation)
-        arg_config.update(type_config)
-
-      # Handle defaults - determine if argument is required
-      if param.default != param.empty:
-        arg_config['default'] = param.default
-        # Don't set required for optional args
-      else:
-        arg_config['required'] = True
-
-      # Add argument with kebab-case flag name
-      flag = f"--{name.replace('_', '-')}"
-      parser.add_argument(flag, **arg_config)
+  def __add_function_args(self, parser: argparse.ArgumentParser, fn: Any):
+    """Add function parameters as CLI arguments using ArgumentParserService."""
+    from .argument_parser import ArgumentParserService
+    ArgumentParserService.add_function_args(parser, fn)
 
   def create_parser(self, no_color: bool = False) -> argparse.ArgumentParser:
     """Create argument parser with hierarchical command group support."""
@@ -708,12 +517,13 @@ class CLI:
 
     parser.format_help = patched_format_help
 
-    # Add global verbose flag
-    parser.add_argument(
-      "-v", "--verbose",
-      action="store_true",
-      help="Enable verbose output"
-    )
+    # Add verbose flag for module-based CLIs (class-based CLIs use it as global parameter)
+    if self.target_mode == TargetMode.MODULE:
+      parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Enable verbose output"
+      )
 
     # Add global no-color flag
     parser.add_argument(
@@ -808,7 +618,7 @@ class CLI:
     if 'description' in info:
       group_parser._command_group_description = info['description']
     group_parser._command_type = 'group'
-    
+
     # Mark as System command if applicable
     if 'is_system_command' in info:
       group_parser._is_system_command = info['is_system_command']
@@ -907,13 +717,13 @@ class CLI:
           # This is a system command path: system -> [command] -> [subcommand]
           command_parts.append('system')
           command_parts.append(parsed.command)
-          
+
           # Check if there's a specific subcommand
           subcommand = getattr(parsed, attr_name)
           if subcommand:
             command_parts.append(subcommand)
           break
-      
+
       if not is_system_command:
         # Regular command path
         command_parts.append(parsed.command)
@@ -937,19 +747,18 @@ class CLI:
 
     if command_parts:
       # Show contextual help for partial command
-      result = self.__show_contextual_help(parser, command_parts)
+      return self.__show_contextual_help(parser, command_parts)
     else:
       # No command provided - show main help
       parser.print_help()
-      result = 0
-
-    return result
+      return 0
 
   def __show_contextual_help(self, parser: argparse.ArgumentParser, command_parts: list) -> int:
     """Show help for a specific command level."""
     # Navigate to the appropriate subparser
     current_parser = parser
     result = 0
+    found_all_parts = True
 
     for part in command_parts:
       # Find the subparser for this command part
@@ -966,33 +775,33 @@ class CLI:
         print(f"Unknown command: {' '.join(command_parts[:command_parts.index(part) + 1])}", file=sys.stderr)
         parser.print_help()
         result = 1
+        found_all_parts = False
         break
 
-    if result == 0:
+    if result == 0 and found_all_parts:
       # Check for special case: system tune-theme should default to run-interactive
-      if (len(command_parts) == 2 and 
-          command_parts[0] == 'system' and 
+      if (len(command_parts) == 2 and
+          command_parts[0] == 'system' and
           command_parts[1] == 'tune-theme'):
         # Execute tune-theme run-interactive by default
-        return self.__execute_default_tune_theme()
-      
-      current_parser.print_help()
+        result = self.__execute_default_tune_theme()
+      else:
+        current_parser.print_help()
 
     return result
 
   def __execute_default_tune_theme(self) -> int:
     """Execute the default tune-theme command (run-interactive)."""
-    from .system import System
-    
+
     # Create System instance
     system_instance = System()
-    
+
     # Create TuneTheme instance with default arguments
     tune_theme_instance = System.TuneTheme()
-    
+
     # Execute run_interactive method
     tune_theme_instance.run_interactive()
-    
+
     return 0
 
   def __execute_command(self, parsed) -> Any:
@@ -1091,7 +900,7 @@ class CLI:
         inner_kwargs[param_name] = value
 
     try:
-      inner_instance = inner_class(**inner_kwargs)
+      inner_instance = inner_class(main_instance, **inner_kwargs)
     except TypeError as e:
       raise RuntimeError(f"Cannot instantiate {inner_class.__name__} with sub-global args: {e}") from e
 
@@ -1116,17 +925,16 @@ class CLI:
 
   def __execute_system_command(self, parsed) -> Any:
     """Execute System command using the same pattern as inner class commands."""
-    from .system import System
-    
+
     method = parsed._cli_function
     original_name = parsed._function_name
-    
+
     # Parse the System command name: TuneTheme__method_name or Completion__method_name
     if '__' not in original_name:
       raise RuntimeError(f"Invalid System command format: {original_name}")
-    
+
     class_name, method_name = original_name.split('__', 1)
-    
+
     # Get the System inner class
     if class_name == 'TuneTheme':
       inner_class = System.TuneTheme
@@ -1134,20 +942,20 @@ class CLI:
       inner_class = System.Completion
     else:
       raise RuntimeError(f"Unknown System command class: {class_name}")
-    
+
     # 1. Create main System instance (no global args needed for System)
     system_instance = System()
-    
+
     # 2. Create inner class instance with sub-global arguments if any exist
     inner_kwargs = {}
     inner_sig = inspect.signature(inner_class.__init__)
-    
+
     for param_name, param in inner_sig.parameters.items():
       if param_name == 'self':
         continue
       if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
         continue
-      
+
       # Look for sub-global argument (using kebab-case naming convention)
       from .str_utils import StrUtils
       command_name = StrUtils.kebab_case(class_name)
@@ -1155,29 +963,29 @@ class CLI:
       if hasattr(parsed, subglobal_attr):
         value = getattr(parsed, subglobal_attr)
         inner_kwargs[param_name] = value
-    
+
     try:
       inner_instance = inner_class(**inner_kwargs)
     except TypeError as e:
       raise RuntimeError(f"Cannot instantiate System.{class_name} with args: {e}") from e
-    
+
     # 3. Get method from inner instance and execute with command arguments
     bound_method = getattr(inner_instance, method_name)
     method_sig = inspect.signature(bound_method)
     method_kwargs = {}
-    
+
     for param_name, param in method_sig.parameters.items():
       if param_name == 'self':
         continue
       if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
         continue
-      
+
       # Look for method argument (no prefix, just the parameter name)
       attr_name = param_name.replace('-', '_')
       if hasattr(parsed, attr_name):
         value = getattr(parsed, attr_name)
         method_kwargs[param_name] = value
-    
+
     return bound_method(**method_kwargs)
 
   def __execute_direct_method_command(self, parsed) -> Any:

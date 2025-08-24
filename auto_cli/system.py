@@ -47,13 +47,18 @@ class System:
         ("subtitle", "Section headers (COMMANDS:, OPTIONS:)"),
         ("command_name", "Command names"),
         ("command_description", "Command descriptions"),
-        ("command_group_name", "Group command names"),
-        ("grouped_command_name", "Command group names"),
-        ("grouped_command_description", "Command group descriptions"),
-        ("option_name", "Option flags (--name)"),
-        ("option_description", "Option descriptions"),
-        ("command_group_option_name", "Group command option flags"),
-        ("command_group_option_description", "Group command option descriptions"),
+        # Command Group Level (inner class level)
+        ("command_group_name", "Command group names (inner class names)"),
+        ("command_group_description", "Command group descriptions (inner class descriptions)"),
+        ("command_group_option_name", "Command group option flags"),
+        ("command_group_option_description", "Command group option descriptions"),
+        # Grouped Command Level (commands within the group)
+        ("grouped_command_name", "Grouped command names (methods within groups)"),
+        ("grouped_command_description", "Grouped command descriptions (method descriptions)"),
+        ("grouped_command_option_name", "Grouped command option flags"),
+        ("grouped_command_option_description", "Grouped command option descriptions"),
+        ("option_name", "Regular option flags (--name)"),
+        ("option_description", "Regular option descriptions"),
         ("required_asterisk", "Required field markers (*)")
       ]
 
@@ -83,13 +88,11 @@ class System:
         try:
           self.adjust_strategy = AdjustStrategy[strategy.upper()]
           print(f"Strategy set to: {self.adjust_strategy.name}")
-          return
         except KeyError:
           print(f"Invalid strategy: {strategy}")
-          return
-
-      # Interactive selection
-      self._select_adjustment_strategy()
+      else:
+        # Interactive selection
+        self._select_adjustment_strategy()
 
     def toggle_theme(self) -> None:
       """Toggle between universal and colorful themes."""
@@ -222,13 +225,18 @@ class System:
         ("subtitle", theme.subtitle.fg, "Subtitle color"),
         ("command_name", theme.command_name.fg, "Command name"),
         ("command_description", theme.command_description.fg, "Command description"),
-        ("command_group_name", theme.group_command_name.fg, "Group command name"),
-        ("grouped_command_name", theme.command_group_name.fg, "Command group name"),
-        ("grouped_command_description", theme.command_group_description.fg, "Command group description"),
+        # Command Group Level (inner class level)
+        ("command_group_name", theme.command_group_name.fg, "Command group name"),
+        ("command_group_description", theme.command_group_description.fg, "Command group description"),
+        ("command_group_option_name", theme.command_group_option_name.fg, "Command group option name"),
+        ("command_group_option_description", theme.command_group_option_description.fg, "Command group option description"),
+        # Grouped Command Level (commands within the group)
+        ("grouped_command_name", theme.grouped_command_name.fg, "Grouped command name"),
+        ("grouped_command_description", theme.grouped_command_description.fg, "Grouped command description"),
+        ("grouped_command_option_name", theme.grouped_command_option_name.fg, "Grouped command option name"),
+        ("grouped_command_option_description", theme.grouped_command_option_description.fg, "Grouped command option description"),
         ("option_name", theme.option_name.fg, "Option name"),
         ("option_description", theme.option_description.fg, "Option description"),
-        ("command_group_option_name", theme.group_command_option_name.fg, "Group command option name"),
-        ("command_group_option_description", theme.group_command_option_description.fg, "Group command option description"),
         ("required_asterisk", theme.required_asterisk.fg, "Required asterisk"),
       ]
 
@@ -668,31 +676,30 @@ class System:
       :return: True if installation successful
       """
       target_shell = shell or self.shell
+      result = False
 
       if not self._cli_instance or not self._cli_instance.enable_completion:
         print("Completion is disabled for this CLI.", file=sys.stderr)
-        return False
-
-      if not self._completion_handler:
+      elif not self._completion_handler:
         self.init_completion(target_shell)
+        if not self._completion_handler:
+          print("Completion handler not available.", file=sys.stderr)
+      
+      if self._completion_handler:
+        try:
+          from auto_cli.completion.installer import CompletionInstaller
 
-      if not self._completion_handler:
-        print("Completion handler not available.", file=sys.stderr)
-        return False
+          # Extract program name from sys.argv[0]
+          prog_name = os.path.basename(sys.argv[0])
+          if prog_name.endswith('.py'):
+            prog_name = prog_name[:-3]
 
-      try:
-        from auto_cli.completion.installer import CompletionInstaller
-
-        # Extract program name from sys.argv[0]
-        prog_name = os.path.basename(sys.argv[0])
-        if prog_name.endswith('.py'):
-          prog_name = prog_name[:-3]
-
-        installer = CompletionInstaller(self._completion_handler, prog_name)
-        return installer.install(target_shell, force)
-      except ImportError:
-        print("Completion installer not available.", file=sys.stderr)
-        return False
+          installer = CompletionInstaller(self._completion_handler, prog_name)
+          result = installer.install(target_shell, force)
+        except ImportError:
+          print("Completion installer not available.", file=sys.stderr)
+      
+      return result
 
     def show(self, shell: Optional[str] = None) -> None:
       """Show shell completion script.
@@ -703,25 +710,23 @@ class System:
 
       if not self._cli_instance or not self._cli_instance.enable_completion:
         print("Completion is disabled for this CLI.", file=sys.stderr)
-        return
+      else:
+        # Initialize completion handler for specific shell
+        self.init_completion(target_shell)
 
-      # Initialize completion handler for specific shell
-      self.init_completion(target_shell)
+        if not self._completion_handler:
+          print("Completion handler not available.", file=sys.stderr)
+        else:
+          # Extract program name from sys.argv[0]
+          prog_name = os.path.basename(sys.argv[0])
+          if prog_name.endswith('.py'):
+            prog_name = prog_name[:-3]
 
-      if not self._completion_handler:
-        print("Completion handler not available.", file=sys.stderr)
-        return
-
-      # Extract program name from sys.argv[0]
-      prog_name = os.path.basename(sys.argv[0])
-      if prog_name.endswith('.py'):
-        prog_name = prog_name[:-3]
-
-      try:
-        script = self._completion_handler.generate_script(prog_name)
-        print(script)
-      except Exception as e:
-        print(f"Error generating completion script: {e}", file=sys.stderr)
+          try:
+            script = self._completion_handler.generate_script(prog_name)
+            print(script)
+          except Exception as e:
+            print(f"Error generating completion script: {e}", file=sys.stderr)
 
     def handle_completion(self) -> None:
       """Handle completion request and exit."""

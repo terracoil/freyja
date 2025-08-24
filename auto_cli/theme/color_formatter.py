@@ -40,35 +40,31 @@ class ColorFormatter:
     """Check if the current terminal supports colors."""
     import os
 
-    result = True
-
     # Check for explicit disable first
     if os.environ.get('NO_COLOR') or os.environ.get('CLICOLOR') == '0':
-      result = False
+      return False
     elif os.environ.get('FORCE_COLOR') or os.environ.get('CLICOLOR'):
       # Check for explicit enable
-      result = True
+      return True
     elif not sys.stdout.isatty():
       # Check if stdout is a TTY (not redirected to file/pipe)
-      result = False
+      return False
     else:
       # Check environment variables that indicate color support
       term = sys.platform
       if term == 'win32':
         # Windows terminal color support
-        result = True
+        return True
       else:
         # Unix-like systems
         term_env = os.environ.get('TERM', '').lower()
         if 'color' in term_env or term_env in ('xterm', 'xterm-256color', 'screen'):
-          result = True
+          return True
         elif term_env in ('dumb', ''):
           # Default for dumb terminals or empty TERM
-          result = False
+          return False
         else:
-          result = True
-
-    return result
+          return True
 
   def apply_style(self, text: str, style: ThemeStyle) -> str:
     """Apply a theme style to text.
@@ -77,48 +73,45 @@ class ColorFormatter:
     :param style: ThemeStyle configuration to apply
     :return: Styled text (or original text if colors disabled)
     """
-    result = text
+    if not self.colors_enabled or not text:
+      return text
 
-    if self.colors_enabled and text:
-      # Build color codes
-      codes = []
+    # Build color codes
+    codes = []
 
-      # Foreground color - handle RGB instances and ANSI strings
-      if style.fg:
-        if isinstance(style.fg, RGB):
-          fg_code = style.fg.to_ansi(background=False)
-          codes.append(fg_code)
-        elif isinstance(style.fg, str) and style.fg.startswith('\x1b['):
-          # Allow ANSI escape sequences as strings
-          codes.append(style.fg)
-        else:
-          raise ValueError(f"Foreground color must be RGB instance or ANSI string, got {type(style.fg)}")
+    # Foreground color - handle RGB instances and ANSI strings
+    if style.fg:
+      if isinstance(style.fg, RGB):
+        fg_code = style.fg.to_ansi(background=False)
+        codes.append(fg_code)
+      elif isinstance(style.fg, str) and style.fg.startswith('\x1b['):
+        # Allow ANSI escape sequences as strings
+        codes.append(style.fg)
+      else:
+        raise ValueError(f"Foreground color must be RGB instance or ANSI string, got {type(style.fg)}")
 
-      # Background color - handle RGB instances and ANSI strings
-      if style.bg:
-        if isinstance(style.bg, RGB):
-          bg_code = style.bg.to_ansi(background=True)
-          codes.append(bg_code)
-        elif isinstance(style.bg, str) and style.bg.startswith('\x1b['):
-          # Allow ANSI escape sequences as strings
-          codes.append(style.bg)
-        else:
-          raise ValueError(f"Background color must be RGB instance or ANSI string, got {type(style.bg)}")
+    # Background color - handle RGB instances and ANSI strings
+    if style.bg:
+      if isinstance(style.bg, RGB):
+        bg_code = style.bg.to_ansi(background=True)
+        codes.append(bg_code)
+      elif isinstance(style.bg, str) and style.bg.startswith('\x1b['):
+        # Allow ANSI escape sequences as strings
+        codes.append(style.bg)
+      else:
+        raise ValueError(f"Background color must be RGB instance or ANSI string, got {type(style.bg)}")
 
-      # Text styling (using defined ANSI constants)
-      if style.bold:
-        codes.append(Style.ANSI_BOLD.value)  # Use ANSI bold to avoid Style.BRIGHT color shifts
-      if style.dim:
-        codes.append(Style.DIM.value)  # ANSI DIM style
-      if style.italic:
-        codes.append(Style.ANSI_ITALIC.value)  # ANSI italic code (support varies by terminal)
-      if style.underline:
-        codes.append(Style.ANSI_UNDERLINE.value)  # ANSI underline code
+    # Text styling (using defined ANSI constants)
+    if style.bold:
+      codes.append(Style.ANSI_BOLD.value)  # Use ANSI bold to avoid Style.BRIGHT color shifts
+    if style.dim:
+      codes.append(Style.DIM.value)  # ANSI DIM style
+    if style.italic:
+      codes.append(Style.ANSI_ITALIC.value)  # ANSI italic code (support varies by terminal)
+    if style.underline:
+      codes.append(Style.ANSI_UNDERLINE.value)  # ANSI underline code
 
-      if codes:
-        result = ''.join(codes) + text + Style.RESET_ALL.value
-
-    return result
+    return ''.join(codes) + text + Style.RESET_ALL.value if codes else text
 
   def rgb_to_ansi256(self, r: int, g: int, b: int) -> int:
     """

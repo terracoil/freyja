@@ -30,7 +30,7 @@ class TestHierarchicalHelpFormatter:
     assert formatter._theme is None
     assert formatter._color_formatter is None
     assert formatter._cmd_indent == 2
-    assert formatter._arg_indent == 6
+    assert formatter._arg_indent == 4
     assert formatter._desc_indent == 8
 
   def test_formatter_initialization_with_theme(self):
@@ -149,9 +149,10 @@ class TestHierarchicalHelpFormatter:
 
     required, optional = formatter._analyze_arguments(parser)
 
-    # Check required args
+    # Check required args (returned as list of tuples: (name, help))
     assert len(required) == 1
-    assert '--required-arg REQUIRED_ARG' in required
+    required_names = [name for name, _ in required]
+    assert '--required-arg REQUIRED_ARG' in required_names
 
     # Check optional args (should have 3: optional-arg, flag, with-metavar)
     assert len(optional) == 3
@@ -291,6 +292,7 @@ class TestHierarchicalFormatterWithCommandGroups:
     group_parser._command_group_description = "Database operations and management"
     group_parser._commands = {'create': 'Create database', 'migrate': 'Run migrations'}
     group_parser.description = "Default description"
+    group_parser._actions = []  # Add empty actions list to avoid iteration error
 
     # Mock _find_subparser to return mock subparsers
     def mock_find_subparser(parser, name):
@@ -330,6 +332,7 @@ class TestHierarchicalFormatterWithCommandGroups:
     group_parser.description = "Default group description"
     group_parser.help = ""  # Ensure help is a string, not a Mock
     group_parser._commands = {}
+    group_parser._actions = []  # Add empty actions list to avoid iteration error
 
     lines = self.formatter._format_group_with_command_groups_global(
       name="admin",
