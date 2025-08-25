@@ -1,6 +1,6 @@
 # Command parsing functionality extracted from CLI class.
 import argparse
-from typing import List, Optional, Dict, Any, Type
+from typing import *
 from collections import defaultdict
 
 from .command_discovery import CommandInfo

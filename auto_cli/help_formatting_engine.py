@@ -4,7 +4,7 @@ Consolidates all formatting logic for commands, options, groups, and description
 Eliminates duplication across formatter methods while maintaining consistent alignment.
 """
 
-from typing import List, Tuple, Optional, Dict, Any
+from typing import *
 import argparse
 import textwrap
 

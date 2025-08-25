@@ -3,7 +3,7 @@ import inspect
 import types
 import enum
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Type, Union, Callable
+from typing import *
 from collections.abc import Callable as CallableABC
 
 from .string_utils import StringUtils
@@ -90,14 +90,16 @@ class CommandDiscovery:
         
         :return: List of discovered commands
         """
-        if self.target_mode == TargetMode.MODULE:
-            return self._discover_from_module()
-        elif self.target_mode == TargetMode.CLASS:
-            return self._discover_from_class()
-        elif self.target_mode == TargetMode.MULTI_CLASS:
-            return self._discover_from_multi_class()
+        result = []
         
-        return []
+        if self.target_mode == TargetMode.MODULE:
+            result = self._discover_from_module()
+        elif self.target_mode == TargetMode.CLASS:
+            result = self._discover_from_class()
+        elif self.target_mode == TargetMode.MULTI_CLASS:
+            result = self._discover_from_multi_class()
+        
+        return result
     
     def _discover_from_module(self) -> List[CommandInfo]:
         """Discover functions from a module."""

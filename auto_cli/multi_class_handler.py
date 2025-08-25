@@ -4,7 +4,7 @@ Provides services for managing commands from multiple classes in a single CLI,
 including collision detection, command ordering, and source tracking.
 """
 
-from typing import Dict, List, Set, Type, Any, Optional, Tuple
+from typing import *
 import inspect
 
 

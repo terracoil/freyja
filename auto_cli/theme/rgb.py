@@ -121,23 +121,24 @@ class RGB:
   def adjust(self, *, brightness: float = 0.0, saturation: float = 0.0,
              strategy: AdjustStrategy = AdjustStrategy.LINEAR) -> 'RGB':
     """Adjust color using specified strategy."""
-    # Handle strategies by their string values to support aliases
-    if strategy.value == "linear":
-      return self.linear_blend(brightness, saturation)
-    elif strategy.value == "color_hsl":
-      return self.hsl(brightness)
-    elif strategy.value == "multiplicative":
-      return self.multiplicative(brightness)
-    elif strategy.value == "gamma":
-      return self.gamma(brightness)
-    elif strategy.value == "luminance":
-      return self.luminance(brightness)
-    elif strategy.value == "overlay":
-      return self.overlay(brightness)
-    elif strategy.value == "absolute":
-      return self.absolute(brightness)
-    else:
-      return self
+    # Handle strategies using modern match statement for better performance
+    match strategy.value:
+      case "linear":
+        return self.linear_blend(brightness, saturation)
+      case "color_hsl":
+        return self.hsl(brightness)
+      case "multiplicative":
+        return self.multiplicative(brightness)
+      case "gamma":
+        return self.gamma(brightness)
+      case "luminance":
+        return self.luminance(brightness)
+      case "overlay":
+        return self.overlay(brightness)
+      case "absolute":
+        return self.absolute(brightness)
+      case _:
+        return self
 
   def linear_blend(self, brightness: float = 0.0, saturation: float = 0.0) -> 'RGB':
     """Adjust color brightness and/or saturation, returning new RGB instance.
@@ -283,15 +284,19 @@ class RGB:
 
     def hue_to_rgb(p: float, q: float, t: float) -> float:
       """Convert hue to RGB component."""
-      t = t + 1 if t < 0 else t - 1 if t > 1 else t
+      if t < 0:
+        t = t + 1
+      elif t > 1:
+        t = t - 1
+      result = p  # Default case
+      
       if t < 1 / 6:
         result = p + (q - p) * 6 * t
       elif t < 1 / 2:
         result = q
       elif t < 2 / 3:
         result = p + (q - p) * (2 / 3 - t) * 6
-      else:
-        result = p
+      
       return result
 
     if s == 0:
@@ -318,7 +323,12 @@ class RGB:
       # Use grayscale palette (24 shades)
       gray = (r + g + b) // 3
       # Map to grayscale range
-      return 16 if gray < 8 else 231 if gray > 238 else 232 + (gray - 8) * 23 // 230
+      result = 232 + (gray - 8) * 23 // 230  # Default case
+      if gray < 8:
+        result = 16
+      elif gray > 238:
+        result = 231
+      return result
 
     # Use 6x6x6 color cube (colors 16-231)
     # Map RGB values to 6-level scale (0-5)

@@ -22,7 +22,6 @@ class MathUtils:
 
   @classmethod
   def minmax_range(cls, args: [Numeric], negative_lower: bool = False) -> Tuple[Numeric, Numeric]:
-    print(f"minmax_range: {args} with negative_lower: {negative_lower}")
     lower, upper = cls.minmax(*args)
 
     return cls.safe_negative(lower, negative_lower), upper

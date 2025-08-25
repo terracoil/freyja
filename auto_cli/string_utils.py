@@ -52,9 +52,7 @@ class StringUtils:
         Prevents test interdependencies by ensuring clean state between test runs.
         """
         StringUtils.kebab_case.cache_clear()
-        StringUtils.kebab_case.cache_clear()
         StringUtils.kebab_to_snake.cache_clear()
-        StringUtils.kebab_case.cache_clear()
         StringUtils._conversion_cache.clear()
 
     @classmethod

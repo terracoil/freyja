@@ -3,14 +3,13 @@ import argparse
 import enum
 import sys
 import types
-from typing import Any, List, Optional, Type, Union, Sequence
+from typing import *
 
 from .command_discovery import CommandDiscovery, CommandInfo, TargetMode, TargetInfoKeys
 from .command_parser import CommandParser
 from .command_executor import CommandExecutor
 from .command_builder import CommandBuilder
 from .multi_class_handler import MultiClassHandler
-from .string_utils import StringUtils
 
 
 Target = Union[types.ModuleType, Type[Any], Sequence[Type[Any]]]
@@ -121,16 +120,18 @@ class CLI:
     @property
     def command_executor(self):
         """Access primary command executor (for single class/module mode)."""
-        if self.target_mode == TargetMode.MULTI_CLASS:
-            return None
-        return self.executors.get('primary')
+        result = None
+        if self.target_mode != TargetMode.MULTI_CLASS:
+            result = self.executors.get('primary')
+        return result
     
     @property
     def command_executors(self):
         """Access command executors list (for multi-class mode)."""
+        result = None
         if self.target_mode == TargetMode.MULTI_CLASS:
-            return list(self.executors.values())
-        return None
+            result = list(self.executors.values())
+        return result
     
     @property
     def inner_classes(self):
@@ -157,21 +158,20 @@ class CLI:
         # Handle completion requests early
         if self.enable_completion and self._is_completion_request():
             self._handle_completion()
-            return result
-        
-        # Check for no-color flag
-        no_color = self._check_no_color_flag(args)
-        
-        # Create parser and parse arguments
-        parser = self.parser_service.create_parser(
-            commands=self.discovered_commands,
-            target_mode=self.target_mode.value,
-            target_class=self.target_info.get(TargetInfoKeys.PRIMARY_CLASS.value),
-            no_color=no_color
-        )
-        
-        # Parse and execute
-        result = self._parse_and_execute(parser, args)
+        else:
+            # Check for no-color flag
+            no_color = self._check_no_color_flag(args)
+            
+            # Create parser and parse arguments
+            parser = self.parser_service.create_parser(
+                commands=self.discovered_commands,
+                target_mode=self.target_mode.value,
+                target_class=self.target_info.get(TargetInfoKeys.PRIMARY_CLASS.value),
+                no_color=no_color
+            )
+            
+            # Parse and execute
+            result = self._parse_and_execute(parser, args)
         
         return result
     
@@ -362,6 +362,8 @@ class CLI:
         """Handle case where no command is specified."""
         result = 0
         
+        group_help_shown = False
+        
         # Check if user specified a valid group command
         if hasattr(parsed, 'command') and parsed.command:
             # Find and show group help
@@ -369,10 +371,12 @@ class CLI:
                 if (isinstance(action, argparse._SubParsersAction) and 
                     parsed.command in action.choices):
                     action.choices[parsed.command].print_help()
-                    return result
+                    group_help_shown = True
+                    break
         
-        # Show main help
-        parser.print_help()
+        # Show main help if no group help was shown
+        if not group_help_shown:
+            parser.print_help()
         
         return result
     

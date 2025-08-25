@@ -150,22 +150,27 @@ class CommandExecutor:
     def execute_command(self, parsed, target_mode, use_inner_class_pattern: bool = False, 
                        inner_class_metadata: Optional[Dict[str, Dict[str, Any]]] = None) -> Any:
         """Main command execution dispatcher - determines execution strategy based on target mode."""
-        if target_mode.value == 'module':
-            return self.execute_module_function(parsed)
-        elif target_mode.value == 'class':
-            # Determine if this is an inner class method or direct method
-            original_name = getattr(parsed, '_function_name', '')
-            
-            if (use_inner_class_pattern and
-                inner_class_metadata and
-                original_name in inner_class_metadata):
-                # Execute inner class method
-                return self.execute_inner_class_command(parsed)
-            else:
-                # Execute direct method from class
-                return self.execute_direct_method_command(parsed)
-        else:
-            raise RuntimeError(f"Unknown target mode: {target_mode}")
+        result = None
+        
+        match target_mode.value:
+            case 'module':
+                result = self.execute_module_function(parsed)
+            case 'class':
+                # Determine if this is an inner class method or direct method
+                original_name = getattr(parsed, '_function_name', '')
+                
+                if (use_inner_class_pattern and
+                    inner_class_metadata and
+                    original_name in inner_class_metadata):
+                    # Execute inner class method
+                    result = self.execute_inner_class_command(parsed)
+                else:
+                    # Execute direct method from class
+                    result = self.execute_direct_method_command(parsed)
+            case _:
+                raise RuntimeError(f"Unknown target mode: {target_mode}")
+        
+        return result
 
     def handle_execution_error(self, parsed, error: Exception) -> int:
         """Handle execution errors with appropriate logging and return codes."""
