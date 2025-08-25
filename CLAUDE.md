@@ -594,7 +594,7 @@ All constructor parameters must have default values to be used as CLI arguments.
 - **[Complete Documentation](docs/help.md)** - Full user guide
 - **[Type Annotations](docs/features/type-annotations.md)** - Supported types reference
 - **[Troubleshooting](docs/guides/troubleshooting.md)** - Common issues and solutions
-- **[Examples](mod_example.py)** (module-based) and **[Examples](cls_example.py)** (class-based)
+- **[Examples](examples/mod_example.py)** (module-based) and **[Examples](examples/cls_example.py)** (class-based)
 
 ## Architecture
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Tuple
 
-from auto_cli.math_utils import MathUtils
+from auto_cli.utils.math_utils import MathUtils
 
 
 class AdjustStrategy(Enum):
@@ -289,14 +289,14 @@ class RGB:
       elif t > 1:
         t = t - 1
       result = p  # Default case
-      
+
       if t < 1 / 6:
         result = p + (q - p) * 6 * t
       elif t < 1 / 2:
         result = q
       elif t < 2 / 3:
         result = p + (q - p) * (2 / 3 - t) * 6
-      
+
       return result
 
     if s == 0:

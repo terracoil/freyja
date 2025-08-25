@@ -492,4 +492,4 @@ def good_function(items: List[str] = None) -> None:
 ---
 
 **Navigation**: [← Help Hub](../help.md) | [Quick Start →](quick-start.md) | [Installation →](installation.md)  
-**Examples**: [Module Example](../../mod_example.py) | [Class Example](../../cls_example.py)
+**Examples**: [Module Example](../../examples/mod_example.py) | [Class Example](../../examples/cls_example.py)

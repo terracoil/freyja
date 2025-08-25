@@ -18,30 +18,5 @@ __all__ = [
   'ZshCompletionHandler',
   'FishCompletionHandler',
   'PowerShellCompletionHandler',
-  'CompletionInstaller'
+  'CompletionInstaller',
 ]
-
-
-def get_completion_handler(cli, shell: str = None) -> CompletionHandler:
-  """Get appropriate completion handler for shell.
-
-  :param cli: CLI instance
-  :param shell: Target shell (auto-detect if None)
-  :return: Completion handler instance
-  """
-  if not shell:
-    # Try to detect shell
-    handler = BashCompletionHandler(cli)  # Use bash as fallback
-    shell = handler.detect_shell() or 'bash'
-
-  if shell == 'bash':
-    return BashCompletionHandler(cli)
-  elif shell == 'zsh':
-    return ZshCompletionHandler(cli)
-  elif shell == 'fish':
-    return FishCompletionHandler(cli)
-  elif shell == 'powershell':
-    return PowerShellCompletionHandler(cli)
-  else:
-    # Default to bash for unknown shells
-    return BashCompletionHandler(cli)

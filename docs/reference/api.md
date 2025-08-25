@@ -407,4 +407,4 @@ if __name__ == '__main__':
 ---
 
 **Navigation**: [← Help Hub](../help.md) | [Type Annotations →](type-annotations.md)  
-**Examples**: [Module Example](../../mod_example.py) | [Class Example](../../cls_example.py)
+**Examples**: [Module Example](../../examples/mod_example.py) | [Class Example](../../examples/cls_example.py)

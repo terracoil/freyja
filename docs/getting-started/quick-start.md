@@ -203,4 +203,4 @@ cli = CLI.from_module(module, no_color=True)
 ---
 
 **Navigation**: [← Help Hub](../help.md) | [Installation →](installation.md) | [Basic Usage →](basic-usage.md)  
-**Examples**: [Module Example](../../mod_example.py) | [Class Example](../../cls_example.py)
+**Examples**: [Module Example](../../examples/mod_example.py) | [Class Example](../../examples/cls_example.py)

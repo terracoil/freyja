@@ -183,4 +183,4 @@ Both CLI modes support the same advanced features:
 ---
 
 **Navigation**: [README](../README.md) | [Development](../CLAUDE.md)
-**Examples**: [Module Example](../mod_example.py) | [Class Example](../cls_example.py)
+**Examples**: [Module Example](../examples/mod_example.py) | [Class Example](../examples/cls_example.py)

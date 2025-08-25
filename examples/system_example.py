@@ -2,7 +2,7 @@
 """Example of using System class for CLI utilities."""
 
 from auto_cli import CLI
-from auto_cli.system import System
+from auto_cli.command.system import System
 from auto_cli.theme import create_default_theme
 
 if __name__ == '__main__':

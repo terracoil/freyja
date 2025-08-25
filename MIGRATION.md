@@ -103,8 +103,9 @@ cli = CLI(MyClass, theme_tuner=True, completion=True)
 ```
 
 **NEW (using System class for utilities):**
+
 ```python
-from auto_cli.system import System
+from command.system import System
 
 # For built-in utilities (theme tuning, completion)
 cli = CLI(System, enable_completion=True)
@@ -265,8 +266,9 @@ cli = CLI(MyClass, theme_tuner=True)
 ```
 
 **NEW:**
+
 ```python
-from auto_cli.system import System
+from command.system import System
 
 # Use System class for theme tuning
 cli = CLI(System)
@@ -281,8 +283,9 @@ cli = CLI(MyClass, completion=True)
 ```
 
 **NEW:**
+
 ```python
-from auto_cli.system import System
+from command.system import System
 
 # Use System class for completion
 cli = CLI(System, enable_completion=True)

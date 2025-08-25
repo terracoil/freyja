@@ -3,7 +3,7 @@
 import argparse
 from unittest.mock import Mock, patch
 
-from auto_cli.help_formatter import HierarchicalHelpFormatter
+from auto_cli.help.help_formatter import HierarchicalHelpFormatter
 from auto_cli.theme import create_default_theme
 
 

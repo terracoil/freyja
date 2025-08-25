@@ -528,4 +528,4 @@ def export_data(data: str, format: str = "json") -> None:
 ---
 
 **Navigation**: [← Help Hub](../help.md) | [Basic Usage →](../getting-started/basic-usage.md)  
-**Examples**: [Module Example](../../mod_example.py) | [Class Example](../../cls_example.py)
+**Examples**: [Module Example](../../examples/mod_example.py) | [Class Example](../../examples/cls_example.py)

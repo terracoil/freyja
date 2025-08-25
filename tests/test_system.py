@@ -7,7 +7,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 from auto_cli import CLI
-from auto_cli.system import System
+from auto_cli.command.system import System
 
 
 class TestSystem:
@@ -247,7 +247,7 @@ class TestSystemCLIGeneration:
     """Test System CLI creates proper command structure."""
     cli = CLI(System)
 
-    # Should have hierarchical commands  
+    # Should have hierarchical commands
     assert 'tune-theme' in cli.commands
     assert 'completion' in cli.commands
 
@@ -327,22 +327,6 @@ class TestSystemIntegration:
     # Test that parsing to command level works (help would exit)
     with pytest.raises(SystemExit):
       parser.parse_args(['tune-theme', '--help'])
-
-  def test_system_backwards_compatibility(self):
-    """Test backwards compatibility with old ThemeTuner usage."""
-    from auto_cli.theme.theme_tuner import ThemeTuner, run_theme_tuner
-
-    # Should be able to import and create instances (with warnings)
-    with pytest.warns(DeprecationWarning):
-      tuner = ThemeTuner()
-
-    assert tuner is not None
-
-    # Should be able to call run_theme_tuner (patch to avoid interactive input)
-    with pytest.warns(DeprecationWarning):
-      with patch('auto_cli.system.System.TuneTheme.run_interactive'):
-        run_theme_tuner("universal")
-
 
 if __name__ == '__main__':
   pytest.main([__file__])

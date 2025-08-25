@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from auto_cli.cli import CLI
-from auto_cli.system import System
+from auto_cli.command.system import System
 
 
 class ProcessingMode(enum.Enum):

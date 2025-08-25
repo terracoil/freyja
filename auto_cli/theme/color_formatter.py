@@ -112,18 +112,3 @@ class ColorFormatter:
       codes.append(Style.ANSI_UNDERLINE.value)  # ANSI underline code
 
     return ''.join(codes) + text + Style.RESET_ALL.value if codes else text
-
-  def rgb_to_ansi256(self, r: int, g: int, b: int) -> int:
-    """
-    Convert RGB values to the closest ANSI 256-color code.
-
-    Args:
-        r, g, b: RGB values (0-255)
-
-    Returns:
-        ANSI color code (0-255)
-    :deprecated: Use RGB._rgb_to_ansi256() method instead
-    """
-    # Use RGB class method for consistency
-    rgb = RGB.from_ints(r, g, b)
-    return rgb._rgb_to_ansi256(r, g, b)

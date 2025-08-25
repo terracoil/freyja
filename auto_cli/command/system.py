@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from typing import Optional, Dict, Set
 
-from auto_cli.ansi_string import AnsiString
+from auto_cli.utils.ansi_string import AnsiString
 from auto_cli.theme import (AdjustStrategy, ColorFormatter, create_default_theme,
                             create_default_theme_colorful, RGB)
 from auto_cli.theme.theme_style import ThemeStyle
@@ -684,7 +684,7 @@ class System:
         self.init_completion(target_shell)
         if not self._completion_handler:
           print("Completion handler not available.", file=sys.stderr)
-      
+
       if self._completion_handler:
         try:
           from auto_cli.completion.installer import CompletionInstaller
@@ -698,7 +698,7 @@ class System:
           result = installer.install(target_shell, force)
         except ImportError:
           print("Completion installer not available.", file=sys.stderr)
-      
+
       return result
 
     def show(self, shell: Optional[str] = None) -> None:
@@ -793,7 +793,7 @@ class System:
         return
 
       try:
-        from auto_cli.completion import get_completion_handler
+        from auto_cli.completion.base import get_completion_handler
         self._completion_handler = get_completion_handler(self._cli_instance, shell)
       except ImportError:
         # Completion module not available

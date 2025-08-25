@@ -9,8 +9,7 @@ from unittest.mock import patch
 import pytest
 
 from auto_cli.cli import CLI
-from auto_cli.completion import get_completion_handler
-from auto_cli.completion.base import CompletionContext
+from auto_cli.completion.base import CompletionContext, get_completion_handler
 from auto_cli.completion.bash import BashCompletionHandler
 
 
@@ -131,7 +130,7 @@ class TestCompletionIntegration:
 
     # Completion arguments are no longer injected into CLIs - they're provided by System class
     # Test that completion handler can be initialized
-    from auto_cli.system import System
+    from auto_cli.command.system import System
     system_cli = CLI(System)
     parser = system_cli.create_parser()
     help_text = parser.format_help()
@@ -153,7 +152,7 @@ class TestCompletionIntegration:
 
   def test_show_completion_script(self):
     """Test showing completion script via System class."""
-    from auto_cli.system import System
+    from auto_cli.command.system import System
 
     # Completion functionality is now provided by System.Completion
     system = System()

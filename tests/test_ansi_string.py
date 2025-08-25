@@ -1,6 +1,6 @@
 """Tests for AnsiString ANSI-aware alignment functionality."""
 
-from auto_cli.ansi_string import AnsiString, strip_ansi_codes
+from auto_cli.utils.ansi_string import AnsiString, strip_ansi_codes
 
 
 class TestStripAnsiCodes:

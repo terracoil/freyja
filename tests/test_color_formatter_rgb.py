@@ -118,17 +118,6 @@ class TestColorFormatterRGB:
     assert "test" in result
     assert "\033[0m" in result  # Reset
 
-  def test_rgb_to_ansi256_delegation(self):
-    """Test that rgb_to_ansi256 properly delegates to RGB class."""
-    formatter = ColorFormatter(enable_colors=True)
-
-    result = formatter.rgb_to_ansi256(255, 87, 51)
-
-    # Should delegate to RGB class
-    rgb = RGB.from_ints(255, 87, 51)
-    expected = rgb._rgb_to_ansi256(255, 87, 51)
-    assert result == expected
-
   def test_mixed_rgb_and_string_styles(self):
     """Test theme with mixed RGB instances and string colors."""
     formatter = ColorFormatter(enable_colors=True)

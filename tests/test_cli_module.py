@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from auto_cli.cli import CLI
-from auto_cli.docstring_parser import extract_function_help, parse_docstring
+from auto_cli.command.docstring_parser import extract_function_help, parse_docstring
 
 
 class TestDocstringParser:

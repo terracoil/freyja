@@ -4,9 +4,13 @@ import argparse
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
-from .. import CLI
+if TYPE_CHECKING:
+  from .. import CLI
+
+# Lazy imports to avoid circular dependency
+# CLI type will be imported lazily to avoid circular dependency
 
 
 @dataclass
@@ -17,13 +21,13 @@ class CompletionContext:
   cursor_position: int  # Position in current word
   command_group_path: List[str]  # Path to current command group (e.g., ['db', 'backup'])
   parser: argparse.ArgumentParser  # Current parser context
-  cli: CLI  # CLI instance for introspection
+  cli: 'CLI'  # CLI instance for introspection
 
 
 class CompletionHandler(ABC):
   """Abstract base class for shell-specific completion handlers."""
 
-  def __init__(self, cli: CLI):
+  def __init__(self, cli: 'CLI'):
     """Initialize completion handler with CLI instance.
 
     :param cli: CLI instance to provide completion for
@@ -58,7 +62,7 @@ class CompletionHandler(ABC):
     """Detect current shell from environment."""
     shell = os.environ.get('SHELL', '')
     result = None
-    
+
     if 'bash' in shell:
       result = 'bash'
     elif 'zsh' in shell:
@@ -67,7 +71,7 @@ class CompletionHandler(ABC):
       result = 'fish'
     elif os.name == 'nt' or 'pwsh' in shell or 'powershell' in shell:
       result = 'powershell'
-    
+
     return result
 
   def get_command_group_parser(self, parser: argparse.ArgumentParser,
@@ -94,10 +98,10 @@ class CompletionHandler(ABC):
       if not found_parser:
         result = None
         break
-      
+
       current_parser = found_parser
       result = current_parser
-    
+
     return result
 
   def get_available_commands(self, parser: argparse.ArgumentParser) -> List[str]:
@@ -142,7 +146,7 @@ class CompletionHandler(ABC):
     :return: List of possible values
     """
     result = []
-    
+
     for action in parser._actions:
       if option_name in action.option_strings:
         # Handle enum choices
@@ -164,7 +168,7 @@ class CompletionHandler(ABC):
           type_name = getattr(action.type, '__name__', str(action.type))
           if 'Path' in type_name or action.type == str:
             result = self._complete_file_path(partial)
-        
+
         break  # Exit loop once we find the matching action
 
     return result
@@ -226,3 +230,34 @@ class CompletionHandler(ABC):
 
     return [candidate for candidate in candidates
             if candidate.startswith(partial)]
+
+
+def get_completion_handler(cli, shell: str = None) -> CompletionHandler:
+  """Get appropriate completion handler for shell.
+
+  :param cli: CLI instance
+  :param shell: Target shell (auto-detect if None)
+  :return: Completion handler instance
+  """
+  # Lazy imports to avoid circular dependency
+  from .bash import BashCompletionHandler
+  from .zsh import ZshCompletionHandler  
+  from .fish import FishCompletionHandler
+  from .powershell import PowerShellCompletionHandler
+  
+  if not shell:
+    # Try to detect shell
+    handler = BashCompletionHandler(cli)  # Use bash as fallback
+    shell = handler.detect_shell() or 'bash'
+
+  if shell == 'bash':
+    return BashCompletionHandler(cli)
+  elif shell == 'zsh':
+    return ZshCompletionHandler(cli)
+  elif shell == 'fish':
+    return FishCompletionHandler(cli)
+  elif shell == 'powershell':
+    return PowerShellCompletionHandler(cli)
+  else:
+    # Default to bash for unknown shells
+    return BashCompletionHandler(cli)

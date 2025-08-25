@@ -2,7 +2,7 @@
 
 import sys
 sys.path.insert(0, '.')
-from cls_example import DataProcessor
+from examples.cls_example import DataProcessor
 from auto_cli.cli import CLI
 import argparse
 
