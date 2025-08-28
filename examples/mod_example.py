@@ -1,141 +1,300 @@
-#!/usr/bin/env python
-# Enhanced examples demonstrating auto-cli-py with docstring integration.
-import enum
+#!/usr/bin/env python3
+"""Module-based CLI example with real functionality."""
+
+import csv
+import json
+import math
 import sys
+from enum import Enum
 from pathlib import Path
+from typing import List, Optional
 
-from auto_cli.cli import CLI
-
-
-class LogLevel(enum.Enum):
-  """Logging level options for output verbosity."""
-  DEBUG = "debug"
-  INFO = "info"
-  WARNING = "warning"
-  ERROR = "error"
+from auto_cli import CLI
 
 
-class AnimalType(enum.Enum):
-  """Different types of animals for counting."""
-  ANT = 1
-  BEE = 2
-  CAT = 3
-  DOG = 4
+class OutputFormat(Enum):
+  """Available output formats."""
+  JSON = "json"
+  CSV = "csv"
+  TEXT = "text"
 
 
-def foo():
-  """Simple greeting function with no parameters."""
-  print("FOO!")
+class HashAlgorithm(Enum):
+  """Hash algorithms for file verification."""
+  MD5 = "md5"
+  SHA1 = "sha1"
+  SHA256 = "sha256"
 
 
-def hello(name: str = "World", count: int = 1, excited: bool = False):
-  """Greet someone with configurable enthusiasm.
-
-  :param name: Name of the person to greet
-  :param count: Number of times to repeat the greeting
-  :param excited: Add exclamation marks for enthusiasm
-  """
-  suffix = "!!!" if excited else "."
-  for _ in range(count):
-    print(f"Hello, {name}{suffix}")
-
-
-def train(
-    data_dir: str = "./data/",
-    initial_learning_rate: float = 0.0001,
-    seed: int = 2112,
-    batch_size: int = 512,
-    epochs: int = 20,
-    use_gpu: bool = False
-):
-  """Train a machine learning model with specified parameters.
-
-  :param data_dir: Directory containing training data files
-  :param initial_learning_rate: Starting learning rate for optimization
-  :param seed: Random seed for reproducible results
-  :param batch_size: Number of samples per training batch
-  :param epochs: Number of complete passes through the training data
-  :param use_gpu: Enable GPU acceleration if available
-  """
-  gpu_status = "GPU" if use_gpu else "CPU"
-  params = {
-    "Data directory": data_dir,
-    "Learning rate": initial_learning_rate,
-    "Random seed": seed,
-    "Batch size": batch_size,
-    "Epochs": epochs
-  }
-  print(f"Training model on {gpu_status}:")
-  print('\n'.join(f"  {k}: {v}" for k, v in params.items()))
-
-
-def count_animals(count: int = 20, animal: AnimalType = AnimalType.BEE):
-  """Count animals of a specific type.
-
-  :param count: Number of animals to count
-  :param animal: Type of animal to count from the available options
-  """
-  print(f"Counting {count} {animal.name.lower()}s!")
-  return count
-
-
-def advanced_demo(
-    text: str,
-    iterations: int = 1,
-    config_file: Path | None = None,
-    debug_mode: bool = False
-):
-  """Demonstrate advanced parameter handling and edge cases.
-
-  This function showcases how the CLI handles various parameter types
-  including required parameters, optional files, and boolean flags.
-
-  :param text: Required text input for processing
-  :param iterations: Number of times to process the input text
-  :param config_file: Optional configuration file to load settings from
-  :param debug_mode: Enable detailed debug output during processing
-  """
-  print(f"Processing text: '{text}'")
-  print(f"Iterations: {iterations}")
-
-  if config_file:
-    if config_file.exists():
-      print(f"Loading config from: {config_file}")
+def generate_report(data_file: str, output_format: OutputFormat = OutputFormat.JSON) -> None:
+  """Generate a report from data file."""
+  data_path = Path(data_file)
+  
+  if not data_path.exists():
+    print(f"Error: Data file not found: {data_file}")
+    return
+  
+  try:
+    # Read sample data
+    with open(data_path, 'r') as f:
+      lines = f.readlines()
+    
+    report = {
+      "file": str(data_path),
+      "lines": len(lines),
+      "size_bytes": data_path.stat().st_size,
+      "non_empty_lines": len([line for line in lines if line.strip()])
+    }
+    
+    if output_format == OutputFormat.JSON:
+      print(json.dumps(report, indent=2))
+    elif output_format == OutputFormat.CSV:
+      print("metric,value")
+      for key, value in report.items():
+        print(f"{key},{value}")
     else:
-      print(f"Warning: Config file not found: {config_file}")
-
-  if debug_mode:
-    print("DEBUG: Advanced demo function called")
-    print(f"DEBUG: Text length: {len(text)} characters")
-
-  # Simulate processing
-  for i in range(iterations):
-    if debug_mode:
-      print(f"DEBUG: Processing iteration {i + 1}/{iterations}")
-    result = text.upper() if i % 2 == 0 else text.lower()
-    print(f"Result {i + 1}: {result}")
+      print(f"File Report for {data_path.name}:")
+      for key, value in report.items():
+        print(f"  {key.replace('_', ' ').title()}: {value}")
+        
+  except Exception as e:
+    print(f"Error processing file: {e}")
 
 
-# Database operations (converted from command groups to flat commands)
-def create_database(
-    name: str,
-    engine: str = "postgres",
-    host: str = "localhost",
-    port: int = 5432,
-    encrypted: bool = False
-):
-  """Create a new database instance.
+def calculate_statistics(numbers: List[float], precision: int = 2) -> None:
+  """Calculate statistical measures for a list of numbers."""
+  if not numbers:
+    print("Error: No numbers provided")
+    return
+  
+  try:
+    mean = sum(numbers) / len(numbers)
+    variance = sum((x - mean) ** 2 for x in numbers) / len(numbers)
+    std_dev = math.sqrt(variance)
+    minimum = min(numbers)
+    maximum = max(numbers)
+    
+    print(f"Statistics for {len(numbers)} numbers:")
+    print(f"  Mean: {mean:.{precision}f}")
+    print(f"  Standard Deviation: {std_dev:.{precision}f}")
+    print(f"  Minimum: {minimum:.{precision}f}")
+    print(f"  Maximum: {maximum:.{precision}f}")
+    print(f"  Range: {maximum - minimum:.{precision}f}")
+    
+  except Exception as e:
+    print(f"Error calculating statistics: {e}")
 
-  :param name: Name of the database to create
-  :param engine: Database engine type (sqlite, postgres, mysql)
-  :param host: Database host address
-  :param port: Database port number
-  :param encrypted: Enable database encryption
-  """
-  encryption_status = "encrypted" if encrypted else "unencrypted"
-  print(f"Creating {encryption_status} {engine} database '{name}'")
-  print(f"Host: {host}:{port}")
-  print("✓ Database created successfully")
+
+def process_csv_file(
+    input_file: str,
+    output_file: str = "processed_data.csv",
+    delimiter: str = ",",
+    skip_header: bool = True,
+    filter_column: Optional[str] = None,
+    filter_value: Optional[str] = None
+) -> None:
+  """Process CSV file with filtering and transformation."""
+  input_path = Path(input_file)
+  output_path = Path(output_file)
+  
+  if not input_path.exists():
+    print(f"Error: Input file not found: {input_file}")
+    return
+  
+  try:
+    processed_rows = []
+    total_rows = 0
+    
+    with open(input_path, 'r', newline='') as infile:
+      reader = csv.DictReader(infile, delimiter=delimiter)
+      
+      if skip_header and reader.fieldnames:
+        print(f"Detected columns: {', '.join(reader.fieldnames)}")
+      
+      for row in reader:
+        total_rows += 1
+        
+        # Apply filter if specified
+        if filter_column and filter_value:
+          if row.get(filter_column) != filter_value:
+            continue
+        
+        processed_rows.append(row)
+    
+    # Write processed data
+    if processed_rows:
+      with open(output_path, 'w', newline='') as outfile:
+        writer = csv.DictWriter(outfile, fieldnames=processed_rows[0].keys())
+        writer.writeheader()
+        writer.writerows(processed_rows)
+      
+      print(f"Processed {len(processed_rows)}/{total_rows} rows")
+      print(f"Output saved to: {output_path}")
+    else:
+      print("No data to process after filtering")
+      
+  except Exception as e:
+    print(f"Error processing CSV: {e}")
+
+
+def verify_file_hash(
+    file_path: str,
+    algorithm: HashAlgorithm = HashAlgorithm.SHA256,
+    expected_hash: Optional[str] = None
+) -> None:
+  """Verify file integrity using hash algorithms."""
+  import hashlib
+  
+  path = Path(file_path)
+  
+  if not path.exists():
+    print(f"Error: File not found: {file_path}")
+    return
+  
+  try:
+    # Select hash algorithm
+    hash_func = getattr(hashlib, algorithm.value)()
+    
+    # Calculate hash
+    with open(path, 'rb') as f:
+      for chunk in iter(lambda: f.read(4096), b""):
+        hash_func.update(chunk)
+    
+    calculated_hash = hash_func.hexdigest()
+    
+    print(f"File: {path.name}")
+    print(f"Algorithm: {algorithm.value.upper()}")
+    print(f"Hash: {calculated_hash}")
+    
+    if expected_hash:
+      if calculated_hash.lower() == expected_hash.lower():
+        print("✅ Hash verification PASSED")
+      else:
+        print("❌ Hash verification FAILED")
+        print(f"Expected: {expected_hash}")
+    
+  except Exception as e:
+    print(f"Error calculating hash: {e}")
+
+
+def analyze_text_file(
+    file_path: str,
+    word_frequency: bool = False,
+    line_stats: bool = True,
+    case_sensitive: bool = False,
+    output_file: Optional[str] = None
+) -> None:
+  """Analyze text file and provide detailed statistics."""
+  path = Path(file_path)
+  
+  if not path.exists():
+    print(f"Error: File not found: {file_path}")
+    return
+  
+  try:
+    with open(path, 'r', encoding='utf-8') as f:
+      content = f.read()
+    
+    lines = content.split('\n')
+    words = content.split()
+    
+    if not case_sensitive:
+      content_lower = content.lower()
+      words = content_lower.split()
+    
+    analysis = {
+      "file": path.name,
+      "total_characters": len(content),
+      "total_lines": len(lines),
+      "total_words": len(words),
+      "blank_lines": len([line for line in lines if not line.strip()])
+    }
+    
+    if line_stats:
+      non_empty_lines = [line for line in lines if line.strip()]
+      if non_empty_lines:
+        line_lengths = [len(line) for line in non_empty_lines]
+        analysis.update({
+          "avg_line_length": sum(line_lengths) / len(line_lengths),
+          "max_line_length": max(line_lengths),
+          "min_line_length": min(line_lengths)
+        })
+    
+    if word_frequency:
+      from collections import Counter
+      word_counts = Counter(words)
+      analysis["most_common_words"] = word_counts.most_common(5)
+    
+    # Output results
+    if output_file:
+      with open(output_file, 'w') as f:
+        json.dump(analysis, f, indent=2)
+      print(f"Analysis saved to: {output_file}")
+    else:
+      print(f"Text Analysis for {path.name}:")
+      for key, value in analysis.items():
+        if key == "most_common_words":
+          print(f"  {key.replace('_', ' ').title()}:")
+          for word, count in value:
+            print(f"    {word}: {count}")
+        else:
+          print(f"  {key.replace('_', ' ').title()}: {value}")
+          
+  except Exception as e:
+    print(f"Error analyzing file: {e}")
+
+
+def backup_directory(
+    source_dir: str,
+    backup_dir: str = "./backups",
+    compress: bool = True,
+    exclude_patterns: Optional[List[str]] = None
+) -> None:
+  """Create backup of directory with compression and filtering."""
+  import shutil
+  import tarfile
+  from datetime import datetime
+  
+  source_path = Path(source_dir)
+  backup_path = Path(backup_dir)
+  
+  if not source_path.exists():
+    print(f"Error: Source directory not found: {source_dir}")
+    return
+  
+  try:
+    backup_path.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    if compress:
+      archive_name = f"{source_path.name}_{timestamp}.tar.gz"
+      archive_path = backup_path / archive_name
+      
+      with tarfile.open(archive_path, "w:gz") as tar:
+        for file_path in source_path.rglob("*"):
+          if file_path.is_file():
+            # Check exclusion patterns
+            should_exclude = False
+            if exclude_patterns:
+              for pattern in exclude_patterns:
+                if pattern in str(file_path):
+                  should_exclude = True
+                  break
+            
+            if not should_exclude:
+              arcname = file_path.relative_to(source_path)
+              tar.add(file_path, arcname=arcname)
+      
+      print(f"Compressed backup created: {archive_path}")
+      print(f"Archive size: {archive_path.stat().st_size} bytes")
+    else:
+      backup_name = f"{source_path.name}_{timestamp}"
+      full_backup_path = backup_path / backup_name
+      shutil.copytree(source_path, full_backup_path)
+      print(f"Directory backup created: {full_backup_path}")
+      
+  except Exception as e:
+    print(f"Error creating backup: {e}")
 
 
 def migrate_database(
@@ -233,18 +392,11 @@ def completion_demo(config_file: str = "config.json", output_dir: str = "./outpu
 
 
 if __name__ == '__main__':
-  # Import theme functionality
-  from auto_cli.theme import create_default_theme
-
-  # Create CLI with colored theme and completion enabled
-  theme = create_default_theme()
+  # Create CLI - descriptions now come from docstrings
   cli = CLI(
     sys.modules[__name__],
-    title="Enhanced CLI - Module-based flat commands",
-    theme=theme,
-    enable_completion=True  # Enable shell completion
+    title="File Processing Utilities",
   )
-
-  # Run the CLI and exit with appropriate code
-  result = cli.run()
-  sys.exit(result if isinstance(result, int) else 0)
+  
+  # Display CLI
+  cli.display()

@@ -20,46 +20,55 @@ class TestModuleExample:
     assert result.returncode == 0
     assert "Usage:" in result.stdout or "usage:" in result.stdout
 
-  def test_examples_foo_command(self):
-    """Test the foo command in mod_example.py."""
+  def test_examples_generate_report_command(self):
+    """Test the generate-report command in mod_example.py."""
+    examples_path = Path(__file__).parent.parent / "examples" / "mod_example.py"
+    # Create a test file for the command
+    test_file = Path("test_data.txt")
+    test_file.write_text("line 1\nline 2\nline 3\n")
+    
+    try:
+      result = subprocess.run(
+        [sys.executable, str(examples_path), "generate-report", "--data-file", str(test_file)],
+        capture_output=True,
+        text=True,
+        timeout=10
+      )
+
+      assert result.returncode == 0
+      assert "lines" in result.stdout
+    finally:
+      # Clean up test file
+      if test_file.exists():
+        test_file.unlink()
+
+  def test_examples_calculate_statistics_help(self):
+    """Test the calculate-statistics command help in mod_example.py."""
     examples_path = Path(__file__).parent.parent / "examples" / "mod_example.py"
     result = subprocess.run(
-      [sys.executable, str(examples_path), "foo"],
+      [sys.executable, str(examples_path), "calculate-statistics", "--help"],
       capture_output=True,
       text=True,
       timeout=10
     )
 
     assert result.returncode == 0
-    assert "FOO!" in result.stdout
+    assert "numbers" in result.stdout
+    assert "precision" in result.stdout
 
-  def test_examples_train_command_help(self):
-    """Test the train command help in mod_example.py."""
+  def test_examples_verify_file_hash_help(self):
+    """Test the verify-file-hash command help in mod_example.py."""
     examples_path = Path(__file__).parent.parent / "examples" / "mod_example.py"
     result = subprocess.run(
-      [sys.executable, str(examples_path), "train", "--help"],
+      [sys.executable, str(examples_path), "verify-file-hash", "--help"],
       capture_output=True,
       text=True,
       timeout=10
     )
 
     assert result.returncode == 0
-    assert "data-dir" in result.stdout
-    assert "initial-learning-rate" in result.stdout
-
-  def test_examples_count_animals_command_help(self):
-    """Test the count_animals command help in mod_example.py."""
-    examples_path = Path(__file__).parent.parent / "examples" / "mod_example.py"
-    result = subprocess.run(
-      [sys.executable, str(examples_path), "count-animals", "--help"],
-      capture_output=True,
-      text=True,
-      timeout=10
-    )
-
-    assert result.returncode == 0
-    assert "count" in result.stdout
-    assert "animal" in result.stdout
+    assert "file-path" in result.stdout
+    assert "algorithm" in result.stdout
 
 
 class TestClassExample:
