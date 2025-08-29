@@ -20,7 +20,7 @@ class CliExecutionCoordinator:
     self.inner_class_metadata = {}
     self.discovered_commands = []
 
-  def parse_and_execute(self, parser, args: List[str]) -> Any:
+  def parse_and_execute(self, parser, args: Optional[List[str]]) -> Any:
     """Parse arguments and execute command."""
     result = None
 

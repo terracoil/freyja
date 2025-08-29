@@ -153,8 +153,8 @@ class CLI:
       parser = self.parser_service.create_parser(commands=self.discovered_commands, target_mode=self.target_mode.value,
         target_class=self.target_info.get(TargetInfoKeys.PRIMARY_CLASS.value), no_color=no_color)
 
-      # Parse and execute with context
-      result = self._execute_with_context(parser, args or [])
+      # Parse and execute with context  
+      result = self._execute_with_context(parser, args)
 
     return result
 
