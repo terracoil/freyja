@@ -138,24 +138,40 @@ class CommandParser:
             ArgumentParserService.add_global_class_args(parser, target_class)
 
     def _group_commands(self, commands: List[CommandInfo]) -> Dict[str, Any]:
-        """Group commands by type and hierarchy."""
+        """Group commands by type and hierarchy with proper multi-class namespacing."""
         groups = {
             'flat': [],
-            'hierarchical': defaultdict(list)
+            'hierarchical': defaultdict(list),
+            'namespaced_classes': defaultdict(list),  # For multi-class namespaced commands
+            'global_class': []  # For multi-class global commands
         }
 
         for command in commands:
-            if command.is_hierarchical:
-                # For multi-class mode, extract group name from command name
-                # e.g., "system--completion__handle-completion" -> "system--completion"
-                if '--' in command.name and '__' in command.name:
-                    # Multi-class hierarchical command
-                    group_name = command.name.split('__')[0]  # "system--completion"
-                else:
-                    # Single-class hierarchical command - convert to kebab-case
+            # Check if this is from multi-class mode with namespacing
+            if command.metadata.get('is_namespaced', False):
+                class_namespace = command.metadata.get('class_namespace')
+                if class_namespace:
+                    groups['namespaced_classes'][class_namespace].append(command)
+                    continue
+            
+            # Check if this is from multi-class global class
+            if command.metadata.get('is_namespaced') is False and command.metadata.get('source_class'):
+                # This is from the global class (last class in multi-class mode)
+                if command.is_hierarchical:
+                    # Global class hierarchical command
                     from auto_cli.utils.string_utils import StringUtils
-                    group_name = StringUtils.kebab_case(command.parent_class)  # "Completion" -> "completion"
+                    group_name = StringUtils.kebab_case(command.parent_class)
+                    groups['hierarchical'][group_name].append(command)
+                else:
+                    # Global class flat command
+                    groups['global_class'].append(command)
+                continue
 
+            # Handle single-class or module mode
+            if command.is_hierarchical:
+                # Single-class hierarchical command - convert to kebab-case
+                from auto_cli.utils.string_utils import StringUtils
+                group_name = StringUtils.kebab_case(command.parent_class)
                 groups['hierarchical'][group_name].append(command)
             else:
                 groups['flat'].append(command)
@@ -168,21 +184,33 @@ class CommandParser:
         command_groups: Dict[str, Any],
         theme
     ):
-        """Add all commands to the parser."""
+        """Add all commands to the parser with proper multi-class namespacing."""
         # Store current commands for global arg detection
         self._current_commands = []
-        for flat_cmd in command_groups['flat']:
+        for flat_cmd in command_groups.get('flat', []):
             self._current_commands.append(flat_cmd)
-        for group_cmds in command_groups['hierarchical'].values():
+        for group_cmds in command_groups.get('hierarchical', {}).values():
             self._current_commands.extend(group_cmds)
+        for global_cmd in command_groups.get('global_class', []):
+            self._current_commands.append(global_cmd)
+        for class_cmds in command_groups.get('namespaced_classes', {}).values():
+            self._current_commands.extend(class_cmds)
 
-        # Add flat commands
-        for command in command_groups['flat']:
+        # Add global class commands (from multi-class mode last class)
+        for command in command_groups.get('global_class', []):
             self._add_flat_command(subparsers, command, theme)
 
-        # Add hierarchical command groups
-        for group_name, group_commands in command_groups['hierarchical'].items():
+        # Add flat commands (from single-class or module mode)
+        for command in command_groups.get('flat', []):
+            self._add_flat_command(subparsers, command, theme)
+
+        # Add hierarchical command groups (inner classes)
+        for group_name, group_commands in command_groups.get('hierarchical', {}).items():
             self._add_command_group(subparsers, group_name, group_commands, theme)
+
+        # Add namespaced class commands (from multi-class mode)
+        for class_namespace, class_commands in command_groups.get('namespaced_classes', {}).items():
+            self._add_namespaced_class(subparsers, class_namespace, class_commands, theme)
 
     def _add_flat_command(self, subparsers, command: CommandInfo, theme):
         """Add a flat command to the parser."""
@@ -376,3 +404,107 @@ class CommandParser:
 
         # Apply formatter patch
         patch_formatter_with_parser_actions()
+
+    def _add_namespaced_class(
+        self, 
+        subparsers, 
+        class_namespace: str, 
+        class_commands: List[CommandInfo], 
+        theme
+    ):
+        """Add commands from a namespaced class (multi-class mode)."""
+        # Get class description from the first command's source class
+        class_desc = "Commands for class management"
+        if class_commands:
+            source_class = class_commands[0].metadata.get('source_class')
+            if source_class and hasattr(source_class, '__doc__') and source_class.__doc__:
+                class_desc = source_class.__doc__.strip().split('\n')[0]
+
+        def create_formatter_with_theme(*args, **kwargs):
+            return HierarchicalHelpFormatter(
+                *args,
+                theme=theme,
+                alphabetize=self.alphabetize,
+                **kwargs
+            )
+
+        # Create subparser for this class namespace
+        class_parser = subparsers.add_parser(
+            class_namespace,
+            help=class_desc,
+            description=class_desc,
+            formatter_class=create_formatter_with_theme
+        )
+        class_parser._command_type = 'group'
+        class_parser._theme = theme
+
+        # Create subparsers for this class's commands
+        dest_name = f'{class_namespace.replace("-", "_")}_command'
+        class_subparsers = class_parser.add_subparsers(
+            title=f'{class_namespace.title().replace("-", " ")} COMMANDS',
+            dest=dest_name,
+            required=False,
+            help=f'Available {class_namespace} commands',
+            metavar=''
+        )
+        class_subparsers._enhanced_help = True
+        class_subparsers._theme = theme
+
+        # Initialize _commands attribute for help formatter
+        class_parser._commands = {}
+
+        # Group class commands by type (flat vs hierarchical)
+        flat_commands = []
+        hierarchical_groups = defaultdict(list)
+
+        for command in class_commands:
+            if command.is_hierarchical:
+                # Group hierarchical commands by their parent class
+                from auto_cli.utils.string_utils import StringUtils
+                group_name = StringUtils.kebab_case(command.parent_class)
+                hierarchical_groups[group_name].append(command)
+            else:
+                flat_commands.append(command)
+
+        # Add flat commands directly to class subparsers
+        for command in flat_commands:
+            self._add_group_command(class_subparsers, command.name, command, theme)
+            # Track for help display
+            desc, _ = extract_function_help(command.function)
+            class_parser._commands[command.name] = desc or f"{command.name} command"
+
+        # Add hierarchical command groups
+        for group_name, group_commands in hierarchical_groups.items():
+            # Create another level of subparsers for hierarchical groups
+            group_parser = class_subparsers.add_parser(
+                group_name,
+                help=f'{group_name} operations',
+                description=f'{group_name} operations',
+                formatter_class=create_formatter_with_theme
+            )
+            group_parser._command_type = 'group'
+            group_parser._theme = theme
+            group_parser._commands = {}  # Initialize for nested commands
+
+            # Track hierarchical group for help display
+            class_parser._commands[group_name] = f'{group_name} operations'
+
+            group_dest_name = f'{class_namespace.replace("-", "_")}_{group_name.replace("-", "_")}_subcommand'
+            group_subparsers = group_parser.add_subparsers(
+                title=f'{group_name.title().replace("-", " ")} COMMANDS',
+                dest=group_dest_name,
+                required=False,
+                help=f'Available {group_name} commands',
+                metavar=''
+            )
+            group_subparsers._enhanced_help = True
+            group_subparsers._theme = theme
+
+            # Add commands to the hierarchical group
+            for command in group_commands:
+                # Remove the group prefix from command name (after __)
+                command_name = command.name.split('__', 1)[-1] if '__' in command.name else command.name
+                self._add_group_command(group_subparsers, command_name, command, theme)
+                # Track for help display  
+                desc, _ = extract_function_help(command.function)
+                group_parser._commands[command_name] = desc or f"{command_name} command"

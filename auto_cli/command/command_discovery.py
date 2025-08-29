@@ -142,10 +142,21 @@ class CommandDiscovery:
     return commands
 
   def _discover_from_multi_class(self) -> List[CommandInfo]:
-    """Discover methods from multiple classes."""
+    """Discover methods from multiple classes with proper namespacing.
+    
+    Last class gets global namespace, others get kebab-cased class name namespaces.
+    """
     commands = []
+    
+    if not self.target_classes:
+      return commands
 
-    for target_class in self.target_classes:
+    # Separate last class (global) from others (namespaced)
+    namespaced_classes = self.target_classes[:-1] if len(self.target_classes) > 1 else []
+    global_class = self.target_classes[-1]
+
+    # Process namespaced classes first (with class name prefixes)
+    for target_class in namespaced_classes:
       # Temporarily switch to single class mode
       original_target_class = self.target_class
       self.target_class = target_class
@@ -153,17 +164,35 @@ class CommandDiscovery:
       # Discover commands for this class
       class_commands = self._discover_from_class()
 
-      # Add class prefix to command names
-      class_prefix = StringUtils.kebab_case(target_class.__name__)
+      # Add class namespace to command metadata (not name - that's handled by CommandBuilder)
+      class_namespace = StringUtils.kebab_case(target_class.__name__)
 
       for command in class_commands:
-        command.name = f"{class_prefix}--{command.name}"
         command.metadata['source_class'] = target_class
+        command.metadata['class_namespace'] = class_namespace
+        command.metadata['is_namespaced'] = True
 
       commands.extend(class_commands)
 
       # Restore original target
       self.target_class = original_target_class
+
+    # Process global class last (no namespace prefix)
+    original_target_class = self.target_class
+    self.target_class = global_class
+
+    # Discover commands for global class
+    global_commands = self._discover_from_class()
+
+    for command in global_commands:
+      command.metadata['source_class'] = global_class
+      command.metadata['class_namespace'] = None
+      command.metadata['is_namespaced'] = False
+
+    commands.extend(global_commands)
+
+    # Restore original target
+    self.target_class = original_target_class
 
     return commands
 
