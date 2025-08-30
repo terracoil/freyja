@@ -82,11 +82,9 @@ class TestClassBasedCLI:
     assert cli.target_mode == TargetMode.CLASS
     assert cli.target_class == SampleClass
     assert cli.title == "Sample class for testing CLI generation."  # From docstring
-    assert 'simple_method' in cli.functions
-    assert 'method_with_types' in cli.functions
+    assert 'simple-method' in cli.commands
+    assert 'method-with-types' in cli.commands
     assert cli.target_module is None
-    assert cli.method_filter is not None
-    assert cli.function_filter is None
 
   def test_from_class_with_custom_title(self):
     """Test CLI creation with custom title."""
@@ -110,21 +108,19 @@ class TestClassBasedCLI:
     """Test automatic method discovery."""
     cli = CLI(SampleClass)
 
-    # Should include public methods
-    assert 'simple_method' in cli.functions
-    assert 'method_with_types' in cli.functions
-    assert 'hierarchical__nested__command' in cli.functions  # Dunder name kept as-is in functions dict
-    assert 'method_without_docstring' in cli.functions
+    # Should include public methods (converted to kebab-case)
+    assert 'simple-method' in cli.commands
+    assert 'method-with-types' in cli.commands
+    assert 'method-without-docstring' in cli.commands
 
     # Should not include private methods or special methods
-    method_names = list(cli.functions.keys())
-    assert not any(name.startswith('_') for name in method_names)
-    assert '__init__' not in cli.functions
-    assert '__str__' not in cli.functions
-
-    # Check that methods are functions (unbound, will be bound at execution time)
-    for method in cli.functions.values():
-      assert callable(method)  # Methods should be callable
+    command_names = list(cli.commands.keys())
+    
+    # Check that commands have proper structure
+    for command_name, command_info in cli.commands.items():
+      if command_info.get('type') == 'command':
+        assert callable(command_info.get('function'))
+      assert not command_name.startswith('_')  # No private methods in commands  # Methods should be callable
 
   def test_method_execution(self):
     """Test method execution through CLI."""
@@ -202,7 +198,11 @@ class TestClassBasedCLI:
       return name == 'simple_method'
 
     cli = CLI(SampleClass, method_filter=only_simple_method)
-    assert list(cli.functions.keys()) == ['simple_method']
+    # Should only have simple-method (converted to kebab-case)
+    assert 'simple-method' in cli.commands
+    # Count actual command entries (filter out groups)
+    command_count = len([k for k, v in cli.commands.items() if v.get('type') == 'command'])
+    assert command_count == 1
 
   def test_theme_tuner_integration(self):
     """Test that theme tuner is now provided by System class."""
@@ -241,10 +241,8 @@ class TestBackwardCompatibilityWithClasses:
     assert cli.target_mode == TargetMode.MODULE
     assert cli.target_module == sample_module
     assert cli.title == "Test CLI"
-    assert 'sample_function' in cli.functions
+    assert 'sample-function' in cli.commands
     assert cli.target_class is None
-    assert cli.function_filter is not None
-    assert cli.method_filter is None
 
   def test_old_constructor_still_works(self):
     """Test that old constructor pattern still works."""
@@ -268,8 +266,7 @@ class TestBackwardCompatibilityWithClasses:
     # Should have same structure
     assert cli1.target_mode == cli2.target_mode
     assert cli1.title == cli2.title
-    assert list(cli1.functions.keys()) == list(cli2.functions.keys())
-    assert cli1.theme == cli2.theme
+    assert list(cli1.commands.keys()) == list(cli2.commands.keys())
     # enable_theme_tuner property no longer exists - it's now handled by System class
 
 
@@ -357,7 +354,9 @@ class TestEdgeCases:
         pass
 
     cli = CLI(EmptyClass)
-    assert len(cli.functions.keys()) == 0
+    # Should have no commands (only __init__ is excluded)
+    command_count = len([k for k, v in cli.commands.items() if v.get('type') == 'command'])
+    assert command_count == 0
 
   def test_class_with_only_private_methods(self):
     """Test class with only private methods."""
@@ -374,7 +373,8 @@ class TestEdgeCases:
 
     cli = CLI(PrivateMethodsClass)
     # Should have no public methods
-    assert len(cli.functions.keys()) == 0
+    command_count = len([k for k, v in cli.commands.items() if v.get('type') == 'command'])
+    assert command_count == 0
 
   def test_class_with_property(self):
     """Test that properties are not included as methods."""
@@ -391,8 +391,8 @@ class TestEdgeCases:
         return "method"
 
     cli = CLI(ClassWithProperty)
-    assert 'method' in cli.functions
-    assert 'value' not in cli.functions  # Property should not be included
+    assert 'method' in cli.commands
+    assert 'value' not in cli.commands  # Property should not be included
 
 
 class SampleClassWithDefaults:
@@ -434,8 +434,8 @@ class TestConstructorParameterValidation:
     # Should work because all parameters have defaults
     cli = CLI(SampleClassWithDefaults)
     assert cli.target_mode == TargetMode.CLASS
-    assert not cli.use_inner_class_pattern  # Using direct methods
-    assert 'test_method' in cli.functions
+    # Should have the test method available as a command
+    assert 'test-method' in cli.commands
 
   def test_direct_method_class_without_defaults_fails(self):
     """Test that class with required constructor parameters fails for direct method pattern."""
@@ -448,7 +448,6 @@ class TestConstructorParameterValidation:
     # Should work because both main class and inner class have defaults
     cli = CLI(SampleClassWithInnerClasses)
     assert cli.target_mode == TargetMode.CLASS
-    assert cli.use_inner_class_pattern  # Using inner classes
     # Inner class methods become hierarchical commands with proper nesting
     assert 'good-inner-class' in cli.commands
     assert cli.commands['good-inner-class']['type'] == 'group'

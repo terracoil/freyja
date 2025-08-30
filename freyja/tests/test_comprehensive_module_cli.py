@@ -198,7 +198,15 @@ class TestModuleCLI:
       'export_data'
     }
 
-    discovered_functions = set(cli.functions.keys())
+    # Get command names (functions converted to kebab-case)
+    command_names = set()
+    for name, cmd_info in cli.commands.items():
+      if cmd_info.get('type') == 'command':
+        # Convert back to original function name for comparison
+        original_name = cmd_info.get('original_name', name.replace('-', '_'))
+        command_names.add(original_name)
+    
+    discovered_functions = command_names
 
     # Check that all expected functions are discovered
     for func_name in expected_functions:
@@ -370,25 +378,26 @@ class TestModuleCLIFiltering:
     cli = CLI(sys.modules[__name__], "Filtered CLI",
               function_filter=custom_filter)
 
-    # Should only have process_data function
-    assert 'process_data' in cli.functions
-    assert 'simple_function' not in cli.functions
-    assert 'analyze_logs' not in cli.functions
+    # Should only have process_data function (converted to kebab-case)
+    assert 'process-data' in cli.commands
+    assert 'simple-function' not in cli.commands
+    assert 'analyze-logs' not in cli.commands
 
   def test_default_function_filter(self):
     """Test default function filtering behavior."""
     cli = CLI(sys.modules[__name__], "Test CLI")
 
     # Should exclude private functions
-    assert '_private_helper' not in cli.functions
+    private_commands = [name for name in cli.commands.keys() if name.startswith('_')]
+    assert len(private_commands) == 0
 
     # Should exclude imported functions and classes
-    assert 'pytest' not in cli.functions
-    assert 'Path' not in cli.functions
-    assert 'CLI' not in cli.functions
+    assert 'pytest' not in cli.commands
+    assert 'Path' not in cli.commands
+    assert 'CLI' not in cli.commands
 
     # Should include module-defined functions
-    assert 'simple_function' in cli.functions
+    assert 'simple-function' in cli.commands
 
 
 class TestModuleCLIErrorHandling:

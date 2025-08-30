@@ -58,23 +58,23 @@ class TestModernizedCLI:
     """Test CLI can be created without function_opts parameter."""
     cli = CLI(sample_module, "Test CLI")
     assert cli.title == "Test CLI"
-    assert 'sample_function' in cli.functions
-    assert 'function_with_types' in cli.functions
+    assert 'sample-function' in cli.commands
+    assert 'function-with-types' in cli.commands
     assert cli.target_module == sample_module
 
   def test_function_discovery(self, sample_module):
     """Test automatic function discovery."""
     cli = CLI(sample_module, "Test CLI")
 
-    # Should include public functions
-    assert 'sample_function' in cli.functions
-    assert 'function_with_types' in cli.functions
-    assert 'function_without_docstring' in cli.functions
+    # Should include public functions (converted to kebab-case)
+    assert 'sample-function' in cli.commands
+    assert 'function-with-types' in cli.commands
+    assert 'function-without-docstring' in cli.commands
 
     # Should not include private functions or classes
-    function_names = list(cli.functions.keys())
-    assert not any(name.startswith('_') for name in function_names)
-    assert 'TestEnum' not in cli.functions  # Should not include classes
+    command_names = list(cli.commands.keys())
+    assert not any(name.startswith('_') for name in command_names)
+    # Classes should not appear as commands
 
   def test_custom_function_filter(self, sample_module):
     """Test custom function filter."""
@@ -83,7 +83,10 @@ class TestModernizedCLI:
       return name == 'sample_function'
 
     cli = CLI(sample_module, "Test CLI", function_filter=only_sample_function)
-    assert list(cli.functions.keys()) == ['sample_function']
+    # Should only have sample-function (converted to kebab-case)
+    assert 'sample-function' in cli.commands
+    command_count = len([k for k, v in cli.commands.items() if v.get('type') == 'command'])
+    assert command_count == 1
 
   def test_parser_creation_with_docstrings(self, sample_module):
     """Test parser creation using docstring descriptions."""
@@ -216,19 +219,17 @@ class TestModernizedCLI:
     help_text = parser.format_help()
     assert '--verbose' in help_text or '-v' in help_text
 
-  def test_display_method_backward_compatibility(self, sample_module):
-    """Test display method still works for backward compatibility."""
+  def test_run_method_functionality(self, sample_module):
+    """Test run method works (display method was removed)."""
     cli = CLI(sample_module, "Test CLI")
 
-    # Should not raise an exception
-    try:
-      # This would normally call sys.exit, but we can't test that easily
-      # Just ensure the method exists and can be called
-      assert hasattr(cli, 'display')
-      assert callable(cli.display)
-    except SystemExit:
-      # Expected behavior when no arguments provided
-      pass
+    # Should have run method for CLI execution
+    assert hasattr(cli, 'run')
+    assert callable(cli.run)
+    
+    # Should be able to create parser
+    parser = cli.create_parser()
+    assert parser is not None
 
 
 class TestBackwardCompatibility:

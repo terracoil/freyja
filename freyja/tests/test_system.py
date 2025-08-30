@@ -238,10 +238,11 @@ class TestSystemCLIGeneration:
     """Test System CLI recognizes inner classes."""
     cli = CLI(System)
 
-    # Should discover inner classes
-    assert hasattr(cli, 'inner_classes')
-    assert 'TuneTheme' in cli.inner_classes
-    assert 'Completion' in cli.inner_classes
+    # Should discover inner classes as command groups
+    assert 'tune-theme' in cli.commands
+    assert cli.commands['tune-theme']['type'] == 'group'
+    assert 'completion' in cli.commands
+    assert cli.commands['completion']['type'] == 'group'
 
   def test_system_cli_command_structure(self):
     """Test System CLI creates proper command structure."""
