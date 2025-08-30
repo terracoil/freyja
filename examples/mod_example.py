@@ -9,7 +9,7 @@ from enum import Enum
 from pathlib import Path
 from typing import List, Optional
 
-from src import CLI
+from freyja import CLI
 
 
 class OutputFormat(Enum):

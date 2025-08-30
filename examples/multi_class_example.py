@@ -9,13 +9,12 @@ import sys
 from pathlib import Path
 from typing import List
 
-from src.cli import CLI
-from src.command.system import System
+from freyja.cli import CLI
+from freyja.command.system import System
 
 
 class ProcessingMode(enum.Enum):
-
-"""Processing modes for data operations."""
+    """Processing modes for data operations."""
     FAST = "fast"
     THOROUGH = "thorough"
     BALANCED = "balanced"
@@ -322,7 +321,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     # Import theme functionality for colored output
-    from src.theme import create_default_theme_colorful
+    from freyja.theme import create_default_theme_colorful
 
     # Create multi-class CLI with all utilities
     theme = create_default_theme_colorful()

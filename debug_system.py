@@ -3,7 +3,7 @@
 import sys
 sys.path.insert(0, '.')
 from examples.cls_example import DataProcessor
-from src.cli import CLI
+from freyja.cli import CLI
 import argparse
 
 # Create a debug version to see what's happening

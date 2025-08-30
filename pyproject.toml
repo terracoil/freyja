@@ -20,14 +20,14 @@ classifiers = [
     "Topic :: System :: Systems Administration",
     "Topic :: Utilities",
 ]
-packages = [{include = "freyja", from = "src"}]
+packages = [{include = "freyja"}]
 include = [
     "LICENSE",
     "README.md",
 ]
 
 [tool.poetry.dependencies]
-python = "^3.13.5"
+python = "^3.13.7"
 # No runtime dependencies - the library uses only stdlib
 
 [tool.poetry.group.dev.dependencies]
@@ -106,13 +106,13 @@ exclude = [
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-ra -q --strict-markers --cov=freyja --cov-report=term-missing --cov-report=html"
-testpaths = ["tests"]
+testpaths = ["freyja/tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 
 [tool.coverage.run]
-source = ["src"]
+source = ["freyja"]
 omit = [
     "*/tests/*",
     "*/test_*",

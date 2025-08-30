@@ -1,4 +1,5 @@
 # freyja
+No-dependency, zero-configuration CLI tool to build command-line interfaces purely from your code.  
 
 ## Table of Contents
 - [Documentation](#documentation)
