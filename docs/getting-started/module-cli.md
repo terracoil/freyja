@@ -4,32 +4,35 @@
 
 ## Overview
 
-Module-based CLI creates commands from functions in a Python module. This is the simplest way to build a CLI with Auto-CLI-Py.
+Module-based CLI creates commands from functions in a Python module. This is the simplest way to build a CLI with freyja.
 
 ## Basic Example
 
 ```python
 # hello_cli.py
-from auto_cli import CLI
+from src import CLI
 import sys
 
+
 def hello(name: str = "World", excited: bool = False) -> None:
-    """Say hello to someone."""
-    greeting = f"Hello, {name}!"
-    if excited:
-        greeting += " 🎉"
-    print(greeting)
+  """Say hello to someone."""
+  greeting = f"Hello, {name}!"
+  if excited:
+    greeting += " 🎉"
+  print(greeting)
+
 
 def goodbye(name: str = "World", formal: bool = False) -> None:
-    """Say goodbye to someone."""
-    if formal:
-        print(f"Farewell, {name}. Until we meet again.")
-    else:
-        print(f"Bye, {name}!")
+  """Say goodbye to someone."""
+  if formal:
+    print(f"Farewell, {name}. Until we meet again.")
+  else:
+    print(f"Bye, {name}!")
+
 
 if __name__ == '__main__':
-    cli = CLI(sys.modules[__name__], title="Greeting CLI")
-    cli.display()
+  cli = CLI(sys.modules[__name__], title="Greeting CLI")
+  cli.display()
 ```
 
 ## Running Your CLI

@@ -58,7 +58,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     self._theme = theme
     self._color_formatter = None
     if theme:
-      from auto_cli.theme import ColorFormatter
+      from src.theme import ColorFormatter
       self._color_formatter = ColorFormatter()
 
     self._alphabetize = alphabetize
@@ -295,7 +295,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     footnote_text = "* - required"
 
     if self._theme:
-      from auto_cli.theme import ColorFormatter
+      from src.theme import ColorFormatter
       color_formatter = ColorFormatter()
       styled_footnote = color_formatter.apply_style(footnote_text, self._theme.required_asterisk)
       return ["", styled_footnote]

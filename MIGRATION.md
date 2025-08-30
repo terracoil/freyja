@@ -1,6 +1,6 @@
 # Migration Guide: Hierarchical to Flat Command Architecture
 
-This guide helps you migrate from auto-cli-py's old hierarchical command structure to the new flat command architecture.
+This guide helps you migrate from freyja's old hierarchical command structure to the new flat command architecture.
 
 ## Overview of Changes
 
@@ -349,4 +349,4 @@ If you encounter issues during migration:
 2. **Run tests**: `poetry run pytest` to see working test patterns
 3. **Review documentation**: See [docs/help.md](docs/help.md) for complete guides
 
-The migration ensures a more consistent, predictable CLI interface while maintaining all the powerful features of auto-cli-py.
+The migration ensures a more consistent, predictable CLI interface while maintaining all the powerful features of freyja.

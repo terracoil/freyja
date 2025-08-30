@@ -125,7 +125,7 @@ class MultiClassHandler:
 
     :param handler: Handler to track commands in
     :param cls: Class to simulate commands for"""
-    from auto_cli.utils.string_utils import StringUtils
+    from src.utils.string_utils import StringUtils
 
     # Check for inner classes (hierarchical commands)
     inner_classes = self._discover_inner_classes(cls)

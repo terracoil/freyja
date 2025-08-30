@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Example of using System class for CLI utilities."""
 
-from auto_cli import CLI
-from auto_cli.command.system import System
-from auto_cli.theme import create_default_theme
+from src import CLI
+from src.command.system import System
+from src.theme import create_default_theme
 
 if __name__ == '__main__':
   # Create CLI with System class to demonstrate built-in system utilities

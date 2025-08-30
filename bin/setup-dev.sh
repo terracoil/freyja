@@ -3,7 +3,7 @@
 
 set -e
 
-echo "🚀 Setting up development environment for auto-cli-py..."
+echo "🚀 Setting up development environment for freyja..."
 
 # Install dependencies
 echo "📦 Installing dependencies with Poetry..."

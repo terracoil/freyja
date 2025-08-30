@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from auto_cli.cli import CLI
-from auto_cli.command.docstring_parser import extract_function_help, parse_docstring
+from src.cli import CLI
+from src.command.docstring_parser import extract_function_help, parse_docstring
 
 
 class TestDocstringParser:
@@ -256,7 +256,7 @@ class TestColorOptions:
 
   def test_no_color_parser_creation(self, sample_module):
     """Test creating parser with no_color parameter."""
-    from auto_cli.theme import create_default_theme
+    from src.theme import create_default_theme
     theme = create_default_theme()
 
     cli = CLI(sample_module, "Test CLI", theme=theme)

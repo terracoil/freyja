@@ -1,4 +1,4 @@
-# Auto-CLI-Py Documentation
+# freyja Documentation
 
 [← Back to README](../README.md) | [⚙️ Development Guide](../CLAUDE.md)
 
@@ -26,7 +26,7 @@
 
 ## Overview
 
-Auto-CLI-Py is a Python library that automatically builds complete CLI applications from your existing code using introspection and type annotations. It supports two distinct modes of operation, each designed for different use cases and coding styles.
+freyja is a Python library that automatically builds complete CLI applications from your existing code using introspection and type annotations. It supports two distinct modes of operation, each designed for different use cases and coding styles.
 
 ## Two CLI Creation Modes
 
@@ -36,15 +36,17 @@ Create CLIs from module functions - perfect for functional programming styles an
 ```python
 # mod_example.py
 def greet(name: str, excited: bool = False) -> None:
-    """Greet someone by name."""
-    greeting = f"Hello, {name}!"
-    if excited:
-        greeting += " 🎉"
-    print(greeting)
+  """Greet someone by name."""
+  greeting = f"Hello, {name}!"
+  if excited:
+    greeting += " 🎉"
+  print(greeting)
+
 
 # Create CLI from module
-from auto_cli import CLI
+from src import CLI
 import sys
+
 cli = CLI.from_module(sys.modules[__name__], title="My Module CLI")
 cli.display()
 ```
@@ -107,26 +109,28 @@ Use dunder notation for existing applications:
 
 ```python
 class UserManager:
-    """Traditional dunder-based CLI pattern."""
-    
-    def add_user(self, username: str, email: str, active: bool = True) -> None:
-        """Add a new user to the system."""
-        user = {"username": username, "email": email, "active": active}
-        self.users.append(user)
-        print(f"Added user: {username}")
-    
-    def list_users(self, active_only: bool = False) -> None:
-        """List all users in the system."""
-        users_to_show = self.users
-        if active_only:
-            users_to_show = [u for u in users_to_show if u["active"]]
-        
-        for user in users_to_show:
-            status = "✓" if user["active"] else "✗"
-            print(f"{status} {user['username']} ({user['email']})")
+  """Traditional dunder-based CLI pattern."""
+
+  def add_user(self, username: str, email: str, active: bool = True) -> None:
+    """Add a new user to the system."""
+    user = {"username": username, "email": email, "active": active}
+    self.users.append(user)
+    print(f"Added user: {username}")
+
+  def list_users(self, active_only: bool = False) -> None:
+    """List all users in the system."""
+    users_to_show = self.users
+    if active_only:
+      users_to_show = [u for u in users_to_show if u["active"]]
+
+    for user in users_to_show:
+      status = "✓" if user["active"] else "✗"
+      print(f"{status} {user['username']} ({user['email']})")
+
 
 # Create CLI from class
-from auto_cli import CLI
+from src import CLI
+
 cli = CLI.from_class(UserManager, theme_name="colorful")
 cli.display()
 ```
@@ -144,7 +148,7 @@ cli.display()
 
 ## Getting Started
 
-### 📚 New to Auto-CLI-Py?
+### 📚 New to freyja?
 - **[Quick Start Guide](getting-started/quick-start.md)** - Get running in 5 minutes
 - **[Installation Guide](getting-started/installation.md)** - Detailed setup instructions
 - **[Basic Usage Patterns](getting-started/basic-usage.md)** - Core concepts and examples
@@ -178,7 +182,7 @@ Both CLI modes support the same advanced features:
 - **[Advanced Topics](advanced/index.md)** - Complex patterns and techniques
 - **[API Reference](reference/index.md)** - Complete API documentation
 - **[Troubleshooting](guides/troubleshooting.md)** - Solve common problems
-- **[Contributing](development/contributing.md)** - Help improve Auto-CLI-Py
+- **[Contributing](development/contributing.md)** - Help improve freyja
 
 ---
 

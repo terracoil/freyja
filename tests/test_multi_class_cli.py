@@ -3,9 +3,9 @@
 import pytest
 from unittest.mock import patch
 
-from auto_cli.cli import CLI
-from auto_cli.enums import TargetMode
-from auto_cli.command.multi_class_handler import MultiClassHandler
+from src.cli import CLI
+from src.enums.target_mode import TargetMode
+from src.command.multi_class_handler import MultiClassHandler
 
 
 class MockDataProcessor:

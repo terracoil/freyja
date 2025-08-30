@@ -16,7 +16,7 @@
 The main `CLI` class provides the interface for creating command-line applications from your Python code.
 
 ```python
-from auto_cli import CLI
+from src import CLI
 ```
 
 ### Factory Methods
@@ -49,18 +49,21 @@ def from_module(
 **Returns:** `CLI` instance
 
 **Example:**
+
 ```python
 import sys
-from auto_cli import CLI
+from src import CLI
+
 
 def greet(name: str = "World") -> None:
-    """Greet someone by name."""
-    print(f"Hello, {name}!")
+  """Greet someone by name."""
+  print(f"Hello, {name}!")
+
 
 cli = CLI.from_module(
-    sys.modules[__name__],
-    title="Greeting CLI",
-    theme_name="colorful"
+  sys.modules[__name__],
+  title="Greeting CLI",
+  theme_name="colorful"
 )
 cli.display()
 ```
@@ -93,22 +96,25 @@ def from_class(
 **Returns:** `CLI` instance
 
 **Example:**
+
 ```python
-from auto_cli import CLI
+from src import CLI
+
 
 class TaskManager:
-    """Task Management Application."""
-    
-    def __init__(self):
-        self.tasks = []
-    
-    def add_task(self, title: str, priority: str = "medium") -> None:
-        """Add a new task."""
-        self.tasks.append({"title": title, "priority": priority})
+  """Task Management Application."""
+
+  def __init__(self):
+    self.tasks = []
+
+  def add_task(self, title: str, priority: str = "medium") -> None:
+    """Add a new task."""
+    self.tasks.append({"title": title, "priority": priority})
+
 
 cli = CLI.from_class(
-    TaskManager,
-    theme_name="colorful"
+  TaskManager,
+  theme_name="colorful"
 )
 cli.display()
 ```
@@ -270,7 +276,7 @@ def process_file(filename: str) -> None:
 
 ### Exception Handling
 
-Auto-CLI-Py provides graceful error handling:
+freyja provides graceful error handling:
 
 ```python
 def risky_function(value: int) -> None:

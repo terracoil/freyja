@@ -4,7 +4,7 @@
 
 ## Overview
 
-Auto-CLI-Py provides automatic shell completion for all generated CLIs, supporting Bash, Zsh, and Fish shells.
+freyja provides automatic shell completion for all generated CLIs, supporting Bash, Zsh, and Fish shells.
 
 ## Enabling Completion
 

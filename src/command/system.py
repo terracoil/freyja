@@ -1,14 +1,14 @@
-"""System-level CLI commands for auto-cli-py."""
+"""System-level CLI commands for freyja."""
 
 import os
 import sys
 from pathlib import Path
 from typing import Optional, Dict, Set
 
-from auto_cli.utils.ansi_string import AnsiString
-from auto_cli.theme import (AdjustStrategy, ColorFormatter, create_default_theme,
-                            create_default_theme_colorful, RGB)
-from auto_cli.theme.theme_style import ThemeStyle
+from ..utils.ansi_string import AnsiString
+from ..theme import (AdjustStrategy, ColorFormatter, create_default_theme,
+                       create_default_theme_colorful, RGB)
+from ..theme.theme_style import ThemeStyle
 
 
 class System:
@@ -139,7 +139,7 @@ class System:
 
     def _apply_individual_overrides(self, theme):
       """Create new theme with individual color overrides applied."""
-      from auto_cli.theme.theme import Theme
+      from ..theme.theme import Theme
 
       # Get all current theme styles
       theme_styles = {}
@@ -382,7 +382,7 @@ class System:
       print("📋 THEME CREATION CODE")
       print("=" * min(self.console_width, 60))
       print()
-      print("from auto_cli.theme import RGB, ThemeStyle, Theme")
+      print("from freyja.theme import RGB, ThemeStyle, Theme")
       print()
       print("def create_custom_theme() -> Theme:")
       print("  \"\"\"Create a custom theme with the current colors.\"\"\"")
@@ -394,7 +394,7 @@ class System:
       print("  )")
       print()
       print("# Usage in your CLI:")
-      print("from auto_cli.cli import CLI")
+      print("from freyja.cli import CLI")
       print("cli = CLI(your_module, theme=create_custom_theme())")
       print("cli.display()")
 
@@ -687,7 +687,7 @@ class System:
 
       if self._completion_handler:
         try:
-          from auto_cli.completion.installer import CompletionInstaller
+          from ..completion.installer import CompletionInstaller
 
           # Extract program name from sys.argv[0]
           prog_name = os.path.basename(sys.argv[0])
@@ -740,7 +740,7 @@ class System:
       else:
         # Parse completion context from command line and environment
         try:
-          from auto_cli.completion.base import CompletionContext
+          from ..completion.base import CompletionContext
 
           # Get completion context
           words = sys.argv[:]
@@ -793,7 +793,7 @@ class System:
         return
 
       try:
-        from auto_cli.completion.base import get_completion_handler
+        from ..completion.base import get_completion_handler
         self._completion_handler = get_completion_handler(self._cli_instance, shell)
       except ImportError:
         # Completion module not available
@@ -804,5 +804,5 @@ class System:
       """Check if this is a completion request."""
       return (
           '--_complete' in sys.argv or
-          os.environ.get('_AUTO_CLI_COMPLETE') is not None
+          os.environ.get('_FREYA_COMPLETE') is not None
       )

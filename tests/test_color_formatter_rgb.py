@@ -1,9 +1,9 @@
 """Test ColorFormatter with RGB instances."""
 import pytest
 
-from auto_cli.theme.color_formatter import ColorFormatter
-from auto_cli.theme.rgb import RGB
-from auto_cli.theme.theme_style import ThemeStyle
+from src.theme.color_formatter import ColorFormatter
+from src.theme.rgb import RGB
+from src.theme.theme_style import ThemeStyle
 
 
 class TestColorFormatterRGB:

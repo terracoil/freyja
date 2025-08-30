@@ -17,7 +17,7 @@
 
 ## 5-Minute Introduction
 
-Auto-CLI-Py automatically creates complete command-line interfaces from your existing Python code. Just add type annotations to your functions or methods, and you get a fully-featured CLI with argument parsing, help text, and type validation.
+freyja automatically creates complete command-line interfaces from your existing Python code. Just add type annotations to your functions or methods, and you get a fully-featured CLI with argument parsing, help text, and type validation.
 
 **Two ways to create CLIs:**
 - **Module-based**: Perfect for utilities and functional code
@@ -27,7 +27,7 @@ Auto-CLI-Py automatically creates complete command-line interfaces from your exi
 ## Installation
 
 ```bash
-pip install auto-cli-py
+pip install freyja
 ```
 
 That's it! No dependencies, works with Python 3.8+.
@@ -51,28 +51,31 @@ That's it! No dependencies, works with Python 3.8+.
 Create a file `my_tool.py`:
 
 ```python
-from auto_cli import CLI
+from src import CLI
 import sys
 
+
 def greet(name: str = "World", excited: bool = False) -> None:
-    """Greet someone by name."""
-    greeting = f"Hello, {name}!"
-    if excited:
-        greeting += " 🎉"
-    print(greeting)
+  """Greet someone by name."""
+  greeting = f"Hello, {name}!"
+  if excited:
+    greeting += " 🎉"
+  print(greeting)
+
 
 def count_words(text: str, ignore_case: bool = True) -> None:
-    """Count words in the given text."""
-    if ignore_case:
-        text = text.lower()
-    
-    words = text.split()
-    print(f"Word count: {len(words)}")
-    print(f"Unique words: {len(set(words))}")
+  """Count words in the given text."""
+  if ignore_case:
+    text = text.lower()
+
+  words = text.split()
+  print(f"Word count: {len(words)}")
+  print(f"Unique words: {len(set(words))}")
+
 
 if __name__ == '__main__':
-    cli = CLI.from_module(sys.modules[__name__], title="My Tool")
-    cli.display()
+  cli = CLI.from_module(sys.modules[__name__], title="My Tool")
+  cli.display()
 ```
 
 **Usage:**
@@ -87,65 +90,67 @@ python my_tool.py count-words --text "Hello world hello" --ignore-case
 Create a file `my_app.py`:
 
 ```python
-from auto_cli import CLI
+from src import CLI
 from typing import List
 
+
 class TaskManager:
-    """
-        Task Management Application    
-    A simple CLI for managing your daily tasks.
-    """
-    
-    def __init__(self):
-        self.tasks = []
-        self.next_id = 1
-    
-    def add_task(self, title: str, priority: str = "medium") -> None:
-        """Add a new task."""
-        task = {
-            'id': self.next_id,
-            'title': title,
-            'priority': priority,
-            'completed': False
-        }
-        self.tasks.append(task)
-        self.next_id += 1
-        print(f"✅ Added task: {title} (priority: {priority})")
-    
-    def list_tasks(self, show_completed: bool = False) -> None:
-        """List all tasks."""
-        tasks_to_show = self.tasks
-        if not show_completed:
-            tasks_to_show = [t for t in tasks_to_show if not t['completed']]
-        
-        if not tasks_to_show:
-            print("No tasks found.")
-            return
-        
-        print(f"\\nTasks ({len(tasks_to_show)}):")
-        for task in tasks_to_show:
-            status = "✅" if task['completed'] else "⏳"
-            print(f"{status} {task['id']}: {task['title']} [{task['priority']}]")
-    
-    def complete_task(self, task_id: int) -> None:
-        """Mark a task as completed."""
-        for task in self.tasks:
-            if task['id'] == task_id:
-                task['completed'] = True
-                print(f"✅ Completed: {task['title']}")
-                return
-        
-        print(f"❌ Task {task_id} not found")
+  """
+      Task Management Application    
+  A simple CLI for managing your daily tasks.
+  """
+
+  def __init__(self):
+    self.tasks = []
+    self.next_id = 1
+
+  def add_task(self, title: str, priority: str = "medium") -> None:
+    """Add a new task."""
+    task = {
+      'id': self.next_id,
+      'title': title,
+      'priority': priority,
+      'completed': False
+    }
+    self.tasks.append(task)
+    self.next_id += 1
+    print(f"✅ Added task: {title} (priority: {priority})")
+
+  def list_tasks(self, show_completed: bool = False) -> None:
+    """List all tasks."""
+    tasks_to_show = self.tasks
+    if not show_completed:
+      tasks_to_show = [t for t in tasks_to_show if not t['completed']]
+
+    if not tasks_to_show:
+      print("No tasks found.")
+      return
+
+    print(f"\\nTasks ({len(tasks_to_show)}):")
+    for task in tasks_to_show:
+      status = "✅" if task['completed'] else "⏳"
+      print(f"{status} {task['id']}: {task['title']} [{task['priority']}]")
+
+  def complete_task(self, task_id: int) -> None:
+    """Mark a task as completed."""
+    for task in self.tasks:
+      if task['id'] == task_id:
+        task['completed'] = True
+        print(f"✅ Completed: {task['title']}")
+        return
+
+    print(f"❌ Task {task_id} not found")
+
 
 if __name__ == '__main__':
-    cli = CLI.from_class(TaskManager, theme_name="colorful")
-    cli.display()
+  cli = CLI.from_class(TaskManager, theme_name="colorful")
+  cli.display()
 ```
 
 **Usage:**
 ```bash
 python my_app.py --help
-python my_app.py add-task --title "Learn Auto-CLI-Py" --priority "high"
+python my_app.py add-task --title "Learn freyja" --priority "high"
 python my_app.py add-task --title "Write documentation"
 python my_app.py list-tasks
 python my_app.py complete-task --task-id 1

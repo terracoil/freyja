@@ -4,7 +4,7 @@
 - [Project Overview](#project-overview)
 - [Development Environment Setup](#development-environment-setup)
 - [Common Commands](#common-commands)
-- [Creating auto-cli-py CLIs in Other Projects](#creating-auto-cli-py-clis-in-other-projects)
+- [Creating freyja CLIs in Other Projects](#creating-freyja-clis-in-other-projects)
 - [Architecture](#architecture)
 - [File Structure](#file-structure)
 - [Testing Notes](#testing-notes)
@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an active Python library (`auto-cli-py`) that automatically builds complete CLI applications from Python functions AND class methods using introspection and type annotations. The library supports multiple modes:
+This is an active Python library (`freyja`) that automatically builds complete CLI applications from Python functions AND class methods using introspection and type annotations. The library supports multiple modes:
 
 1. **Module-based CLI**: `CLI()` - Create flat CLI commands from module functions
 2. **Class-based CLI**: `CLI(YourClass)` - Create CLI from class methods with organizational patterns:
@@ -24,7 +24,7 @@ This is an active Python library (`auto-cli-py`) that automatically builds compl
 
 **IMPORTANT**: Inner class methods create hierarchical commands (e.g., `data-operations process-single`) with proper command groups and subcommands.
 
-The library generates argument parsers and command-line interfaces with minimal configuration by analyzing function/method signatures. Published on PyPI at https://pypi.org/project/auto-cli-py/
+The library generates argument parsers and command-line interfaces with minimal configuration by analyzing function/method signatures. Published on PyPI at https://pypi.org/project/freyja/
 
 ## Development Environment Setup
 
@@ -44,10 +44,10 @@ poetry run pre-commit install
 ### Alternative Installation
 ```bash
 # Install from PyPI
-pip install auto-cli-py
+pip install freyja
 
 # Install from GitHub (specific branch)
-pip install git+https://github.com/tangledpath/auto-cli-py.git@branch-name
+pip install git+https://github.com/tangledpath/freyja.git@branch-name
 ```
 
 ## Common Commands
@@ -73,8 +73,8 @@ poetry run pytest -v --tb=short
 # Individual tools:
 poetry run ruff check .              # Fast linting
 poetry run black --check .          # Format checking
-poetry run mypy auto_cli             # Type checking
-poetry run pylint auto_cli           # Additional linting
+poetry run mypy src             # Type checking
+poetry run pylint src           # Additional linting
 
 # Auto-format code
 poetry run black .
@@ -109,15 +109,15 @@ poetry run python mod_example.py hello --name "Alice" --excited
 poetry run python cls_example.py file-operations--process-single --input-file "test.txt"
 ```
 
-## Creating auto-cli-py CLIs in Other Projects
+## Creating freyja CLIs in Other Projects
 
-When Claude Code is working in a project that needs a CLI, use auto-cli-py for rapid CLI development:
+When Claude Code is working in a project that needs a CLI, use freyja for rapid CLI development:
 
 ### Quick Setup Checklist
 
 **Prerequisites:**
 ```bash
-pip install auto-cli-py  # Ensure auto-cli-py is available
+pip install freyja  # Ensure freyja is available
 ```
 
 **Function/Method Requirements:**
@@ -134,22 +134,25 @@ pip install auto-cli-py  # Ensure auto-cli-py is available
 
 ```python
 # At the end of any Python file with functions
-from auto_cli import CLI
+from src import CLI
 import sys
 
+
 def process_data(input_file: str, output_format: str = "json", verbose: bool = False) -> None:
-    """Process data file and convert to specified format."""
-    print(f"Processing {input_file} -> {output_format}")
-    if verbose:
-        print("Verbose mode enabled")
+  """Process data file and convert to specified format."""
+  print(f"Processing {input_file} -> {output_format}")
+  if verbose:
+    print("Verbose mode enabled")
+
 
 def analyze_logs(log_file: str, pattern: str, max_lines: int = 1000) -> None:
-    """Analyze log files for specific patterns."""
-    print(f"Analyzing {log_file} for pattern: {pattern}")
+  """Analyze log files for specific patterns."""
+  print(f"Analyzing {log_file} for pattern: {pattern}")
+
 
 if __name__ == '__main__':
-    cli = CLI(sys.modules[__name__], title="Data Tools")
-    cli.display()
+  cli = CLI(sys.modules[__name__], title="Data Tools")
+  cli.display()
 ```
 
 **Usage:**
@@ -167,28 +170,30 @@ python script.py analyze-logs --log-file app.log --pattern "ERROR" --max-lines 5
 Use direct methods for simple, flat command structures:
 
 ```python
-from auto_cli import CLI
+from src import CLI
+
 
 class SimpleCalculator:
-    """Simple calculator commands."""
-    
-    def __init__(self):
-        """Initialize calculator."""
-        pass
-    
-    def add(self, a: float, b: float) -> None:
-        """Add two numbers."""
-        result = a + b
-        print(f"{a} + {b} = {result}")
-    
-    def multiply(self, a: float, b: float) -> None:
-        """Multiply two numbers."""
-        result = a * b
-        print(f"{a} * {b} = {result}")
+  """Simple calculator commands."""
+
+  def __init__(self):
+    """Initialize calculator."""
+    pass
+
+  def add(self, a: float, b: float) -> None:
+    """Add two numbers."""
+    result = a + b
+    print(f"{a} + {b} = {result}")
+
+  def multiply(self, a: float, b: float) -> None:
+    """Multiply two numbers."""
+    result = a * b
+    print(f"{a} * {b} = {result}")
+
 
 if __name__ == '__main__':
-    cli = CLI(SimpleCalculator, title="Simple Calculator")
-    cli.display()
+  cli = CLI(SimpleCalculator, title="Simple Calculator")
+  cli.display()
 ```
 
 **Usage:**
@@ -202,89 +207,91 @@ python calculator.py multiply --a 4 --b 7
 Use inner classes for organized command structure with flat double-dash commands:
 
 ```python
-from auto_cli import CLI
+from src import CLI
 from pathlib import Path
 
+
 class ProjectManager:
+  """
+  Project Management CLI with flat double-dash commands.
+  
+  Manage projects with organized flat commands and global/sub-global arguments.
+  """
+
+  def __init__(self, config_file: str = "config.json", debug: bool = False):
     """
-    Project Management CLI with flat double-dash commands.
+    Initialize project manager with global settings.
     
-    Manage projects with organized flat commands and global/sub-global arguments.
+    :param config_file: Configuration file path (global argument)
+    :param debug: Enable debug mode (global argument)
     """
-    
-    def __init__(self, config_file: str = "config.json", debug: bool = False):
-        """
-        Initialize project manager with global settings.
-        
-        :param config_file: Configuration file path (global argument)
-        :param debug: Enable debug mode (global argument)
-        """
-        self.config_file = config_file
-        self.debug = debug
-        self.projects = {}
-    
-    class ProjectOperations:
-        """Project creation and management operations."""
-        
-        def __init__(self, workspace: str = "./projects", auto_save: bool = True):
-            """
-            Initialize project operations.
-            
-            :param workspace: Workspace directory (sub-global argument)
-            :param auto_save: Auto-save changes (sub-global argument)
-            """
-            self.workspace = workspace
-            self.auto_save = auto_save
-        
-        def create(self, name: str, description: str = "") -> None:
-            """Create a new project."""
-            print(f"Creating project '{name}' in workspace: {self.workspace}")
-            print(f"Description: {description}")
-            print(f"Auto-save enabled: {self.auto_save}")
-        
-        def delete(self, project_id: str, force: bool = False) -> None:
-            """Delete an existing project."""
-            action = "Force deleting" if force else "Deleting"
-            print(f"{action} project {project_id} from {self.workspace}")
-    
-    class TaskManagement:
-        """Task operations within projects."""
-        
-        def __init__(self, priority_filter: str = "all"):
-            """
-            Initialize task management.
-            
-            :param priority_filter: Default priority filter (sub-global argument)
-            """
-            self.priority_filter = priority_filter
-        
-        def add(self, title: str, priority: str = "medium") -> None:
-            """Add task to project."""
-            print(f"Adding task: {title} (priority: {priority})")
-            print(f"Using filter: {self.priority_filter}")
-        
-        def list_tasks(self, show_completed: bool = False) -> None:
-            """List project tasks."""
-            print(f"Listing tasks (filter: {self.priority_filter})")
-            print(f"Include completed: {show_completed}")
-    
-    class ReportGeneration:
-        """Report generation without sub-global arguments."""
-        
-        def summary(self, detailed: bool = False) -> None:
-            """Generate project summary report."""
-            detail_level = "detailed" if detailed else "basic"
-            print(f"Generating {detail_level} summary report")
-        
-        def export(self, format: str = "json", output_file: Path = None) -> None:
-            """Export project data."""
-            print(f"Exporting to {format} format")
-            if output_file:
-                print(f"Output file: {output_file}")
+    self.config_file = config_file
+    self.debug = debug
+    self.projects = {}
+
+  class ProjectOperations:
+    """Project creation and management operations."""
+
+    def __init__(self, workspace: str = "./projects", auto_save: bool = True):
+      """
+      Initialize project operations.
+      
+      :param workspace: Workspace directory (sub-global argument)
+      :param auto_save: Auto-save changes (sub-global argument)
+      """
+      self.workspace = workspace
+      self.auto_save = auto_save
+
+    def create(self, name: str, description: str = "") -> None:
+      """Create a new project."""
+      print(f"Creating project '{name}' in workspace: {self.workspace}")
+      print(f"Description: {description}")
+      print(f"Auto-save enabled: {self.auto_save}")
+
+    def delete(self, project_id: str, force: bool = False) -> None:
+      """Delete an existing project."""
+      action = "Force deleting" if force else "Deleting"
+      print(f"{action} project {project_id} from {self.workspace}")
+
+  class TaskManagement:
+    """Task operations within projects."""
+
+    def __init__(self, priority_filter: str = "all"):
+      """
+      Initialize task management.
+      
+      :param priority_filter: Default priority filter (sub-global argument)
+      """
+      self.priority_filter = priority_filter
+
+    def add(self, title: str, priority: str = "medium") -> None:
+      """Add task to project."""
+      print(f"Adding task: {title} (priority: {priority})")
+      print(f"Using filter: {self.priority_filter}")
+
+    def list_tasks(self, show_completed: bool = False) -> None:
+      """List project tasks."""
+      print(f"Listing tasks (filter: {self.priority_filter})")
+      print(f"Include completed: {show_completed}")
+
+  class ReportGeneration:
+    """Report generation without sub-global arguments."""
+
+    def summary(self, detailed: bool = False) -> None:
+      """Generate project summary report."""
+      detail_level = "detailed" if detailed else "basic"
+      print(f"Generating {detail_level} summary report")
+
+    def export(self, format: str = "json", output_file: Path = None) -> None:
+      """Export project data."""
+      print(f"Exporting to {format} format")
+      if output_file:
+        print(f"Output file: {output_file}")
+
 
 if __name__ == '__main__':
-    cli = CLI(ProjectManager, theme_name="colorful")
-    cli.display()
+  cli = CLI(ProjectManager, theme_name="colorful")
+  cli.display()
 ```
 
 **Usage with Flat Double-Dash Commands:**
@@ -600,13 +607,13 @@ All constructor parameters must have default values to be used as CLI arguments.
 
 ### Core Components
 
-- **`auto_cli/cli.py`**: Main CLI class that handles:
+- **`freya/cli.py`**: Main CLI class that handles:
   - Function signature introspection via `inspect` module
   - Automatic argument parser generation using `argparse`
   - Type annotation parsing (str, int, float, bool, enums)
   - Default value handling and help text generation
   
-- **`auto_cli/__init__.py`**: Package initialization (minimal)
+- **`freya/__init__.py`**: Package initialization (minimal)
 
 ### Key Architecture Patterns
 
@@ -640,7 +647,7 @@ cli.display()
 
 ## File Structure
 
-- `auto_cli/cli.py` - Core CLI generation logic
+- `freya/cli.py` - Core CLI generation logic
 - `examples.py` - Working examples showing library usage
 - `pyproject.toml` - Poetry configuration and metadata
 - `tests/` - Test suite with pytest

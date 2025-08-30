@@ -2,12 +2,12 @@
 
 [↑ Documentation Hub](../help.md)
 
-Documentation for contributors and developers working on Auto-CLI-Py.
+Documentation for contributors and developers working on freyja.
 
 ## For Contributors
 
 ### 🤝 [Contributing](contributing.md)
-How to contribute to Auto-CLI-Py.
+How to contribute to freyja.
 - Setting up development environment
 - Code style guidelines
 - Submitting pull requests
@@ -43,8 +43,8 @@ How releases are managed.
 ### Development Setup
 ```bash
 # Clone the repository
-git clone https://github.com/tangledpath/auto-cli-py.git
-cd auto-cli-py
+git clone https://github.com/tangledpath/freyja.git
+cd freyja
 
 # Install development dependencies
 poetry install --with dev
@@ -54,7 +54,7 @@ poetry run pytest
 
 # Run linters
 poetry run ruff check .
-poetry run mypy auto_cli
+poetry run mypy src
 
 # Install pre-commit hooks
 poetry run pre-commit install
@@ -62,8 +62,8 @@ poetry run pre-commit install
 
 ### Project Structure
 ```
-auto-cli-py/
-├── auto_cli/          # Source code
+freyja/
+├── freya/          # Source code
 │   ├── __init__.py
 │   └── cli.py
 ├── tests/             # Test suite
@@ -95,10 +95,10 @@ poetry run pytest -vv --tb=short
 ./bin/lint.sh
 
 # Format code
-poetry run black auto_cli tests
+poetry run black src tests
 
 # Type checking
-poetry run mypy auto_cli --strict
+poetry run mypy src --strict
 ```
 
 **Building**
@@ -133,14 +133,14 @@ poetry install
 ## Getting Help
 
 ### For Contributors
-- Open a [Discussion](https://github.com/tangledpath/auto-cli-py/discussions) for questions
+- Open a [Discussion](https://github.com/tangledpath/freyja/discussions) for questions
 - Join our [Discord](#) community (coming soon)
-- Check existing [Issues](https://github.com/tangledpath/auto-cli-py/issues)
+- Check existing [Issues](https://github.com/tangledpath/freyja/issues)
 - Read the [Architecture](architecture.md) guide
 
 ### Maintainer Contacts
 - **Steven** - Project Lead
-- **Contributors** - See [AUTHORS](https://github.com/tangledpath/auto-cli-py/blob/main/AUTHORS)
+- **Contributors** - See [AUTHORS](https://github.com/tangledpath/freyja/blob/main/AUTHORS)
 
 ## Next Steps
 
@@ -151,4 +151,4 @@ poetry install
 
 ---
 
-**Ready to contribute?** Check out [good first issues](https://github.com/tangledpath/auto-cli-py/labels/good%20first%20issue)
+**Ready to contribute?** Check out [good first issues](https://github.com/tangledpath/freyja/labels/good%20first%20issue)

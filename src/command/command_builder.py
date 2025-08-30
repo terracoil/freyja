@@ -21,7 +21,7 @@ class CommandBuilder:
 
   def build_command_tree(self) -> Dict[str, Dict]:
     """Build flat command structure from discovered functions based on target mode."""
-    from auto_cli.enums import TargetMode
+    from ..enums.target_mode import TargetMode
 
     if self.target_mode == TargetMode.MODULE:
       return self._build_module_commands()
@@ -53,7 +53,7 @@ class CommandBuilder:
 
   def _build_flat_class_commands(self) -> Dict[str, Dict]:
     """Class mode without inner classes creates flat command structure."""
-    from auto_cli.utils.string_utils import StringUtils
+    from ..utils.string_utils import StringUtils
     commands = {}
     for func_name, func_obj in self.functions.items():
       cli_name = StringUtils.kebab_case(func_name)
@@ -66,7 +66,7 @@ class CommandBuilder:
 
   def _build_hierarchical_class_commands(self) -> Dict[str, Dict]:
     """Class mode with inner classes creates hierarchical command structure."""
-    from auto_cli.utils.string_utils import StringUtils
+    from ..utils.string_utils import StringUtils
     commands = {}
     processed_groups = set()
 
@@ -96,7 +96,7 @@ class CommandBuilder:
 
   def _build_command_groups(self) -> Dict[str, Dict]:
     """Build command groups from inner class methods."""
-    from auto_cli.utils.string_utils import StringUtils
+    from ..utils.string_utils import StringUtils
 
     groups = {}
     for func_name, func_obj in self.functions.items():
@@ -130,7 +130,7 @@ class CommandBuilder:
 
   def _build_single_command_group(self, cli_group_name: str) -> Dict[str, Any]:
     """Build a single command group from inner class methods."""
-    from auto_cli.utils.string_utils import StringUtils
+    from ..utils.string_utils import StringUtils
 
     group_commands = {}
 
@@ -163,7 +163,7 @@ class CommandBuilder:
 
   def _get_group_description(self, cli_group_name: str) -> str:
     """Get description for command group from inner class docstring."""
-    from auto_cli.utils.string_utils import StringUtils
+    from ..utils.string_utils import StringUtils
     from .docstring_parser import parse_docstring
 
     description = None

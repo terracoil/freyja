@@ -34,10 +34,10 @@ Real-world CLI examples and use cases.
 
 ### Common Issues
 
-**Problem**: "No module named 'auto_cli'"
+**Problem**: "No module named 'freya'"
 ```bash
 # Solution: Install the package
-pip install auto-cli-py
+pip install freyja
 ```
 
 **Problem**: "Function missing type annotations"
@@ -130,4 +130,4 @@ Have a guide to share? We welcome contributions! See our [Contributing Guide](..
 
 ---
 
-**Still stuck?** Open an issue on [GitHub](https://github.com/tangledpath/auto-cli-py/issues)
+**Still stuck?** Open an issue on [GitHub](https://github.com/tangledpath/freyja/issues)

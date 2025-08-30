@@ -20,22 +20,22 @@
 ## Installation
 
 ### Install from PyPI
-_The simplest way to install auto-cli-py:_
+_The simplest way to install freyja:_
 ```bash
-pip install auto-cli-py
+pip install freyja
 ```
 
 #### Install with Extras
 _Install with shell completion support:_
 
 ```bash
-pip install "auto-cli-py[completion]"
+pip install "freyja[completion]"
 ```
 
 #### Install specific version:
 
 ```bash
-pip install auto-cli-py==0.5.0
+pip install freyja==0.5.0
 ```
 
 ### From GitHub
@@ -43,31 +43,31 @@ pip install auto-cli-py==0.5.0
 #### From GitHub (Latest)
 
 ```bash
-pip install git+https://github.com/tangledpath/auto-cli-py.git
+pip install git+https://github.com/tangledpath/freyja.git
 ```
 
 #### From GitHub (Specific Branch)
 
 ```bash
 # Install from specific branch (e.g., feature/modernization)
-pip install git+https://github.com/tangledpath/auto-cli-py.git@feature/modernization
+pip install git+https://github.com/tangledpath/freyja.git@feature/modernization
 
 # Or add to requirements.txt
-git+https://github.com/tangledpath/auto-cli-py.git@feature/modernization
+git+https://github.com/tangledpath/freyja.git@feature/modernization
 
 # Or add to pyproject.toml (Poetry)
 [tool.poetry.dependencies]
-auto-cli-py = {git = "https://github.com/tangledpath/auto-cli-py.git", branch = "feature/modernization"}
+freyja = {git = "https://github.com/tangledpath/freyja.git", branch = "feature/modernization"}
 
 # Install from main branch (latest development)
-pip install git+https://github.com/tangledpath/auto-cli-py.git@main
+pip install git+https://github.com/tangledpath/freyja.git@main
 ```
 
 ### Clone and Install
 
 ```bash
-git clone https://github.com/tangledpath/auto-cli-py.git
-cd auto-cli-py
+git clone https://github.com/tangledpath/freyja.git
+cd freyja
 pip install .
 ```
 
@@ -82,8 +82,8 @@ curl -sSL https://install.python-poetry.org | python3 -
 
 2. Clone the repository:
 ```bash
-git clone https://github.com/tangledpath/auto-cli-py.git
-cd auto-cli-py
+git clone https://github.com/tangledpath/freyja.git
+cd freyja
 ```
 
 3. Install dependencies:
@@ -100,8 +100,8 @@ poetry shell
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/tangledpath/auto-cli-py.git
-cd auto-cli-py
+git clone https://github.com/tangledpath/freyja.git
+cd freyja
 ```
 
 2. Create a virtual environment:
@@ -120,8 +120,9 @@ pip install -e ".[dev]"
 ### Check Version
 
 ```python
-import auto_cli
-print(auto_cli.__version__)
+import src
+
+print(src.__version__)
 ```
 
 ### Test Basic Functionality
@@ -129,16 +130,19 @@ print(auto_cli.__version__)
 Create a test file `test_install.py`:
 
 ```python
-from auto_cli import CLI
+from src import CLI
+
 
 def hello(name: str = "World"):
-    """Test function."""
-    print(f"Hello, {name}!")
+  """Test function."""
+  print(f"Hello, {name}!")
+
 
 if __name__ == "__main__":
-    import sys
-    cli = CLI.from_module(sys.modules[__name__])
-    cli.run()
+  import sys
+
+  cli = CLI.from_module(sys.modules[__name__])
+  cli.run()
 ```
 
 Run it:
@@ -158,16 +162,16 @@ Hello, Install Test!
 
 #### Import Error
 
-**Problem**: `ModuleNotFoundError: No module named 'auto_cli'`
+**Problem**: `ModuleNotFoundError: No module named 'freya'`
 
-**Solution**: Ensure auto-cli-py is installed in the active environment:
+**Solution**: Ensure freyja is installed in the active environment:
 ```bash
-pip list | grep auto-cli-py
+pip list | grep freyja
 ```
 
 #### Python Version Error
 
-**Problem**: `ERROR: auto-cli-py requires Python >=3.8`
+**Problem**: `ERROR: freyja requires Python >=3.8`
 
 **Solution**: Check your Python version:
 ```bash
@@ -182,7 +186,7 @@ Update Python if needed or use a virtual environment with the correct version.
 
 **Solution**: Use user installation:
 ```bash
-pip install --user auto-cli-py
+pip install --user freyja
 ```
 
 Or use a virtual environment (recommended).
@@ -191,11 +195,11 @@ Or use a virtual environment (recommended).
 
 If you encounter issues:
 
-1. Check [GitHub Issues](https://github.com/tangledpath/auto-cli-py/issues)
+1. Check [GitHub Issues](https://github.com/tangledpath/freyja/issues)
 2. Search for similar problems
 3. Create a new issue with:
    - Python version
-   - auto-cli-py version
+   - freyja version
    - Complete error message
    - Minimal reproducible example
 

@@ -4,7 +4,7 @@
 
 ## Overview
 
-Auto-CLI-Py offers two distinct modes for creating CLIs. This guide provides a detailed comparison to help you choose the right approach.
+freyja offers two distinct modes for creating CLIs. This guide provides a detailed comparison to help you choose the right approach.
 
 ## Quick Comparison Table
 

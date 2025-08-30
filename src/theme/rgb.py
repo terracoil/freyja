@@ -4,7 +4,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Tuple
 
-from auto_cli.utils.math_utils import MathUtils
+from ..utils.math_utils import MathUtils
 
 
 class AdjustStrategy(Enum):

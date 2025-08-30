@@ -1,7 +1,7 @@
 """Test suite for RGB class and color operations."""
 import pytest
 
-from auto_cli.theme.rgb import RGB, AdjustStrategy
+from src.theme.rgb import RGB, AdjustStrategy
 
 
 class TestRGBConstructor:

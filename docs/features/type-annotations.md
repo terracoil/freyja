@@ -17,7 +17,7 @@
 
 ## Overview
 
-Type annotations are **required** for all parameters in functions/methods that will be exposed as CLI commands. Auto-CLI-Py uses these annotations to:
+Type annotations are **required** for all parameters in functions/methods that will be exposed as CLI commands. freyja uses these annotations to:
 
 - Generate appropriate command-line arguments
 - Perform input validation
@@ -211,7 +211,7 @@ def process_identifier(id_value: Union[str, int], format_output: bool = False) -
     else:
         print(f"Processing string ID: {id_value}")
 
-# CLI: Auto-CLI-Py will try int first, then str
+# CLI: freyja will try int first, then str
 # Usage: --id-value 12345 or --id-value "user_abc123"
 ```
 
@@ -334,7 +334,7 @@ def configure_app(
 
 ### Built-in Validation
 
-Auto-CLI-Py automatically validates input based on type annotations:
+freyja automatically validates input based on type annotations:
 
 ```python
 def calculate_stats(numbers: List[int], precision: int = 2) -> None:

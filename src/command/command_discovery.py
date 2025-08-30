@@ -5,9 +5,9 @@ from collections.abc import Callable as CallableABC
 from dataclasses import dataclass, field
 from typing import *
 
-from auto_cli.enums import TargetMode
-from auto_cli.utils.string_utils import StringUtils
-from auto_cli.validation import ValidationService
+from ..enums.target_mode import TargetMode
+from ..utils.string_utils import StringUtils
+from ..validation import ValidationService
 
 
 @dataclass

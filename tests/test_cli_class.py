@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from auto_cli.cli import CLI
-from auto_cli.enums import TargetMode
+from src.cli import CLI
+from src.enums.target_mode import TargetMode
 
 
 class SampleEnum(enum.Enum):
@@ -207,7 +207,7 @@ class TestClassBasedCLI:
   def test_theme_tuner_integration(self):
     """Test that theme tuner is now provided by System class."""
     # Theme tuner functionality is now in System class, not injected into CLI
-    from auto_cli.command.system import System
+    from src.command.system import System
     cli = CLI(System)
 
     # System class uses inner class pattern, so should have hierarchical commands

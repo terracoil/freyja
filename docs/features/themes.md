@@ -4,7 +4,7 @@
 
 ## Overview
 
-Auto-CLI-Py includes a built-in theme system that allows you to customize the appearance of your CLI output.
+freyja includes a built-in theme system that allows you to customize the appearance of your CLI output.
 
 ## Built-in Themes
 
@@ -25,8 +25,9 @@ A vibrant theme with rich colors:
 ## Using Themes
 
 ### Setting Theme
+
 ```python
-from auto_cli import CLI
+from src import CLI
 
 # Module-based CLI with theme
 cli = CLI(sys.modules[__name__], theme_name="colorful")
@@ -63,7 +64,7 @@ Coming soon: Custom theme creation guide.
 
 ## Color Support
 
-Auto-CLI-Py respects terminal capabilities:
+freyja respects terminal capabilities:
 - Automatically detects color support
 - Honors NO_COLOR environment variable
 - Gracefully degrades on limited terminals

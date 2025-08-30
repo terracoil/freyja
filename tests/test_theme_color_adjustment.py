@@ -1,7 +1,7 @@
 """Tests for theme color adjustment functionality."""
 import pytest
 
-from auto_cli.theme import (
+from src.theme import (
   AdjustStrategy,
   RGB,
   Theme,

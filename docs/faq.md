@@ -12,9 +12,9 @@
 
 ## General Questions
 
-### What is auto-cli-py?
+### What is freyja?
 
-Auto-CLI-Py is a Python library that automatically generates complete command-line interfaces from your existing Python functions or class methods using introspection and type annotations. It requires minimal configuration - just add type hints to your functions and you get a fully-featured CLI.
+freyja is a Python library that automatically generates complete command-line interfaces from your existing Python functions or class methods using introspection and type annotations. It requires minimal configuration - just add type hints to your functions and you get a fully-featured CLI.
 
 ### How is it different from writing CLI code manually?
 
@@ -25,7 +25,7 @@ Traditional CLI development requires:
 - Error handling
 - Command organization
 
-Auto-CLI-Py handles all of this automatically by analyzing your function signatures and docstrings.
+freyja handles all of this automatically by analyzing your function signatures and docstrings.
 
 ```python
 # Traditional approach (with argparse)
@@ -36,7 +36,7 @@ parser.add_argument('--excited', action='store_true', help='Use excited greeting
 args = parser.parse_args()
 greet(args.name, args.excited)
 
-# Auto-CLI-Py approach
+# freyja approach
 def greet(name: str, excited: bool = False) -> None:
     """Greet someone by name."""
     pass
@@ -59,15 +59,15 @@ cli.display()
 - ✅ Database connections or file handles
 - ✅ Complex workflows with dependencies
 
-### Does auto-cli-py have any dependencies?
+### Does freyja have any dependencies?
 
-No! Auto-CLI-Py uses only Python standard library modules. It has zero runtime dependencies, making it lightweight and easy to install anywhere.
+No! freyja uses only Python standard library modules. It has zero runtime dependencies, making it lightweight and easy to install anywhere.
 
 ## Comparison with Other Tools
 
 ### How does it compare to Click?
 
-| Feature | Auto-CLI-Py | Click |
+| Feature | freyja | Click |
 |---------|-------------|--------|
 | **Setup** | Automatic from type hints | Manual decorators |
 | **Learning curve** | Minimal (just type hints) | Medium (decorator syntax) |
@@ -76,7 +76,7 @@ No! Auto-CLI-Py uses only Python standard library modules. It has zero runtime d
 | **Flexibility** | Good for standard CLIs | Highly customizable |
 
 ```python
-# Auto-CLI-Py: Use existing function
+# freyja: Use existing function
 def process_file(input_path: str, format: str = "json") -> None:
     """Process a file."""
     pass
@@ -93,7 +93,7 @@ def process_file(input_path, format):
 
 ### How does it compare to Typer?
 
-| Feature | Auto-CLI-Py | Typer |
+| Feature | freyja | Typer |
 |---------|-------------|--------|
 | **Type hints** | Required | Optional but recommended |
 | **Setup** | Automatic discovery | Manual function registration |
@@ -102,7 +102,7 @@ def process_file(input_path, format):
 | **State management** | Excellent (class-based) | Manual |
 
 ```python
-# Auto-CLI-Py: Automatic discovery
+# freyja: Automatic discovery
 def cmd1(name: str) -> None: pass
 def cmd2(count: int) -> None: pass
 cli = CLI.from_module(sys.modules[__name__])  # Finds all functions
@@ -118,9 +118,9 @@ def cmd2(count: int): pass
 
 ### How does it compare to argparse?
 
-Auto-CLI-Py is built on top of argparse but eliminates the boilerplate:
+freyja is built on top of argparse but eliminates the boilerplate:
 
-| Feature | Auto-CLI-Py | Raw argparse |
+| Feature | freyja | Raw argparse |
 |---------|-------------|--------------|
 | **Code amount** | ~5 lines | ~20+ lines |
 | **Type validation** | Automatic | Manual |
@@ -149,7 +149,7 @@ Auto-CLI-Py is built on top of argparse but eliminates the boilerplate:
 
 ### Can I use async functions?
 
-Currently, auto-cli-py supports synchronous functions only. For async functions, wrap them:
+Currently, freyja supports synchronous functions only. For async functions, wrap them:
 
 ```python
 import asyncio
@@ -243,7 +243,7 @@ def set_email(email: str) -> None:
     print(f"✅ Email set to: {email}")
 ```
 
-### Can I use auto-cli-py with existing Click/Typer code?
+### Can I use freyja with existing Click/Typer code?
 
 You can gradually migrate or use them side-by-side:
 
@@ -251,26 +251,31 @@ You can gradually migrate or use them side-by-side:
 # Existing Click code
 import click
 
+
 @click.command()
 @click.option('--name')
 def click_command(name):
-    print(f"Click: {name}")
+  print(f"Click: {name}")
 
-# New auto-cli-py code
-def auto_cli_command(name: str) -> None:
-    """Auto CLI command."""
-    print(f"Auto CLI: {name}")
+
+# New freyja code
+def freya_command(name: str) -> None:
+  """Freyja command."""
+  print(f"Freyja: {name}")
+
 
 # Separate entry points
 if __name__ == '__main__':
-    import sys
-    if '--click' in sys.argv:
-        sys.argv.remove('--click')
-        click_command()
-    else:
-        from auto_cli import CLI
-        cli = CLI.from_module(sys.modules[__name__])
-        cli.display()
+  import sys
+
+  if '--click' in sys.argv:
+    sys.argv.remove('--click')
+    click_command()
+  else:
+    from src import CLI
+
+    cli = CLI.from_module(sys.modules[__name__])
+    cli.display()
 ```
 
 ## Usage and Best Practices

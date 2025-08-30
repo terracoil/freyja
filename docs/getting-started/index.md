@@ -2,12 +2,12 @@
 
 [↑ Documentation Hub](../help.md)
 
-Welcome to Auto-CLI-Py! This section will help you get up and running quickly.
+Welcome to freyja! This section will help you get up and running quickly.
 
 ## Quick Navigation
 
 ### 📦 [Installation](installation.md)
-Install Auto-CLI-Py and set up your environment.
+Install freyja and set up your environment.
 
 ### 🚀 [Quick Start](quick-start.md)  
 Create your first CLI in under 5 minutes.
@@ -28,7 +28,7 @@ Get started with class-based CLIs (methods → commands).
 
 By the end of this section, you'll know how to:
 
-1. **Install** Auto-CLI-Py in your project
+1. **Install** freyja in your project
 2. **Choose** the right CLI mode for your needs
 3. **Create** a basic CLI from functions or classes
 4. **Run** your CLI and understand the generated help

@@ -1,4 +1,4 @@
-# auto-cli-py
+# freyja
 
 ## Table of Contents
 - [Documentation](#documentation)
@@ -30,41 +30,46 @@ Perfect for functional programming styles and simple utilities. All functions be
 
 ```python
 # Create CLI from module functions
-from auto_cli import CLI
+from src import CLI
 import sys
 
+
 def greet(name: str = "World", excited: bool = False) -> None:
-    """Greet someone by name."""
-    greeting = f"Hello, {name}!"
-    if excited:
-        greeting += " 🎉"
-    print(greeting)
+  """Greet someone by name."""
+  greeting = f"Hello, {name}!"
+  if excited:
+    greeting += " 🎉"
+  print(greeting)
+
 
 if __name__ == '__main__':
-    cli = CLI(sys.modules[__name__], title="My CLI")
-    cli.display()
+  cli = CLI(sys.modules[__name__], title="My CLI")
+  cli.display()
 ```
 
 ### 🏗️ Class-based CLI (Flat with Double-Dash Notation)
 Ideal for stateful applications and object-oriented designs. Supports both **direct methods** (simple) and **inner class patterns** (flat with organized naming):
 
 #### Direct Methods (Simple Commands)
+
 ```python
-from auto_cli import CLI
+from src import CLI
+
 
 class Calculator:
-    """Simple calculator."""
-    
-    def __init__(self):
-        pass
-    
-    def add(self, a: float, b: float) -> None:
-        """Add two numbers."""
-        print(f"{a} + {b} = {a + b}")
+  """Simple calculator."""
+
+  def __init__(self):
+    pass
+
+  def add(self, a: float, b: float) -> None:
+    """Add two numbers."""
+    print(f"{a} + {b} = {a + b}")
+
 
 if __name__ == '__main__':
-    cli = CLI(Calculator)
-    cli.display()
+  cli = CLI(Calculator)
+  cli.display()
 
 # Usage: python calc.py add --a 5 --b 3
 ```
@@ -73,27 +78,29 @@ if __name__ == '__main__':
 
 ```python
 # Inner Class Pattern (NEW) - Flat commands with organized naming
-from auto_cli import CLI
+from src import CLI
+
 
 class UserManager:
-    """User management with flat double-dash commands."""
-    
-    def __init__(self, config_file: str = "config.json"):  # Global arguments
-        self.config_file = config_file
-    
-    class UserOperations:
-        """User account operations."""
-        
-        def __init__(self, database_url: str = "sqlite:///users.db"):  # Sub-global arguments  
-            self.database_url = database_url
-        
-        def create(self, username: str, email: str, active: bool = True) -> None:  # Command arguments
-            """Create a new user account."""
-            print(f"Creating user: {username}")
+  """User management with flat double-dash commands."""
+
+  def __init__(self, config_file: str = "config.json"):  # Global arguments
+    self.config_file = config_file
+
+  class UserOperations:
+    """User account operations."""
+
+    def __init__(self, database_url: str = "sqlite:///users.db"):  # Sub-global arguments  
+      self.database_url = database_url
+
+    def create(self, username: str, email: str, active: bool = True) -> None:  # Command arguments
+      """Create a new user account."""
+      print(f"Creating user: {username}")
+
 
 if __name__ == '__main__':
-    cli = CLI(UserManager)  
-    cli.display()
+  cli = CLI(UserManager)
+  cli.display()
 
 # Usage: python app.py --config-file prod.json user-operations--create --database-url postgres://... --username alice --email alice@test.com
 ```
@@ -120,8 +127,8 @@ This project uses Poetry for dependency management and modern Python tooling.
 
 ```bash
 # Clone the repository
-git clone https://github.com/tangledpath/auto-cli-py.git
-cd auto-cli-py
+git clone https://github.com/tangledpath/freyja.git
+cd freyja
 
 # Install Poetry (if not already installed)
 curl -sSL https://install.python-poetry.org | python3 -

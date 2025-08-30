@@ -1,6 +1,6 @@
 """Tests for AdjustStrategy enum."""
 
-from auto_cli.theme import AdjustStrategy
+from src.theme import AdjustStrategy
 
 
 class TestAdjustStrategy:

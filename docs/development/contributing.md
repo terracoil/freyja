@@ -1,10 +1,10 @@
-# Contributing to Auto-CLI-Py
+# Contributing to freyja
 
 [← Back to Development](index.md) | [↑ Documentation Hub](../help.md)
 
 ## Welcome Contributors!
 
-We're excited that you're interested in contributing to Auto-CLI-Py! This guide will help you get started.
+We're excited that you're interested in contributing to freyja! This guide will help you get started.
 
 ## Code of Conduct
 
@@ -16,8 +16,8 @@ Please read and follow our code of conduct to ensure a welcoming environment for
 
 ```bash
 # Fork the repository on GitHub, then:
-git clone https://github.com/YOUR_USERNAME/auto-cli-py.git
-cd auto-cli-py
+git clone https://github.com/YOUR_USERNAME/freyja.git
+cd freyja
 ```
 
 ### 2. Set Up Development Environment
@@ -61,7 +61,7 @@ poetry run pytest
 poetry run pytest tests/test_cli.py::test_function_name
 
 # Run with coverage
-poetry run pytest --cov=auto_cli --cov-report=html
+poetry run pytest --cov=src --cov-report=html
 ```
 
 ### 3. Check Code Quality
@@ -71,9 +71,9 @@ poetry run pytest --cov=auto_cli --cov-report=html
 ./bin/lint.sh
 
 # Or individually:
-poetry run black auto_cli tests
-poetry run ruff check auto_cli tests
-poetry run mypy auto_cli
+poetry run black src tests
+poetry run ruff check src tests
+poetry run mypy src
 ```
 
 ### 4. Update Documentation
@@ -232,8 +232,8 @@ def example_function(param1: str, param2: int = 10) -> bool:
 ## Getting Help
 
 ### Resources
-- [GitHub Issues](https://github.com/tangledpath/auto-cli-py/issues)
-- [Discussions](https://github.com/tangledpath/auto-cli-py/discussions)
+- [GitHub Issues](https://github.com/tangledpath/freyja/issues)
+- [Discussions](https://github.com/tangledpath/freyja/discussions)
 - Review existing code and tests
 
 ### Questions?
@@ -250,7 +250,7 @@ Contributors are recognized in:
 
 ## Thank You!
 
-Your contributions help make Auto-CLI-Py better for everyone. We appreciate your time and effort!
+Your contributions help make freyja better for everyone. We appreciate your time and effort!
 
 ---
 

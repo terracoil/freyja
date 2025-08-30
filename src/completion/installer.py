@@ -72,7 +72,7 @@ class CompletionInstaller:
       bashrc_content = bashrc.read_text()
       if source_line not in bashrc_content:
         with open(bashrc, 'a') as f:
-          f.write(f'\n# Auto-CLI completion for {self.prog_name}\n')
+          f.write(f'\n# Freyja completion for {self.prog_name}\n')
           f.write(f'{source_line}\n')
         print(f"Added completion sourcing to {bashrc}")
 
@@ -152,7 +152,7 @@ class CompletionInstaller:
     script = self.handler.generate_script(self.prog_name)
 
     # Check if profile exists and has our completion
-    completion_marker = f'# Auto-CLI completion for {self.prog_name}'
+    completion_marker = f'# Freyja completion for {self.prog_name}'
 
     if profile_file.exists():
       profile_content = profile_file.read_text()

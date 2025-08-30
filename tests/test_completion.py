@@ -8,9 +8,9 @@ from unittest.mock import patch
 
 import pytest
 
-from auto_cli.cli import CLI
-from auto_cli.completion.base import CompletionContext, get_completion_handler
-from auto_cli.completion.bash import BashCompletionHandler
+from src.cli import CLI
+from src.completion.base import CompletionContext, get_completion_handler
+from src.completion.bash import BashCompletionHandler
 
 
 # Test module for completion
@@ -130,7 +130,7 @@ class TestCompletionIntegration:
 
     # Completion arguments are no longer injected into CLIs - they're provided by System class
     # Test that completion handler can be initialized
-    from auto_cli.command.system import System
+    from src.command.system import System
     system_cli = CLI(System)
     parser = system_cli.create_parser()
     help_text = parser.format_help()
@@ -144,7 +144,7 @@ class TestCompletionIntegration:
     # Test that CLI without completion doesn't handle completion requests
     assert cli._is_completion_request() is False
 
-  @patch.dict(os.environ, {"_AUTO_CLI_COMPLETE": "bash"})
+  @patch.dict(os.environ, {"_FREYA_COMPLETE": "bash"})
   def test_completion_request_detection(self):
     """Test completion request detection."""
     cli = CLI(sys.modules[__name__], "Test CLI", enable_completion=True)
@@ -152,7 +152,7 @@ class TestCompletionIntegration:
 
   def test_show_completion_script(self):
     """Test showing completion script via System class."""
-    from auto_cli.command.system import System
+    from src.command.system import System
 
     # Completion functionality is now provided by System.Completion
     system = System()

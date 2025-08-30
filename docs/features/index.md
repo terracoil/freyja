@@ -2,7 +2,7 @@
 
 [↑ Documentation Hub](../help.md)
 
-Explore the powerful features that make Auto-CLI-Py a complete CLI solution.
+Explore the powerful features that make freyja a complete CLI solution.
 
 ## Available Features
 

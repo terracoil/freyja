@@ -6,8 +6,8 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from auto_cli import CLI
-from auto_cli.command.system import System
+from src import CLI
+from src.command.system import System
 
 
 class TestSystem:
@@ -82,7 +82,7 @@ class TestSystemTuneTheme:
     tuner = System().TuneTheme()
     tuner.select_strategy("COLOR_HSL")
     # Should set strategy without error
-    from auto_cli.theme import AdjustStrategy
+    from src.theme import AdjustStrategy
     assert tuner.adjust_strategy == AdjustStrategy.COLOR_HSL
 
   def test_select_strategy_with_invalid_string(self):
@@ -108,7 +108,7 @@ class TestSystemTuneTheme:
     assert len(tuner.individual_color_overrides) == 0
 
     # Add a color override
-    from auto_cli.theme import RGB
+    from src.theme import RGB
     test_color = RGB.from_rgb(0xFF0000)  # Red
     tuner.individual_color_overrides['title'] = test_color
     tuner.modified_components.add('title')
@@ -123,7 +123,7 @@ class TestSystemTuneTheme:
   def test_reset_component_color(self):
     """Test resetting individual component colors."""
     tuner = System().TuneTheme()
-    from auto_cli.theme import RGB
+    from src.theme import RGB
     test_color = RGB.from_rgb(0xFF0000)
 
     # Add override then reset
@@ -137,7 +137,7 @@ class TestSystemTuneTheme:
   def test_reset_all_individual_colors(self):
     """Test resetting all individual colors."""
     tuner = System().TuneTheme()
-    from auto_cli.theme import RGB
+    from src.theme import RGB
 
     # Add multiple overrides
     tuner.individual_color_overrides['title'] = RGB.from_rgb(0xFF0000)

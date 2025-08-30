@@ -9,7 +9,7 @@ from enum import Enum
 from pathlib import Path
 from typing import List, Optional
 
-from auto_cli import CLI
+from src import CLI
 
 
 class OutputFormat(Enum):

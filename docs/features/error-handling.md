@@ -4,7 +4,7 @@
 
 ## Overview
 
-Auto-CLI-Py provides comprehensive error handling to ensure user-friendly error messages and proper exit codes.
+freyja provides comprehensive error handling to ensure user-friendly error messages and proper exit codes.
 
 ## Error Types
 
@@ -130,14 +130,14 @@ class DebugCLI:
 ### Verbose Error Output
 ```bash
 # Set environment variable for debugging
-export AUTO_CLI_DEBUG=1
+export FREYA_DEBUG=1
 python my_cli.py command --args
 ```
 
 ## User-Friendly Features
 
 ### Suggestions for Typos
-Auto-CLI-Py can suggest correct commands for typos:
+freyja can suggest correct commands for typos:
 ```bash
 $ my-cli porcess
 Error: Unknown command 'porcess'

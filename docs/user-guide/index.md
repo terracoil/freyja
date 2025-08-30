@@ -2,7 +2,7 @@
 
 [↑ Documentation Hub](../help.md)
 
-Comprehensive documentation for Auto-CLI-Py users. This guide covers all aspects of creating and managing CLIs.
+Comprehensive documentation for freyja users. This guide covers all aspects of creating and managing CLIs.
 
 ## Core Concepts
 
@@ -60,36 +60,42 @@ Detailed comparison of module vs class approaches.
 ## Quick Examples
 
 ### Module CLI
+
 ```python
-from auto_cli import CLI
+from src import CLI
 import sys
 
+
 def process_data(input_file: str, format: str = "json") -> None:
-    """Process data file."""
-    print(f"Processing {input_file} as {format}")
+  """Process data file."""
+  print(f"Processing {input_file} as {format}")
+
 
 if __name__ == '__main__':
-    cli = CLI(sys.modules[__name__])
-    cli.display()
+  cli = CLI(sys.modules[__name__])
+  cli.display()
 ```
 
 ### Class CLI
+
 ```python
-from auto_cli import CLI
+from src import CLI
+
 
 class DataProcessor:
-    """Data processing application."""
-    
-    def __init__(self, default_format: str = "json"):
-        self.default_format = default_format
-    
-    def process(self, file: str) -> None:
-        """Process a file."""
-        print(f"Processing {file} as {self.default_format}")
+  """Data processing application."""
+
+  def __init__(self, default_format: str = "json"):
+    self.default_format = default_format
+
+  def process(self, file: str) -> None:
+    """Process a file."""
+    print(f"Processing {file} as {self.default_format}")
+
 
 if __name__ == '__main__':
-    cli = CLI(DataProcessor)
-    cli.display()
+  cli = CLI(DataProcessor)
+  cli.display()
 ```
 
 ## Next Steps

@@ -18,7 +18,7 @@
 
 ## Overview
 
-Module-based CLI generation creates command-line interfaces from functions defined in a Python module. This is the original and most straightforward approach in auto-cli-py, perfect for scripts, utilities, and functional programming styles.
+Module-based CLI generation creates command-line interfaces from functions defined in a Python module. This is the original and most straightforward approach in freyja, perfect for scripts, utilities, and functional programming styles.
 
 ```python
 # Your functions become CLI commands automatically!
@@ -49,9 +49,10 @@ Consider class-based CLI instead if:
 ### Basic Setup
 
 1. **Import required modules:**
+
 ```python
 import sys
-from auto_cli.cli import CLI
+from src.cli import CLI
 ```
 
 2. **Define your functions with type hints:**
@@ -90,7 +91,7 @@ Hello, Alice!
 
 ### Type Annotations
 
-Auto-cli-py uses type annotations to determine argument types:
+freyja uses type annotations to determine argument types:
 
 ```python
 def example_types(
@@ -140,7 +141,7 @@ def process_file(
 
 ### Docstring Integration
 
-Auto-cli-py extracts help text from docstrings:
+freyja extracts help text from docstrings:
 
 ```python
 def deploy(
@@ -195,14 +196,14 @@ cli = CLI.from_module(
 Add beautiful colored output:
 
 ```python
-from auto_cli.theme import create_default_theme
+from src.theme import create_default_theme
 
 theme = create_default_theme()
 cli = CLI.from_module(
-    sys.modules[__name__],
-    title="My Tool",
-    theme=theme,
-    theme_tuner=True  # Add theme tuning command
+  sys.modules[__name__],
+  title="My Tool",
+  theme=theme,
+  theme_tuner=True  # Add theme tuning command
 )
 ```
 
@@ -331,149 +332,158 @@ import sys
 from pathlib import Path
 from enum import Enum
 from typing import Optional, List
-from auto_cli.cli import CLI
-from auto_cli.theme import create_default_theme
+from src.cli import CLI
+from src.theme import create_default_theme
+
 
 class CompressionType(Enum):
-    ZIP = "zip"
-    TAR = "tar"
-    GZIP = "gzip"
+  ZIP = "zip"
+  TAR = "tar"
+  GZIP = "gzip"
+
 
 class SortOrder(Enum):
-    NAME = "name"
-    SIZE = "size"
-    DATE = "date"
+  NAME = "name"
+  SIZE = "size"
+  DATE = "date"
+
 
 # Basic file operations
 def list_files(
-    directory: str = ".",
-    pattern: str = "*",
-    recursive: bool = False,
-    sort_by: SortOrder = SortOrder.NAME
+        directory: str = ".",
+        pattern: str = "*",
+        recursive: bool = False,
+        sort_by: SortOrder = SortOrder.NAME
 ):
-    """
-        List files in a directory.    
-    :param directory: Directory to list
-    :param pattern: File pattern to match
-    :param recursive: Include subdirectories
-    :param sort_by: Sort order for results
-    """
-    path = Path(directory)
-    search_pattern = f"**/{pattern}" if recursive else pattern
-    
-    print(f"Listing files in {path.absolute()}")
-    print(f"Pattern: {pattern}")
-    print(f"Sort by: {sort_by.value}")
-    
-    files = list(path.glob(search_pattern))
-    print(f"Found {len(files)} files")
+  """
+      List files in a directory.    
+  :param directory: Directory to list
+  :param pattern: File pattern to match
+  :param recursive: Include subdirectories
+  :param sort_by: Sort order for results
+  """
+  path = Path(directory)
+  search_pattern = f"**/{pattern}" if recursive else pattern
+
+  print(f"Listing files in {path.absolute()}")
+  print(f"Pattern: {pattern}")
+  print(f"Sort by: {sort_by.value}")
+
+  files = list(path.glob(search_pattern))
+  print(f"Found {len(files)} files")
+
 
 def copy_file(
-    source: str,
-    destination: str,
-    overwrite: bool = False,
-    preserve_metadata: bool = True
+        source: str,
+        destination: str,
+        overwrite: bool = False,
+        preserve_metadata: bool = True
 ):
-    """
-        Copy a file to destination.    
-    :param source: Source file path
-    :param destination: Destination path
-    :param overwrite: Overwrite if exists
-    :param preserve_metadata: Preserve file metadata
-    """
-    action = "Would copy" if not overwrite else "Copying"
-    metadata = "with" if preserve_metadata else "without"
-    print(f"{action} {source} -> {destination} ({metadata} metadata)")
+  """
+      Copy a file to destination.    
+  :param source: Source file path
+  :param destination: Destination path
+  :param overwrite: Overwrite if exists
+  :param preserve_metadata: Preserve file metadata
+  """
+  action = "Would copy" if not overwrite else "Copying"
+  metadata = "with" if preserve_metadata else "without"
+  print(f"{action} {source} -> {destination} ({metadata} metadata)")
+
 
 # Archive operations
 @CLI.CommandGroup("Archive and compression operations")
 def archive__create(
-    files: List[str],
-    output: str,
-    compression: CompressionType = CompressionType.ZIP,
-    level: int = 6
+        files: List[str],
+        output: str,
+        compression: CompressionType = CompressionType.ZIP,
+        level: int = 6
 ):
-    """
-        Create an archive from files.    
-    :param files: Files to archive
-    :param output: Output archive path
-    :param compression: Compression type
-    :param level: Compression level (1-9)
-    """
-    print(f"Creating {compression.value} archive: {output}")
-    print(f"Compression level: {level}")
-    print(f"Adding {len(files)} files:")
-    for f in files:
-        print(f"  - {f}")
+  """
+      Create an archive from files.    
+  :param files: Files to archive
+  :param output: Output archive path
+  :param compression: Compression type
+  :param level: Compression level (1-9)
+  """
+  print(f"Creating {compression.value} archive: {output}")
+  print(f"Compression level: {level}")
+  print(f"Adding {len(files)} files:")
+  for f in files:
+    print(f"  - {f}")
+
 
 def archive__extract(
-    archive: str,
-    destination: str = ".",
-    files: Optional[List[str]] = None
+        archive: str,
+        destination: str = ".",
+        files: Optional[List[str]] = None
 ):
-    """
-        Extract files from archive.    
-    :param archive: Archive file path
-    :param destination: Extract destination
-    :param files: Specific files to extract (all if none)
-    """
-    print(f"Extracting {archive} -> {destination}")
-    if files:
-        print(f"Extracting only: {', '.join(files)}")
-    else:
-        print("Extracting all files")
+  """
+      Extract files from archive.    
+  :param archive: Archive file path
+  :param destination: Extract destination
+  :param files: Specific files to extract (all if none)
+  """
+  print(f"Extracting {archive} -> {destination}")
+  if files:
+    print(f"Extracting only: {', '.join(files)}")
+  else:
+    print("Extracting all files")
+
 
 # Sync operations
 @CLI.CommandGroup("Synchronization operations")
 def sync__folders(
-    source: str,
-    destination: str,
-    delete: bool = False,
-    dry_run: bool = False
+        source: str,
+        destination: str,
+        delete: bool = False,
+        dry_run: bool = False
 ):
-    """
-        Synchronize two folders.    
-    :param source: Source folder
-    :param destination: Destination folder
-    :param delete: Delete files not in source
-    :param dry_run: Show what would be done
-    """
-    mode = "Simulating" if dry_run else "Executing"
-    delete_mode = "with deletion" if delete else "without deletion"
-    print(f"{mode} sync: {source} -> {destination} ({delete_mode})")
+  """
+      Synchronize two folders.    
+  :param source: Source folder
+  :param destination: Destination folder
+  :param delete: Delete files not in source
+  :param dry_run: Show what would be done
+  """
+  mode = "Simulating" if dry_run else "Executing"
+  delete_mode = "with deletion" if delete else "without deletion"
+  print(f"{mode} sync: {source} -> {destination} ({delete_mode})")
+
 
 # Admin operations
 def admin__cleanup(
-    older_than_days: int = 30,
-    pattern: str = "*.tmp",
-    force: bool = False
+        older_than_days: int = 30,
+        pattern: str = "*.tmp",
+        force: bool = False
 ):
-    """
-        Clean up old temporary files.    
-    :param older_than_days: Age threshold in days
-    :param pattern: File pattern to match
-    :param force: Skip confirmation
-    """
-    if not force:
-        print(f"Would delete files matching '{pattern}' older than {older_than_days} days")
-        print("Use --force to actually delete")
-    else:
-        print(f"Deleting files matching '{pattern}' older than {older_than_days} days")
+  """
+      Clean up old temporary files.    
+  :param older_than_days: Age threshold in days
+  :param pattern: File pattern to match
+  :param force: Skip confirmation
+  """
+  if not force:
+    print(f"Would delete files matching '{pattern}' older than {older_than_days} days")
+    print("Use --force to actually delete")
+  else:
+    print(f"Deleting files matching '{pattern}' older than {older_than_days} days")
+
 
 if __name__ == '__main__':
-    # Create CLI with all features
-    theme = create_default_theme()
-    cli = CLI.from_module(
-        sys.modules[__name__],
-        title="File Manager - Professional file management tool",
-        theme=theme,
-        theme_tuner=True,
-        enable_completion=True
-    )
-    
-    # Run CLI
-    result = cli.run()
-    sys.exit(result if isinstance(result, int) else 0)
+  # Create CLI with all features
+  theme = create_default_theme()
+  cli = CLI.from_module(
+    sys.modules[__name__],
+    title="File Manager - Professional file management tool",
+    theme=theme,
+    theme_tuner=True,
+    enable_completion=True
+  )
+
+  # Run CLI
+  result = cli.run()
+  sys.exit(result if isinstance(result, int) else 0)
 ```
 
 ## Best Practices
@@ -612,20 +622,23 @@ if __name__ == "__main__":
     main()
 ```
 
-**After (auto-cli-py):**
+**After (freyja):**
+
 ```python
-from auto_cli.cli import CLI
+from src.cli import CLI
 import sys
 
+
 def greet(name: str = "World", count: int = 1, excited: bool = False):
-    """Greet someone multiple times."""
-    for _ in range(count):
-        greeting = f"Hello, {name}{'!' if excited else '.'}"
-        print(greeting)
+  """Greet someone multiple times."""
+  for _ in range(count):
+    greeting = f"Hello, {name}{'!' if excited else '.'}"
+    print(greeting)
+
 
 if __name__ == "__main__":
-    cli = CLI.from_module(sys.modules[__name__], title="My tool")
-    cli.run()
+  cli = CLI.from_module(sys.modules[__name__], title="My tool")
+  cli.run()
 ```
 
 ### From click
@@ -648,25 +661,28 @@ if __name__ == '__main__':
     greet()
 ```
 
-**After (auto-cli-py):**
+**After (freyja):**
+
 ```python
-from auto_cli.cli import CLI
+from src.cli import CLI
 import sys
 
+
 def greet(name: str = "World", count: int = 1, excited: bool = False):
-    """
-        Greet someone multiple times.    
-    :param name: Name to greet
-    :param count: Number of greetings  
-    :param excited: Add excitement
-    """
-    for _ in range(count):
-        greeting = f"Hello, {name}{'!' if excited else '.'}"
-        print(greeting)
+  """
+      Greet someone multiple times.    
+  :param name: Name to greet
+  :param count: Number of greetings  
+  :param excited: Add excitement
+  """
+  for _ in range(count):
+    greeting = f"Hello, {name}{'!' if excited else '.'}"
+    print(greeting)
+
 
 if __name__ == "__main__":
-    cli = CLI.from_module(sys.modules[__name__], title="Greeter")
-    cli.run()
+  cli = CLI.from_module(sys.modules[__name__], title="Greeter")
+  cli.run()
 ```
 
 ## See Also

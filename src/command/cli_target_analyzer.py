@@ -6,7 +6,8 @@ Extracted from CLI class to reduce its size and improve separation of concerns.
 import types
 from typing import *
 
-from ..enums import TargetInfoKeys, TargetMode
+from ..enums.target_mode import TargetMode
+from ..enums.target_info_keys import TargetInfoKeys
 from .docstring_parser import parse_docstring
 
 Target = Union[types.ModuleType, Type[Any], Sequence[Type[Any]]]

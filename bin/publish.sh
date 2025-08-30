@@ -3,7 +3,7 @@
 
 set -e
 
-echo "📦 Building and publishing auto-cli-py to PyPI..."
+echo "📦 Building and publishing freyja to PyPI..."
 
 # Clean previous builds
 echo "🧹 Cleaning previous builds..."
@@ -21,5 +21,5 @@ ls -la dist/
 echo "🚀 Publishing to PyPI..."
 poetry publish
 
-echo "✅ Published successfully to https://pypi.org/project/auto-cli-py/"
-echo "📥 Install with: pip install auto-cli-py"
+echo "✅ Published successfully to https://pypi.org/project/freyja/"
+echo "📥 Install with: pip install freyja"

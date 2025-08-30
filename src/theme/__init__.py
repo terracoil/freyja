@@ -1,4 +1,4 @@
-"""Theme module for auto-cli-py color schemes."""
+"""Theme module for freyja color schemes."""
 
 from .color_formatter import ColorFormatter
 from .enums import Back, Fore, ForeUniversal, Style

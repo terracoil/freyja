@@ -4,9 +4,9 @@ from __future__ import annotations
 import sys
 from typing import Union
 
-from auto_cli.theme.enums import Style
-from auto_cli.theme.rgb import RGB
-from auto_cli.theme.theme_style import ThemeStyle
+from .enums import Style
+from .rgb import RGB
+from .theme_style import ThemeStyle
 
 
 class ColorFormatter:

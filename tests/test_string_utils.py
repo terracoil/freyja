@@ -1,4 +1,4 @@
-from auto_cli.utils.string_utils import StringUtils
+from src.utils.string_utils import StringUtils
 
 
 class TestStringUtils:

@@ -13,7 +13,8 @@ from .command.cli_execution_coordinator import CliExecutionCoordinator
 from .command.cli_target_analyzer import CliTargetAnalyzer
 from .command.multi_class_handler import MultiClassHandler
 from .completion.base import get_completion_handler
-from .enums import TargetInfoKeys, TargetMode
+from .enums.target_mode import TargetMode
+from .enums.target_info_keys import TargetInfoKeys
 
 Target = Union[types.ModuleType, Type[Any], Sequence[Type[Any]]]
 
@@ -245,7 +246,7 @@ class CLI:
   def _is_completion_request(self) -> bool:
     """Check if this is a shell completion request."""
     import os
-    return os.getenv('_AUTO_CLI_COMPLETE') is not None
+    return os.getenv('_FREYA_COMPLETE') is not None
 
   def _handle_completion(self):
     """Handle shell completion request."""

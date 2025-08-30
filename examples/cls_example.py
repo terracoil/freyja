@@ -5,8 +5,8 @@ import enum
 import sys
 from pathlib import Path
 
-from auto_cli.cli import CLI
-from auto_cli.command.system import System
+from src.cli import CLI
+from src.command.system import System
 
 
 class ProcessingMode(enum.Enum):
@@ -245,7 +245,7 @@ class DataProcessor:
 
 if __name__ == '__main__':
   # Import theme functionality
-  from auto_cli.theme import create_default_theme
+  from src.theme import create_default_theme
 
   # Create CLI from class with colored theme
   theme = create_default_theme()

@@ -2,7 +2,7 @@
 
 [↑ Documentation Hub](../help.md)
 
-Advanced patterns and techniques for power users of Auto-CLI-Py.
+Advanced patterns and techniques for power users of freyja.
 
 ## Topics
 
@@ -32,9 +32,9 @@ Comprehensive testing strategies.
 
 ### 🔀 [Migration Guide](migration-guide.md)
 Migrating from other CLI frameworks.
-- From argparse to Auto-CLI-Py
-- From click to Auto-CLI-Py
-- From fire to Auto-CLI-Py
+- From argparse to freyja
+- From click to freyja
+- From fire to freyja
 - Preserving backward compatibility
 - Gradual migration strategies
 

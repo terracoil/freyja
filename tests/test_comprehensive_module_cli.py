@@ -8,7 +8,7 @@ from typing import List, Optional
 
 import pytest
 
-from auto_cli.cli import CLI
+from src.cli import CLI
 
 
 # ==================== TEST MODULE FUNCTIONS ====================

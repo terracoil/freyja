@@ -10,46 +10,48 @@ Class-based CLI creates commands from methods in a Python class. This approach i
 
 ```python
 # calculator_cli.py
-from auto_cli import CLI
+from src import CLI
+
 
 class Calculator:
-    """A simple calculator that remembers the last result."""
-    
-    def __init__(self, initial_value: float = 0.0):
-        """Initialize calculator with optional starting value."""
-        self.value = initial_value
-        self.history = []
-    
-    def add(self, number: float) -> None:
-        """Add a number to the current value."""
-        old_value = self.value
-        self.value += number
-        self.history.append(f"{old_value} + {number} = {self.value}")
-        print(f"Result: {self.value}")
-    
-    def subtract(self, number: float) -> None:
-        """Subtract a number from the current value."""
-        old_value = self.value
-        self.value -= number
-        self.history.append(f"{old_value} - {number} = {self.value}")
-        print(f"Result: {self.value}")
-    
-    def show(self) -> None:
-        """Show the current value."""
-        print(f"Current value: {self.value}")
-    
-    def history_list(self) -> None:
-        """Show calculation history."""
-        if not self.history:
-            print("No calculations yet")
-        else:
-            print("History:")
-            for entry in self.history:
-                print(f"  {entry}")
+  """A simple calculator that remembers the last result."""
+
+  def __init__(self, initial_value: float = 0.0):
+    """Initialize calculator with optional starting value."""
+    self.value = initial_value
+    self.history = []
+
+  def add(self, number: float) -> None:
+    """Add a number to the current value."""
+    old_value = self.value
+    self.value += number
+    self.history.append(f"{old_value} + {number} = {self.value}")
+    print(f"Result: {self.value}")
+
+  def subtract(self, number: float) -> None:
+    """Subtract a number from the current value."""
+    old_value = self.value
+    self.value -= number
+    self.history.append(f"{old_value} - {number} = {self.value}")
+    print(f"Result: {self.value}")
+
+  def show(self) -> None:
+    """Show the current value."""
+    print(f"Current value: {self.value}")
+
+  def history_list(self) -> None:
+    """Show calculation history."""
+    if not self.history:
+      print("No calculations yet")
+    else:
+      print("History:")
+      for entry in self.history:
+        print(f"  {entry}")
+
 
 if __name__ == '__main__':
-    cli = CLI(Calculator, title="Calculator CLI")
-    cli.display()
+  cli = CLI(Calculator, title="Calculator CLI")
+  cli.display()
 ```
 
 ## Running Your CLI

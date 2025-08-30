@@ -4,7 +4,7 @@ from typing import *
 from collections import defaultdict
 
 from .command_discovery import CommandInfo
-from auto_cli.help.help_formatter import HierarchicalHelpFormatter
+from src.help.help_formatter import HierarchicalHelpFormatter
 from .docstring_parser import extract_function_help
 from .argument_parser import ArgumentParserService
 
@@ -159,7 +159,7 @@ class CommandParser:
                 # This is from the global class (last class in multi-class mode)
                 if command.is_hierarchical:
                     # Global class hierarchical command
-                    from auto_cli.utils.string_utils import StringUtils
+                    from src.utils.string_utils import StringUtils
                     group_name = StringUtils.kebab_case(command.parent_class)
                     groups['hierarchical'][group_name].append(command)
                 else:
@@ -170,7 +170,7 @@ class CommandParser:
             # Handle single-class or module mode
             if command.is_hierarchical:
                 # Single-class hierarchical command - convert to kebab-case
-                from auto_cli.utils.string_utils import StringUtils
+                from src.utils.string_utils import StringUtils
                 group_name = StringUtils.kebab_case(command.parent_class)
                 groups['hierarchical'][group_name].append(command)
             else:
@@ -393,7 +393,7 @@ class CommandParser:
             original_help = original_format_help()
 
             if theme and self.title in original_help:
-                from auto_cli.theme import ColorFormatter
+                from src.theme import ColorFormatter
                 color_formatter = ColorFormatter()
                 styled_title = color_formatter.apply_style(self.title, theme.title)
                 original_help = original_help.replace(self.title, styled_title)
@@ -460,7 +460,7 @@ class CommandParser:
         for command in class_commands:
             if command.is_hierarchical:
                 # Group hierarchical commands by their parent class
-                from auto_cli.utils.string_utils import StringUtils
+                from src.utils.string_utils import StringUtils
                 group_name = StringUtils.kebab_case(command.parent_class)
                 hierarchical_groups[group_name].append(command)
             else:

@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from typing import Optional
 
-from auto_cli.theme.enums import Back, Fore, ForeUniversal
-from auto_cli.theme.rgb import AdjustStrategy, RGB
-from auto_cli.theme.theme_style import ThemeStyle, CommandStyleSection
+from .enums import Back, Fore, ForeUniversal
+from .rgb import AdjustStrategy, RGB
+from .theme_style import ThemeStyle, CommandStyleSection
 
 
 class Theme:

@@ -6,7 +6,7 @@ Extracted from CLI class to reduce its size and improve separation of concerns.
 import sys
 from typing import *
 
-from ..enums import TargetMode
+from ..enums.target_mode import TargetMode
 
 
 class CliExecutionCoordinator:

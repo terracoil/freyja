@@ -1,4 +1,4 @@
-"""Test configuration and fixtures for auto-cli-py tests."""
+"""Test configuration and fixtures for freyja tests."""
 import enum
 import sys
 from pathlib import Path

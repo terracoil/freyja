@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Multi-class CLI example demonstrating enhanced auto-cli-py functionality.
+"""Multi-class CLI example demonstrating enhanced freyja functionality.
 
 This example shows how to create a CLI from multiple classes, with proper
 collision detection, command ordering, and System class integration."""
@@ -9,8 +9,8 @@ import sys
 from pathlib import Path
 from typing import List
 
-from auto_cli.cli import CLI
-from auto_cli.command.system import System
+from src.cli import CLI
+from src.command.system import System
 
 
 class ProcessingMode(enum.Enum):
@@ -322,7 +322,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     # Import theme functionality for colored output
-    from auto_cli.theme import create_default_theme_colorful
+    from src.theme import create_default_theme_colorful
 
     # Create multi-class CLI with all utilities
     theme = create_default_theme_colorful()

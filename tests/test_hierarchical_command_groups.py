@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from auto_cli.cli import CLI
+from src.cli import CLI
 
 
 class UserRole(enum.Enum):

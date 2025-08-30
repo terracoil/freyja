@@ -73,7 +73,7 @@ class ArgumentParserService:
         arg_config['required'] = True
 
       # Add argument without prefix (user requested no global- prefix)
-      from auto_cli.utils.string_utils import StringUtils
+      from src.utils.string_utils import StringUtils
       flag_name = StringUtils.kebab_case(param_name)
       flag = f"--{flag_name}"
 
@@ -122,7 +122,7 @@ class ArgumentParserService:
         arg_config['required'] = True
 
       # Add argument with command-specific prefix
-      from auto_cli.utils.string_utils import StringUtils
+      from src.utils.string_utils import StringUtils
       flag = f"--{StringUtils.kebab_case(param_name)}"
       parser.add_argument(flag, **arg_config)
 
@@ -158,6 +158,6 @@ class ArgumentParserService:
         arg_config['required'] = True
 
       # Add argument with kebab-case flag name
-      from auto_cli.utils.string_utils import StringUtils
+      from src.utils.string_utils import StringUtils
       flag = f"--{StringUtils.kebab_case(name)}"
       parser.add_argument(flag, **arg_config)

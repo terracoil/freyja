@@ -40,12 +40,12 @@ Choose class-based CLI when you need:
 ### 1. Import and Create CLI
 
 ```python
-from auto_cli import CLI
+from src import CLI
 
 # At the end of your module
 if __name__ == '__main__':
-    cli = CLI.from_class(MyApplicationClass, theme_name="colorful")
-    cli.display()
+  cli = CLI.from_class(MyApplicationClass, theme_name="colorful")
+  cli.display()
 ```
 
 ### 2. Factory Method Signature
@@ -380,30 +380,30 @@ class UserManager:
 ```python
 # At the end of cls_example.py
 if __name__ == '__main__':
-    from auto_cli import CLI
-    
-    # Optional: Configure specific methods
-    function_opts = {
-        'add_user': {
-            'description': 'Create a new user account'
-        },
-        'list_users': {
-            'description': 'Display users with optional filtering'
-        },
-        'modify_user': {
-            'description': 'Update existing user information'
-        },
-        'show_stats': {
-            'description': 'Display system statistics and status'
-        }
+  from src import CLI
+
+  # Optional: Configure specific methods
+  function_opts = {
+    'add_user': {
+      'description': 'Create a new user account'
+    },
+    'list_users': {
+      'description': 'Display users with optional filtering'
+    },
+    'modify_user': {
+      'description': 'Update existing user information'
+    },
+    'show_stats': {
+      'description': 'Display system statistics and status'
     }
-    
-    cli = CLI.from_class(
-        UserManager,
-        function_opts=function_opts,
-        theme_name="colorful"
-    )
-    cli.display()
+  }
+
+  cli = CLI.from_class(
+    UserManager,
+    function_opts=function_opts,
+    theme_name="colorful"
+  )
+  cli.display()
 ```
 
 ### Step 3: Usage Examples

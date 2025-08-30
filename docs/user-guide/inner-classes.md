@@ -4,7 +4,7 @@
 
 ## Overview
 
-The inner classes pattern in Auto-CLI-Py provides a way to organize related commands while maintaining a flat command structure. Commands from inner classes are accessed using double-dash notation (e.g., `outer-class--inner-method`).
+The inner classes pattern in freyja provides a way to organize related commands while maintaining a flat command structure. Commands from inner classes are accessed using double-dash notation (e.g., `outer-class--inner-method`).
 
 ## Key Concepts
 
@@ -43,159 +43,161 @@ class ProjectManager:
 ## Complete Example
 
 ```python
-from auto_cli import CLI
+from src import CLI
 from pathlib import Path
 from typing import List
 
+
 class ProjectManager:
-    """Project Management CLI with organized flat commands."""
-    
-    def __init__(self, config_file: str = "config.json", debug: bool = False):
-        """
-            Initialize with global settings.        
-        Args:
-            config_file: Configuration file path (global argument)
-            debug: Enable debug mode (global argument)
-        """
-        self.config_file = config_file
-        self.debug = debug
-        self.projects = {}
-        self._load_config()
-    
-    def _load_config(self):
-        """Load configuration from file."""
-        if self.debug:
-            print(f"Loading config from {self.config_file}")
-    
-    def status(self) -> None:
-        """Show overall system status."""
-        print(f"Configuration: {self.config_file}")
-        print(f"Debug mode: {'ON' if self.debug else 'OFF'}")
-        print(f"Total projects: {len(self.projects)}")
-    
-    class ProjectOperations:
-        """Project creation and management operations."""
-        
-        def __init__(self, workspace: str = "./projects", auto_save: bool = True):
-            """
-                Initialize project operations.            
-            Args:
-                workspace: Workspace directory (sub-global argument)
-                auto_save: Auto-save changes (sub-global argument)
-            """
-            self.workspace = Path(workspace)
-            self.auto_save = auto_save
-        
-        def create(self, name: str, template: str = "default", tags: List[str] = None) -> None:
-            """
-                Create a new project.            
-            Args:
-                name: Project name
-                template: Project template to use
-                tags: Tags for categorization
-            """
-            print(f"Creating project '{name}' in {self.workspace}")
-            print(f"Using template: {template}")
-            if tags:
-                print(f"Tags: {', '.join(tags)}")
-            if self.auto_save:
-                print("✅ Auto-save enabled")
-        
-        def delete(self, project_id: str, force: bool = False) -> None:
-            """
-                Delete an existing project.            
-            Args:
-                project_id: ID of project to delete
-                force: Skip confirmation
-            """
-            if not force:
-                print(f"Would delete project {project_id} from {self.workspace}")
-                print("Use --force to confirm deletion")
-            else:
-                print(f"Deleting project {project_id}")
-        
-        def list_projects(self, filter_tag: str = None, show_archived: bool = False) -> None:
-            """
-                List all projects in workspace.            
-            Args:
-                filter_tag: Filter by tag
-                show_archived: Include archived projects
-            """
-            print(f"Listing projects in {self.workspace}")
-            if filter_tag:
-                print(f"Filter: tag='{filter_tag}'")
-            print(f"Show archived: {show_archived}")
-    
-    class TaskManagement:
-        """Task operations within projects."""
-        
-        def __init__(self, default_priority: str = "medium", notify: bool = True):
-            """
-                Initialize task management.            
-            Args:
-                default_priority: Default priority for new tasks
-                notify: Send notifications on changes
-            """
-            self.default_priority = default_priority
-            self.notify = notify
-        
-        def add(self, title: str, project: str, priority: str = None, assignee: str = None) -> None:
-            """
-                Add task to project.            
-            Args:
-                title: Task title
-                project: Project ID
-                priority: Task priority (uses default if not specified)
-                assignee: Person assigned to task
-            """
-            priority = priority or self.default_priority
-            print(f"Adding task to project {project}")
-            print(f"Title: {title}")
-            print(f"Priority: {priority}")
-            if assignee:
-                print(f"Assigned to: {assignee}")
-            if self.notify:
-                print("📧 Notification sent")
-        
-        def update(self, task_id: str, status: str, comment: str = None) -> None:
-            """
-                Update task status.            
-            Args:
-                task_id: Task identifier
-                status: New status
-                comment: Optional comment
-            """
-            print(f"Updating task {task_id}")
-            print(f"New status: {status}")
-            if comment:
-                print(f"Comment: {comment}")
-    
-    class ReportGeneration:
-        """Report generation without sub-global arguments."""
-        
-        def summary(self, format: str = "text", detailed: bool = False) -> None:
-            """
-                Generate project summary report.            
-            Args:
-                format: Output format (text, json, html)
-                detailed: Include detailed statistics
-            """
-            print(f"Generating {'detailed' if detailed else 'basic'} summary")
-            print(f"Format: {format}")
-        
-        def export(self, output_file: Path, include_tasks: bool = True) -> None:
-            """
-                Export project data.            
-            Args:
-                output_file: Output file path
-                include_tasks: Include task data in export
-            """
-            print(f"Exporting to {output_file}")
-            print(f"Include tasks: {include_tasks}")
+  """Project Management CLI with organized flat commands."""
+
+  def __init__(self, config_file: str = "config.json", debug: bool = False):
+    """
+        Initialize with global settings.        
+    Args:
+        config_file: Configuration file path (global argument)
+        debug: Enable debug mode (global argument)
+    """
+    self.config_file = config_file
+    self.debug = debug
+    self.projects = {}
+    self._load_config()
+
+  def _load_config(self):
+    """Load configuration from file."""
+    if self.debug:
+      print(f"Loading config from {self.config_file}")
+
+  def status(self) -> None:
+    """Show overall system status."""
+    print(f"Configuration: {self.config_file}")
+    print(f"Debug mode: {'ON' if self.debug else 'OFF'}")
+    print(f"Total projects: {len(self.projects)}")
+
+  class ProjectOperations:
+    """Project creation and management operations."""
+
+    def __init__(self, workspace: str = "./projects", auto_save: bool = True):
+      """
+          Initialize project operations.            
+      Args:
+          workspace: Workspace directory (sub-global argument)
+          auto_save: Auto-save changes (sub-global argument)
+      """
+      self.workspace = Path(workspace)
+      self.auto_save = auto_save
+
+    def create(self, name: str, template: str = "default", tags: List[str] = None) -> None:
+      """
+          Create a new project.            
+      Args:
+          name: Project name
+          template: Project template to use
+          tags: Tags for categorization
+      """
+      print(f"Creating project '{name}' in {self.workspace}")
+      print(f"Using template: {template}")
+      if tags:
+        print(f"Tags: {', '.join(tags)}")
+      if self.auto_save:
+        print("✅ Auto-save enabled")
+
+    def delete(self, project_id: str, force: bool = False) -> None:
+      """
+          Delete an existing project.            
+      Args:
+          project_id: ID of project to delete
+          force: Skip confirmation
+      """
+      if not force:
+        print(f"Would delete project {project_id} from {self.workspace}")
+        print("Use --force to confirm deletion")
+      else:
+        print(f"Deleting project {project_id}")
+
+    def list_projects(self, filter_tag: str = None, show_archived: bool = False) -> None:
+      """
+          List all projects in workspace.            
+      Args:
+          filter_tag: Filter by tag
+          show_archived: Include archived projects
+      """
+      print(f"Listing projects in {self.workspace}")
+      if filter_tag:
+        print(f"Filter: tag='{filter_tag}'")
+      print(f"Show archived: {show_archived}")
+
+  class TaskManagement:
+    """Task operations within projects."""
+
+    def __init__(self, default_priority: str = "medium", notify: bool = True):
+      """
+          Initialize task management.            
+      Args:
+          default_priority: Default priority for new tasks
+          notify: Send notifications on changes
+      """
+      self.default_priority = default_priority
+      self.notify = notify
+
+    def add(self, title: str, project: str, priority: str = None, assignee: str = None) -> None:
+      """
+          Add task to project.            
+      Args:
+          title: Task title
+          project: Project ID
+          priority: Task priority (uses default if not specified)
+          assignee: Person assigned to task
+      """
+      priority = priority or self.default_priority
+      print(f"Adding task to project {project}")
+      print(f"Title: {title}")
+      print(f"Priority: {priority}")
+      if assignee:
+        print(f"Assigned to: {assignee}")
+      if self.notify:
+        print("📧 Notification sent")
+
+    def update(self, task_id: str, status: str, comment: str = None) -> None:
+      """
+          Update task status.            
+      Args:
+          task_id: Task identifier
+          status: New status
+          comment: Optional comment
+      """
+      print(f"Updating task {task_id}")
+      print(f"New status: {status}")
+      if comment:
+        print(f"Comment: {comment}")
+
+  class ReportGeneration:
+    """Report generation without sub-global arguments."""
+
+    def summary(self, format: str = "text", detailed: bool = False) -> None:
+      """
+          Generate project summary report.            
+      Args:
+          format: Output format (text, json, html)
+          detailed: Include detailed statistics
+      """
+      print(f"Generating {'detailed' if detailed else 'basic'} summary")
+      print(f"Format: {format}")
+
+    def export(self, output_file: Path, include_tasks: bool = True) -> None:
+      """
+          Export project data.            
+      Args:
+          output_file: Output file path
+          include_tasks: Include task data in export
+      """
+      print(f"Exporting to {output_file}")
+      print(f"Include tasks: {include_tasks}")
+
 
 if __name__ == '__main__':
-    cli = CLI(ProjectManager, theme_name="colorful")
-    cli.display()
+  cli = CLI(ProjectManager, theme_name="colorful")
+  cli.display()
 ```
 
 ## Usage Examples

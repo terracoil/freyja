@@ -6,17 +6,17 @@
 
 ### Installation Issues
 
-#### Problem: "No module named 'auto_cli'"
+#### Problem: "No module named 'freya'"
 **Solution**: Install the package correctly
 ```bash
-pip install auto-cli-py  # Note: package name has dashes
+pip install freyja  # Note: package name has dashes
 ```
 
-#### Problem: "auto_cli module not found" after installation
+#### Problem: "freya module not found" after installation
 **Solution**: Check your Python environment
 ```bash
 # Verify installation
-pip show auto-cli-py
+pip show freyja
 
 # If using virtual environment, ensure it's activated
 which python
@@ -152,7 +152,7 @@ def test_process():
 Enable debug output for more information:
 ```bash
 # Set debug environment variable
-export AUTO_CLI_DEBUG=1
+export FREYA_DEBUG=1
 python my_cli.py --help
 ```
 
@@ -161,9 +161,9 @@ python my_cli.py --help
 If you're still having issues:
 
 1. Check the [FAQ](../faq.md)
-2. Search [GitHub Issues](https://github.com/tangledpath/auto-cli-py/issues)
-3. Ask in [Discussions](https://github.com/tangledpath/auto-cli-py/discussions)
-4. File a [bug report](https://github.com/tangledpath/auto-cli-py/issues/new)
+2. Search [GitHub Issues](https://github.com/tangledpath/freyja/issues)
+3. Ask in [Discussions](https://github.com/tangledpath/freyja/discussions)
+4. File a [bug report](https://github.com/tangledpath/freyja/issues/new)
 
 ---
 

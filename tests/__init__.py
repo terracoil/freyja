@@ -1,1 +1,1 @@
-"""Tests for auto-cli-py."""
+"""Tests for freyja."""

@@ -14,11 +14,11 @@
 
 ## Core Concepts
 
-Auto-CLI-Py uses Python's introspection capabilities to automatically generate command-line interfaces from your existing code. The key principle is **minimal configuration** - most behavior is inferred from your function signatures and docstrings.
+freyja uses Python's introspection capabilities to automatically generate command-line interfaces from your existing code. The key principle is **minimal configuration** - most behavior is inferred from your function signatures and docstrings.
 
 ### How It Works
 
-1. **Function/Method Discovery**: Auto-CLI-Py scans your module or class for public functions/methods
+1. **Function/Method Discovery**: freyja scans your module or class for public functions/methods
 2. **Signature Analysis**: Parameter types, default values, and names are extracted using `inspect.signature()`
 3. **CLI Generation**: Each function becomes a command with arguments derived from parameters
 4. **Help Text Generation**: Docstrings are parsed to create descriptive help text
@@ -41,7 +41,7 @@ CLI.from_class(SomeClass, title="My App")
 
 ```python
 def good_function(name: str, count: int = 5, verbose: bool = False) -> None:
-    """This function will work perfectly with auto-cli-py."""
+    """This function will work perfectly with freyja."""
     pass
 ```
 
@@ -49,7 +49,7 @@ def good_function(name: str, count: int = 5, verbose: bool = False) -> None:
 
 ```python
 def bad_function(name, count=5, verbose=False):  # No type hints
-    """This will cause errors - auto-cli-py can't infer types."""
+    """This will cause errors - freyja can't infer types."""
     pass
 ```
 
@@ -70,26 +70,29 @@ def bad_function(name, count=5, verbose=False):  # No type hints
 ### 1. Simple Utility Functions
 
 ```python
-from auto_cli import CLI
+from src import CLI
 import sys
 
+
 def convert_temperature(celsius: float, to_fahrenheit: bool = True) -> None:
-    """Convert temperature between Celsius and Fahrenheit."""
-    if to_fahrenheit:
-        result = (celsius * 9/5) + 32
-        print(f"{celsius}°C = {result}°F")
-    else:
-        result = (celsius - 32) * 5/9
-        print(f"{celsius}°F = {result}°C")
+  """Convert temperature between Celsius and Fahrenheit."""
+  if to_fahrenheit:
+    result = (celsius * 9 / 5) + 32
+    print(f"{celsius}°C = {result}°F")
+  else:
+    result = (celsius - 32) * 5 / 9
+    print(f"{celsius}°F = {result}°C")
+
 
 def calculate_bmi(weight_kg: float, height_m: float) -> None:
-    """Calculate Body Mass Index."""
-    bmi = weight_kg / (height_m ** 2)
-    print(f"BMI: {bmi:.2f}")
+  """Calculate Body Mass Index."""
+  bmi = weight_kg / (height_m ** 2)
+  print(f"BMI: {bmi:.2f}")
+
 
 if __name__ == '__main__':
-    cli = CLI.from_module(sys.modules[__name__], title="Health Calculator")
-    cli.display()
+  cli = CLI.from_module(sys.modules[__name__], title="Health Calculator")
+  cli.display()
 ```
 
 Usage:
@@ -101,64 +104,66 @@ python health_calc.py calculate-bmi --weight-kg 70 --height-m 1.75
 ### 2. Stateful Application Class
 
 ```python
-from auto_cli import CLI
+from src import CLI
 from typing import List
 import json
 
+
 class ConfigManager:
-    """
-        Configuration Management CLI    
-    Manage application configuration with persistent state.
-    """
-    
-    def __init__(self):
-        self.config = {}
-        self.modified = False
-    
-    def set_value(self, key: str, value: str, config_type: str = "string") -> None:
-        """Set a configuration value."""
-        # Convert based on type
-        if config_type == "int":
-            converted_value = int(value)
-        elif config_type == "bool":
-            converted_value = value.lower() in ('true', '1', 'yes')
-        else:
-            converted_value = value
-        
-        self.config[key] = converted_value
-        self.modified = True
-        print(f"✅ Set {key} = {converted_value} ({config_type})")
-    
-    def get_value(self, key: str) -> None:
-        """Get a configuration value."""
-        if key in self.config:
-            print(f"{key} = {self.config[key]}")
-        else:
-            print(f"❌ Key '{key}' not found")
-    
-    def list_all(self, format_type: str = "table") -> None:
-        """List all configuration values."""
-        if not self.config:
-            print("No configuration values set")
-            return
-        
-        if format_type == "json":
-            print(json.dumps(self.config, indent=2))
-        else:
-            print("Configuration Values:")
-            for key, value in self.config.items():
-                print(f"  {key}: {value}")
-    
-    def save_config(self, file_path: str = "config.json") -> None:
-        """Save configuration to file."""
-        with open(file_path, 'w') as f:
-            json.dump(self.config, f, indent=2)
-        self.modified = False
-        print(f"✅ Saved configuration to {file_path}")
+  """
+      Configuration Management CLI    
+  Manage application configuration with persistent state.
+  """
+
+  def __init__(self):
+    self.config = {}
+    self.modified = False
+
+  def set_value(self, key: str, value: str, config_type: str = "string") -> None:
+    """Set a configuration value."""
+    # Convert based on type
+    if config_type == "int":
+      converted_value = int(value)
+    elif config_type == "bool":
+      converted_value = value.lower() in ('true', '1', 'yes')
+    else:
+      converted_value = value
+
+    self.config[key] = converted_value
+    self.modified = True
+    print(f"✅ Set {key} = {converted_value} ({config_type})")
+
+  def get_value(self, key: str) -> None:
+    """Get a configuration value."""
+    if key in self.config:
+      print(f"{key} = {self.config[key]}")
+    else:
+      print(f"❌ Key '{key}' not found")
+
+  def list_all(self, format_type: str = "table") -> None:
+    """List all configuration values."""
+    if not self.config:
+      print("No configuration values set")
+      return
+
+    if format_type == "json":
+      print(json.dumps(self.config, indent=2))
+    else:
+      print("Configuration Values:")
+      for key, value in self.config.items():
+        print(f"  {key}: {value}")
+
+  def save_config(self, file_path: str = "config.json") -> None:
+    """Save configuration to file."""
+    with open(file_path, 'w') as f:
+      json.dump(self.config, f, indent=2)
+    self.modified = False
+    print(f"✅ Saved configuration to {file_path}")
+
 
 if __name__ == '__main__':
-    cli = CLI.from_class(ConfigManager, theme_name="colorful")
-    cli.display()
+  cli = CLI.from_class(ConfigManager, theme_name="colorful")
+  cli.display()
 ```
 
 Usage:
@@ -173,68 +178,70 @@ python config_mgr.py save-config
 ### 3. File Processing Pipeline
 
 ```python
-from auto_cli import CLI
+from src import CLI
 from pathlib import Path
 from typing import List
 import sys
 
+
 def process_text_files(
-    input_dir: str,
-    output_dir: str,
-    extensions: List[str] = None,
-    convert_to_uppercase: bool = False,
-    add_line_numbers: bool = False,
-    dry_run: bool = False
+        input_dir: str,
+        output_dir: str,
+        extensions: List[str] = None,
+        convert_to_uppercase: bool = False,
+        add_line_numbers: bool = False,
+        dry_run: bool = False
 ) -> None:
-    """Process text files with various transformations."""
-    if extensions is None:
-        extensions = ['.txt', '.md']
-    
-    input_path = Path(input_dir)
-    output_path = Path(output_dir)
-    
-    if not input_path.exists():
-        print(f"❌ Input directory '{input_dir}' does not exist")
-        return
-    
-    if not dry_run:
-        output_path.mkdir(parents=True, exist_ok=True)
-    
-    # Find files
-    files_to_process = []
-    for ext in extensions:
-        files_to_process.extend(input_path.glob(f"*{ext}"))
-    
-    print(f"Found {len(files_to_process)} files to process")
-    
-    for file_path in files_to_process:
-        print(f"Processing: {file_path.name}")
-        
-        if dry_run:
-            print(f"  Would write to: {output_path / file_path.name}")
-            continue
-        
-        # Read and process
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        if convert_to_uppercase:
-            content = content.upper()
-        
-        if add_line_numbers:
-            lines = content.splitlines()
-            content = '\n'.join(f"{i+1:4d}: {line}" for i, line in enumerate(lines))
-        
-        # Write output
-        output_file = output_path / file_path.name
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(content)
-        
-        print(f"  ✅ Written to: {output_file}")
+  """Process text files with various transformations."""
+  if extensions is None:
+    extensions = ['.txt', '.md']
+
+  input_path = Path(input_dir)
+  output_path = Path(output_dir)
+
+  if not input_path.exists():
+    print(f"❌ Input directory '{input_dir}' does not exist")
+    return
+
+  if not dry_run:
+    output_path.mkdir(parents=True, exist_ok=True)
+
+  # Find files
+  files_to_process = []
+  for ext in extensions:
+    files_to_process.extend(input_path.glob(f"*{ext}"))
+
+  print(f"Found {len(files_to_process)} files to process")
+
+  for file_path in files_to_process:
+    print(f"Processing: {file_path.name}")
+
+    if dry_run:
+      print(f"  Would write to: {output_path / file_path.name}")
+      continue
+
+    # Read and process
+    with open(file_path, 'r', encoding='utf-8') as f:
+      content = f.read()
+
+    if convert_to_uppercase:
+      content = content.upper()
+
+    if add_line_numbers:
+      lines = content.splitlines()
+      content = '\n'.join(f"{i + 1:4d}: {line}" for i, line in enumerate(lines))
+
+    # Write output
+    output_file = output_path / file_path.name
+    with open(output_file, 'w', encoding='utf-8') as f:
+      f.write(content)
+
+    print(f"  ✅ Written to: {output_file}")
+
 
 if __name__ == '__main__':
-    cli = CLI.from_module(sys.modules[__name__], title="Text File Processor")
-    cli.display()
+  cli = CLI.from_module(sys.modules[__name__], title="Text File Processor")
+  cli.display()
 ```
 
 ## Choosing Between Modes
@@ -389,7 +396,7 @@ cli = CLI.from_module(module, no_color=True)
 
 ### Shell Completion
 
-Auto-CLI-Py includes built-in shell completion support for bash, zsh, and fish.
+freyja includes built-in shell completion support for bash, zsh, and fish.
 
 ```bash
 # Enable completion (run once)

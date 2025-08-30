@@ -2,7 +2,7 @@
 
 [↑ Documentation Hub](../help.md)
 
-Complete API documentation and technical reference for Auto-CLI-Py.
+Complete API documentation and technical reference for freyja.
 
 ## Reference Documentation
 
@@ -34,34 +34,36 @@ Complete guide to supported parameter types.
 ### CLI Creation
 
 **Module-based CLI**
+
 ```python
-from auto_cli import CLI
+from src import CLI
 import sys
 
 cli = CLI(
-    sys.modules[__name__],
-    title="My CLI",
-    theme_name="universal",
-    no_color=False,
-    completion=True
+  sys.modules[__name__],
+  title="My CLI",
+  theme_name="universal",
+  no_color=False,
+  completion=True
 )
 cli.display()
 ```
 
 **Class-based CLI**
+
 ```python
-from auto_cli import CLI
+from src import CLI
 
 cli = CLI(
-    MyClass,
-    title="My CLI",
-    theme_name="colorful",
-    function_opts={
-        'method_name': {
-            'description': 'Custom description',
-            'hidden': False
-        }
+  MyClass,
+  title="My CLI",
+  theme_name="colorful",
+  function_opts={
+    'method_name': {
+      'description': 'Custom description',
+      'hidden': False
     }
+  }
 )
 cli.display()
 ```
@@ -132,7 +134,7 @@ def add_command(
 
 ### Component Structure
 ```
-auto_cli/
+freya/
 ├── cli.py          # Main CLI class
 ├── __init__.py     # Package exports
 ├── theme.py        # Theme system
@@ -156,4 +158,4 @@ auto_cli/
 
 ---
 
-**Need source code?** Visit [GitHub](https://github.com/tangledpath/auto-cli-py)
+**Need source code?** Visit [GitHub](https://github.com/tangledpath/freyja)

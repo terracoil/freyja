@@ -12,9 +12,9 @@ echo "⚫ Running Black..."
 poetry run black --check .
 
 echo "🔧 Running MyPy..."  
-poetry run mypy auto_cli --ignore-missing-imports
+poetry run mypy freya --ignore-missing-imports
 
 echo "🐍 Running Pylint..."
-poetry run pylint auto_cli
+poetry run pylint freya
 
 echo "✅ All code quality checks passed!"
