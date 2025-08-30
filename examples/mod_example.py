@@ -398,5 +398,6 @@ if __name__ == '__main__':
     title="File Processing Utilities",
   )
   
-  # Display CLI
-  cli.display()
+  # Run CLI  
+  result = cli.run()
+  sys.exit(result if isinstance(result, int) else 0)

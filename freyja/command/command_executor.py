@@ -23,7 +23,7 @@ class CommandExecutor:
     self.target_module = target_module
     self.inner_class_metadata = inner_class_metadata or {}
 
-  def execute_inner_class_command(self, parsed) -> Any:
+  def _execute_inner_class_command(self, parsed) -> Any:
     """Execute command using inner class pattern.
 
     Creates main class instance, inner class instance, then invokes method.
@@ -48,7 +48,7 @@ class CommandExecutor:
     # 3. Execute method with command arguments
     return self._execute_method(inner_instance, metadata['method_name'], parsed)
 
-  def execute_direct_method_command(self, parsed) -> Any:
+  def _execute_direct_method_command(self, parsed) -> Any:
     """Execute command using direct method from class.
 
     Creates class instance with parameterless constructor, then invokes method.
@@ -65,7 +65,7 @@ class CommandExecutor:
     # Execute method with arguments
     return self._execute_method(class_instance, method.__name__, parsed)
 
-  def execute_module_function(self, parsed) -> Any:
+  def _execute_module_function(self, parsed) -> Any:
     """Execute module function directly.
 
     Invokes function from module with parsed arguments.
@@ -154,7 +154,7 @@ class CommandExecutor:
 
     match target_mode.value:
       case 'module':
-        result = self.execute_module_function(parsed)
+        result = self._execute_module_function(parsed)
       case 'class':
         # Determine if this is an inner class method or direct method
         original_name = getattr(parsed, '_function_name', '')
@@ -163,16 +163,16 @@ class CommandExecutor:
             inner_class_metadata and
             original_name in inner_class_metadata):
           # Execute inner class method
-          result = self.execute_inner_class_command(parsed)
+          result = self._execute_inner_class_command(parsed)
         else:
           # Execute direct method from class
-          result = self.execute_direct_method_command(parsed)
+          result = self._execute_direct_method_command(parsed)
       case _:
         raise RuntimeError(f"Unknown target mode: {target_mode}")
 
     return result
 
-  def handle_execution_error(self, parsed, error: Exception) -> int:
+  def _handle_execution_error(self, parsed, error: Exception) -> int:
     """Handle execution errors with appropriate logging and return codes."""
     import sys
     import traceback

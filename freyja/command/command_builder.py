@@ -20,18 +20,13 @@ class CommandBuilder:
     self.use_inner_class_pattern = use_inner_class_pattern
 
   def build_command_tree(self) -> Dict[str, Dict]:
-    """Build flat command structure from discovered functions based on target mode."""
+    """Build command structure from discovered functions based on target mode."""
     from freyja.enums.target_mode import TargetMode
 
     if self.target_mode == TargetMode.MODULE:
       return self._build_module_commands()
     elif self.target_mode == TargetMode.CLASS:
-      if self.use_inner_class_pattern:
-        return self._build_hierarchical_class_commands()
-      else:
-        return self._build_flat_class_commands()
-    elif self.target_mode == TargetMode.MULTI_CLASS:
-      # Multi-class mode uses same structure as class mode since functions are already discovered
+      # Unified class handling: works for single or multiple classes
       if self.use_inner_class_pattern:
         return self._build_hierarchical_class_commands()
       else:

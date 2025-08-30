@@ -51,16 +51,17 @@ class CommandDiscovery:
     self.function_filter = function_filter or self._default_function_filter
     self.method_filter = method_filter or self._default_method_filter
 
-    # Determine target mode
+    # Determine target mode with unified class handling
     if isinstance(target, list):
-      self.target_mode = TargetMode.MULTI_CLASS
+      self.target_mode = TargetMode.CLASS
       self.target_classes = target
       self.target_class = None
       self.target_module = None
     elif inspect.isclass(target):
+      # Treat single class as list with one item for unified handling
       self.target_mode = TargetMode.CLASS
-      self.target_class = target
-      self.target_classes = None
+      self.target_class = None
+      self.target_classes = [target]
       self.target_module = None
     elif inspect.ismodule(target):
       self.target_mode = TargetMode.MODULE
@@ -81,8 +82,7 @@ class CommandDiscovery:
     if self.target_mode == TargetMode.MODULE:
       result = self._discover_from_module()
     elif self.target_mode == TargetMode.CLASS:
-      result = self._discover_from_class()
-    elif self.target_mode == TargetMode.MULTI_CLASS:
+      # Unified class handling: always use multi-class logic for consistency
       result = self._discover_from_multi_class()
 
     return result
@@ -105,7 +105,7 @@ class CommandDiscovery:
     return commands
 
   def _discover_from_class(self) -> List[CommandInfo]:
-    """Discover methods from a class."""
+    """Discover methods from a single class (used internally by multi-class logic)."""
     commands = []
 
     # Check for inner classes first (hierarchical pattern)
@@ -142,9 +142,10 @@ class CommandDiscovery:
     return commands
 
   def _discover_from_multi_class(self) -> List[CommandInfo]:
-    """Discover methods from multiple classes with proper namespacing.
+    """Discover methods from classes (single or multiple) with proper namespacing.
     
-    Last class gets global namespace, others get kebab-cased class name namespaces.
+    For single class: methods get no namespace prefix (global namespace).
+    For multiple classes: last class gets global namespace, others get kebab-cased class name prefixes.
     """
     commands = []
     

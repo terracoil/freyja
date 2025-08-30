@@ -37,14 +37,13 @@ class CliTargetAnalyzer:
         if not isinstance(item, type):
           raise ValueError(f"All items in list must be classes, got {type(item).__name__}")
 
-      if len(target) == 1:
-        mode = TargetMode.CLASS
-        info = {TargetInfoKeys.PRIMARY_CLASS.value: target[0], TargetInfoKeys.ALL_CLASSES.value: target}
-      else:
-        mode = TargetMode.MULTI_CLASS
-        info = {TargetInfoKeys.PRIMARY_CLASS.value: target[-1], TargetInfoKeys.ALL_CLASSES.value: target}
+      # Unified class handling: always use CLASS mode regardless of number of classes
+      mode = TargetMode.CLASS
+      # Primary class is the last one (gets global namespace), others get prefixed
+      info = {TargetInfoKeys.PRIMARY_CLASS.value: target[-1], TargetInfoKeys.ALL_CLASSES.value: target}
 
     elif isinstance(target, type):
+      # Single class treated as list with one item for unified handling
       mode = TargetMode.CLASS
       info = {TargetInfoKeys.PRIMARY_CLASS.value: target, TargetInfoKeys.ALL_CLASSES.value: [target]}
 
@@ -74,7 +73,7 @@ class CliTargetAnalyzer:
       if hasattr(target, '__name__'):
         module_name = target.__name__.split('.')[-1]  # Get last part of module name
         result = f"{module_name.title()} CLI"
-    elif target_mode in [TargetMode.CLASS, TargetMode.MULTI_CLASS]:
+    elif target_mode == TargetMode.CLASS:
       primary_class = target_info[TargetInfoKeys.PRIMARY_CLASS.value]
       if primary_class.__doc__:
         main_desc, _ = parse_docstring(primary_class.__doc__)

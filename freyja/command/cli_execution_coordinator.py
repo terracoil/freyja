@@ -71,7 +71,8 @@ class CliExecutionCoordinator:
 
   def _execute_command(self, parsed) -> Any:
     """Execute the command from parsed arguments."""
-    if self.target_mode == TargetMode.MULTI_CLASS:
+    # Check if we have multiple classes (multiple executors)
+    if len(self.executors) > 1 and 'primary' not in self.executors:
       return self._execute_multi_class_command(parsed)
     else:
       # Single class or module execution
@@ -87,7 +88,7 @@ class CliExecutionCoordinator:
       )
 
   def _execute_multi_class_command(self, parsed) -> Any:
-    """Execute command for multi-class CLI."""
+    """Execute command for multiple-class CLI."""
     function_name = parsed._function_name
     source_class = self._find_source_class_for_function(function_name)
 

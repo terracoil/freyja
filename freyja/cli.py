@@ -1,19 +1,17 @@
 # Refactored CLI class - Simplified coordinator role only
 from __future__ import annotations
 
-import argparse
 import types
 from typing import *
 
+from .command.cli_execution_coordinator import CliExecutionCoordinator
+from .command.cli_target_analyzer import CliTargetAnalyzer
 from .command.command_builder import CommandBuilder
 from .command.command_discovery import CommandDiscovery
 from .command.command_executor import CommandExecutor
 from .command.command_parser import CommandParser
-from .command.cli_execution_coordinator import CliExecutionCoordinator
-from .command.cli_target_analyzer import CliTargetAnalyzer
 from .command.multi_class_handler import MultiClassHandler
 from .completion.base import get_completion_handler
-from .enums.target_mode import TargetMode
 from .enums.target_info_keys import TargetInfoKeys
 
 Target = Union[types.ModuleType, Type[Any], Sequence[Type[Any]]]
@@ -28,7 +26,7 @@ class CLI:
   """
 
   def __init__(self, target: Target, title: Optional[str] = None, function_filter: Optional[callable] = None,
-      method_filter: Optional[callable] = None, theme=None, alphabetize: bool = True, enable_completion: bool = False):
+               method_filter: Optional[callable] = None, theme=None, alphabetize: bool = True, enable_completion: bool = False):
     """
     Initialize CLI with target and configuration.
 
@@ -43,96 +41,52 @@ class CLI:
     # Determine target mode and validate input
     self.target_mode, self.target_info = CliTargetAnalyzer.analyze_target(target)
 
-    # Validate multi-class mode for command collisions
-    if self.target_mode == TargetMod  e.MULTI_CLASS:
+    # Validate class mode for command collisions when multiple classes are present
+    all_classes = self.target_info.get(TargetInfoKeys.ALL_CLASSES.value)
+    if all_classes and len(all_classes) > 1:
       handler = MultiClassHandler()
-      handler.validate_classes(self.target_info[TargetInfoKeys.ALL_CLASSES.value])
+      handler.validate_classes(all_classes)
 
     # Set title based on target
     self.title = title or CliTargetAnalyzer.generate_title(target)
 
-    # Store configuration
-    self.theme = theme
-    self.alphabetize = alphabetize
+    # Store only essential config
     self.enable_completion = enable_completion
 
     # Initialize discovery service
-    self.discovery = CommandDiscovery(target=target, function_filter=function_filter, method_filter=method_filter)
-
-    # Initialize parser service
-    self.parser_service = CommandParser(title=self.title, theme=theme, alphabetize=alphabetize,
-      enable_completion=enable_completion)
+    discovery = CommandDiscovery(target=target, function_filter=function_filter, method_filter=method_filter)
 
     # Discover commands
-    self.discovered_commands = self.discovery.discover_commands()
+    self.discovered_commands = discovery.discover_commands()
 
     # Initialize command executors
-    self.executors = self._initialize_executors()
+    executors = self._initialize_executors()
 
     # Initialize execution coordinator
-    self.execution_coordinator = CliExecutionCoordinator(self.target_mode, self.executors)
+    self.execution_coordinator = CliExecutionCoordinator(self.target_mode, executors)
 
-    # Build command structure
-    self.command_tree = self._build_command_tree()
+    # Initialize parser service
+    self.parser_service = CommandParser(title=self.title, theme=theme, alphabetize=alphabetize, enable_completion=enable_completion)
+
+    # Set target_class and target_classes properties early for use in command tree building
+    all_classes = self.target_info.get(TargetInfoKeys.ALL_CLASSES.value)
+    if all_classes:
+      # Class mode: set both for backward compatibility
+      self.target_class = self.target_info.get(TargetInfoKeys.PRIMARY_CLASS.value)
+      self.target_classes = all_classes
+    else:
+      # Module mode
+      self.target_class = None
+      self.target_classes = None
+
+    # Build command structure (after target_classes is set)
+    command_tree = self._build_command_tree()
 
     # Backward compatibility properties
-    self.functions = self._build_functions_dict()
-    self.commands = self.command_tree
+    self.commands = command_tree
 
     # Essential compatibility properties only
     self.target_module = self.target_info.get(TargetInfoKeys.MODULE.value)
-
-    # Set target_class and target_classes based on mode
-    if self.target_mode == TargetMode.MULTI_CLASS:
-      self.target_class = None  # Multi-class mode has no single primary class
-      self.target_classes = self.target_info.get(TargetInfoKeys.ALL_CLASSES.value)
-    else:
-      self.target_class = self.target_info.get(TargetInfoKeys.PRIMARY_CLASS.value)
-      self.target_classes = None
-
-  @property
-  def function_filter(self):
-    """Access function filter from discovery service."""
-    return self.discovery.function_filter if self.target_mode == TargetMode.MODULE else None
-
-  @property
-  def method_filter(self):
-    """Access method filter from discovery service."""
-    return self.discovery.method_filter if self.target_mode in [TargetMode.CLASS, TargetMode.MULTI_CLASS] else None
-
-  @property
-  def use_inner_class_pattern(self):
-    """Check if using inner class pattern based on discovered commands."""
-    return any(cmd.is_hierarchical for cmd in self.discovered_commands)
-
-  @property
-  def command_executor(self):
-    """Access primary command executor (for single class/module mode)."""
-    result = None
-    if self.target_mode != TargetMode.MULTI_CLASS:
-      result = self.executors.get('primary')
-    return result
-
-  @property
-  def command_executors(self):
-    """Access command executors list (for multi-class mode)."""
-    result = None
-    if self.target_mode == TargetMode.MULTI_CLASS:
-      result = list(self.executors.values())
-    return result
-
-  @property
-  def inner_classes(self):
-    """Access inner classes from discovered commands."""
-    inner_classes = {}
-    for command in self.discovered_commands:
-      if command.is_hierarchical and command.inner_class:
-        inner_classes[command.parent_class] = command.inner_class
-    return inner_classes
-
-  def display(self):
-    """Legacy method for backward compatibility."""
-    return self.run()
 
   def run(self, args: List[str] = None) -> Any:
     """
@@ -151,8 +105,7 @@ class CLI:
       no_color = CliExecutionCoordinator.check_no_color_flag(args or [])
 
       # Create parser and parse arguments
-      parser = self.parser_service.create_parser(commands=self.discovered_commands, target_mode=self.target_mode.value,
-        target_class=self.target_info.get(TargetInfoKeys.PRIMARY_CLASS.value), no_color=no_color)
+      parser = self.create_parser(no_color=no_color)
 
       # Parse and execute with context  
       result = self._execute_with_context(parser, args)
@@ -171,19 +124,18 @@ class CLI:
   def _initialize_executors(self) -> dict:
     """Initialize command executors based on target mode."""
     executors = {}
+    all_classes = self.target_info.get(TargetInfoKeys.ALL_CLASSES.value)
 
-    if self.target_mode == TargetMode.MULTI_CLASS:
-      # Create executor for each class
-      for target_class in self.target_info[TargetInfoKeys.ALL_CLASSES.value]:
-        executor = CommandExecutor(target_class=target_class, target_module=None,
-          inner_class_metadata=self._get_inner_class_metadata())
+    if all_classes and len(all_classes) > 1:
+      # Multiple classes: create executor for each class
+      for target_class in all_classes:
+        executor = CommandExecutor(target_class=target_class, target_module=None, inner_class_metadata=self._get_inner_class_metadata())
         executors[target_class] = executor
-
     else:
-      # Single executor
+      # Single class or module: create single primary executor
       primary_executor = CommandExecutor(target_class=self.target_info.get(TargetInfoKeys.PRIMARY_CLASS.value),
-        target_module=self.target_info.get(TargetInfoKeys.MODULE.value),
-        inner_class_metadata=self._get_inner_class_metadata())
+                                         target_module=self.target_info.get(TargetInfoKeys.MODULE.value),
+                                         inner_class_metadata=self._get_inner_class_metadata())
       executors['primary'] = primary_executor
 
     return executors
@@ -198,16 +150,6 @@ class CLI:
 
     return metadata
 
-  def _build_functions_dict(self) -> dict:
-    """Build functions dict for backward compatibility."""
-    functions = {}
-
-    for command in self.discovered_commands:
-      # Use original names for backward compatibility (tests expect this)
-      functions[command.original_name] = command.function
-
-    return functions
-
   def _build_command_tree(self) -> dict:
     """Build hierarchical command structure using CommandBuilder."""
     # Convert CommandInfo objects to the format expected by CommandBuilder
@@ -217,13 +159,13 @@ class CLI:
     for command in self.discovered_commands:
       # Use the hierarchical name if available, otherwise original name
       if command.is_hierarchical and command.parent_class:
-        # For multi-class mode, use the full command name that includes class prefix
-        # For single-class mode, use parent_class__method format
-        if self.target_mode == TargetMode.MULTI_CLASS:
-          # Command name already includes class prefix: system--completion__handle-completion
+        # For multiple classes, key by the full command name that includes class prefix
+        # For single class, use parent_class__method format
+        if len(self.target_classes or []) > 1:
+          # Multiple classes: command name keyed by class prefix: system--completion__handle-completion
           functions[command.name] = command.function
         else:
-          # Single class mode: Completion__handle_completion
+          # Single class: Keyed by class__method
           hierarchical_key = f"{command.parent_class}__{command.original_name}"
           functions[hierarchical_key] = command.function
       else:
@@ -237,11 +179,9 @@ class CLI:
     use_inner_class_pattern = any(cmd.is_hierarchical for cmd in self.discovered_commands)
 
     builder = CommandBuilder(target_mode=self.target_mode, functions=functions, inner_classes=inner_classes,
-      use_inner_class_pattern=use_inner_class_pattern)
+                             use_inner_class_pattern=use_inner_class_pattern)
 
     return builder.build_command_tree()
-
-
 
   def _is_completion_request(self) -> bool:
     """Check if this is a shell completion request."""
@@ -260,4 +200,4 @@ class CLI:
   def create_parser(self, no_color: bool = False):
     """Create argument parser (for backward compatibility)."""
     return self.parser_service.create_parser(commands=self.discovered_commands, target_mode=self.target_mode.value,
-      target_class=self.target_info.get(TargetInfoKeys.PRIMARY_CLASS.value), no_color=no_color)
+                                             target_class=self.target_info.get(TargetInfoKeys.PRIMARY_CLASS.value), no_color=no_color)

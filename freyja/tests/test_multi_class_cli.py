@@ -134,15 +134,15 @@ class TestMultiClassCLI:
 
         assert cli.target_mode == TargetMode.CLASS
         assert cli.target_class == MockDataProcessor
-        assert cli.target_classes is None
+        assert cli.target_classes == [MockDataProcessor]  # Unified handling: always a list for classes
         assert "process-data" in cli.commands
 
     def test_multi_class_mode_detection(self):
         """Test multi-class mode is detected correctly."""
         cli = CLI([MockDataProcessor, MockReportGenerator])
 
-        assert cli.target_mode == TargetMode.MULTI_CLASS
-        assert cli.target_class is None
+        assert cli.target_mode == TargetMode.CLASS  # Unified handling: always CLASS for classes
+        assert cli.target_class == MockReportGenerator  # Last class is primary
         assert cli.target_classes == [MockDataProcessor, MockReportGenerator]
 
     def test_collision_detection_with_clean_names(self):
@@ -176,10 +176,6 @@ class TestMultiClassCLI:
         """Test multi-class CLI with inner classes."""
         cli = CLI([MockDataProcessor])
 
-        # Should detect inner class pattern
-        assert hasattr(cli, 'use_inner_class_pattern')
-        assert cli.use_inner_class_pattern
-
         # Should have both direct methods and inner class methods
         commands = cli.commands
 
@@ -202,18 +198,21 @@ class TestMultiClassCLI:
         cli1 = CLI([MockDataProcessor])
         assert "MockDataProcessor" in cli1.title or "mock data processor" in cli1.title.lower()
 
-    @patch('sys.argv', ['test_cli', 'process-data', '--input-file', 'test.txt'])
     def test_multi_class_command_execution(self):
-        """Test executing commands in multi-class mode."""
+        """Test command structure in multi-class mode."""
         cli = CLI([MockDataProcessor, MockReportGenerator])
 
-        # In multi-class mode, command_executor should be None and we should have command_executors list
-        assert cli.command_executor is None
-        assert cli.command_executors is not None
-        assert len(cli.command_executors) == 2
+        # Should have commands from both classes
+        commands = cli.commands
+        assert "process-data" in commands  # From MockDataProcessor
+        assert "generate-report" in commands  # From MockReportGenerator
 
-        # For now, just test that the CLI structure is correct for multi-class mode
-        assert cli.target_mode.value == 'multi_class'
+        # Unified handling: target mode is always CLASS for classes
+        assert cli.target_mode.value == 'class'
+
+        # Should be able to create parser successfully
+        parser = cli.create_parser()
+        assert parser is not None
 
     def test_backward_compatibility_single_class(self):
         """Test backward compatibility with single class (non-list)."""
@@ -221,7 +220,7 @@ class TestMultiClassCLI:
 
         assert cli.target_mode == TargetMode.CLASS
         assert cli.target_class == MockDataProcessor
-        assert cli.target_classes is None
+        assert cli.target_classes == [MockDataProcessor]  # Unified handling: always a list for classes
 
     def test_empty_list_validation(self):
         """Test validation of empty class list."""
@@ -237,29 +236,34 @@ class TestMultiClassCLI:
 
 
 class TestCommandExecutorMultiClass:
-    """Test CommandExecutor multi-class functionality."""
+    """Test multi-class CLI functionality at a high level."""
 
-    def test_multi_class_executor_initialization(self):
-        """Test that multi-class CLIs initialize command executors correctly."""
+    def test_multi_class_cli_initialization(self):
+        """Test that multi-class CLIs initialize correctly."""
         cli = CLI([MockDataProcessor, MockReportGenerator])
 
-        # Should have multiple executors (one per class)
-        assert cli.command_executors is not None
-        assert len(cli.command_executors) == 2
-        assert cli.command_executor is None
+        # Should properly identify target mode and classes
+        assert cli.target_mode.value == 'class'
+        assert cli.target_class == MockReportGenerator  # Last class is primary
+        assert cli.target_classes == [MockDataProcessor, MockReportGenerator]
 
-        # Each executor should be properly initialized
-        for executor in cli.command_executors:
-            assert executor.target_class is not None
+        # Should have commands from both classes
+        commands = cli.commands
+        assert "process-data" in commands
+        assert "generate-report" in commands
 
-    def test_single_class_executor_compatibility(self):
-        """Test that single class mode still uses single command executor."""
+    def test_single_class_compatibility(self):
+        """Test that single class mode works correctly."""
         cli = CLI(MockDataProcessor)
 
-        # Should have single executor
-        assert cli.command_executor is not None
-        assert cli.command_executors is None
-        assert cli.command_executor.target_class == MockDataProcessor
+        # Should properly handle single class
+        assert cli.target_mode.value == 'class'
+        assert cli.target_class == MockDataProcessor
+        assert cli.target_classes == [MockDataProcessor]
+
+        # Should have commands from the class
+        commands = cli.commands
+        assert "process-data" in commands
 
 
 if __name__ == "__main__":
