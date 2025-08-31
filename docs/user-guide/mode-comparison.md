@@ -63,7 +63,7 @@ def user__delete(user_id: str) -> None:
     """Delete user."""
     pass
 
-# Usage: python cli.py user create --name John
+# Usage: python freyja_cli.py user create --name John
 ```
 
 **Class-based**: Uses inner classes with double-dash
@@ -78,7 +78,7 @@ class AppCLI:
             """Delete user."""
             pass
 
-# Usage: python cli.py user-management--create --name John
+# Usage: python freyja_cli.py user-management--create --name John
 ```
 
 ### Parameter Handling
@@ -93,7 +93,7 @@ def deploy(
     """Deploy application."""
     pass
 
-# Usage: python cli.py deploy --environment prod --version 1.2.3
+# Usage: python freyja_cli.py deploy --environment prod --version 1.2.3
 ```
 
 **Class-based**: Constructor params become global args
@@ -108,7 +108,7 @@ class Deployer:
         """Deploy to configured environment."""
         print(f"Deploying {version} to {self.environment} in {self.region}")
 
-# Usage: python cli.py --environment prod --region eu-west deploy --version 1.2.3
+# Usage: python freyja_cli.py --environment prod --region eu-west deploy --version 1.2.3
 ```
 
 ### Initialization and Cleanup

@@ -1,4 +1,4 @@
-"""Command execution service for CLI applications.
+"""Command execution service for FreyjaCLI applications.
 
 Handles the execution of different command types (direct methods, inner class methods, module functions)
 by creating appropriate instances and invoking methods with parsed arguments.
@@ -9,19 +9,16 @@ from typing import Any, Dict, Type, Optional
 
 
 class CommandExecutor:
-  """Centralized service for executing CLI commands with different patterns."""
+  """Centralized service for executing FreyjaCLI commands with different patterns."""
 
-  def __init__(self, target_class: Optional[Type] = None, target_module: Optional[Any] = None,
-               inner_class_metadata: Optional[Dict[str, Dict[str, Any]]] = None):
+  def __init__(self, target_class: Optional[Type] = None, target_module: Optional[Any] = None):
     """Initialize command executor with target information.
 
-    :param target_class: Class containing methods to execute (for class-based CLI)
-    :param target_module: Module containing functions to execute (for module-based CLI)
-    :param inner_class_metadata: Metadata for inner class commands
+    :param target_class: Class containing methods to execute (for class-based FreyjaCLI)
+    :param target_module: Module containing functions to execute (for module-based FreyjaCLI)
     """
     self.target_class = target_class
     self.target_module = target_module
-    self.inner_class_metadata = inner_class_metadata or {}
 
   def _execute_inner_class_command(self, parsed) -> Any:
     """Execute command using inner class pattern.
@@ -30,23 +27,29 @@ class CommandExecutor:
     """
     method = parsed._cli_function
     original_name = parsed._function_name
+    command_path = parsed._command_path
 
-    # Get metadata for this command
-    if original_name not in self.inner_class_metadata:
-      raise RuntimeError(f"No metadata found for command: {original_name}")
-
-    metadata = self.inner_class_metadata[original_name]
-    inner_class = metadata['inner_class']
-    command_name = metadata['command_name']
+    # Extract inner class information from the method object
+    # The method qualname is like "OuterClass.InnerClass.method_name"
+    qualname_parts = method.__qualname__.split('.')
+    if len(qualname_parts) < 3:
+      raise RuntimeError(f"Invalid method qualname for inner class method: {method.__qualname__}")
+    inner_class_name = qualname_parts[-2]  # Get the inner class name
+    
+    # Find the actual inner class object from the main target class
+    if not hasattr(self.target_class, inner_class_name):
+      raise RuntimeError(f"Inner class {inner_class_name} not found in {self.target_class.__name__}")
+    
+    inner_class_obj = getattr(self.target_class, inner_class_name)
 
     # 1. Create main class instance with global arguments
     main_instance = self._create_main_instance(parsed)
 
     # 2. Create inner class instance with sub-global arguments
-    inner_instance = self._create_inner_instance(inner_class, command_name, parsed, main_instance)
+    inner_instance = self._create_inner_instance(inner_class_obj, command_path, parsed, main_instance)
 
     # 3. Execute method with command arguments
-    return self._execute_method(inner_instance, metadata['method_name'], parsed)
+    return self._execute_method(inner_instance, original_name, parsed)
 
   def _execute_direct_method_command(self, parsed) -> Any:
     """Execute command using direct method from class.
@@ -129,7 +132,7 @@ class CommandExecutor:
     return function(**function_kwargs)
 
   def _extract_method_arguments(self, method_or_function: Any, parsed) -> Dict[str, Any]:
-    """Extract method/function arguments from parsed CLI arguments."""
+    """Extract method/function arguments from parsed FreyjaCLI arguments."""
     sig = inspect.signature(method_or_function)
     kwargs = {}
 
@@ -147,8 +150,7 @@ class CommandExecutor:
 
     return kwargs
 
-  def execute_command(self, parsed, target_mode, use_inner_class_pattern: bool = False,
-                      inner_class_metadata: Optional[Dict[str, Dict[str, Any]]] = None) -> Any:
+  def execute_command(self, parsed, target_mode) -> Any:
     """Main command execution dispatcher - determines execution strategy based on target mode."""
     result = None
 
@@ -156,12 +158,8 @@ class CommandExecutor:
       case 'module':
         result = self._execute_module_function(parsed)
       case 'class':
-        # Determine if this is an inner class method or direct method
-        original_name = getattr(parsed, '_function_name', '')
-
-        if (use_inner_class_pattern and
-            inner_class_metadata and
-            original_name in inner_class_metadata):
+        # Check if this is a hierarchical command with command path
+        if hasattr(parsed, '_command_path'):
           # Execute inner class method
           result = self._execute_inner_class_command(parsed)
         else:

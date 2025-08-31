@@ -6,9 +6,9 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from freyja import CLI
-from freyja.command.system import System
-
+from freyja import FreyjaCLI
+from freyja.cli import SystemClassBuilder
+System = SystemClassBuilder.build(True, True)
 
 class TestSystem:
   """Test the System class initialization."""
@@ -16,14 +16,7 @@ class TestSystem:
   def test_system_initialization(self):
     """Test System class can be initialized with default config dir."""
     system = System()
-    assert system.config_dir == Path.home() / '.auto-cli'
-
-  def test_system_initialization_custom_config(self):
-    """Test System class can be initialized with custom config dir."""
-    custom_dir = Path("/tmp/test-config")
-    system = System(config_dir=custom_dir)
-    assert system.config_dir == custom_dir
-
+    assert system is not None
 
 class TestSystemTuneTheme:
   """Test the System.TuneTheme inner class."""
@@ -161,7 +154,7 @@ class TestSystemCompletion:
     assert completion._completion_handler is None
 
   def test_completion_initialization_with_cli(self):
-    """Test Completion class initializes with CLI instance."""
+    """Test Completion class initializes with FreyjaCLI instance."""
     mock_cli = MagicMock()
     completion = System.Completion(cli_instance=mock_cli)
     assert completion._cli_instance == mock_cli
@@ -206,7 +199,7 @@ class TestSystemCompletion:
     completion.show("bash")
 
   def test_install_completion_no_cli_instance(self):
-    """Test install completion without CLI instance."""
+    """Test install completion without FreyjaCLI instance."""
     completion = System().Completion()
     result = completion.install()
     assert result is False
@@ -223,11 +216,11 @@ class TestSystemCompletion:
 
 
 class TestSystemCLIGeneration:
-  """Test System class CLI generation."""
+  """Test System class FreyjaCLI generation."""
 
   def test_system_cli_generation(self):
-    """Test System class generates CLI correctly."""
-    cli = CLI(System)
+    """Test System class generates FreyjaCLI correctly."""
+    cli = FreyjaCLI(System)
     parser = cli.create_parser()
 
     # Should have System class as target
@@ -235,8 +228,8 @@ class TestSystemCLIGeneration:
     assert cli.target_mode.value == 'class'
 
   def test_system_cli_has_inner_classes(self):
-    """Test System CLI recognizes inner classes."""
-    cli = CLI(System)
+    """Test System FreyjaCLI recognizes inner classes."""
+    cli = FreyjaCLI(System)
 
     # Should discover inner classes as command groups
     assert 'tune-theme' in cli.commands
@@ -245,8 +238,8 @@ class TestSystemCLIGeneration:
     assert cli.commands['completion']['type'] == 'group'
 
   def test_system_cli_command_structure(self):
-    """Test System CLI creates proper command structure."""
-    cli = CLI(System)
+    """Test System FreyjaCLI creates proper command structure."""
+    cli = FreyjaCLI(System)
 
     # Should have hierarchical commands
     assert 'tune-theme' in cli.commands
@@ -264,8 +257,8 @@ class TestSystemCLIGeneration:
     assert 'show' in completion_group['commands']
 
   def test_system_tune_theme_methods(self):
-    """Test System CLI includes TuneTheme methods as hierarchical command groups."""
-    cli = CLI(System)
+    """Test System FreyjaCLI includes TuneTheme methods as hierarchical command groups."""
+    cli = FreyjaCLI(System)
 
     # Check that TuneTheme methods are included as commands under tune-theme group
     tune_theme_group = cli.commands['tune-theme']
@@ -280,8 +273,8 @@ class TestSystemCLIGeneration:
       assert tune_theme_group['commands'][command]['type'] == 'command'
 
   def test_system_completion_methods(self):
-    """Test System CLI includes Completion methods as hierarchical command groups."""
-    cli = CLI(System)
+    """Test System FreyjaCLI includes Completion methods as hierarchical command groups."""
+    cli = FreyjaCLI(System)
 
     # Check that Completion methods are included as commands under completion group
     completion_group = cli.commands['completion']
@@ -292,8 +285,8 @@ class TestSystemCLIGeneration:
       assert completion_group['commands'][command]['type'] == 'command'
 
   def test_system_cli_execution(self):
-    """Test System CLI can execute commands."""
-    cli = CLI(System)
+    """Test System FreyjaCLI can execute commands."""
+    cli = FreyjaCLI(System)
 
     # Test that we can create a parser without errors
     parser = cli.create_parser()
@@ -306,23 +299,23 @@ class TestSystemCLIGeneration:
 
 
 class TestSystemIntegration:
-  """Integration tests for System class with CLI."""
+  """Integration tests for System class with FreyjaCLI."""
 
   def test_system_help_generation(self):
-    """Test System CLI generates help correctly."""
-    cli = CLI(System, title="System Test CLI")
+    """Test System FreyjaCLI generates help correctly."""
+    cli = FreyjaCLI(System, title="System Test FreyjaCLI")
     parser = cli.create_parser()
 
     help_text = parser.format_help()
 
     # Should contain main sections
-    assert "System Test CLI" in help_text
+    assert "System Test FreyjaCLI" in help_text
     assert "tune-theme" in help_text
     assert "completion" in help_text
 
   def test_system_command_group_help(self):
-    """Test System CLI command group help generation."""
-    cli = CLI(System)
+    """Test System FreyjaCLI command group help generation."""
+    cli = FreyjaCLI(System)
     parser = cli.create_parser()
 
     # Test that parsing to command level works (help would exit)

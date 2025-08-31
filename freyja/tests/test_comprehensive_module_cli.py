@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Comprehensive tests for module-based CLI functionality."""
+"""Comprehensive tests for module-based FreyjaCLI functionality."""
 
 import enum
 import sys
@@ -8,7 +8,7 @@ from typing import List, Optional
 
 import pytest
 
-from freyja.cli import CLI
+from freyja import FreyjaCLI
 
 
 # ==================== TEST MODULE FUNCTIONS ====================
@@ -172,18 +172,18 @@ def export_data(format: DataFormat = DataFormat.JSON, output_file: Optional[Path
 
 # Helper function that should be ignored (starts with underscore)
 def _private_helper(data: str) -> str:
-  """Private helper function that should not be exposed in CLI."""
+  """Private helper function that should not be exposed in FreyjaCLI."""
   return f"processed_{data}"
 
 
-# ==================== MODULE CLI TESTS ====================
+# ==================== MODULE FreyjaCLI TESTS ====================
 
 class TestModuleCLI:
-  """Test module-based CLI functionality."""
+  """Test module-based FreyjaCLI functionality."""
 
   def create_test_cli(self):
-    """Create CLI from current module for testing."""
-    return CLI(sys.modules[__name__], "Test Module CLI")
+    """Create FreyjaCLI from current module for testing."""
+    return FreyjaCLI(sys.modules[__name__], "Test Module FreyjaCLI")
 
   def test_module_function_discovery(self):
     """Test that module functions are discovered correctly."""
@@ -330,7 +330,7 @@ class TestModuleCLI:
     cli = self.create_test_cli()
 
     # Note: List types are complex and may not be fully supported
-    # But the CLI should handle them without crashing
+    # But the FreyjaCLI should handle them without crashing
     test_args = ['create-task', '--title', 'Test Task', '--priority', 'HIGH']
     result = cli.run(test_args)
 
@@ -364,7 +364,7 @@ class TestModuleCLI:
 
 
 class TestModuleCLIFiltering:
-  """Test function filtering in module CLI."""
+  """Test function filtering in module FreyjaCLI."""
 
   def test_custom_function_filter(self):
     """Test custom function filtering."""
@@ -375,8 +375,8 @@ class TestModuleCLIFiltering:
               callable(obj) and
               not name.startswith('_'))
 
-    cli = CLI(sys.modules[__name__], "Filtered CLI",
-              function_filter=custom_filter)
+    cli = FreyjaCLI(sys.modules[__name__], "Filtered FreyjaCLI",
+                    function_filter=custom_filter)
 
     # Should only have process_data function (converted to kebab-case)
     assert 'process-data' in cli.commands
@@ -385,7 +385,7 @@ class TestModuleCLIFiltering:
 
   def test_default_function_filter(self):
     """Test default function filtering behavior."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
     # Should exclude private functions
     private_commands = [name for name in cli.commands.keys() if name.startswith('_')]
@@ -394,18 +394,18 @@ class TestModuleCLIFiltering:
     # Should exclude imported functions and classes
     assert 'pytest' not in cli.commands
     assert 'Path' not in cli.commands
-    assert 'CLI' not in cli.commands
+    assert 'FreyjaCLI' not in cli.commands
 
     # Should include module-defined functions
     assert 'simple-function' in cli.commands
 
 
 class TestModuleCLIErrorHandling:
-  """Test error handling for module CLI."""
+  """Test error handling for module FreyjaCLI."""
 
   def test_missing_required_parameter(self):
     """Test handling of missing required parameters."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
     # Should raise SystemExit when required parameter is missing
     with pytest.raises(SystemExit):
@@ -413,7 +413,7 @@ class TestModuleCLIErrorHandling:
 
   def test_invalid_enum_value(self):
     """Test handling of invalid enum values."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
     # Should raise SystemExit for invalid enum value
     with pytest.raises(SystemExit):
@@ -422,7 +422,7 @@ class TestModuleCLIErrorHandling:
 
   def test_invalid_command(self):
     """Test handling of invalid commands."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
     # Should raise SystemExit for invalid command
     with pytest.raises(SystemExit):
@@ -430,7 +430,7 @@ class TestModuleCLIErrorHandling:
 
   def test_invalid_command(self):
     """Test handling of invalid commands."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
     # Should raise SystemExit for invalid command
     with pytest.raises(SystemExit):
@@ -438,11 +438,11 @@ class TestModuleCLIErrorHandling:
 
 
 class TestModuleCLITypeConversion:
-  """Test type conversion for module CLI."""
+  """Test type conversion for module FreyjaCLI."""
 
   def test_integer_conversion(self):
     """Test integer parameter conversion."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
     test_args = ['simple-function', '--name', 'Bob', '--age', '45']
     result = cli.run(test_args)
@@ -452,7 +452,7 @@ class TestModuleCLITypeConversion:
 
   def test_boolean_conversion(self):
     """Test boolean parameter conversion."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
     # Test boolean flag set
     test_args = ['process-data', '--input-file', 'test.txt', '--verbose']
@@ -470,7 +470,7 @@ class TestModuleCLITypeConversion:
 
   def test_path_conversion(self):
     """Test Path type conversion."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
     test_args = ['process-data', '--input-file', '/path/to/file.txt']
     result = cli.run(test_args)
@@ -480,11 +480,11 @@ class TestModuleCLITypeConversion:
 
 
 class TestModuleCLICommandGrouping:
-  """Test command grouping in module CLI."""
+  """Test command grouping in module FreyjaCLI."""
 
   def test_flat_command_structure(self):
     """Test that all functions create flat commands in modules."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
     # Should create flat commands (no groups)
     assert 'backup-create' in cli.commands
@@ -507,7 +507,7 @@ class TestModuleCLICommandGrouping:
 
   def test_all_flat_commands(self):
     """Test that modules only support flat commands."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
     # Should have all flat commands only
     assert 'simple-function' in cli.commands

@@ -1,174 +1,83 @@
-"""Command tree building service for CLI applications.
+"""Command tree building service for FreyjaCLI applications.
 
 Consolidates all command structure generation logic for both module-based and class-based CLIs.
-Handles flat commands and hierarchical command organization through inner class patterns.
+Builds proper nested dictionary structures for hierarchical commands.
 """
 
-from typing import Dict, Any, Type, Optional
-
+from typing import Dict, Any, Type, Optional, List
+from .command_discovery import CommandInfo
+from freyja.parser import DocStringParser
 
 class CommandBuilder:
-  """Centralized service for building command structures from discovered functions/methods."""
+  """Centralized service for building command structures from discovered commands."""
 
-  def __init__(self, target_mode: Any, functions: Dict[str, Any],
-               inner_classes: Optional[Dict[str, Type]] = None,
-               use_inner_class_pattern: bool = False):
-    """Flat command building requires function discovery and organizational metadata."""
+  def __init__(self, target_mode: Any, commands: List[CommandInfo]):
+    """Build command tree from discovered CommandInfo objects."""
     self.target_mode = target_mode
-    self.functions = functions
-    self.inner_classes = inner_classes or {}
-    self.use_inner_class_pattern = use_inner_class_pattern
+    self.commands = commands
 
   def build_command_tree(self) -> Dict[str, Dict]:
-    """Build command structure from discovered functions based on target mode."""
-    from freyja.enums.target_mode import TargetMode
-
-    if self.target_mode == TargetMode.MODULE:
-      return self._build_module_commands()
-    elif self.target_mode == TargetMode.CLASS:
-      # Unified class handling: works for single or multiple classes
-      if self.use_inner_class_pattern:
-        return self._build_hierarchical_class_commands()
+    """Build command structure from discovered commands."""
+    commands:Dict[str, Dict] = {}
+    
+    # Group commands by type and group_name
+    flat_commands = []
+    grouped_commands = {}
+    
+    for command in self.commands:
+      if command.is_hierarchical and command.group_name:
+        # Group hierarchical commands
+        if command.group_name not in grouped_commands:
+          grouped_commands[command.group_name] = []
+        grouped_commands[command.group_name].append(command)
       else:
-        return self._build_flat_class_commands()
-    else:
-      raise ValueError(f"Unknown target mode: {self.target_mode}")
-
-  def _build_module_commands(self) -> Dict[str, Dict]:
-    """Module mode creates flat command structure."""
-    commands = {}
-    for func_name, func_obj in self.functions.items():
-      cli_name = func_name.replace('_', '-')
-      commands[cli_name] = {
+        # Collect flat commands
+        flat_commands.append(command)
+    
+    # Add flat commands
+    for command in flat_commands:
+      commands[command.name] = {
         'type': 'command',
-        'function': func_obj,
-        'original_name': func_name
+        'function': command.function,
+        'original_name': command.original_name
       }
-    return commands
-
-  def _build_flat_class_commands(self) -> Dict[str, Dict]:
-    """Class mode without inner classes creates flat command structure."""
-    from freyja.utils.string_utils import StringUtils
-    commands = {}
-    for func_name, func_obj in self.functions.items():
-      cli_name = StringUtils.kebab_case(func_name)
-      commands[cli_name] = {
-        'type': 'command',
-        'function': func_obj,
-        'original_name': func_name
+    
+    # Add hierarchical commands as groups
+    for group_name, group_commands in grouped_commands.items():
+      # Get group description from first command's inner class
+      description = self._get_group_description(group_commands[0])
+      
+      commands[group_name] = {
+        'type': 'group',
+        'description': description,
+        'inner_class': group_commands[0].inner_class,
+        'commands': {}
       }
-    return commands
-
-  def _build_hierarchical_class_commands(self) -> Dict[str, Dict]:
-    """Class mode with inner classes creates hierarchical command structure."""
-    from freyja.utils.string_utils import StringUtils
-    commands = {}
-    processed_groups = set()
-
-    # Process functions in order to preserve class ordering
-    for func_name, func_obj in self.functions.items():
-      if '__' not in func_name:  # Direct method on main class
-        cli_name = StringUtils.kebab_case(func_name)
-        commands[cli_name] = {
+      
+      # Add commands to the group
+      for command in group_commands:
+        commands[group_name]['commands'][command.name] = {
           'type': 'command',
-          'function': func_obj,
-          'original_name': func_name
+          'function': command.function,
+          'original_name': command.original_name,
+          'group_name': group_name,
+          'method_name': command.method_name
         }
-      else:  # Inner class method - create groups as we encounter them
-        parts = func_name.split('__', 1)
-        if len(parts) == 2:
-          group_name, method_name = parts
-          cli_group_name = StringUtils.kebab_case(group_name)
-
-          # Create group if not already processed
-          if cli_group_name not in processed_groups:
-            group_commands = self._build_single_command_group(cli_group_name)
-            if group_commands:
-              commands[cli_group_name] = group_commands
-              processed_groups.add(cli_group_name)
-
+    
     return commands
 
-  def _build_command_groups(self) -> Dict[str, Dict]:
-    """Build command groups from inner class methods."""
-    from freyja.utils.string_utils import StringUtils
-
-    groups = {}
-    for func_name, func_obj in self.functions.items():
-      if '__' in func_name:  # Inner class method with double underscore
-        # Parse: class_name__method_name -> (class_name, method_name)
-        parts = func_name.split('__', 1)
-        if len(parts) == 2:
-          group_name, method_name = parts
-          cli_group_name = StringUtils.kebab_case(group_name)
-          cli_method_name = StringUtils.kebab_case(method_name)
-
-          if cli_group_name not in groups:
-            # Get inner class description
-            description = self._get_group_description(cli_group_name)
-
-            groups[cli_group_name] = {
-              'type': 'group',
-              'commands': {},
-              'description': description
-            }
-
-          # Add method as command in the group
-          groups[cli_group_name]['commands'][cli_method_name] = {
-            'type': 'command',
-            'function': func_obj,
-            'original_name': func_name,
-            'command_path': [cli_group_name, cli_method_name]
-          }
-
-    return groups
-
-  def _build_single_command_group(self, cli_group_name: str) -> Dict[str, Any]:
-    """Build a single command group from inner class methods."""
-    from freyja.utils.string_utils import StringUtils
-
-    group_commands = {}
-
-    # Find all methods for this group
-    for func_name, func_obj in self.functions.items():
-      if '__' in func_name:
-        parts = func_name.split('__', 1)
-        if len(parts) == 2:
-          group_name, method_name = parts
-          if StringUtils.kebab_case(group_name) == cli_group_name:
-            cli_method_name = StringUtils.kebab_case(method_name)
-            group_commands[cli_method_name] = {
-              'type': 'command',
-              'function': func_obj,
-              'original_name': func_name,
-              'command_path': [cli_group_name, cli_method_name]
-            }
-
-    if not group_commands:
-      return None
-
-    # Get group description
-    description = self._get_group_description(cli_group_name)
-
-    return {
-      'type': 'group',
-      'commands': group_commands,
-      'description': description
-    }
-
-  def _get_group_description(self, cli_group_name: str) -> str:
+  @staticmethod
+  def _get_group_description(command: CommandInfo) -> str:
     """Get description for command group from inner class docstring."""
-    from freyja.utils.string_utils import StringUtils
-    from .docstring_parser import parse_docstring
-
-    description = None
-    for class_name, inner_class in self.inner_classes.items():
-      if StringUtils.kebab_case(class_name) == cli_group_name:
-        if inner_class.__doc__:
-          description, _ = parse_docstring(inner_class.__doc__)
-        break
-
-    return description or f"{cli_group_name.title().replace('-', ' ')} operations"
+    if command.inner_class and command.inner_class.__doc__:
+      description, _ = DocStringParser.parse_docstring(command.inner_class.__doc__)
+      return description
+    
+    # Fallback to generating description from group name
+    if command.group_name:
+      return f"{command.group_name.title().replace('-', ' ')} operations"
+    
+    return "Command operations"
 
   @staticmethod
   def create_command_info(func_obj: Any, original_name: str, command_path: Optional[list] = None,

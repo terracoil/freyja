@@ -3,8 +3,8 @@
 import pytest
 import types
 import inspect
-from freyja.command.command_discovery import CommandDiscovery, CommandInfo
-from freyja.enums.target_mode import TargetMode
+from freyja.command import CommandDiscovery
+from freyja.cli import TargetMode
 
 
 # Test fixtures - create a mock module
@@ -205,17 +205,19 @@ class TestCommandDiscovery:
         # Should have direct method
         assert 'direct-method' in command_names
         
-        # Should have hierarchical methods from inner classes
-        assert 'inner-operations__inner-method-one' in command_names
-        assert 'inner-operations__inner-method-two' in command_names
-        assert 'data-processing__process-data' in command_names
+        # Should have hierarchical methods from inner classes (now with just method names)
+        assert 'inner-method-one' in command_names
+        assert 'inner-method-two' in command_names
+        assert 'process-data' in command_names
         
         # Check hierarchical command structure
-        hierarchical_cmd = next(cmd for cmd in commands if cmd.name == 'inner-operations__inner-method-one')
+        hierarchical_cmd = next(cmd for cmd in commands if cmd.name == 'inner-method-one')
         assert hierarchical_cmd.is_hierarchical
         assert hierarchical_cmd.parent_class == 'InnerOperations'
         assert hierarchical_cmd.command_path == 'inner-operations'
         assert hierarchical_cmd.inner_class == MockClassWithInner.InnerOperations
+        assert hierarchical_cmd.group_name == 'inner-operations'  # New field
+        assert hierarchical_cmd.method_name == 'inner-method-one'  # New field
         assert 'inner_class' in hierarchical_cmd.metadata
         
         # Check direct method

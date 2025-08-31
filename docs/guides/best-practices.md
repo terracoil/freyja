@@ -242,7 +242,7 @@ def user__delete(username: str, force: bool = False) -> None:
 For class-based CLIs:
 ```python
 class ApplicationCLI:
-    """Application CLI with consistent state management."""
+    """Application FreyjaCLI with consistent state management."""
     
     def __init__(self, config_file: str = "app.config"):
         self.config = self._load_config(config_file)

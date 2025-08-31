@@ -1,4 +1,4 @@
-"""Argument parsing utilities for CLI generation."""
+"""Argument parsing utilities for FreyjaCLI generation."""
 
 import argparse
 import enum
@@ -6,17 +6,17 @@ import inspect
 from pathlib import Path
 from typing import Any, Dict, Union, get_args, get_origin
 
-from .docstring_parser import extract_function_help
+from .docstring_parser import DocStringParser
 
 
-class ArgumentParserService:
+class ArgumentParser:
   """Centralized service for handling argument parser configuration and setup."""
 
   @staticmethod
   def get_arg_type_config(annotation: type) -> Dict[str, Any]:
     """Configure argparse arguments based on Python type annotations.
 
-    Enables CLI generation from function signatures by mapping Python types to argparse behavior.
+    Enables FreyjaCLI generation from function signatures by mapping Python types to argparse behavior.
     """
     # Handle Optional[Type] -> get the actual type
     # Handle both typing.Union and types.UnionType (Python 3.10+)
@@ -43,13 +43,13 @@ class ArgumentParserService:
 
   @staticmethod
   def add_global_class_args(parser: argparse.ArgumentParser, target_class: type) -> None:
-    """Enable class-based CLI with global configuration options.
+    """Enable class-based FreyjaCLI with global configuration options.
 
     Class constructors define application-wide settings that apply to all commands.
     """
     init_method = target_class.__init__
     sig = inspect.signature(init_method)
-    _, param_help = extract_function_help(init_method)
+    _, param_help = DocStringParser.extract_function_help(init_method)
 
     for param_name, param in sig.parameters.items():
       # Skip self parameter and varargs
@@ -63,7 +63,7 @@ class ArgumentParserService:
 
       # Handle type annotations
       if param.annotation != param.empty:
-        type_config = ArgumentParserService.get_arg_type_config(param.annotation)
+        type_config = ArgumentParser.get_arg_type_config(param.annotation)
         arg_config.update(type_config)
 
       # Handle defaults
@@ -77,20 +77,20 @@ class ArgumentParserService:
       flag_name = StringUtils.kebab_case(param_name)
       flag = f"--{flag_name}"
 
-      # Check for conflicts with built-in CLI options
+      # Check for conflicts with built-in FreyjaCLI options
       built_in_options = {'no-color', 'help'}
       if flag_name not in built_in_options:
         parser.add_argument(flag, **arg_config)
 
   @staticmethod
   def add_subglobal_class_args(parser: argparse.ArgumentParser, inner_class: type, command_name: str) -> None:
-    """Enable command group configuration for hierarchical CLI organization.
+    """Enable command group configuration for hierarchical FreyjaCLI organization.
 
     Inner class constructors provide group-specific settings shared across related commands.
     """
     init_method = inner_class.__init__
     sig = inspect.signature(init_method)
-    _, param_help = extract_function_help(init_method)
+    _, param_help = DocStringParser.extract_function_help(init_method)
 
     # Get parameters as a list to skip main_instance parameter
     params = list(sig.parameters.items())
@@ -108,7 +108,7 @@ class ArgumentParserService:
 
       # Handle type annotations
       if param.annotation != param.empty:
-        type_config = ArgumentParserService.get_arg_type_config(param.annotation)
+        type_config = ArgumentParser.get_arg_type_config(param.annotation)
         arg_config.update(type_config)
 
       # Set clean metavar if not already set by type config
@@ -128,12 +128,12 @@ class ArgumentParserService:
 
   @staticmethod
   def add_function_args(parser: argparse.ArgumentParser, fn: Any) -> None:
-    """Generate CLI arguments directly from function signatures.
+    """Generate FreyjaCLI arguments directly from function signatures.
 
     Eliminates manual argument configuration by leveraging Python type hints and docstrings.
     """
     sig = inspect.signature(fn)
-    _, param_help = extract_function_help(fn)
+    _, param_help = DocStringParser.extract_function_help(fn)
 
     for name, param in sig.parameters.items():
       # Skip self parameter and varargs
@@ -147,7 +147,7 @@ class ArgumentParserService:
 
       # Handle type annotations
       if param.annotation != param.empty:
-        type_config = ArgumentParserService.get_arg_type_config(param.annotation)
+        type_config = ArgumentParser.get_arg_type_config(param.annotation)
         arg_config.update(type_config)
 
       # Handle defaults - determine if argument is required

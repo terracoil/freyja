@@ -190,7 +190,7 @@ A class-based database management tool:
 
 ```python
 #!/usr/bin/env python3
-"""Database management CLI with connection state."""
+"""Database management FreyjaCLI with connection state."""
 
 from src import CLI
 from datetime import datetime

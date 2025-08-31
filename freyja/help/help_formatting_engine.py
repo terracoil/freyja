@@ -1,4 +1,4 @@
-"""Formatting engine for CLI help text generation.
+"""Formatting engine for FreyjaCLI help text generation.
 
 Consolidates all formatting logic for commands, options, groups, and descriptions.
 Eliminates duplication across formatter methods while maintaining consistent alignment.
@@ -10,7 +10,7 @@ from typing import *
 
 
 class HelpFormattingEngine:
-  """Centralized formatting engine for CLI help text generation."""
+  """Centralized formatting engine for FreyjaCLI help text generation."""
 
   def __init__(self, console_width: int = 80, theme=None, color_formatter=None):
     """Formatting engine needs display constraints and styling capabilities."""

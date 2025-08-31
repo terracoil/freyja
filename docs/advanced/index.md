@@ -66,7 +66,7 @@ Migrating from other CLI frameworks.
 ### Dynamic Command Registration
 ```python
 class DynamicCLI:
-    """CLI with runtime command registration."""
+    """FreyjaCLI with runtime command registration."""
     
     def __init__(self):
         self._commands = {}
@@ -80,7 +80,7 @@ class DynamicCLI:
 ### Advanced State Management
 ```python
 class StatefulCLI:
-    """CLI with sophisticated state handling."""
+    """FreyjaCLI with sophisticated state handling."""
     
     def __init__(self):
         self._state = {}

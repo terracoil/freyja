@@ -1,4 +1,4 @@
-from freyja.utils.string_utils import StringUtils
+from freyja.utils import StringUtils
 
 
 class TestStringUtils:

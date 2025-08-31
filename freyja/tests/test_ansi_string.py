@@ -1,6 +1,6 @@
 """Tests for AnsiString ANSI-aware alignment functionality."""
 
-from freyja.utils.ansi_string import AnsiString, strip_ansi_codes
+from freyja.utils import AnsiString, strip_ansi_codes
 
 
 class TestStripAnsiCodes:

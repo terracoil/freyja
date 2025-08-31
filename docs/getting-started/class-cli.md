@@ -50,7 +50,7 @@ class Calculator:
 
 
 if __name__ == '__main__':
-  cli = CLI(Calculator, title="Calculator CLI")
+  cli = CLI(Calculator, title="Calculator FreyjaCLI")
   cli.display()
 ```
 
@@ -109,7 +109,7 @@ For better organization, use inner classes (creates flat commands with double-da
 
 ```python
 class ProjectManager:
-    """Project management CLI."""
+    """Project management FreyjaCLI."""
     
     def __init__(self, workspace: str = "./projects"):
         self.workspace = workspace

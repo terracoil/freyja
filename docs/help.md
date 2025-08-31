@@ -43,11 +43,11 @@ def greet(name: str, excited: bool = False) -> None:
   print(greeting)
 
 
-# Create CLI from module
+# Create FreyjaCLI from module
 from src import CLI
 import sys
 
-cli = CLI.from_module(sys.modules[__name__], title="My Module CLI")
+cli = CLI.from_module(sys.modules[__name__], title="My Module FreyjaCLI")
 cli.display()
 ```
 
@@ -60,7 +60,7 @@ Use inner classes for hierarchical command organization with three argument leve
 ```python
 # cls_example.py
 class UserManager:
-    """User management CLI with hierarchical commands."""
+    """User management FreyjaCLI with hierarchical commands."""
     
     def __init__(self, config_file: str = "config.json", debug: bool = False):
         """
@@ -109,7 +109,7 @@ Use dunder notation for existing applications:
 
 ```python
 class UserManager:
-  """Traditional dunder-based CLI pattern."""
+  """Traditional dunder-based FreyjaCLI pattern."""
 
   def add_user(self, username: str, email: str, active: bool = True) -> None:
     """Add a new user to the system."""
@@ -128,7 +128,7 @@ class UserManager:
       print(f"{status} {user['username']} ({user['email']})")
 
 
-# Create CLI from class
+# Create FreyjaCLI from class
 from src import CLI
 
 cli = CLI.from_class(UserManager, theme_name="colorful")

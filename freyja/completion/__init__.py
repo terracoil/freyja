@@ -12,11 +12,11 @@ from .powershell import PowerShellCompletionHandler
 from .zsh import ZshCompletionHandler
 
 __all__ = [
-  'CompletionContext',
-  'CompletionHandler',
-  'BashCompletionHandler',
-  'ZshCompletionHandler',
-  'FishCompletionHandler',
-  'PowerShellCompletionHandler',
-  'CompletionInstaller',
+  CompletionContext,
+  CompletionHandler,
+  BashCompletionHandler,
+  ZshCompletionHandler,
+  FishCompletionHandler,
+  PowerShellCompletionHandler,
+  CompletionInstaller,
 ]

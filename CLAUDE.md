@@ -96,11 +96,11 @@ poetry install
 
 ### Examples
 ```bash
-# Run module-based CLI example
+# Run module-based FreyjaCLI example
 poetry run python mod_example.py
 poetry run python mod_example.py --help
 
-# Run class-based CLI example  
+# Run class-based FreyjaCLI example  
 poetry run python cls_example.py
 poetry run python cls_example.py --help
 
@@ -213,7 +213,7 @@ from pathlib import Path
 
 class ProjectManager:
   """
-  Project Management CLI with flat double-dash commands.
+  Project Management FreyjaCLI with flat double-dash commands.
   
   Manage projects with organized flat commands and global/sub-global arguments.
   """
@@ -318,7 +318,7 @@ python project_mgr.py --help  # Shows all available flat commands
 #### 1. Configuration Management (Inner Class Pattern)
 ```python
 class ConfigManager:
-    """Application configuration CLI with hierarchical organization using flat commands."""
+    """Application configuration FreyjaCLI with hierarchical organization using flat commands."""
     
     def __init__(self, config_file: str = "app.config"):
         """Initialize with global configuration file."""
@@ -369,7 +369,7 @@ def batch_validate(directory: str, parallel: bool = False) -> None:
 #### 3. API Client Tool (Inner Class Pattern)
 ```python
 class APIClient:
-    """REST API client CLI with organized endpoints."""
+    """REST API client FreyjaCLI with organized endpoints."""
     
     def __init__(self, base_url: str, timeout: int = 30):
         """Initialize API client with global settings."""
@@ -402,7 +402,7 @@ class APIClient:
 #### 4. Database Operations (Inner Class Pattern)
 ```python
 class DatabaseCLI:
-    """Database management CLI with organized operations."""
+    """Database management FreyjaCLI with organized operations."""
     
     def __init__(self, connection_string: str, debug: bool = False):
         """Initialize with global database settings."""
@@ -466,7 +466,7 @@ def export_data(data: str, format: OutputFormat = OutputFormat.JSON) -> None:
 # Custom configuration
 cli = CLI(
     sys.modules[__name__],
-    title="Custom CLI Title",
+    title="Custom FreyjaCLI Title",
     function_opts={
         'function_name': {
             'description': 'Custom description override',
@@ -516,7 +516,7 @@ def bad_function(name, count=5):  # Will cause errors
     pass
 
 # ❌ Private function (starts with _) 
-def _private_function(data: str) -> None:  # Ignored by CLI
+def _private_function(data: str) -> None:  # Ignored by FreyjaCLI
     pass
 
 # ❌ Complex types not supported
@@ -569,12 +569,12 @@ class MyClass:
 ```python
 class BadClass:
     def __init__(self, required_param: str):  # ❌ NO DEFAULT VALUE
-        """This will cause CLI creation to fail"""
+        """This will cause FreyjaCLI creation to fail"""
         self.required_param = required_param
     
     class BadInnerClass:
         def __init__(self, required_config: str):  # ❌ NO DEFAULT VALUE
-            """This will also cause CLI creation to fail"""
+            """This will also cause FreyjaCLI creation to fail"""
             self.required_config = required_config
         
         def some_method(self):
@@ -637,11 +637,11 @@ def my_function(param1: str = "default", count: int = 5):
     # Function implementation
     pass
 
-# Setup CLI
+# Setup FreyjaCLI
 fn_opts = {
     'my_function': {'description': 'Description text'}
 }
-cli = CLI(sys.modules[__name__], function_opts=fn_opts, title="My CLI")
+cli = CLI(sys.modules[__name__], function_opts=fn_opts, title="My FreyjaCLI")
 cli.display()
 ```
 

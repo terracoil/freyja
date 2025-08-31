@@ -29,10 +29,10 @@ A vibrant theme with rich colors:
 ```python
 from src import CLI
 
-# Module-based CLI with theme
+# Module-based FreyjaCLI with theme
 cli = CLI(sys.modules[__name__], theme_name="colorful")
 
-# Class-based CLI with theme
+# Class-based FreyjaCLI with theme
 cli = CLI(MyClass, theme_name="universal")
 ```
 
@@ -51,8 +51,8 @@ python my_cli.py --help
 The theme tuner is a built-in command that helps you preview and adjust themes:
 
 ```bash
-# Enable theme tuner in your CLI
-cli = CLI(MyClass, theme_tuner=True)
+# Enable theme tuner in your FreyjaCLI
+cli = FreyjaCLI(MyClass, theme_tuner=True)
 
 # Use the tuner
 python my_cli.py theme-tuner

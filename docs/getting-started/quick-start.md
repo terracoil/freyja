@@ -97,7 +97,7 @@ from typing import List
 class TaskManager:
   """
       Task Management Application    
-  A simple CLI for managing your daily tasks.
+  A simple FreyjaCLI for managing your daily tasks.
   """
 
   def __init__(self):

@@ -1,4 +1,4 @@
-"""Centralized string utilities for CLI generation with caching."""
+"""Centralized string utilities for FreyjaCLI generation with caching."""
 
 import re
 from functools import lru_cache
@@ -18,7 +18,7 @@ class StringUtils:
         Convert any string format to kebab-case.
 
         Handles camelCase, PascalCase, snake_case, and mixed formats.
-        CLI conventions favor kebab-case for better readability and consistency across shells.
+        FreyjaCLI conventions favor kebab-case for better readability and consistency across shells.
         """
         if not text:
             return text
@@ -39,9 +39,9 @@ class StringUtils:
     @classmethod
     @lru_cache(maxsize=256)
     def kebab_to_snake(cls, text: str) -> str:
-        """Map CLI argument names back to Python function parameters.
+        """Map FreyjaCLI argument names back to Python function parameters.
 
-        Enables seamless integration between CLI parsing and function invocation.
+        Enables seamless integration between FreyjaCLI parsing and function invocation.
         """
         return text.replace('-', '_')
 

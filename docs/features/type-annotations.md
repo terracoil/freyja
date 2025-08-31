@@ -35,7 +35,7 @@ def process_file(input_file: str, output_format: str) -> None:
     """Process a file with specified format."""
     pass
 
-# CLI Usage: Both parameters are required
+# FreyjaCLI Usage: Both parameters are required
 # python script.py process-file --input-file data.txt --output-format json
 ```
 
@@ -50,7 +50,7 @@ def process_file(
     """Process a file with optional settings."""
     pass
 
-# CLI Usage: Only input-file is required
+# FreyjaCLI Usage: Only input-file is required
 # python script.py process-file --input-file data.txt
 # python script.py process-file --input-file data.txt --output-format csv --verbose
 ```
@@ -64,7 +64,7 @@ def greet(name: str, message: str = "Hello") -> None:
     """Greet someone with a message."""
     print(f"{message}, {name}!")
 
-# CLI: --name VALUE, --message VALUE
+# FreyjaCLI: --name VALUE, --message VALUE
 # Usage: --name "John" --message "Hi there"
 ```
 
@@ -81,7 +81,7 @@ def repeat_action(count: int, max_attempts: int = 10) -> None:
     for i in range(min(count, max_attempts)):
         print(f"Action {i+1}")
 
-# CLI: --count INTEGER, --max-attempts INTEGER  
+# FreyjaCLI: --count INTEGER, --max-attempts INTEGER  
 # Usage: --count 5 --max-attempts 3
 ```
 
@@ -98,7 +98,7 @@ def calculate_interest(principal: float, rate: float = 0.05) -> None:
     interest = principal * rate
     print(f"Interest: ${interest:.2f}")
 
-# CLI: --principal FLOAT, --rate FLOAT
+# FreyjaCLI: --principal FLOAT, --rate FLOAT
 # Usage: --principal 1000.0 --rate 0.03
 ```
 
@@ -118,7 +118,7 @@ def backup_files(source_dir: str, compress: bool = False, verify: bool = True) -
     if verify:
         print("Verification enabled")
 
-# CLI: --source-dir TEXT, --compress (flag), --verify/--no-verify
+# FreyjaCLI: --source-dir TEXT, --compress (flag), --verify/--no-verify
 # Usage: --source-dir /data --compress --no-verify
 ```
 
@@ -143,7 +143,7 @@ def process_files(files: List[str], extensions: List[str] = None) -> None:
     for file in files:
         print(f"Processing: {file}")
 
-# CLI: --files FILE1 FILE2 FILE3, --extensions EXT1 EXT2
+# FreyjaCLI: --files FILE1 FILE2 FILE3, --extensions EXT1 EXT2
 # Usage: --files data.txt log.txt config.py --extensions .txt .log
 ```
 
@@ -165,7 +165,7 @@ def analyze_numbers(values: List[int], thresholds: List[int] = None) -> None:
     print(f"Values: {values}")
     print(f"Thresholds: {thresholds}")
 
-# CLI: --values 1 2 3 4, --thresholds 5 25 75
+# FreyjaCLI: --values 1 2 3 4, --thresholds 5 25 75
 # Usage: --values 12 45 78 23 --thresholds 20 60
 ```
 
@@ -190,7 +190,7 @@ def connect_database(
     if port:
         print(f"Port: {port}")
 
-# CLI: All parameters become optional if they have None default
+# FreyjaCLI: All parameters become optional if they have None default
 # Usage: --host localhost --database mydb --username admin --port 5432
 ```
 
@@ -211,7 +211,7 @@ def process_identifier(id_value: Union[str, int], format_output: bool = False) -
     else:
         print(f"Processing string ID: {id_value}")
 
-# CLI: freyja will try int first, then str
+# FreyjaCLI: freyja will try int first, then str
 # Usage: --id-value 12345 or --id-value "user_abc123"
 ```
 
@@ -247,7 +247,7 @@ def process_logs(
     print(f"Processing {log_file} at {level.value} level")
     print(f"Output format: {output_format.value}")
 
-# CLI: --level {debug,info,warning,error}, --output-format {json,csv,xml}
+# FreyjaCLI: --level {debug,info,warning,error}, --output-format {json,csv,xml}
 # Usage: --log-file app.log --level debug --output-format csv
 ```
 
@@ -270,7 +270,7 @@ def create_task(title: str, priority: Priority = Priority.MEDIUM) -> None:
     """Create a task with specified priority."""
     print(f"Task: {title} (Priority: {priority.value})")
 
-# CLI validates against enum values
+# FreyjaCLI validates against enum values
 # Usage: --title "Fix bug" --priority high
 ```
 
@@ -304,7 +304,7 @@ def process_directory(input_dir: Path, output_dir: Path = Path("./output")) -> N
     if input_dir.exists():
         print("Input directory exists")
 
-# CLI: Accepts string paths, converts to Path objects
+# FreyjaCLI: Accepts string paths, converts to Path objects
 # Usage: --input-dir /data/source --output-dir /data/processed
 ```
 
@@ -394,7 +394,7 @@ def process_data_file(data_file: str, encoding: str = "utf-8") -> None:
     except FileNotFoundError:
         print(f"File not found: {data_file}")
 
-# CLI handles file path, function handles file operations
+# FreyjaCLI handles file path, function handles file operations
 # Usage: --data-file data.txt --encoding utf-8
 ```
 
@@ -443,7 +443,7 @@ def good_function(items: List[str] = None) -> None:
 ### 4. Complex Types Not Supported
 
 ```python
-# ❌ Too complex for direct CLI mapping
+# ❌ Too complex for direct FreyjaCLI mapping
 def complex_function(callback: Callable[[str], int]) -> None:
     pass
 

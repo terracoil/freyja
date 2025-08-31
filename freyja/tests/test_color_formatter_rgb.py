@@ -1,9 +1,7 @@
 """Test ColorFormatter with RGB instances."""
 import pytest
 
-from freyja.theme.color_formatter import ColorFormatter
-from freyja.theme.rgb import RGB
-from freyja.theme.theme_style import ThemeStyle
+from freyja.theme import ColorFormatter, RGB, ThemeStyle
 
 
 class TestColorFormatterRGB:

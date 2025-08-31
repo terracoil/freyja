@@ -15,7 +15,7 @@ class TestHierarchicalHelpFormatter:
     # Create minimal parser for testing
     self.parser = argparse.ArgumentParser(
       prog='test_cli',
-      description='Test CLI for formatter testing'
+      description='Test FreyjaCLI for formatter testing'
     )
 
     # Create formatter without theme initially
@@ -404,10 +404,10 @@ class TestHierarchicalFormatterIntegration:
 
   def test_full_help_formatting_integration(self):
     """Test complete help formatting with real parser structure."""
-    # Create a parser similar to what CLI would create
+    # Create a parser similar to what FreyjaCLI would create
     parser = argparse.ArgumentParser(
       prog='test_cli',
-      description='Test CLI Application',
+      description='Test FreyjaCLI Application',
       formatter_class=lambda *args, **kwargs: HierarchicalHelpFormatter(*args, **kwargs)
     )
 
@@ -422,7 +422,7 @@ class TestHierarchicalFormatterIntegration:
     hello_cmd = subparsers.add_parser('hello', help='Greet someone')
     hello_cmd.add_argument('--name', default='World', help='Name to greet')
 
-    # Group command (simulate what CLI creates)
+    # Group command (simulate what FreyjaCLI creates)
     user_group = subparsers.add_parser('user', help='User management operations')
     user_group._command_type = 'group'
     user_group._commands = {'create': 'Create user', 'delete': 'Delete user'}
@@ -431,7 +431,7 @@ class TestHierarchicalFormatterIntegration:
     help_text = parser.format_help()
 
     # Basic sanity checks
-    assert 'Test CLI Application' in help_text
+    assert 'Test FreyjaCLI Application' in help_text
     assert 'COMMANDS:' in help_text
     assert 'hello' in help_text
     assert 'user' in help_text

@@ -1,21 +1,21 @@
-"""Tests for class-based CLI functionality."""
+"""Tests for class-based FreyjaCLI functionality."""
 import enum
 from pathlib import Path
 
 import pytest
 
-from freyja.cli import CLI
-from freyja.enums.target_mode import TargetMode
+from freyja import FreyjaCLI
+from freyja.cli import TargetMode
 
 
 class SampleEnum(enum.Enum):
-  """Sample enum for class-based CLI testing."""
+  """Sample enum for class-based FreyjaCLI testing."""
   OPTION_A = "a"
   OPTION_B = "b"
 
 
 class SampleClass:
-  """Sample class for testing CLI generation."""
+  """Sample class for testing FreyjaCLI generation."""
 
   def __init__(self):
     """Initialize sample class."""
@@ -68,31 +68,31 @@ class SampleClassWithComplexInit:
     self.required_param = required_param
 
   def some_method(self):
-    """Some method that won't be accessible via CLI."""
+    """Some method that won't be accessible via FreyjaCLI."""
     return "This shouldn't work"
 
 
 class TestClassBasedCLI:
-  """Test class-based CLI functionality."""
+  """Test class-based FreyjaCLI functionality."""
 
   def test_from_class_creation(self):
-    """Test CLI creation from class."""
-    cli = CLI(SampleClass)
+    """Test FreyjaCLI creation from class."""
+    cli = FreyjaCLI(SampleClass)
 
     assert cli.target_mode == TargetMode.CLASS
     assert cli.target_class == SampleClass
-    assert cli.title == "Sample class for testing CLI generation."  # From docstring
+    assert cli.title == "Sample class for testing FreyjaCLI generation."  # From docstring
     assert 'simple-method' in cli.commands
     assert 'method-with-types' in cli.commands
     assert cli.target_module is None
 
   def test_from_class_with_custom_title(self):
-    """Test CLI creation with custom title."""
-    cli = CLI(SampleClass, title="Custom Title")
+    """Test FreyjaCLI creation with custom title."""
+    cli = FreyjaCLI(SampleClass, title="Custom Title")
     assert cli.title == "Custom Title"
 
   def test_from_class_without_docstring(self):
-    """Test CLI creation from class without docstring."""
+    """Test FreyjaCLI creation from class without docstring."""
 
     class NoDocClass:
       def __init__(self):
@@ -101,12 +101,12 @@ class TestClassBasedCLI:
       def method(self):
         return "test"
 
-    cli = CLI(NoDocClass)
+    cli = FreyjaCLI(NoDocClass)
     assert cli.title == "NoDocClass"  # Falls back to class name
 
   def test_method_discovery(self):
     """Test automatic method discovery."""
-    cli = CLI(SampleClass)
+    cli = FreyjaCLI(SampleClass)
 
     # Should include public methods (converted to kebab-case)
     assert 'simple-method' in cli.commands
@@ -123,22 +123,22 @@ class TestClassBasedCLI:
       assert not command_name.startswith('_')  # No private methods in commands  # Methods should be callable
 
   def test_method_execution(self):
-    """Test method execution through CLI."""
-    cli = CLI(SampleClass)
+    """Test method execution through FreyjaCLI."""
+    cli = FreyjaCLI(SampleClass)
 
     result = cli.run(['simple-method', '--name', 'Alice'])
     assert result == "Hello Alice from method!"
 
   def test_method_execution_with_defaults(self):
     """Test method execution with default parameters."""
-    cli = CLI(SampleClass)
+    cli = FreyjaCLI(SampleClass)
 
     result = cli.run(['simple-method'])
     assert result == "Hello world from method!"
 
   def test_method_with_types_execution(self):
     """Test method execution with type annotations."""
-    cli = CLI(SampleClass)
+    cli = FreyjaCLI(SampleClass)
 
     result = cli.run(['method-with-types', '--text', 'test'])
     assert result['text'] == 'test'
@@ -149,7 +149,7 @@ class TestClassBasedCLI:
 
   def test_method_with_all_parameters(self):
     """Test method execution with all parameters specified."""
-    cli = CLI(SampleClass)
+    cli = FreyjaCLI(SampleClass)
 
     result = cli.run([
       'method-with-types',
@@ -169,7 +169,7 @@ class TestClassBasedCLI:
 
   def test_hierarchical_methods(self):
     """Test that dunder notation is converted to flat command for class methods."""
-    cli = CLI(SampleClass)
+    cli = FreyjaCLI(SampleClass)
 
     # Dunder notation should now create a flat command with underscores converted to dashes
     result = cli.run(['hierarchical--nested--command', '--value', 'test'])
@@ -178,18 +178,18 @@ class TestClassBasedCLI:
 
   def test_parser_creation_from_class(self):
     """Test parser creation from class methods."""
-    cli = CLI(SampleClass)
+    cli = FreyjaCLI(SampleClass)
     parser = cli.create_parser()
 
     help_text = parser.format_help()
-    assert "Sample class for testing CLI generation." in help_text
+    assert "Sample class for testing FreyjaCLI generation." in help_text
     assert "simple-method" in help_text
     assert "method-with-types" in help_text
 
   def test_class_instantiation_error(self):
     """Test error handling for classes that can't be instantiated."""
     with pytest.raises(ValueError, match="parameters without default values"):
-      CLI(SampleClassWithComplexInit)
+      FreyjaCLI(SampleClassWithComplexInit)
 
   def test_custom_method_filter(self):
     """Test custom method filter functionality."""
@@ -197,7 +197,7 @@ class TestClassBasedCLI:
     def only_simple_method(name, obj):
       return name == 'simple_method'
 
-    cli = CLI(SampleClass, method_filter=only_simple_method)
+    cli = FreyjaCLI(SampleClass, method_filter=only_simple_method)
     # Should only have simple-method (converted to kebab-case)
     assert 'simple-method' in cli.commands
     # Count actual command entries (filter out groups)
@@ -206,9 +206,9 @@ class TestClassBasedCLI:
 
   def test_theme_tuner_integration(self):
     """Test that theme tuner is now provided by System class."""
-    # Theme tuner functionality is now in System class, not injected into CLI
-    from freyja.command.system import System
-    cli = CLI(System)
+    # Theme tuner functionality is now in System class, not injected into FreyjaCLI
+    from freyja.cli.system import System
+    cli = FreyjaCLI(System)
 
     # System class uses inner class pattern, so should have hierarchical commands
     assert 'tune-theme' in cli.commands
@@ -216,58 +216,18 @@ class TestClassBasedCLI:
     assert 'increase-adjustment' in cli.commands['tune-theme']['commands']
 
   def test_completion_integration(self):
-    """Test that completion works with class-based CLI."""
-    cli = CLI(SampleClass, enable_completion=True)
+    """Test that completion works with class-based FreyjaCLI."""
+    cli = FreyjaCLI(SampleClass, enable_completion=True)
 
     assert cli.enable_completion is True
 
   def test_method_without_docstring_parameters(self):
     """Test method without parameter docstrings."""
-    cli = CLI(SampleClass)
+    cli = FreyjaCLI(SampleClass)
 
     result = cli.run(['method-without-docstring', '--param', 'test'])
     assert result == "No docstring method: test"
 
-
-class TestBackwardCompatibilityWithClasses:
-  """Test that existing functionality still works with classes."""
-
-  def test_from_module_still_works(self):
-    """Test that from_module class method works like old constructor."""
-    import freyja.tests.conftest as sample_module
-
-    cli = CLI(sample_module, "Test CLI")
-
-    assert cli.target_mode == TargetMode.MODULE
-    assert cli.target_module == sample_module
-    assert cli.title == "Test CLI"
-    assert 'sample-function' in cli.commands
-    assert cli.target_class is None
-
-  def test_old_constructor_still_works(self):
-    """Test that old constructor pattern still works."""
-    import freyja.tests.conftest as sample_module
-
-    cli = CLI(sample_module, "Test CLI")
-
-    # Should work exactly the same as before
-    assert cli.target_mode == TargetMode.MODULE
-    assert cli.title == "Test CLI"
-    result = cli.run(['sample-function'])
-    assert "Hello world!" in result
-
-  def test_constructor_vs_from_module_equivalence(self):
-    """Test that constructor and from_module produce equivalent results."""
-    import freyja.tests.conftest as sample_module
-
-    cli1 = CLI(sample_module, "Test CLI")
-    cli2 = CLI(sample_module, "Test CLI")
-
-    # Should have same structure
-    assert cli1.target_mode == cli2.target_mode
-    assert cli1.title == cli2.title
-    assert list(cli1.commands.keys()) == list(cli2.commands.keys())
-    # enable_theme_tuner property no longer exists - it's now handled by System class
 
 
 class TestClassVsModuleComparison:
@@ -277,11 +237,11 @@ class TestClassVsModuleComparison:
     """Test that type annotations work the same for classes and modules."""
     import freyja.tests.conftest as sample_module
 
-    # Module-based CLI
-    cli_module = CLI(sample_module, "Module CLI")
+    # Module-based FreyjaCLI
+    cli_module = FreyjaCLI(sample_module, "Module FreyjaCLI")
 
-    # Class-based CLI
-    cli_class = CLI(SampleClass, "Class CLI")
+    # Class-based FreyjaCLI
+    cli_class = FreyjaCLI(SampleClass, "Class FreyjaCLI")
 
     # Both should handle types correctly
     module_result = cli_module.run(['function-with-types', '--text', 'test', '--number', '456'])
@@ -293,7 +253,7 @@ class TestClassVsModuleComparison:
   def test_hierarchical_command_parity(self):
     """Test that dunder notation creates flat commands for both classes and modules."""
     # Dunder notation should create flat commands with double dashes
-    cli = CLI(SampleClass)
+    cli = FreyjaCLI(SampleClass)
 
     result = cli.run(['hierarchical--nested--command', '--value', 'test'])
     assert "Hierarchical: test" in result
@@ -302,15 +262,15 @@ class TestClassVsModuleComparison:
     """Test that help generation works similarly for classes and modules."""
     import freyja.tests.conftest as sample_module
 
-    cli_module = CLI(sample_module, "Module CLI")
-    cli_class = CLI(SampleClass, "Class CLI")
+    cli_module = FreyjaCLI(sample_module, "Module FreyjaCLI")
+    cli_class = FreyjaCLI(SampleClass, "Class FreyjaCLI")
 
     module_help = cli_module.create_parser().format_help()
     class_help = cli_class.create_parser().format_help()
 
     # Both should contain their respective titles
-    assert "Module CLI" in module_help
-    assert "Class CLI" in class_help
+    assert "Module FreyjaCLI" in module_help
+    assert "Class FreyjaCLI" in class_help
 
     # Both should have similar structure
     assert "COMMANDS" in module_help
@@ -318,11 +278,11 @@ class TestClassVsModuleComparison:
 
 
 class TestErrorHandling:
-  """Test error handling for class-based CLI."""
+  """Test error handling for class-based FreyjaCLI."""
 
   def test_missing_required_parameter(self):
     """Test error handling for missing required parameters."""
-    cli = CLI(SampleClass)
+    cli = FreyjaCLI(SampleClass)
 
     # Should raise SystemExit for missing required parameter
     with pytest.raises(SystemExit):
@@ -330,30 +290,30 @@ class TestErrorHandling:
 
   def test_invalid_enum_value(self):
     """Test error handling for invalid enum values."""
-    cli = CLI(SampleClass)
+    cli = FreyjaCLI(SampleClass)
 
     with pytest.raises(SystemExit):
       cli.run(['method-with-types', '--text', 'test', '--choice', 'INVALID'])
 
   def test_invalid_type_conversion(self):
     """Test error handling for invalid type conversions."""
-    cli = CLI(SampleClass)
+    cli = FreyjaCLI(SampleClass)
 
     with pytest.raises(SystemExit):
       cli.run(['method-with-types', '--text', 'test', '--number', 'not_a_number'])
 
 
 class TestEdgeCases:
-  """Test edge cases for class-based CLI."""
+  """Test edge cases for class-based FreyjaCLI."""
 
   def test_empty_class(self):
-    """Test CLI creation from class with no public methods."""
+    """Test FreyjaCLI creation from class with no public methods."""
 
     class EmptyClass:
       def __init__(self):
         pass
 
-    cli = CLI(EmptyClass)
+    cli = FreyjaCLI(EmptyClass)
     # Should have no commands (only __init__ is excluded)
     command_count = len([k for k, v in cli.commands.items() if v.get('type') == 'command'])
     assert command_count == 0
@@ -371,7 +331,7 @@ class TestEdgeCases:
       def __special_method__(self):
         return "special"
 
-    cli = CLI(PrivateMethodsClass)
+    cli = FreyjaCLI(PrivateMethodsClass)
     # Should have no public methods
     command_count = len([k for k, v in cli.commands.items() if v.get('type') == 'command'])
     assert command_count == 0
@@ -390,7 +350,7 @@ class TestEdgeCases:
       def method(self):
         return "method"
 
-    cli = CLI(ClassWithProperty)
+    cli = FreyjaCLI(ClassWithProperty)
     assert 'method' in cli.commands
     assert 'value' not in cli.commands  # Property should not be included
 
@@ -432,7 +392,7 @@ class TestConstructorParameterValidation:
   def test_direct_method_class_with_defaults_succeeds(self):
     """Test that class with default constructor parameters works for direct method pattern."""
     # Should work because all parameters have defaults
-    cli = CLI(SampleClassWithDefaults)
+    cli = FreyjaCLI(SampleClassWithDefaults)
     assert cli.target_mode == TargetMode.CLASS
     # Should have the test method available as a command
     assert 'test-method' in cli.commands
@@ -441,12 +401,12 @@ class TestConstructorParameterValidation:
     """Test that class with required constructor parameters fails for direct method pattern."""
     # Should fail because constructor has required parameter
     with pytest.raises(ValueError, match="parameters without default values"):
-      CLI(SampleClassWithComplexInit)
+      FreyjaCLI(SampleClassWithComplexInit)
 
   def test_inner_class_pattern_with_good_constructors_succeeds(self):
     """Test that inner class pattern works when all constructors have default parameters."""
     # Should work because both main class and inner class have defaults
-    cli = CLI(SampleClassWithInnerClasses)
+    cli = FreyjaCLI(SampleClassWithInnerClasses)
     assert cli.target_mode == TargetMode.CLASS
     # Inner class methods become hierarchical commands with proper nesting
     assert 'good-inner-class' in cli.commands
@@ -470,7 +430,7 @@ class TestConstructorParameterValidation:
 
     # Should fail because inner class constructor has required parameter
     with pytest.raises(ValueError, match="Constructor for inner class.*parameters without default values"):
-      CLI(ClassWithBadInner)
+      FreyjaCLI(ClassWithBadInner)
 
   def test_inner_class_pattern_with_bad_main_class_fails(self):
     """Test that inner class pattern fails when main class has required parameters."""
@@ -489,4 +449,4 @@ class TestConstructorParameterValidation:
 
     # Should fail because main class constructor has required parameter
     with pytest.raises(ValueError, match="Constructor for main class.*parameters without default values"):
-      CLI(ClassWithBadMain)
+      FreyjaCLI(ClassWithBadMain)

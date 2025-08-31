@@ -94,8 +94,8 @@ class MyCLI:
 **Solution**: Check parameter names
 ```bash
 # Parameter names use dashes, not underscores
-python cli.py command --input-file data.txt  # Correct
-python cli.py command --input_file data.txt  # Wrong
+python freyja_cli.py command --input-file data.txt  # Correct
+python freyja_cli.py command --input_file data.txt  # Wrong
 ```
 
 ### Output and Display Issues
@@ -141,7 +141,7 @@ def process_data(file: str) -> None:
 #### Problem: "CLI tests failing"
 **Solution**: Test functions directly
 ```python
-# Test the function, not the CLI
+# Test the function, not the FreyjaCLI
 def test_process():
     result = process_data("test.txt")
     assert result == expected_value

@@ -31,7 +31,7 @@ def goodbye(name: str = "World", formal: bool = False) -> None:
 
 
 if __name__ == '__main__':
-  cli = CLI(sys.modules[__name__], title="Greeting CLI")
+  cli = CLI(sys.modules[__name__], title="Greeting FreyjaCLI")
   cli.display()
 ```
 

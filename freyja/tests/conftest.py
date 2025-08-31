@@ -7,7 +7,7 @@ import pytest
 
 
 class TestEnum(enum.Enum):
-  """Test enumeration for CLI testing."""
+  """Test enumeration for FreyjaCLI testing."""
   OPTION_A = 1
   OPTION_B = 2
   OPTION_C = 3

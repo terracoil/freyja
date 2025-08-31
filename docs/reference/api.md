@@ -62,7 +62,7 @@ def greet(name: str = "World") -> None:
 
 cli = CLI.from_module(
   sys.modules[__name__],
-  title="Greeting CLI",
+  title="Greeting FreyjaCLI",
   theme_name="colorful"
 )
 cli.display()
@@ -139,7 +139,7 @@ This method:
 ```python
 if __name__ == '__main__':
     cli = CLI.from_module(sys.modules[__name__])
-    cli.display()  # Starts CLI and handles all argument processing
+    cli.display()  # Starts FreyjaCLI and handles all argument processing
 ```
 
 ## Configuration Options
@@ -186,7 +186,7 @@ Configure individual functions/methods using the `function_opts` parameter:
 function_opts = {
     'function_name': {
         'description': 'Custom description text',
-        'hidden': False,  # Hide from CLI command listing
+        'hidden': False,  # Hide from FreyjaCLI command listing
         'aliases': ['alt1', 'alt2']  # Alternative command names (planned)
     }
 }
@@ -216,7 +216,7 @@ function_opts = {
         'description': 'Advanced file processing with multiple output formats'
     },
     'internal_helper': {
-        'hidden': True  # Hide from CLI
+        'hidden': True  # Hide from FreyjaCLI
     }
 }
 
@@ -285,7 +285,7 @@ def risky_function(value: int) -> None:
         raise ValueError("Value must be positive")
     print(f"Processing: {value}")
 
-# CLI automatically catches and displays user-friendly error messages
+# FreyjaCLI automatically catches and displays user-friendly error messages
 # Exit code 1 for exceptions, 0 for success
 ```
 
@@ -295,7 +295,7 @@ def risky_function(value: int) -> None:
 
 ```python
 def create_cli_dynamically(use_class_mode: bool = False):
-    """Create CLI based on runtime conditions."""
+    """Create FreyjaCLI based on runtime conditions."""
     if use_class_mode:
         cli = CLI.from_class(MyAppClass)
     else:
@@ -311,11 +311,11 @@ if __name__ == '__main__':
 
 ```python
 def create_admin_cli():
-    """CLI for admin functions."""
+    """FreyjaCLI for admin functions."""
     return CLI.from_module(admin_module, title="Admin Tools")
 
 def create_user_cli():
-    """CLI for user functions."""  
+    """FreyjaCLI for user functions."""  
     return CLI.from_module(user_module, title="User Tools")
 
 if __name__ == '__main__':
@@ -355,7 +355,7 @@ import logging
 from pathlib import Path
 from typing import List
 
-# Configure logging before CLI creation
+# Configure logging before FreyjaCLI creation
 logging.basicConfig(level=logging.INFO)
 
 def setup_logging(level: str = "INFO", log_file: str = None) -> None:

@@ -1,17 +1,17 @@
-"""Validation utilities for CLI generation and parameter checking."""
+"""Validation utilities for FreyjaCLI generation and parameter checking."""
 
 import inspect
 from typing import Any, List, Type
 
 
 class ValidationService:
-    """Centralized validation service for CLI parameter and constructor validation."""
+    """Centralized validation service for FreyjaCLI parameter and constructor validation."""
 
     @staticmethod
     def validate_constructor_parameters(cls: Type, context: str, allow_parameterless_only: bool = False) -> None:
-        """Validate constructor compatibility for CLI argument generation.
+        """Validate constructor compatibility for FreyjaCLI argument generation.
 
-        CLI must instantiate classes during command execution - constructor parameters become CLI arguments.
+        FreyjaCLI must instantiate classes during command execution - constructor parameters become FreyjaCLI arguments.
         
         :param cls: The class to validate
         :param context: Context string for error messages (e.g., "main class", "inner class 'UserOps'")
@@ -41,7 +41,7 @@ class ValidationService:
                                "For classes using direct methods, the constructor must be parameterless or all parameters must have default values.")
                 else:
                     error_msg = (f"Constructor for {context} '{class_name}' has parameters without default values: {param_list}. "
-                               "All constructor parameters must have default values to be used as CLI arguments.")
+                               "All constructor parameters must have default values to be used as FreyjaCLI arguments.")
                 raise ValueError(error_msg)
 
         except Exception as e:
@@ -93,7 +93,7 @@ class ValidationService:
                 param_list = ', '.join(params_without_defaults)
                 class_name = cls.__name__
                 error_msg = (f"Constructor for {context} '{class_name}' has parameters without default values: {param_list}. "
-                           f"All constructor parameters must have default values to be used as CLI arguments.")
+                           f"All constructor parameters must have default values to be used as FreyjaCLI arguments.")
                 raise ValueError(error_msg)
                 
         except Exception as e:
@@ -105,7 +105,7 @@ class ValidationService:
 
     @staticmethod
     def validate_function_signature(func: Any) -> bool:
-        """Type annotations enable automatic CLI argument type mapping without manual configuration."""
+        """Type annotations enable automatic FreyjaCLI argument type mapping without manual configuration."""
         try:
             sig = inspect.signature(func)
             
@@ -115,7 +115,7 @@ class ValidationService:
                 if param_name == 'self' or param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
                     continue
                 
-                # Function must have type annotations for CLI generation
+                # Function must have type annotations for FreyjaCLI generation
                 if param.annotation == param.empty:
                     return False
                     
@@ -126,7 +126,7 @@ class ValidationService:
 
     @staticmethod
     def get_validation_errors(cls: Type, functions: dict[str, Any]) -> List[str]:
-        """Early validation prevents runtime failures during CLI generation and command execution."""
+        """Early validation prevents runtime failures during FreyjaCLI generation and command execution."""
         errors = []
         
         # Validate class constructor if provided
@@ -139,6 +139,6 @@ class ValidationService:
         # Validate each function
         for func_name, func in functions.items():
             if not ValidationService.validate_function_signature(func):
-                errors.append(f"Function '{func_name}' has invalid signature for CLI generation")
+                errors.append(f"Function '{func_name}' has invalid signature for FreyjaCLI generation")
         
         return errors

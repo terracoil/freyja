@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-"""Class-based CLI example demonstrating inner class hierarchical command organization."""
+"""Class-based FreyjaCLI example demonstrating inner class hierarchical command organization."""
 
 import enum
 import sys
 from pathlib import Path
 
-from freyja.cli import CLI
-from freyja.command.system import System
-
+from freyja import FreyjaCLI
 
 class ProcessingMode(enum.Enum):
   """Processing modes for data operations."""
@@ -245,16 +243,13 @@ class DataProcessor:
 
 if __name__ == '__main__':
   # Import theme functionality
-  from freyja.theme import create_default_theme
 
-  # Create CLI from class with colored theme
-  theme = create_default_theme()
-  cli = CLI(
-    [System, DataProcessor],
-    theme=theme,
-    enable_completion=True
+  # Create FreyjaCLI from class with colored theme
+  cli = FreyjaCLI(
+    DataProcessor,
+    completion=True
   )
 
-  # Run the CLI and exit with appropriate code
+  # Run the FreyjaCLI and exit with appropriate code
   result = cli.run()
   sys.exit(result if isinstance(result, int) else 0)

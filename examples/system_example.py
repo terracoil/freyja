@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-"""Example of using System class for CLI utilities."""
+"""Example of using System class for FreyjaCLI utilities."""
 
-from freyja import CLI
-from freyja.command.system import System
+from freyja import FreyjaCLI
+from freyja.cli.system import System
 from freyja.theme import create_default_theme
 
 if __name__ == '__main__':
-  # Create CLI with System class to demonstrate built-in system utilities
+  # Create FreyjaCLI with System class to demonstrate built-in system utilities
   theme = create_default_theme()
-  cli = CLI(
+  cli = FreyjaCLI(
     System,
-    title="System Utilities CLI - Built-in Commands",
+    title="System Utilities FreyjaCLI - Built-in Commands",
     theme=theme,
     enable_completion=True
   )
 
-  # Run the CLI and exit with appropriate code
+  # Run the FreyjaCLI and exit with appropriate code
   result = cli.run()
   exit(result if isinstance(result, int) else 0)

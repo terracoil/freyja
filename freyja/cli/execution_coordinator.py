@@ -1,23 +1,20 @@
-"""CLI execution coordination service.
+"""FreyjaCLI execution coordination service.
 
 Handles argument parsing and command execution coordination.
-Extracted from CLI class to reduce its size and improve separation of concerns.
+Extracted from FreyjaCLI class to reduce its size and improve separation of concerns.
 """
-import sys
 from typing import *
 
-from freyja.enums.target_mode import TargetMode
+from .enums import TargetMode
 
 
-class CliExecutionCoordinator:
-  """Coordinates CLI argument parsing and command execution."""
+class ExecutionCoordinator:
+  """Coordinates FreyjaCLI argument parsing and command execution."""
 
   def __init__(self, target_mode: TargetMode, executors: Dict[str, Any]):
     """Initialize execution coordinator."""
     self.target_mode = target_mode
     self.executors = executors
-    self.use_inner_class_pattern = False
-    self.inner_class_metadata = {}
     self.discovered_commands = []
 
   def parse_and_execute(self, parser, args: Optional[List[str]]) -> Any:
@@ -82,13 +79,11 @@ class CliExecutionCoordinator:
 
       return executor.execute_command(
         parsed=parsed,
-        target_mode=self.target_mode,
-        use_inner_class_pattern=self.use_inner_class_pattern,
-        inner_class_metadata=self.inner_class_metadata
+        target_mode=self.target_mode
       )
 
   def _execute_multi_class_command(self, parsed) -> Any:
-    """Execute command for multiple-class CLI."""
+    """Execute command for multiple-class FreyjaCLI."""
     function_name = parsed._function_name
     source_class = self._find_source_class_for_function(function_name)
 
@@ -102,9 +97,7 @@ class CliExecutionCoordinator:
 
     return executor.execute_command(
       parsed=parsed,
-      target_mode=TargetMode.CLASS,
-      use_inner_class_pattern=self.use_inner_class_pattern,
-      inner_class_metadata=self.inner_class_metadata
+      target_mode=TargetMode.CLASS
     )
 
   def _find_source_class_for_function(self, function_name: str) -> Optional[Type]:

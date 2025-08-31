@@ -13,10 +13,10 @@ All commands remain flat - there are no hierarchical command groups. Inner class
 
 ```bash
 # All commands are at the same level
-python cli.py --help                                    # Show all commands
-python cli.py project-operations--create --name "app"  # Inner class method
-python cli.py task-management--add --title "Task"      # Another inner class method
-python cli.py generate-report --format json             # Main class method
+python freyja_cli.py --help                                    # Show all commands
+python freyja_cli.py project-operations--create --name "app"  # Inner class method
+python freyja_cli.py task-management--add --title "Task"      # Another inner class method
+python freyja_cli.py generate-report --format json             # Main class method
 ```
 
 ### Global and Sub-Global Arguments
@@ -49,7 +49,7 @@ from typing import List
 
 
 class ProjectManager:
-  """Project Management CLI with organized flat commands."""
+  """Project Management FreyjaCLI with organized flat commands."""
 
   def __init__(self, config_file: str = "config.json", debug: bool = False):
     """
@@ -285,7 +285,7 @@ Module-based CLIs use double underscores for hierarchies:
 def project__create(name: str) -> None:
     pass
 
-# Usage: python cli.py project create --name "app"
+# Usage: python freyja_cli.py project create --name "app"
 ```
 
 Class-based CLIs use inner classes with double-dash notation:
@@ -296,7 +296,7 @@ class CLI:
         def create(self, name: str) -> None:
             pass
 
-# Usage: python cli.py project--create --name "app"
+# Usage: python freyja_cli.py project--create --name "app"
 ```
 
 ## Limitations

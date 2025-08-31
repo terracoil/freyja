@@ -3,11 +3,11 @@
 import sys
 sys.path.insert(0, '.')
 from examples.cls_example import DataProcessor
-from freyja.cli import CLI
+from freyja import FreyjaCLI
 import argparse
 
 # Create a debug version to see what's happening
-cli = CLI(DataProcessor, enable_completion=True)
+cli = FreyjaCLI(DataProcessor, enable_completion=True)
 parser = cli.create_parser()
 
 # Find both parsers

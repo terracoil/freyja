@@ -1,11 +1,9 @@
-"""Test suite for multi-class CLI functionality."""
+"""Test suite for multi-class FreyjaCLI functionality."""
 
 import pytest
-from unittest.mock import patch
 
-from freyja.cli import CLI
-from freyja.enums.target_mode import TargetMode
-from freyja.command.multi_class_handler import MultiClassHandler
+from freyja import FreyjaCLI
+from freyja.cli import TargetMode, ClassHandler
 
 
 class MockDataProcessor:
@@ -58,11 +56,11 @@ class MockReportGenerator:
 
 
 class TestMultiClassHandler:
-    """Test MultiClassHandler collision detection and command organization."""
+    """Test ClassHandler collision detection and command organization."""
 
     def test_collision_detection(self):
         """Test collision detection between classes with same command names."""
-        handler = MultiClassHandler()
+        handler = ClassHandler()
 
         # Track commands that will collide (same exact command name)
         handler.track_command("process-data", MockDataProcessor)
@@ -77,7 +75,7 @@ class TestMultiClassHandler:
 
     def test_no_collision_different_names(self):
         """Test no collision when method names are different."""
-        handler = MultiClassHandler()
+        handler = ClassHandler()
 
         handler.track_command("process-data", MockDataProcessor)
         handler.track_command("list-files", MockFileManager)
@@ -86,7 +84,7 @@ class TestMultiClassHandler:
 
     def test_command_ordering(self):
         """Test command ordering preserves class order then alphabetical."""
-        handler = MultiClassHandler()
+        handler = ClassHandler()
 
         # Track commands out of order using clean names
         handler.track_command("list-files", MockFileManager)
@@ -108,14 +106,14 @@ class TestMultiClassHandler:
 
     def test_validation_success(self):
         """Test successful validation with no collisions."""
-        handler = MultiClassHandler()
+        handler = ClassHandler()
 
         # Should not raise exception
         handler.validate_classes([MockDataProcessor, MockReportGenerator])
 
     def test_validation_failure_with_collisions(self):
         """Test validation failure when collisions exist."""
-        handler = MultiClassHandler()
+        handler = ClassHandler()
 
         # Should raise ValueError due to process_data collision
         with pytest.raises(ValueError) as exc_info:
@@ -126,11 +124,11 @@ class TestMultiClassHandler:
 
 
 class TestMultiClassCLI:
-    """Test multi-class CLI functionality."""
+    """Test multi-class FreyjaCLI functionality."""
 
     def test_single_class_in_list(self):
         """Test single class in list behaves like regular class mode."""
-        cli = CLI([MockDataProcessor])
+        cli = FreyjaCLI([MockDataProcessor])
 
         assert cli.target_mode == TargetMode.CLASS
         assert cli.target_class == MockDataProcessor
@@ -139,7 +137,7 @@ class TestMultiClassCLI:
 
     def test_multi_class_mode_detection(self):
         """Test multi-class mode is detected correctly."""
-        cli = CLI([MockDataProcessor, MockReportGenerator])
+        cli = FreyjaCLI([MockDataProcessor, MockReportGenerator])
 
         assert cli.target_mode == TargetMode.CLASS  # Unified handling: always CLASS for classes
         assert cli.target_class == MockReportGenerator  # Last class is primary
@@ -149,14 +147,14 @@ class TestMultiClassCLI:
         """Test collision detection when classes have same method names."""
         # Should raise exception since both classes have process_data method
         with pytest.raises(ValueError) as exc_info:
-            CLI([MockDataProcessor, MockFileManager])
+            FreyjaCLI([MockDataProcessor, MockFileManager])
 
         assert "Command name collisions detected" in str(exc_info.value)
         assert "process-data" in str(exc_info.value)
 
     def test_multi_class_command_structure(self):
-        """Test command structure for multi-class CLI."""
-        cli = CLI([MockDataProcessor, MockReportGenerator])
+        """Test command structure for multi-class FreyjaCLI."""
+        cli = FreyjaCLI([MockDataProcessor, MockReportGenerator])
 
         # Should have commands from both classes
         commands = cli.commands
@@ -173,8 +171,8 @@ class TestMultiClassCLI:
         assert dp_cmd['original_name'] == 'process_data'
 
     def test_multi_class_with_inner_classes(self):
-        """Test multi-class CLI with inner classes."""
-        cli = CLI([MockDataProcessor])
+        """Test multi-class FreyjaCLI with inner classes."""
+        cli = FreyjaCLI([MockDataProcessor])
 
         # Should have both direct methods and inner class methods
         commands = cli.commands
@@ -189,18 +187,18 @@ class TestMultiClassCLI:
         assert 'cleanup' in inner_group['commands']
 
     def test_multi_class_title_generation(self):
-        """Test title generation for multi-class CLI."""
+        """Test title generation for multi-class FreyjaCLI."""
         # Two classes - title should come from the last class (MockReportGenerator)
-        cli2 = CLI([MockDataProcessor, MockReportGenerator])
+        cli2 = FreyjaCLI([MockDataProcessor, MockReportGenerator])
         assert "Mock report generator for testing" in cli2.title
 
         # Single class (should use class name or docstring)
-        cli1 = CLI([MockDataProcessor])
+        cli1 = FreyjaCLI([MockDataProcessor])
         assert "MockDataProcessor" in cli1.title or "mock data processor" in cli1.title.lower()
 
     def test_multi_class_command_execution(self):
         """Test command structure in multi-class mode."""
-        cli = CLI([MockDataProcessor, MockReportGenerator])
+        cli = FreyjaCLI([MockDataProcessor, MockReportGenerator])
 
         # Should have commands from both classes
         commands = cli.commands
@@ -216,7 +214,7 @@ class TestMultiClassCLI:
 
     def test_backward_compatibility_single_class(self):
         """Test backward compatibility with single class (non-list)."""
-        cli = CLI(MockDataProcessor)
+        cli = FreyjaCLI(MockDataProcessor)
 
         assert cli.target_mode == TargetMode.CLASS
         assert cli.target_class == MockDataProcessor
@@ -225,22 +223,22 @@ class TestMultiClassCLI:
     def test_empty_list_validation(self):
         """Test validation of empty class list."""
         with pytest.raises((ValueError, IndexError)):
-            CLI([])
+            FreyjaCLI([])
 
     def test_invalid_list_items(self):
         """Test validation of list with non-class items."""
         with pytest.raises(ValueError) as exc_info:
-            CLI([MockDataProcessor, "not_a_class"])
+            FreyjaCLI([MockDataProcessor, "not_a_class"])
 
         assert "must be classes" in str(exc_info.value)
 
 
 class TestCommandExecutorMultiClass:
-    """Test multi-class CLI functionality at a high level."""
+    """Test multi-class FreyjaCLI functionality at a high level."""
 
     def test_multi_class_cli_initialization(self):
         """Test that multi-class CLIs initialize correctly."""
-        cli = CLI([MockDataProcessor, MockReportGenerator])
+        cli = FreyjaCLI([MockDataProcessor, MockReportGenerator])
 
         # Should properly identify target mode and classes
         assert cli.target_mode.value == 'class'
@@ -254,7 +252,7 @@ class TestCommandExecutorMultiClass:
 
     def test_single_class_compatibility(self):
         """Test that single class mode works correctly."""
-        cli = CLI(MockDataProcessor)
+        cli = FreyjaCLI(MockDataProcessor)
 
         # Should properly handle single class
         assert cli.target_mode.value == 'class'

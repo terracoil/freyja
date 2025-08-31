@@ -27,7 +27,7 @@ freyja uses Python's introspection capabilities to automatically generate comman
 
 ```python
 # Module-based: Functions become commands
-CLI.from_module(module, title="My CLI")
+CLI.from_module(module, title="My FreyjaCLI")
 
 # Class-based: Methods become commands, instance maintains state
 CLI.from_class(SomeClass, title="My App")
@@ -111,7 +111,7 @@ import json
 
 class ConfigManager:
   """
-      Configuration Management CLI    
+      Configuration Management FreyjaCLI    
   Manage application configuration with persistent state.
   """
 
@@ -329,11 +329,11 @@ class DatabaseManager:
 # Module-based configuration
 cli = CLI.from_module(
     module=sys.modules[__name__],
-    title="Custom CLI Title",           # Override auto-detected title
+    title="Custom FreyjaCLI Title",           # Override auto-detected title
     function_opts={                     # Per-function configuration
         'function_name': {
             'description': 'Custom description',
-            'hidden': False,            # Hide from CLI listing
+            'hidden': False,            # Hide from FreyjaCLI listing
         }
     },
     theme_name="colorful",             # Built-in theme: "universal", "colorful"
@@ -463,7 +463,7 @@ def good_function(items: List[str]) -> None:
 ```python
 class MyApp:
     def public_command(self) -> None:
-        """This becomes a CLI command."""
+        """This becomes a FreyjaCLI command."""
         pass
     
     def _private_method(self) -> None:

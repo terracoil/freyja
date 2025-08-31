@@ -30,7 +30,7 @@ Most options are set using introspection/signature and annotation functionality,
 Perfect for functional programming styles and simple utilities. All functions become flat commands:
 
 ```python
-# Create CLI from module functions
+# Create FreyjaCLI from module functions
 from src import CLI
 import sys
 
@@ -44,7 +44,7 @@ def greet(name: str = "World", excited: bool = False) -> None:
 
 
 if __name__ == '__main__':
-  cli = CLI(sys.modules[__name__], title="My CLI")
+  cli = CLI(sys.modules[__name__], title="My FreyjaCLI")
   cli.display()
 ```
 
@@ -152,8 +152,8 @@ poetry install
 ./bin/lint.sh
 
 # Run examples
-poetry run python mod_example.py  # Module-based CLI
-poetry run python cls_example.py  # Class-based CLI
+poetry run python mod_example.py  # Module-based FreyjaCLI
+poetry run python cls_example.py  # Class-based FreyjaCLI
 
 # Build package
 poetry build

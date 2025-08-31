@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Module-based CLI example with real functionality."""
+"""Module-based FreyjaCLI example with real functionality."""
 
 import csv
 import json
@@ -9,7 +9,7 @@ from enum import Enum
 from pathlib import Path
 from typing import List, Optional
 
-from freyja import CLI
+from freyja import FreyjaCLI
 
 
 class OutputFormat(Enum):
@@ -392,12 +392,12 @@ def completion_demo(config_file: str = "config.json", output_dir: str = "./outpu
 
 
 if __name__ == '__main__':
-  # Create CLI - descriptions now come from docstrings
-  cli = CLI(
+  # Create FreyjaCLI - descriptions now come from docstrings
+  cli = FreyjaCLI(
     sys.modules[__name__],
     title="File Processing Utilities",
   )
   
-  # Run CLI  
+  # Run FreyjaCLI
   result = cli.run()
   sys.exit(result if isinstance(result, int) else 0)

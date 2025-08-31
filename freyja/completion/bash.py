@@ -119,7 +119,7 @@ def handle_bash_completion() -> None:
 
   # Import here to avoid circular imports
 
-  # This would need to be set up by the CLI instance
+  # This would need to be set up by the FreyjaCLI instance
   # For now, just output basic completions
   print("--help --verbose --no-color")
   sys.exit(0)

@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from freyja.cli import CLI
+from freyja import FreyjaCLI
 from freyja.completion.base import CompletionContext, get_completion_handler
 from freyja.completion.bash import BashCompletionHandler
 
@@ -36,8 +36,8 @@ class TestCompletionHandler:
 
   def test_get_completion_handler(self):
     """Test completion handler factory function."""
-    # Create test CLI
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    # Create test FreyjaCLI
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
     # Test bash handler
     handler = get_completion_handler(cli, 'bash')
@@ -49,7 +49,7 @@ class TestCompletionHandler:
 
   def test_bash_completion_handler(self):
     """Test bash completion handler."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
     handler = BashCompletionHandler(cli)
 
     # Test script generation
@@ -60,7 +60,7 @@ class TestCompletionHandler:
 
   def test_completion_context(self):
     """Test completion context creation."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
     parser = cli.create_parser(no_color=True)
 
     context = CompletionContext(
@@ -78,7 +78,7 @@ class TestCompletionHandler:
 
   def test_get_available_commands(self):
     """Test getting available commands from parser."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
     handler = BashCompletionHandler(cli)
     parser = cli.create_parser(no_color=True)
 
@@ -88,7 +88,7 @@ class TestCompletionHandler:
 
   def test_get_available_options(self):
     """Test getting available options from parser."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
     handler = BashCompletionHandler(cli)
     parser = cli.create_parser(no_color=True)
 
@@ -102,7 +102,7 @@ class TestCompletionHandler:
 
   def test_complete_partial_word(self):
     """Test partial word completion."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
     handler = BashCompletionHandler(cli)
 
     candidates = ["test-function", "test-command", "other-command"]
@@ -121,38 +121,38 @@ class TestCompletionHandler:
 
 
 class TestCompletionIntegration:
-  """Test completion integration with CLI."""
+  """Test completion integration with FreyjaCLI."""
 
   def test_cli_with_completion_enabled(self):
-    """Test CLI with completion enabled."""
-    cli = CLI(sys.modules[__name__], "Test CLI", enable_completion=True)
+    """Test FreyjaCLI with completion enabled."""
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI", enable_completion=True)
     assert cli.enable_completion is True
 
     # Completion arguments are no longer injected into CLIs - they're provided by System class
     # Test that completion handler can be initialized
-    from freyja.command.system import System
-    system_cli = CLI(System)
+    from freyja.cli.system import System
+    system_cli = FreyjaCLI(System)
     parser = system_cli.create_parser()
     help_text = parser.format_help()
     assert "completion" in help_text  # System class provides completion commands
 
   def test_cli_with_completion_disabled(self):
-    """Test CLI with completion disabled."""
-    cli = CLI(sys.modules[__name__], "Test CLI", enable_completion=False)
+    """Test FreyjaCLI with completion disabled."""
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI", enable_completion=False)
     assert cli.enable_completion is False
 
-    # Test that CLI without completion doesn't handle completion requests
+    # Test that FreyjaCLI without completion doesn't handle completion requests
     assert cli._is_completion_request() is False
 
   @patch.dict(os.environ, {"_FREYA_COMPLETE": "bash"})
   def test_completion_request_detection(self):
     """Test completion request detection."""
-    cli = CLI(sys.modules[__name__], "Test CLI", enable_completion=True)
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI", enable_completion=True)
     assert cli._is_completion_request() is True
 
   def test_show_completion_script(self):
     """Test showing completion script via System class."""
-    from freyja.command.system import System
+    from freyja.cli.system import System
 
     # Completion functionality is now provided by System.Completion
     system = System()
@@ -164,9 +164,9 @@ class TestCompletionIntegration:
 
   def test_completion_disabled_error(self):
     """Test completion behavior when disabled."""
-    cli = CLI(sys.modules[__name__], "Test CLI", enable_completion=False)
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI", enable_completion=False)
 
-    # CLI with completion disabled should not handle completion requests
+    # FreyjaCLI with completion disabled should not handle completion requests
     assert cli._is_completion_request() is False
 
 
@@ -175,7 +175,7 @@ class TestFileCompletion:
 
   def test_file_path_completion(self):
     """Test file path completion functionality."""
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
     handler = BashCompletionHandler(cli)
 
     # Create temporary directory with test files

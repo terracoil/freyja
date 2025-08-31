@@ -1,14 +1,15 @@
-"""Multi-class CLI command handling and collision detection.
+import inspect
+from typing import Dict, Type, List, Tuple, Optional, Any
 
-Provides services for managing commands from multiple classes in a single CLI,
+"""Multi-class FreyjaCLI command handling and collision detection.
+
+Provides services for managing commands from multiple classes in a single FreyjaCLI,
 including collision detection, command ordering, and source tracking.
 """
 
-import inspect
-from typing import *
 
 
-class MultiClassHandler:
+class ClassHandler:
   """Handles commands from multiple classes with collision detection and ordering."""
 
   def __init__(self):
@@ -21,7 +22,7 @@ class MultiClassHandler:
     """
     Track a command and its source class for collision detection.
 
-    :param command_name: CLI command name (e.g., 'file-operations--process-single')
+    :param command_name: FreyjaCLI command name (e.g., 'file-operations--process-single')
     :param source_class: Source class that defines this command
     """
     # Track which class this command comes from
@@ -76,7 +77,7 @@ class MultiClassHandler:
     """
     Get the source class for a command.
 
-    :param command_name: CLI command name
+    :param command_name: FreyjaCLI command name
     :return: Source class or None if not found
     """
     return self.command_sources.get(command_name)
@@ -100,7 +101,7 @@ class MultiClassHandler:
     error_lines.append("Solutions:")
     error_lines.append("1. Rename methods in one of the conflicting classes")
     error_lines.append("2. Use different inner class names to create unique command paths")
-    error_lines.append("3. Use separate CLI instances for conflicting classes")
+    error_lines.append("3. Use separate FreyjaCLI instances for conflicting classes")
 
     return "\n".join(error_lines)
 
@@ -110,7 +111,7 @@ class MultiClassHandler:
     :param classes: List of classes to validate
     :raises ValueError: If command collisions are detected"""
     # Simulate command discovery to detect collisions
-    temp_handler = MultiClassHandler()
+    temp_handler = ClassHandler()
 
     for cls in classes:
       # Simulate the command discovery process
@@ -120,7 +121,7 @@ class MultiClassHandler:
     if temp_handler.has_collisions():
       raise ValueError(temp_handler.format_collision_error())
 
-  def _simulate_class_commands(self, handler: 'MultiClassHandler', cls: Type) -> None:
+  def _simulate_class_commands(self, handler: 'ClassHandler', cls: Type) -> None:
     """Simulate command discovery for collision detection.
 
     :param handler: Handler to track commands in
@@ -173,7 +174,7 @@ class MultiClassHandler:
     return inner_classes
 
   def _is_valid_method(self, name: str, obj: Any, cls: Type) -> bool:
-    """Check if a method should be included as a CLI command.
+    """Check if a method should be included as a FreyjaCLI command.
 
     :param name: Method name
     :param obj: Method object

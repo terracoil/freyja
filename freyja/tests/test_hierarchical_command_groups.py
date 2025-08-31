@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from freyja.cli import CLI
+from freyja import FreyjaCLI
 
 
 class UserRole(enum.Enum):
@@ -86,8 +86,8 @@ class TestHierarchicalCommandGroups:
   """Test hierarchical command group functionality."""
 
   def setup_method(self):
-    """Set up test CLI instance."""
-    self.cli = CLI(test_module, "Test CLI with Hierarchical Commands")
+    """Set up test FreyjaCLI instance."""
+    self.cli = FreyjaCLI(test_module, "Test FreyjaCLI with Hierarchical Commands")
 
   def test_function_discovery_and_grouping(self):
     """Test that functions are correctly discovered as flat commands (no grouping)."""
@@ -232,7 +232,7 @@ class TestHierarchicalCommandGroups:
           result = self.cli.run(["nonexistent"])
 
   def test_underscore_to_dash_conversion(self):
-    """Test that underscores are converted to dashes in CLI names."""
+    """Test that underscores are converted to dashes in FreyjaCLI names."""
     commands = self.cli.commands
 
     # Check that function names with underscores become dashed
@@ -255,7 +255,7 @@ class TestHierarchicalCommandGroups:
     assert backup_cmd["original_name"] == "admin__system__backup"
 
   def test_mixed_simple_and_complex_flat_commands(self):
-    """Test CLI with mix of simple and complex flat commands."""
+    """Test FreyjaCLI with mix of simple and complex flat commands."""
     # Should be able to execute both simple and complex flat commands
     simple_result = self.cli.run(["flat-hello", "--name", "Test"])
     assert simple_result == "Hello, Test!"
@@ -266,7 +266,7 @@ class TestHierarchicalCommandGroups:
   def test_error_handling_with_verbose(self):
     """Test error handling with verbose flag."""
 
-    # Create a CLI with a function that will raise an error
+    # Create a FreyjaCLI with a function that will raise an error
     def error_function():
       """Function that raises an error."""
       raise ValueError("Test error")
@@ -275,7 +275,7 @@ class TestHierarchicalCommandGroups:
     test_module.error_function = error_function
 
     try:
-      error_cli = CLI(test_module, "Error Test CLI")
+      error_cli = FreyjaCLI(test_module, "Error Test FreyjaCLI")
 
       with patch('builtins.print') as mock_print:
         with patch('sys.stderr'):
@@ -303,7 +303,7 @@ class TestHierarchicalEdgeCases:
       return "test"
 
     # Should not crash during discovery
-    cli = CLI(sys.modules[__name__], "Test CLI")
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
     # The function shouldn't be included in normal discovery due to naming
 
   def test_single_vs_double_underscore_distinction(self):
@@ -322,7 +322,7 @@ class TestHierarchicalEdgeCases:
     test_module.double__underscore__func = double__underscore__func
 
     try:
-      cli = CLI(test_module, "Test CLI")
+      cli = FreyjaCLI(test_module, "Test FreyjaCLI")
       commands = cli.commands
 
       # Single underscore should be flat command with dash
@@ -349,7 +349,7 @@ class TestHierarchicalEdgeCases:
     test_module.level1__level2__level3__level4__deep_command = level1__level2__level3__level4__deep_command
 
     try:
-      cli = CLI(test_module, "Test CLI")
+      cli = FreyjaCLI(test_module, "Test FreyjaCLI")
       commands = cli.commands
 
       # Should create flat command with multiple dashes

@@ -162,7 +162,7 @@ def process(data: str) -> None:
     """Sync wrapper for async processing."""
     asyncio.run(async_process(data))
 
-# CLI uses the sync wrapper
+# FreyjaCLI uses the sync wrapper
 cli = CLI.from_module(sys.modules[__name__])
 ```
 
@@ -440,11 +440,11 @@ def my_function(name: str) -> None:
 
 2. **Private function (starts with underscore)**:
 ```python
-# ❌ Ignored by CLI
+# ❌ Ignored by FreyjaCLI
 def _private_function(data: str) -> None:
     pass
 
-# ✅ Visible to CLI
+# ✅ Visible to FreyjaCLI
 def public_function(data: str) -> None:
     pass
 ```
@@ -453,7 +453,7 @@ def public_function(data: str) -> None:
 ```python
 # ❌ Function inside main block
 if __name__ == '__main__':
-    def my_function(data: str) -> None:  # Not found by CLI
+    def my_function(data: str) -> None:  # Not found by FreyjaCLI
         pass
     
     cli = CLI.from_module(sys.modules[__name__])
@@ -584,9 +584,9 @@ def load_plugins():
         except ImportError as e:
             print(f"Warning: Could not load plugin {plugin_file}: {e}")
 
-# Load plugins before creating CLI
+# Load plugins before creating FreyjaCLI
 load_plugins()
-cli = CLI.from_module(sys.modules[__name__], title="Extensible CLI")
+cli = CLI.from_module(sys.modules[__name__], title="Extensible FreyjaCLI")
 ```
 
 ### How do I add progress bars or interactive features?

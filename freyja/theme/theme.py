@@ -10,7 +10,7 @@ from .theme_style import ThemeStyle, CommandStyleSection
 
 class Theme:
   """
-  Complete color theme configuration for CLI output with dynamic adjustment capabilities.
+  Complete color theme configuration for FreyjaCLI output with dynamic adjustment capabilities.
   Defines styling for all major UI elements in the help output with optional color adjustment.
 
   Uses hierarchical CommandStyleSection structure internally, with backward compatibility properties

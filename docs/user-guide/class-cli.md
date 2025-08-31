@@ -53,7 +53,7 @@ if __name__ == '__main__':
 ```python
 CLI.from_class(
     cls,                       # The class (not instance) to use
-    title: str = None,         # CLI title (from class docstring if None)
+    title: str = None,         # FreyjaCLI title (from class docstring if None)
     function_opts: dict = None,# Per-method options (optional)
     theme_name: str = 'universal', # Theme name
     no_color: bool = False,    # Disable colors
@@ -70,7 +70,7 @@ The CLI title is automatically extracted from your class docstring:
 ```python
 class DatabaseManager:
     """
-    Database Management CLI Tool
+    Database Management FreyjaCLI Tool
     
     A comprehensive tool for managing database operations,
     including backup, restore, and maintenance tasks.
@@ -139,15 +139,15 @@ class DataAnalyzer:
         self._save_results(results)  # Private helper
     
     def _load_data(self, file_path: str):
-        """Private method - not exposed in CLI."""
+        """Private method - not exposed in FreyjaCLI."""
         pass
     
     def _perform_analysis(self, data):
-        """Private method - not exposed in CLI."""
+        """Private method - not exposed in FreyjaCLI."""
         pass
     
     def _save_results(self, results):
-        """Private method - not exposed in CLI."""
+        """Private method - not exposed in FreyjaCLI."""
         pass
 ```
 
@@ -159,7 +159,7 @@ Let's build a user management system using [cls_example.py](../cls_example.py):
 
 ```python
 # cls_example.py
-"""User Management CLI Application"""
+"""User Management FreyjaCLI Application"""
 
 from enum import Enum
 from typing import List, Optional
@@ -175,7 +175,7 @@ class UserManager:
     """
     User Management System
     
-    A comprehensive CLI tool for managing users, roles,
+    A comprehensive FreyjaCLI tool for managing users, roles,
     and permissions in your application.
     """
     
@@ -409,7 +409,7 @@ if __name__ == '__main__':
 ### Step 3: Usage Examples
 
 ```bash
-# Run the CLI
+# Run the FreyjaCLI
 python cls_example.py
 
 # Create users
@@ -438,7 +438,7 @@ The key advantage of class-based CLIs is persistent state between commands:
 
 ```python
 class ProjectManager:
-    """Project management CLI."""
+    """Project management FreyjaCLI."""
     
     def __init__(self):
         self.current_project = None
@@ -739,7 +739,7 @@ class WellOrganizedApp:
 
 ```python
 class RobustApp:
-    """Example of good error handling in class-based CLI."""
+    """Example of good error handling in class-based FreyjaCLI."""
     
     def __init__(self):
         self.connections = {}

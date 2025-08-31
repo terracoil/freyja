@@ -7,10 +7,10 @@ from dataclasses import dataclass
 from typing import List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-  from freyja import CLI
+  from freyja import FreyjaCLI
 
 # Lazy imports to avoid circular dependency
-# CLI type will be imported lazily to avoid circular dependency
+# FreyjaCLI type will be imported lazily to avoid circular dependency
 
 
 @dataclass
@@ -21,16 +21,16 @@ class CompletionContext:
   cursor_position: int  # Position in current word
   command_group_path: List[str]  # Path to current command group (e.g., ['db', 'backup'])
   parser: argparse.ArgumentParser  # Current parser context
-  cli: 'CLI'  # CLI instance for introspection
+  cli: 'FreyjaCLI'  # FreyjaCLI instance for introspection
 
 
 class CompletionHandler(ABC):
   """Abstract base class for shell-specific completion handlers."""
 
-  def __init__(self, cli: 'CLI'):
-    """Initialize completion handler with CLI instance.
+  def __init__(self, cli: 'FreyjaCLI'):
+    """Initialize completion handler with FreyjaCLI instance.
 
-    :param cli: CLI instance to provide completion for
+    :param cli: FreyjaCLI instance to provide completion for
     """
     self.cli = cli
 
@@ -235,7 +235,7 @@ class CompletionHandler(ABC):
 def get_completion_handler(cli, shell: str = None) -> CompletionHandler:
   """Get appropriate completion handler for shell.
 
-  :param cli: CLI instance
+  :param cli: FreyjaCLI instance
   :param shell: Target shell (auto-detect if None)
   :return: Completion handler instance
   """

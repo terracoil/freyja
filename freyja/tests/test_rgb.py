@@ -1,7 +1,7 @@
 """Test suite for RGB class and color operations."""
 import pytest
 
-from freyja.theme.rgb import RGB, AdjustStrategy
+from freyja.theme import RGB, AdjustStrategy
 
 
 class TestRGBConstructor:

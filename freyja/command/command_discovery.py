@@ -1,13 +1,13 @@
-# Command discovery functionality extracted from CLI class.
+# Command discovery functionality extracted from FreyjaCLI class.
 import inspect
 import types
 from collections.abc import Callable as CallableABC
 from dataclasses import dataclass, field
 from typing import *
 
-from freyja.enums.target_mode import TargetMode
+from freyja.cli.enums import TargetMode
 from freyja.utils.string_utils import StringUtils
-from freyja.validation import ValidationService
+from .validation import ValidationService
 
 
 @dataclass
@@ -24,6 +24,9 @@ class CommandInfo:
   is_system_command: bool = False
   inner_class: Optional[Type] = None
   metadata: Dict[str, Any] = field(default_factory=dict)
+  # New fields for nested command structure
+  group_name: Optional[str] = None  # For hierarchical commands (kebab-cased inner class name)
+  method_name: Optional[str] = None  # For hierarchical commands (kebab-cased method name)
 
 
 class CommandDiscovery:
@@ -238,12 +241,11 @@ class CommandDiscovery:
             callable(method_obj) and
             method_name != '__init__' and
             inspect.isfunction(method_obj)):
-          # Create hierarchical name: command__method (both parts kebab-cased)
+          # Use kebab-cased method name as command name (no dunder notation)
           method_kebab = StringUtils.kebab_case(method_name)
-          hierarchical_name = f"{command_name}__{method_kebab}"
 
           command_info = CommandInfo(
-            name=hierarchical_name,
+            name=method_kebab,  # Just the method name, not group__method
             original_name=method_name,
             function=method_obj,
             signature=inspect.signature(method_obj),
@@ -251,7 +253,9 @@ class CommandDiscovery:
             is_hierarchical=True,
             parent_class=class_name,
             command_path=command_name,
-            inner_class=inner_class
+            inner_class=inner_class,
+            group_name=command_name,  # Kebab-cased inner class name
+            method_name=method_kebab  # Kebab-cased method name
           )
 
           # Store metadata for execution
