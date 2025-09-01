@@ -310,8 +310,8 @@ def create_default_theme() -> Theme:
     topLevelCommandSection=top_level_section,
     commandGroupSection=command_group_section,
     groupedCommandSection=grouped_command_section,
-    title=ThemeStyle(bg=RGB.from_rgb(ForeUniversal.MEDIUM_GREY.value), bold=True),
-    subtitle=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.TEAL.value), bold=True, italic=True),
+    title=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.TEAL.value), bold=True),
+    subtitle=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.TEAL.value), italic=True),
     required_asterisk=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.GOLD.value)),
     adjust_percent=0.0
   )

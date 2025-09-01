@@ -99,29 +99,29 @@ class TestCommandDiscovery:
         mock_module.another_function = another_function
         mock_module._private_function = _private_function
         
-        discovery = CommandDiscovery(mock_module)
+        discovery = CommandDiscovery(mock_module, completion=False)
         
-        assert discovery.target_mode == TargetMode.MODULE
+        assert discovery.mode == TargetMode.MODULE
         assert discovery.target_module == mock_module
-        assert discovery.target_class is None
+        assert discovery.primary_class is None
         assert discovery.target_classes is None
     
     def test_init_with_single_class(self):
         """Test initialization with single class target."""
-        discovery = CommandDiscovery(MockClassSimple)
+        discovery = CommandDiscovery(MockClassSimple, completion=False)
         
-        assert discovery.target_mode == TargetMode.CLASS
-        assert discovery.target_class is None  # Unified handling
+        assert discovery.mode == TargetMode.CLASS
+        assert discovery.primary_class == MockClassSimple  # Unified handling
         assert discovery.target_classes == [MockClassSimple]
         assert discovery.target_module is None
     
     def test_init_with_class_list(self):
         """Test initialization with list of classes."""
         classes = [MockClass, MockClassSimple]
-        discovery = CommandDiscovery(classes)
+        discovery = CommandDiscovery(classes, completion=False)
         
-        assert discovery.target_mode == TargetMode.CLASS
-        assert discovery.target_class is None  # Unified handling
+        assert discovery.mode == TargetMode.CLASS
+        assert discovery.primary_class == MockClassSimple  # Last class in list
         assert discovery.target_classes == classes
         assert discovery.target_module is None
     
@@ -180,7 +180,7 @@ class TestCommandDiscovery:
     
     def test_discover_from_simple_class(self):
         """Test discovering commands from a simple class without inner classes."""
-        discovery = CommandDiscovery(MockClassSimple)
+        discovery = CommandDiscovery(MockClassSimple, completion=False)
         commands = discovery.discover_commands()
         
         # Should find public methods only
@@ -197,7 +197,7 @@ class TestCommandDiscovery:
     
     def test_discover_from_class_with_inner_classes(self):
         """Test discovering commands from class with inner classes."""
-        discovery = CommandDiscovery(MockClassWithInner)
+        discovery = CommandDiscovery(MockClassWithInner, completion=False)
         commands = discovery.discover_commands()
         
         command_names = [cmd.name for cmd in commands]
@@ -228,7 +228,7 @@ class TestCommandDiscovery:
     def test_discover_from_multi_class(self):
         """Test discovering commands from multiple classes."""
         classes = [MockClass, MockClassSimple]
-        discovery = CommandDiscovery(classes)
+        discovery = CommandDiscovery(classes, completion=False)
         commands = discovery.discover_commands()
         
         # Should have commands from both classes
@@ -270,7 +270,7 @@ class TestCommandDiscovery:
         def custom_filter(name, obj):
             return name.startswith('mock') and callable(obj) and inspect.isfunction(obj)
         
-        discovery = CommandDiscovery(mock_module, function_filter=custom_filter)
+        discovery = CommandDiscovery(mock_module, function_filter=custom_filter, completion=False)
         commands = discovery.discover_commands()
         
         # Should only find mock_function_test
@@ -282,10 +282,10 @@ class TestCommandDiscovery:
     def test_custom_method_filter(self):
         """Test custom method filter."""
         # Filter that only allows methods starting with 'method'
-        def custom_filter(name, obj):
+        def custom_filter(target_class, name, obj):
             return name.startswith('method') and callable(obj)
         
-        discovery = CommandDiscovery(MockClass, method_filter=custom_filter)
+        discovery = CommandDiscovery(MockClass, method_filter=custom_filter, completion=False)
         commands = discovery.discover_commands()
         
         # Should find method_one and method_two but not others
@@ -296,7 +296,7 @@ class TestCommandDiscovery:
     
     def test_command_info_structure(self):
         """Test CommandInfo data structure completeness."""
-        discovery = CommandDiscovery(MockClassSimple)
+        discovery = CommandDiscovery(MockClassSimple, completion=False)
         commands = discovery.discover_commands()
         
         cmd = commands[0]

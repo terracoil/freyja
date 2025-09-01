@@ -125,7 +125,7 @@ class TestCompletionIntegration:
 
   def test_cli_with_completion_enabled(self):
     """Test FreyjaCLI with completion enabled."""
-    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI", enable_completion=True)
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI", completion=True)
     assert cli.enable_completion is True
 
     # Completion arguments are no longer injected into CLIs - they're provided by System class
@@ -138,7 +138,7 @@ class TestCompletionIntegration:
 
   def test_cli_with_completion_disabled(self):
     """Test FreyjaCLI with completion disabled."""
-    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI", enable_completion=False)
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI", completion=False)
     assert cli.enable_completion is False
 
     # Test that FreyjaCLI without completion doesn't handle completion requests
@@ -147,7 +147,7 @@ class TestCompletionIntegration:
   @patch.dict(os.environ, {"_FREYA_COMPLETE": "bash"})
   def test_completion_request_detection(self):
     """Test completion request detection."""
-    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI", enable_completion=True)
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI", completion=True)
     assert cli._is_completion_request() is True
 
   def test_show_completion_script(self):
@@ -164,7 +164,7 @@ class TestCompletionIntegration:
 
   def test_completion_disabled_error(self):
     """Test completion behavior when disabled."""
-    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI", enable_completion=False)
+    cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI", completion=False)
 
     # FreyjaCLI with completion disabled should not handle completion requests
     assert cli._is_completion_request() is False

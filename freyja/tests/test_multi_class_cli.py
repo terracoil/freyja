@@ -128,7 +128,7 @@ class TestMultiClassCLI:
 
     def test_single_class_in_list(self):
         """Test single class in list behaves like regular class mode."""
-        cli = FreyjaCLI([MockDataProcessor])
+        cli = FreyjaCLI([MockDataProcessor], completion=False)
 
         assert cli.target_mode == TargetMode.CLASS
         assert cli.target_class == MockDataProcessor
@@ -137,7 +137,7 @@ class TestMultiClassCLI:
 
     def test_multi_class_mode_detection(self):
         """Test multi-class mode is detected correctly."""
-        cli = FreyjaCLI([MockDataProcessor, MockReportGenerator])
+        cli = FreyjaCLI([MockDataProcessor, MockReportGenerator], completion=False)
 
         assert cli.target_mode == TargetMode.CLASS  # Unified handling: always CLASS for classes
         assert cli.target_class == MockReportGenerator  # Last class is primary
@@ -189,16 +189,16 @@ class TestMultiClassCLI:
     def test_multi_class_title_generation(self):
         """Test title generation for multi-class FreyjaCLI."""
         # Two classes - title should come from the last class (MockReportGenerator)
-        cli2 = FreyjaCLI([MockDataProcessor, MockReportGenerator])
+        cli2 = FreyjaCLI([MockDataProcessor, MockReportGenerator], completion=False)
         assert "Mock report generator for testing" in cli2.title
 
         # Single class (should use class name or docstring)
-        cli1 = FreyjaCLI([MockDataProcessor])
+        cli1 = FreyjaCLI([MockDataProcessor], completion=False)
         assert "MockDataProcessor" in cli1.title or "mock data processor" in cli1.title.lower()
 
     def test_multi_class_command_execution(self):
         """Test command structure in multi-class mode."""
-        cli = FreyjaCLI([MockDataProcessor, MockReportGenerator])
+        cli = FreyjaCLI([MockDataProcessor, MockReportGenerator], completion=False)
 
         # Should have commands from both classes
         commands = cli.commands
@@ -214,7 +214,7 @@ class TestMultiClassCLI:
 
     def test_backward_compatibility_single_class(self):
         """Test backward compatibility with single class (non-list)."""
-        cli = FreyjaCLI(MockDataProcessor)
+        cli = FreyjaCLI(MockDataProcessor, completion=False)
 
         assert cli.target_mode == TargetMode.CLASS
         assert cli.target_class == MockDataProcessor
@@ -238,7 +238,7 @@ class TestCommandExecutorMultiClass:
 
     def test_multi_class_cli_initialization(self):
         """Test that multi-class CLIs initialize correctly."""
-        cli = FreyjaCLI([MockDataProcessor, MockReportGenerator])
+        cli = FreyjaCLI([MockDataProcessor, MockReportGenerator], completion=False)
 
         # Should properly identify target mode and classes
         assert cli.target_mode.value == 'class'
@@ -252,7 +252,7 @@ class TestCommandExecutorMultiClass:
 
     def test_single_class_compatibility(self):
         """Test that single class mode works correctly."""
-        cli = FreyjaCLI(MockDataProcessor)
+        cli = FreyjaCLI(MockDataProcessor, completion=False)
 
         # Should properly handle single class
         assert cli.target_mode.value == 'class'

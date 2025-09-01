@@ -8,6 +8,7 @@ from typing import Dict, Any, Type, Optional, List
 from .command_discovery import CommandInfo
 from freyja.parser import DocStringParser
 
+CommandTree = dict[str, dict]
 class CommandBuilder:
   """Centralized service for building command structures from discovered commands."""
 
@@ -16,9 +17,9 @@ class CommandBuilder:
     self.target_mode = target_mode
     self.commands = commands
 
-  def build_command_tree(self) -> Dict[str, Dict]:
+  def build_command_tree(self) -> CommandTree:
     """Build command structure from discovered commands."""
-    commands:Dict[str, Dict] = {}
+    commands:CommandTree = {}
     
     # Group commands by type and group_name
     flat_commands = []

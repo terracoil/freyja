@@ -194,7 +194,7 @@ class TestClassBasedCLI:
   def test_custom_method_filter(self):
     """Test custom method filter functionality."""
 
-    def only_simple_method(name, obj):
+    def only_simple_method(target_class, name, obj):
       return name == 'simple_method'
 
     cli = FreyjaCLI(SampleClass, method_filter=only_simple_method)
@@ -217,7 +217,7 @@ class TestClassBasedCLI:
 
   def test_completion_integration(self):
     """Test that completion works with class-based FreyjaCLI."""
-    cli = FreyjaCLI(SampleClass, enable_completion=True)
+    cli = FreyjaCLI(SampleClass, completion=True)
 
     assert cli.enable_completion is True
 

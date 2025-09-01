@@ -1,5 +1,6 @@
 # Refactored Help Formatter with reduced duplication and single return points
 import argparse
+import itertools
 import os
 import re
 import textwrap
@@ -235,6 +236,10 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     all_commands = self._collect_all_commands(action)
 
+    grouped=itertools.groupby(all_commands, key=lambda c: c[-1])
+    print("GROUPED", dict(grouped))
+
+    # system_commands = [cmd for cmd in all_commands if cmd.is_system]
     if self._alphabetize:
       all_commands.sort(key=lambda x: x[0])
 

@@ -89,3 +89,4 @@ class ForeUniversal(Enum):
   BROWN = 0x795548  # Material Brown 500
   MEDIUM_GREY = 0x757575  # Medium Grey
   IBM_GREY = 0x8D8D8D  # IBM Gray 50
+  LIGHT_GREY = 0xCCCCCC  # Light grey

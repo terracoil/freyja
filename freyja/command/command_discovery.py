@@ -1,14 +1,17 @@
 # Command discovery functionality extracted from FreyjaCLI class.
 import inspect
-import types
 from collections.abc import Callable as CallableABC
 from dataclasses import dataclass, field
+from types import ModuleType
 from typing import *
 
 from freyja.cli.enums import TargetMode
 from freyja.utils.text_util import TextUtil
+from freyja.parser import DocStringParser
 from .validation import ValidationService
 from ..cli.system import SystemClassBuilder
+
+TargetType = ModuleType | type | list[type]
 
 
 @dataclass
@@ -40,9 +43,9 @@ class CommandDiscovery:
 
   def __init__(
       self,
-      target: Union[types.ModuleType, Type[Any], List[Type[Any]]],
+      target: TargetType,
       function_filter: Optional[Callable[[str, Any], bool]] = None,
-      method_filter: Optional[Callable[[str, Any], bool]] = None,
+      method_filter: Optional[Callable[[type, str, Any], bool]] = None,
       completion: bool = True,
       theme_tuner: bool = False
   ):
@@ -60,23 +63,22 @@ class CommandDiscovery:
     self.completion: bool = completion
     self.theme_tuner: bool = theme_tuner
 
+    self.target_classes: Optional[list[type]] = None
+    self.target_module: Optional[ModuleType] = None
+    self.mode: TargetMode = TargetMode.CLASS
+    self.primary_class: Optional[type] = None
+
     # Determine target mode with unified class handling
     if isinstance(target, list):
-      self.target_mode = TargetMode.CLASS
       self.target_classes = target
-      self.target_class = None
-      self.target_module = None
+      self._validate_classes(self.target_classes)
+      self.primary_class = self.target_classes[-1]
     elif inspect.isclass(target):
-      # Treat single class as list with one item for unified handling
-      self.target_mode = TargetMode.CLASS
-      self.target_class = None
+      self.primary_class = target
       self.target_classes = [target]
-      self.target_module = None
     elif inspect.ismodule(target):
-      self.target_mode = TargetMode.MODULE
+      self.mode = TargetMode.MODULE
       self.target_module = target
-      self.target_class = None
-      self.target_classes = None
     else:
       raise ValueError(f"Target must be module, class, or list of classes, got {type(target).__name__}")
 
@@ -88,12 +90,14 @@ class CommandDiscovery:
     """
     result = []
 
-    if self.target_mode == TargetMode.MODULE:
+    if self.mode == TargetMode.MODULE:
       result = self._discover_from_module()
-    elif self.target_mode == TargetMode.CLASS:
+    elif self.mode == TargetMode.CLASS:
       # Unified class handling: always use multi-class logic for consistency
       result = self.discover_classes()
 
+    # TextUtil.pprint("COMMANDS:::{result}", result=result)
+  
     return result
 
   def _discover_from_module(self) -> List[CommandInfo]:
@@ -133,11 +137,11 @@ class CommandDiscovery:
         )
 
       # Discover direct methods
-      direct_commands = self._discover_direct_methods()
+      direct_commands = self._discover_direct_methods(target_cls)
       commands.extend(direct_commands)
 
       # Discover inner class methods
-      hierarchical_commands = self._discover_methods_from_inner_classes(inner_classes)
+      hierarchical_commands = self._discover_methods_from_inner_classes(target_cls, inner_classes)
       commands.extend(hierarchical_commands)
 
     else:
@@ -145,10 +149,19 @@ class CommandDiscovery:
       ValidationService.validate_constructor_parameters(
         target_cls, "class", allow_parameterless_only=True
       )
-      direct_commands = self._discover_direct_methods()
+      direct_commands = self._discover_direct_methods(target_cls)
       commands.extend(direct_commands)
 
     return commands
+
+  @staticmethod
+  def _validate_classes(targets: list[type]) -> None:
+    if not targets:
+      raise ValueError("Passed a list, but no target classes were found.")
+
+    for item in targets:
+      if not isinstance(item, type):
+        raise ValueError(f"All items in list must be classes, got {type(item).__name__}")
 
   def discover_classes(self) -> List[CommandInfo]:
     """Discover methods from classes (single or multiple) with proper namespacing.
@@ -158,29 +171,20 @@ class CommandDiscovery:
     """
     commands = []
 
-    if not self.target_classes:
-      return commands
-
     if self.completion or self.theme_tuner:
       System = SystemClassBuilder.build(self.completion, self.theme_tuner)
       self.target_classes.insert(0, System)  # SystemClassBuilder.build(self.completion, self.theme_tuner))
 
     # Separate last class (global) from others (namespaced)
     namespaced_classes = self.target_classes[:-1] if len(self.target_classes) > 1 else []
-    global_class = self.target_classes[-1]
 
     # Process namespaced classes first (with class name prefixes)
     for target_class in namespaced_classes:
-      # Temporarily switch to single class mode
-      # original_target_class = self.target_class
-      # self.target_class = target_class
-
       # Discover commands for this class
       class_commands = self._discover_from_class(target_class)
 
       # Add class namespace to command metadata (not name - that's handled by CommandBuilder)
       class_namespace = TextUtil.kebab_case(target_class.__name__)
-
 
       for command in class_commands:
         print(f"Adding command {command.name} with namespace {class_namespace}")
@@ -190,22 +194,15 @@ class CommandDiscovery:
 
       commands.extend(class_commands)
 
-      # Restore original target
-      # self.target_class = original_target_class
+    # Discover commands for primary class
+    primary_commands = self._discover_from_class(self.primary_class)
 
-    # Process global class last (no namespace prefix)
-    # original_target_class = self.target_class
-    # self.target_class = global_class
-
-    # Discover commands for global class
-    global_commands = self._discover_from_class(global_class)
-
-    for command in global_commands:
-      command.metadata['source_class'] = global_class
+    for command in primary_commands:
+      command.metadata['source_class'] = self.primary_class
       command.metadata['class_namespace'] = None
       command.metadata['is_namespaced'] = False
 
-    commands.extend(global_commands)
+    commands.extend(primary_commands)
 
     # Restore original target
     # self.target_class = original_target_class
@@ -222,12 +219,12 @@ class CommandDiscovery:
 
     return inner_classes
 
-  def _discover_direct_methods(self) -> List[CommandInfo]:
+  def _discover_direct_methods(self, target_class) -> List[CommandInfo]:
     """Discover methods directly from the target class."""
     commands = []
 
-    for name, obj in inspect.getmembers(self.target_class):
-      if self.method_filter(name, obj):
+    for name, obj in inspect.getmembers(target_class):
+      if self.method_filter(target_class, name, obj):
         command_info = CommandInfo(
           name=TextUtil.kebab_case(name),
           original_name=name,
@@ -239,7 +236,7 @@ class CommandDiscovery:
 
     return commands
 
-  def _discover_methods_from_inner_classes(self, inner_classes: Dict[str, Type]) -> List[CommandInfo]:
+  def _discover_methods_from_inner_classes(self, target_cls: type, inner_classes: Dict[str, Type]) -> List[CommandInfo]:
     """Discover methods from inner classes for hierarchical commands."""
     commands = []
 
@@ -253,6 +250,7 @@ class CommandDiscovery:
             inspect.isfunction(method_obj)):
           # Use kebab-cased method name as command name (no dunder notation)
           method_kebab = TextUtil.kebab_case(method_name)
+          group_name = command_name  # Use the kebab-cased inner class name
 
           command_info = CommandInfo(
             name=method_kebab,  # Just the method name, not group__method
@@ -264,11 +262,10 @@ class CommandDiscovery:
             parent_class=class_name,
             command_path=command_name,
             inner_class=inner_class,
-            group_name=command_name,  # Kebab-cased inner class name
+            is_system_command=self.is_system(target_cls),
+            group_name=group_name,  # Kebab-cased inner class name
             method_name=method_kebab  # Kebab-cased method name
           )
-
-          TextUtil.pprint("ADDED COMMAND:::{command_info}", command_info=command_info)
 
           # Store metadata for execution
           command_info.metadata.update({
@@ -281,6 +278,9 @@ class CommandDiscovery:
           commands.append(command_info)
 
     return commands
+
+  def is_system(self, cls: type) -> bool:
+    return cls.__name__ == 'System'
 
   def _default_function_filter(self, name: str, obj: Any) -> bool:
     """Default filter for module functions."""
@@ -295,9 +295,9 @@ class CommandDiscovery:
         obj.__module__ == self.target_module.__name__  # Exclude imported functions
     )
 
-  def _default_method_filter(self, name: str, obj: Any) -> bool:
+  def _default_method_filter(self, target_class:type, name: str, obj: Any) -> bool:
     """Default filter for class methods."""
-    if self.target_class is None:
+    if target_class is None:
       return False
 
     return (
@@ -305,5 +305,26 @@ class CommandDiscovery:
         callable(obj) and
         (inspect.isfunction(obj) or inspect.ismethod(obj)) and
         hasattr(obj, '__qualname__') and
-        self.target_class.__name__ in obj.__qualname__
+        target_class.__name__ in obj.__qualname__
     )
+
+  def generate_title(self) -> str:
+    """
+    Generate FreyjaCLI title based on target type.
+    
+    :return: Generated title string
+    """
+    result = "FreyjaCLI Application"
+
+    if self.mode == TargetMode.MODULE:
+      if hasattr(self.target_module, '__name__'):
+        module_name = self.target_module.__name__.split('.')[-1]  # Get last part of module name
+        result = f"{module_name.title()} FreyjaCLI"
+    elif self.mode == TargetMode.CLASS:
+      if self.primary_class and self.primary_class.__doc__:
+        main_desc, _ = DocStringParser.parse_docstring(self.primary_class.__doc__)
+        result = main_desc or self.primary_class.__name__
+      elif self.primary_class:
+        result = self.primary_class.__name__
+
+    return result

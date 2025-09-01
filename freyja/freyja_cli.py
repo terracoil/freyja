@@ -4,7 +4,7 @@ from __future__ import annotations
 import types
 from typing import *
 
-from freyja.cli import ClassHandler, ExecutionCoordinator, TargetAnalyzer, TargetInfoKeys
+from freyja.cli import ClassHandler, ExecutionCoordinator
 from freyja.command import CommandBuilder, CommandDiscovery, CommandExecutor
 from freyja.completion.base import get_completion_handler
 from freyja.parser import CommandParser
@@ -31,30 +31,28 @@ class FreyjaCLI:
     :param completion: Whether to enable shell completion
     """
 
-    # Determine target mode and validate input
-    self.target_analyzer:TargetAnalyzer = TargetAnalyzer(target, completion, theme_tuner)
-    self.target_mode, self.target_info = self.target_analyzer.analyze_target()
-
+    # Initialize discovery service (replaces TargetAnalyzer)
+    discovery = CommandDiscovery(target=target, function_filter=function_filter, method_filter=method_filter, completion=completion, theme_tuner=theme_tuner)
+    
+    # Get target mode and validation from discovery
+    self.target_mode = discovery.mode
+    
     # Validate class mode for command collisions when multiple classes are present
-    all_classes = self.target_info.get(TargetInfoKeys.ALL_CLASSES.value)
-    if all_classes and len(all_classes) > 1:
+    if discovery.target_classes and len(discovery.target_classes) > 1:
       handler = ClassHandler()
-      handler.validate_classes(all_classes)
+      handler.validate_classes(discovery.target_classes)
 
     # Set title based on target
-    self.title = title or self.target_analyzer.generate_title()
+    self.title = title or discovery.generate_title()
 
     # Store only essential config
     self.enable_completion = completion
-
-    # Initialize discovery service
-    discovery = CommandDiscovery(target=target, function_filter=function_filter, method_filter=method_filter)
 
     # Discover commands
     self.discovered_commands = discovery.discover_commands()
 
     # Initialize command executors
-    executors = self._initialize_executors()
+    executors = self._initialize_executors(discovery)
 
     # Initialize execution coordinator
     self.execution_coordinator = ExecutionCoordinator(self.target_mode, executors)
@@ -62,12 +60,11 @@ class FreyjaCLI:
     # Initialize parser service
     self.parser_service = CommandParser(title=self.title, theme=theme, alphabetize=alphabetize, enable_completion=completion)
 
-    # Set target_class and target_classes properties early for use in command tree building
-    all_classes = self.target_info.get(TargetInfoKeys.ALL_CLASSES.value)
-    if all_classes:
+    # Set target_class and target_classes properties for compatibility
+    if discovery.target_classes:
       # Class mode: set both for backward compatibility
-      self.target_class = self.target_info.get(TargetInfoKeys.PRIMARY_CLASS.value)
-      self.target_classes = all_classes
+      self.target_class = discovery.primary_class
+      self.target_classes = discovery.target_classes
     else:
       # Module mode
       self.target_class = None
@@ -77,7 +74,7 @@ class FreyjaCLI:
     self.commands = self._build_command_tree()
 
     # Essential compatibility properties only
-    self.target_module = self.target_info.get(TargetInfoKeys.MODULE.value)
+    self.target_module = discovery.target_module
 
   def run(self, args: List[str] = None) -> Any:
     """
@@ -110,20 +107,19 @@ class FreyjaCLI:
 
     return self.execution_coordinator.parse_and_execute(parser, args)
 
-  def _initialize_executors(self) -> dict:
+  def _initialize_executors(self, discovery: CommandDiscovery) -> dict:
     """Initialize command executors based on target mode."""
     executors = {}
-    all_classes = self.target_info.get(TargetInfoKeys.ALL_CLASSES.value)
 
-    if all_classes and len(all_classes) > 1:
+    if discovery.target_classes and len(discovery.target_classes) > 1:
       # Multiple classes: create executor for each class
-      for target_class in all_classes:
+      for target_class in discovery.target_classes:
         executor = CommandExecutor(target_class=target_class, target_module=None)
         executors[target_class] = executor
     else:
       # Single class or module: create single primary executor
-      primary_executor = CommandExecutor(target_class=self.target_info.get(TargetInfoKeys.PRIMARY_CLASS.value),
-                                         target_module=self.target_info.get(TargetInfoKeys.MODULE.value))
+      primary_executor = CommandExecutor(target_class=discovery.primary_class,
+                                         target_module=discovery.target_module)
       executors['primary'] = primary_executor
 
     return executors
@@ -153,6 +149,6 @@ class FreyjaCLI:
     return self.parser_service.create_parser(
       command_tree=self.commands,
       target_mode=self.target_mode.value,
-      target_class=self.target_info.get(TargetInfoKeys.PRIMARY_CLASS.value),
+      target_class=self.target_class,
       no_color=no_color
     )
