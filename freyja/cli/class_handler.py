@@ -126,7 +126,7 @@ class ClassHandler:
 
     :param handler: Handler to track commands in
     :param cls: Class to simulate commands for"""
-    from freyja.utils.string_utils import StringUtils
+    from freyja.utils.text_util import TextUtil
 
     # Check for inner classes (hierarchical commands)
     inner_classes = self._discover_inner_classes(cls)
@@ -136,12 +136,12 @@ class ClassHandler:
       # Direct methods
       for name, obj in inspect.getmembers(cls):
         if self._is_valid_method(name, obj, cls):
-          cli_name = StringUtils.kebab_case(name)
+          cli_name = TextUtil.kebab_case(name)
           handler.track_command(cli_name, cls)
 
       # Inner class methods
       for class_name, inner_class in inner_classes.items():
-        command_name = StringUtils.kebab_case(class_name)
+        command_name = TextUtil.kebab_case(class_name)
 
         for method_name, method_obj in inspect.getmembers(inner_class):
           if (not method_name.startswith('_') and
@@ -149,13 +149,13 @@ class ClassHandler:
               method_name != '__init__' and
               inspect.isfunction(method_obj)):
             # Create hierarchical command name
-            cli_name = f"{command_name}--{StringUtils.kebab_case(method_name)}"
+            cli_name = f"{command_name}--{TextUtil.kebab_case(method_name)}"
             handler.track_command(cli_name, cls)
     else:
       # Direct methods only
       for name, obj in inspect.getmembers(cls):
         if self._is_valid_method(name, obj, cls):
-          cli_name = StringUtils.kebab_case(name)
+          cli_name = TextUtil.kebab_case(name)
           handler.track_command(cli_name, cls)
 
   def _discover_inner_classes(self, cls: Type) -> Dict[str, Type]:

@@ -1,7 +1,7 @@
 from typing import Tuple, Union
 
 
-class MathUtils:
+class MathUtil:
   EPSILON: float = 1e-6
   Numeric = Union[int, float]
 
@@ -14,9 +14,9 @@ class MathUtils:
       :max_val: Maximum allowed value
 
     Examples:
-        MathUtils.clamp(5, 0, 10) # 5
-        MathUtils.clamp(-5, 0, 10) # 0
-        MathUtils.clamp(15, 0, 10) # 10
+        MathUtil.clamp(5, 0, 10) # 5
+        MathUtil.clamp(-5, 0, 10) # 0
+        MathUtil.clamp(15, 0, 10) # 10
     """
     return max(min_val, min(value, max_val))
 

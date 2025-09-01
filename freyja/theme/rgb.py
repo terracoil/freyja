@@ -4,7 +4,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Tuple
 
-from freyja.utils.math_utils import MathUtils
+from freyja.utils.math_util import MathUtil
 
 
 class AdjustStrategy(Enum):
@@ -175,7 +175,7 @@ class RGB:
         r, g, b = [int(v * factor) for v in (r, g, b)]
 
     # Clamp to valid range
-    r, g, b = [int(MathUtils.clamp(v, 0, 255)) for v in (r, g, b)]
+    r, g, b = [int(MathUtil.clamp(v, 0, 255)) for v in (r, g, b)]
 
     # TODO: Add saturation adjustment when needed
     # For now, just brightness adjustment to match existing behavior

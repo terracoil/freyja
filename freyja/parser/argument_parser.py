@@ -73,8 +73,8 @@ class ArgumentParser:
         arg_config['required'] = True
 
       # Add argument without prefix (user requested no global- prefix)
-      from freyja.utils.string_utils import StringUtils
-      flag_name = StringUtils.kebab_case(param_name)
+      from freyja.utils.text_util import TextUtil
+      flag_name = TextUtil.kebab_case(param_name)
       flag = f"--{flag_name}"
 
       # Check for conflicts with built-in FreyjaCLI options
@@ -122,8 +122,8 @@ class ArgumentParser:
         arg_config['required'] = True
 
       # Add argument with command-specific prefix
-      from freyja.utils.string_utils import StringUtils
-      flag = f"--{StringUtils.kebab_case(param_name)}"
+      from freyja.utils.text_util import TextUtil
+      flag = f"--{TextUtil.kebab_case(param_name)}"
       parser.add_argument(flag, **arg_config)
 
   @staticmethod
@@ -158,6 +158,6 @@ class ArgumentParser:
         arg_config['required'] = True
 
       # Add argument with kebab-case flag name
-      from freyja.utils.string_utils import StringUtils
-      flag = f"--{StringUtils.kebab_case(name)}"
+      from freyja.utils.text_util import TextUtil
+      flag = f"--{TextUtil.kebab_case(name)}"
       parser.add_argument(flag, **arg_config)
