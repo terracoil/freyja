@@ -82,7 +82,9 @@ class CommandDiscovery:
     else:
       raise ValueError(f"Target must be module, class, or list of classes, got {type(target).__name__}")
 
-  def discover_commands(self) -> List[CommandInfo]:
+    self.commands : List[CommandInfo] = self._discover_commands()
+
+  def _discover_commands(self) -> List[CommandInfo]:
     """
     Discover all commands from the target.
 
@@ -97,7 +99,7 @@ class CommandDiscovery:
       result = self.discover_classes()
 
     # TextUtil.pprint("COMMANDS:::{result}", result=result)
-  
+
     return result
 
   def _discover_from_module(self) -> List[CommandInfo]:
@@ -187,7 +189,6 @@ class CommandDiscovery:
       class_namespace = TextUtil.kebab_case(target_class.__name__)
 
       for command in class_commands:
-        print(f"Adding command {command.name} with namespace {class_namespace}")
         command.metadata['source_class'] = target_class
         command.metadata['class_namespace'] = class_namespace
         command.metadata['is_namespaced'] = True
