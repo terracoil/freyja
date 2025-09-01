@@ -2,7 +2,7 @@
 
 [↑ Documentation Hub](../help.md)
 
-Comprehensive documentation for freyja users. This guide covers all aspects of creating and managing CLIs.
+Comprehensive documentation for Freyja users. This guide covers all aspects of creating and managing CLIs.
 
 ## Core Concepts
 
