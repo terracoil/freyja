@@ -1,11 +1,12 @@
 # Refactored FreyjaCLI class - Simplified coordinator role only
 from __future__ import annotations
 
+import os
 import types
 from typing import *
 
 from freyja.cli import ClassHandler, ExecutionCoordinator
-from freyja.command import CommandBuilder, CommandDiscovery, CommandExecutor
+from freyja.command import CommandDiscovery, CommandExecutor
 from freyja.completion.base import get_completion_handler
 from freyja.parser import CommandParser
 
@@ -71,8 +72,8 @@ class FreyjaCLI:
       self.target_class = None
       self.target_classes = None
 
-    # Build command structure (after target_classes is set)
-    self.commands = self._build_command_tree()
+    # Get command structure from discovery (no need to build separately)
+    self.commands = self.discovery.commands.to_dict()
 
     # Essential compatibility properties only
     self.target_module = self.discovery.target_module
@@ -104,36 +105,29 @@ class FreyjaCLI:
   def _execute_with_context(self, parser, args) -> Any:
     """Execute command with FreyjaCLI context."""
     # Add context information to the execution coordinator
-    self.execution_coordinator.discovered_commands = self.discovery.commands
+    self.execution_coordinator.command_tree = self.discovery.commands
 
     return self.execution_coordinator.parse_and_execute(parser, args)
 
   def _initialize_executors(self) -> dict:
     """Initialize command executors based on target mode."""
-    executors = {}
-
     if self.discovery.target_classes and len(self.discovery.target_classes) > 1:
       # Multiple classes: create executor for each class
-      for target_class in self.discovery.target_classes:
-        executor = CommandExecutor(target_class=target_class, target_module=None)
-        executors[target_class] = executor
-    else:
-      # Single class or module: create single primary executor
-      primary_executor = CommandExecutor(target_class=self.discovery.primary_class,
-                                         target_module=self.discovery.target_module)
-      executors['primary'] = primary_executor
-
-    return executors
-
-  def _build_command_tree(self) -> dict:
-    """Build command structure using simplified CommandBuilder."""
-    # Use the new simplified CommandBuilder that works directly with CommandInfo objects
-    builder = CommandBuilder(target_mode=self.target_mode, commands=self.discovery.commands)
-    return builder.build_command_tree()
+      return {
+        target_class: CommandExecutor(target_class=target_class, target_module=None)
+        for target_class in self.discovery.target_classes
+      }
+    
+    # Single class or module: create single primary executor
+    return {
+      'primary': CommandExecutor(
+        target_class=self.discovery.primary_class,
+        target_module=self.discovery.target_module
+      )
+    }
 
   def _is_completion_request(self) -> bool:
     """Check if this is a shell completion request."""
-    import os
     return os.getenv('_FREYA_COMPLETE') is not None
 
   def _handle_completion(self):

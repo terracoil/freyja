@@ -82,30 +82,29 @@ class CommandDiscovery:
     else:
       raise ValueError(f"Target must be module, class, or list of classes, got {type(target).__name__}")
 
-    self.commands : List[CommandInfo] = self.discover_commands()
+    self.commands = self.discover_commands()
 
-  def discover_commands(self) -> List[CommandInfo]:
+  def discover_commands(self):
     """
     Discover all commands from the target.
 
-    :return: List of discovered commands
+    :return: CommandTree with hierarchical command structure
     """
-    result = []
+    # Import CommandTree here to avoid circular imports
+    from .command_tree import CommandTree
+    
+    command_tree = CommandTree()
 
     if self.mode == TargetMode.MODULE:
-      result = self._discover_from_module()
+      self._discover_from_module(command_tree)
     elif self.mode == TargetMode.CLASS:
       # Unified class handling: always use multi-class logic for consistency
-      result = self.discover_classes()
+      self.discover_classes(command_tree)
 
-    # TextUtil.pprint("COMMANDS:::{result}", result=result)
+    return command_tree
 
-    return result
-
-  def _discover_from_module(self) -> List[CommandInfo]:
-    """Discover functions from a module."""
-    commands = []
-
+  def _discover_from_module(self, command_tree) -> None:
+    """Discover functions from a module and add to command tree."""
     for name, obj in inspect.getmembers(self.target_module):
       if self.function_filter(name, obj):
         command_info = CommandInfo(
@@ -115,14 +114,10 @@ class CommandDiscovery:
           signature=inspect.signature(obj),
           docstring=inspect.getdoc(obj)
         )
-        commands.append(command_info)
+        command_tree.add_command(command_info.name, command_info)
 
-    return commands
-
-  def _discover_from_class(self, target_cls: type) -> List[CommandInfo]:
-    """Discover methods from a single class (used internally by multi-class logic)."""
-    commands = []
-
+  def _discover_from_class(self, target_cls: type, command_tree, is_namespaced: bool = False) -> None:
+    """Discover methods from a single class and add to command tree."""
     # Check for inner classes first (hierarchical pattern)
     inner_classes = self._discover_inner_classes(target_cls)
 
@@ -139,40 +134,33 @@ class CommandDiscovery:
         )
 
       # Discover direct methods
-      direct_commands = self._discover_direct_methods(target_cls)
-      commands.extend(direct_commands)
+      self._discover_direct_methods(target_cls, command_tree, is_namespaced)
 
       # Discover inner class methods
-      hierarchical_commands = self._discover_methods_from_inner_classes(target_cls, inner_classes)
-      commands.extend(hierarchical_commands)
+      self._discover_methods_from_inner_classes(target_cls, inner_classes, command_tree, is_namespaced)
 
     else:
       # Direct methods only (flat pattern)
       ValidationService.validate_constructor_parameters(
         target_cls, "class", allow_parameterless_only=True
       )
-      direct_commands = self._discover_direct_methods(target_cls)
-      commands.extend(direct_commands)
-
-    return commands
+      self._discover_direct_methods(target_cls, command_tree, is_namespaced)
 
   @staticmethod
   def _validate_classes(targets: list[type]) -> None:
     if not targets:
       raise ValueError("Passed a list, but no target classes were found.")
 
-    for item in targets:
-      if not isinstance(item, type):
-        raise ValueError(f"All items in list must be classes, got {type(item).__name__}")
+    if invalid_items := [item for item in targets if not isinstance(item, type)]:
+      invalid_type = type(invalid_items[0]).__name__
+      raise ValueError(f"All items in list must be classes, got {invalid_type}")
 
-  def discover_classes(self) -> List[CommandInfo]:
-    """Discover methods from classes (single or multiple) with proper namespacing.
+  def discover_classes(self, command_tree) -> None:
+    """Discover methods from classes (single or multiple) and add to command tree.
     
     For single class: methods get no namespace prefix (global namespace).
     For multiple classes: last class gets global namespace, others get kebab-cased class name prefixes.
     """
-    commands = []
-
     if self.completion or self.theme_tuner:
       System = SystemClassBuilder.build(self.completion, self.theme_tuner)
       self.target_classes.insert(0, System)  # SystemClassBuilder.build(self.completion, self.theme_tuner))
@@ -182,33 +170,11 @@ class CommandDiscovery:
 
     # Process namespaced classes first (with class name prefixes)
     for target_class in namespaced_classes:
-      # Discover commands for this class
-      class_commands = self._discover_from_class(target_class)
+      # Discover commands for this class and add to tree
+      self._discover_from_class(target_class, command_tree, is_namespaced=True)
 
-      # Add class namespace to command metadata (not name - that's handled by CommandBuilder)
-      class_namespace = TextUtil.kebab_case(target_class.__name__)
-
-      for command in class_commands:
-        command.metadata['source_class'] = target_class
-        command.metadata['class_namespace'] = class_namespace
-        command.metadata['is_namespaced'] = True
-
-      commands.extend(class_commands)
-
-    # Discover commands for primary class
-    primary_commands = self._discover_from_class(self.primary_class)
-
-    for command in primary_commands:
-      command.metadata['source_class'] = self.primary_class
-      command.metadata['class_namespace'] = None
-      command.metadata['is_namespaced'] = False
-
-    commands.extend(primary_commands)
-
-    # Restore original target
-    # self.target_class = original_target_class
-
-    return commands
+    # Discover commands for primary class (no namespace)
+    self._discover_from_class(self.primary_class, command_tree, is_namespaced=False)
 
   def _discover_inner_classes(self, target_class: Type) -> Dict[str, Type]:
     """Discover inner classes that should be treated as command groups."""
@@ -220,10 +186,8 @@ class CommandDiscovery:
 
     return inner_classes
 
-  def _discover_direct_methods(self, target_class) -> List[CommandInfo]:
-    """Discover methods directly from the target class."""
-    commands = []
-
+  def _discover_direct_methods(self, target_class, command_tree, is_namespaced: bool = False) -> None:
+    """Discover methods directly from the target class and add to command tree."""
     for name, obj in inspect.getmembers(target_class):
       if self.method_filter(target_class, name, obj):
         command_info = CommandInfo(
@@ -233,16 +197,32 @@ class CommandDiscovery:
           signature=inspect.signature(obj),
           docstring=inspect.getdoc(obj)
         )
-        commands.append(command_info)
+        
+        # Add metadata for execution
+        command_info.metadata['source_class'] = target_class
+        command_info.metadata['is_namespaced'] = is_namespaced
+        if is_namespaced:
+          command_info.metadata['class_namespace'] = TextUtil.kebab_case(target_class.__name__)
+        else:
+          command_info.metadata['class_namespace'] = None
+        
+        command_tree.add_command(command_info.name, command_info)
 
-    return commands
-
-  def _discover_methods_from_inner_classes(self, target_cls: type, inner_classes: Dict[str, Type]) -> List[CommandInfo]:
-    """Discover methods from inner classes for hierarchical commands."""
-    commands = []
-
+  def _discover_methods_from_inner_classes(self, target_cls: type, inner_classes: Dict[str, Type], command_tree, is_namespaced: bool = False) -> None:
+    """Discover methods from inner classes for hierarchical commands and add to tree."""
     for class_name, inner_class in inner_classes.items():
       command_name = TextUtil.kebab_case(class_name)
+
+      # Get group description from inner class docstring
+      description = self._get_group_description(inner_class, command_name)
+      
+      # Create the group in the command tree
+      command_tree.add_group(
+        command_name, 
+        description,
+        inner_class=inner_class,
+        is_system_command=self.is_system(target_cls)
+      )
 
       for method_name, method_obj in inspect.getmembers(inner_class):
         if (not method_name.startswith('_') and
@@ -251,7 +231,6 @@ class CommandDiscovery:
             inspect.isfunction(method_obj)):
           # Use kebab-cased method name as command name (no dunder notation)
           method_kebab = TextUtil.kebab_case(method_name)
-          group_name = command_name  # Use the kebab-cased inner class name
 
           command_info = CommandInfo(
             name=method_kebab,  # Just the method name, not group__method
@@ -264,7 +243,7 @@ class CommandDiscovery:
             command_path=command_name,
             inner_class=inner_class,
             is_system_command=self.is_system(target_cls),
-            group_name=group_name,  # Kebab-cased inner class name
+            group_name=command_name,  # Kebab-cased inner class name
             method_name=method_kebab  # Kebab-cased method name
           )
 
@@ -273,12 +252,33 @@ class CommandDiscovery:
             'inner_class': inner_class,
             'inner_class_name': class_name,
             'command_name': command_name,
-            'method_name': method_name
+            'method_name': method_name,
+            'source_class': target_cls,
+            'is_namespaced': is_namespaced
           })
+          
+          if is_namespaced:
+            command_info.metadata['class_namespace'] = TextUtil.kebab_case(target_cls.__name__)
+          else:
+            command_info.metadata['class_namespace'] = None
 
-          commands.append(command_info)
-
-    return commands
+          # Add command to the group
+          command_tree.add_command_to_group(
+            command_name, 
+            method_kebab, 
+            command_info,
+            method_name=method_kebab
+          )
+          
+  def _get_group_description(self, inner_class: type, group_name: str) -> str:
+    """Get description for command group from inner class docstring."""
+    if inner_class and inner_class.__doc__:
+      from freyja.parser import DocStringParser
+      description, _ = DocStringParser.parse_docstring(inner_class.__doc__)
+      return description
+    
+    # Fallback to generating description from group name
+    return f"{group_name.title().replace('-', ' ')} operations"
 
   def is_system(self, cls: type) -> bool:
     return cls.__name__ == 'System'
@@ -287,45 +287,45 @@ class CommandDiscovery:
     """Default filter for module functions."""
     if self.target_module is None:
       return False
+    
+    if name.startswith('_'):
+      return False
+    
+    if not callable(obj) or inspect.isclass(obj) or not inspect.isfunction(obj):
+      return False
+    
+    # Exclude imported functions
+    return obj.__module__ == self.target_module.__name__
 
-    return (
-        not name.startswith('_') and
-        callable(obj) and
-        not inspect.isclass(obj) and
-        inspect.isfunction(obj) and
-        obj.__module__ == self.target_module.__name__  # Exclude imported functions
-    )
-
-  def _default_method_filter(self, target_class:type, name: str, obj: Any) -> bool:
+  def _default_method_filter(self, target_class: type, name: str, obj: Any) -> bool:
     """Default filter for class methods."""
     if target_class is None:
       return False
-
-    return (
-        not name.startswith('_') and
-        callable(obj) and
-        (inspect.isfunction(obj) or inspect.ismethod(obj)) and
-        hasattr(obj, '__qualname__') and
-        target_class.__name__ in obj.__qualname__
-    )
+    
+    if name.startswith('_'):
+      return False
+    
+    if not callable(obj):
+      return False
+    
+    if not (inspect.isfunction(obj) or inspect.ismethod(obj)):
+      return False
+    
+    if not hasattr(obj, '__qualname__'):
+      return False
+    
+    return target_class.__name__ in obj.__qualname__
 
   def generate_title(self) -> str:
-    """
-    Generate FreyjaCLI title based on target type.
+    """Generate FreyjaCLI title based on target type."""
+    if self.mode == TargetMode.MODULE and hasattr(self.target_module, '__name__'):
+      module_name = self.target_module.__name__.split('.')[-1]
+      return f"{module_name.title()} FreyjaCLI"
     
-    :return: Generated title string
-    """
-    result = "FreyjaCLI Application"
-
-    if self.mode == TargetMode.MODULE:
-      if hasattr(self.target_module, '__name__'):
-        module_name = self.target_module.__name__.split('.')[-1]  # Get last part of module name
-        result = f"{module_name.title()} FreyjaCLI"
-    elif self.mode == TargetMode.CLASS:
-      if self.primary_class and self.primary_class.__doc__:
+    if self.mode == TargetMode.CLASS and self.primary_class:
+      if self.primary_class.__doc__:
         main_desc, _ = DocStringParser.parse_docstring(self.primary_class.__doc__)
-        result = main_desc or self.primary_class.__name__
-      elif self.primary_class:
-        result = self.primary_class.__name__
-
-    return result
+        return main_desc or self.primary_class.__name__
+      return self.primary_class.__name__
+    
+    return "FreyjaCLI Application"

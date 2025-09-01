@@ -1,12 +1,12 @@
-"""Command processing package - handles FreyjaCLI command parsing, building, and execution."""
+"""Command processing package - handles FreyjaCLI command parsing, discovery, and execution."""
 
 from .command_discovery import CommandInfo, CommandDiscovery
-from .command_builder import CommandBuilder
 from .command_executor import CommandExecutor
+from .command_tree import CommandTree
 
 __all__ = [
     CommandInfo,
     CommandDiscovery,
-    CommandBuilder,
-    CommandExecutor
+    CommandExecutor,
+    CommandTree
 ]

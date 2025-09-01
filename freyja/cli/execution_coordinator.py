@@ -15,7 +15,7 @@ class ExecutionCoordinator:
     """Initialize execution coordinator."""
     self.target_mode = target_mode
     self.executors = executors
-    self.discovered_commands = []
+    self.command_tree = None
 
   def parse_and_execute(self, parser, args: Optional[List[str]]) -> Any:
     """Parse arguments and execute command."""
@@ -102,15 +102,8 @@ class ExecutionCoordinator:
 
   def _find_source_class_for_function(self, function_name: str) -> Optional[Type]:
     """Find the source class for a given function name."""
-    for command in self.discovered_commands:
-      # Check if this command matches the function name
-      # Handle both original names and full hierarchical names
-      if (command.original_name == function_name or 
-          command.name == function_name or 
-          command.name.endswith(f'--{function_name}')):
-        source_class = command.metadata.get('source_class')
-        if source_class:
-          return source_class
+    if self.command_tree:
+      return self.command_tree.find_source_class(function_name)
     return None
 
   def _handle_execution_error(self, parsed, error: Exception) -> int:
