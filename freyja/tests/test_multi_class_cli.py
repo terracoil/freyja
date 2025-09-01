@@ -62,7 +62,7 @@ class TestMultiClassHandler:
         """Test collision detection between classes with same command names."""
         handler = ClassHandler()
 
-        # Track commands that will collide (same exact command name)
+        # Track cmd_tree that will collide (same exact command name)
         handler.track_command("process-data", MockDataProcessor)
         handler.track_command("process-data", MockFileManager)
 
@@ -86,7 +86,7 @@ class TestMultiClassHandler:
         """Test command ordering preserves class order then alphabetical."""
         handler = ClassHandler()
 
-        # Track commands out of order using clean names
+        # Track cmd_tree out of order using clean names
         handler.track_command("list-files", MockFileManager)
         handler.track_command("process-data", MockDataProcessor)
         handler.track_command("analyze", MockDataProcessor)
@@ -95,7 +95,7 @@ class TestMultiClassHandler:
         class_order = [MockDataProcessor, MockFileManager]
         ordered = handler.get_ordered_commands(class_order)
 
-        # Should be: DataProcessor commands first (alphabetical), then FileManager commands (alphabetical)
+        # Should be: DataProcessor cmd_tree first (alphabetical), then FileManager cmd_tree (alphabetical)
         expected = [
             "analyze",
             "process-data",
@@ -156,17 +156,20 @@ class TestMultiClassCLI:
         """Test command structure for multi-class FreyjaCLI."""
         cli = FreyjaCLI([MockDataProcessor, MockReportGenerator])
 
-        # Should have commands from both classes
+        # Should have cmd_tree from both classes
         commands = cli.commands
 
-        # DataProcessor commands (clean names)
-        assert "process-data" in commands
+        # Non-primary class (MockDataProcessor) should be in a hierarchical group
+        assert "mock-data-processor" in commands
+        dp_group = commands["mock-data-processor"]
+        assert dp_group['type'] == 'group'
+        assert "process-data" in dp_group['cmd_tree']
 
-        # ReportGenerator commands (clean names)
+        # Primary class (MockReportGenerator) cmd_tree should be flat
         assert "generate-report" in commands
 
         # Commands should be properly structured
-        dp_cmd = commands["process-data"]
+        dp_cmd = dp_group['cmd_tree']["process-data"]
         assert dp_cmd['type'] == 'command'
         assert dp_cmd['original_name'] == 'process_data'
 
@@ -184,7 +187,7 @@ class TestMultiClassCLI:
         assert "file-operations" in commands
         inner_group = commands["file-operations"]
         assert inner_group['type'] == 'group'
-        assert 'cleanup' in inner_group['commands']
+        assert 'cleanup' in inner_group['cmd_tree']
 
     def test_multi_class_title_generation(self):
         """Test title generation for multi-class FreyjaCLI."""
@@ -200,9 +203,15 @@ class TestMultiClassCLI:
         """Test command structure in multi-class mode."""
         cli = FreyjaCLI([MockDataProcessor, MockReportGenerator], completion=False)
 
-        # Should have commands from both classes
+        # Should have cmd_tree from both classes
         commands = cli.commands
-        assert "process-data" in commands  # From MockDataProcessor
+        
+        # Non-primary class should be in hierarchical group
+        assert "mock-data-processor" in commands
+        dp_group = commands["mock-data-processor"]
+        assert "process-data" in dp_group['cmd_tree']  # From MockDataProcessor
+        
+        # Primary class should be flat
         assert "generate-report" in commands  # From MockReportGenerator
 
         # Unified handling: target mode is always CLASS for classes
@@ -245,9 +254,15 @@ class TestCommandExecutorMultiClass:
         assert cli.target_class == MockReportGenerator  # Last class is primary
         assert cli.target_classes == [MockDataProcessor, MockReportGenerator]
 
-        # Should have commands from both classes
+        # Should have cmd_tree from both classes
         commands = cli.commands
-        assert "process-data" in commands
+        
+        # Non-primary class should be in hierarchical group
+        assert "mock-data-processor" in commands
+        dp_group = commands["mock-data-processor"]
+        assert "process-data" in dp_group['cmd_tree']
+        
+        # Primary class should be flat
         assert "generate-report" in commands
 
     def test_single_class_compatibility(self):
@@ -259,7 +274,7 @@ class TestCommandExecutorMultiClass:
         assert cli.target_class == MockDataProcessor
         assert cli.target_classes == [MockDataProcessor]
 
-        # Should have commands from the class
+        # Should have cmd_tree from the class
         commands = cli.commands
         assert "process-data" in commands
 

@@ -174,7 +174,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     # Include global options in calculation
     max_width = max(max_width, self._calculate_global_options_width())
 
-    # Scan all commands
+    # Scan all cmd_tree
     for choice, subparser in action.choices.items():
       max_width = max(max_width, self._calculate_command_width(choice, subparser))
 
@@ -202,7 +202,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     return len(opt_display) + self._arg_indent
 
   def _calculate_command_width(self, choice, subparser):
-    """Calculate width for commands and their options."""
+    """Calculate width for cmd_tree and their options."""
     max_width = self._cmd_indent + len(choice) + 1  # +1 for colon
 
     # Check options in this command
@@ -211,7 +211,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
       opt_width = len(arg_name) + self._arg_indent
       max_width = max(max_width, opt_width)
 
-    # Handle nested commands
+    # Handle nested cmd_tree
     if hasattr(subparser, '_commands'):
       command_indent = self._cmd_indent + 2
       for cmd_name in subparser._commands.keys():
@@ -237,11 +237,10 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     all_commands = self._collect_all_commands(action)
 
     grouped=itertools.groupby(all_commands, key=lambda c: c[-1])
-    print("GROUPED", dict(grouped))
 
-    # system_commands = [cmd for cmd in all_commands if cmd.is_system]
+    # Sort system cmd_tree first, then alphabetize the rest
     if self._alphabetize:
-      all_commands.sort(key=lambda x: x[0])
+      all_commands.sort(key=lambda x: (not x[3], x[0]))  # x[3] is is_system, x[0] is command name
 
     for choice, subparser, command_type, is_system in all_commands:
       command_section = self._format_single_command(
@@ -258,7 +257,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     return "\n".join(parts)
 
   def _collect_all_commands(self, action):
-    """Collect all commands with their metadata."""
+    """Collect all cmd_tree with their metadata."""
     all_commands = []
 
     for choice, subparser in action.choices.items():
@@ -282,7 +281,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     )
 
   def _command_has_required_args(self, subparser):
-    """Check if command or its nested commands have required arguments."""
+    """Check if command or its nested cmd_tree have required arguments."""
     required_args, _ = self._analyze_arguments(subparser)
     if required_args:
       return True
@@ -335,7 +334,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     # Add arguments
     lines.extend(self._format_command_arguments(parser, unified_cmd_desc_column))
 
-    # Add nested commands
+    # Add nested cmd_tree
     if hasattr(parser, '_commands'):
       lines.extend(self._format_nested_commands(parser, base_indent, unified_cmd_desc_column))
 
@@ -393,7 +392,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     return lines
 
   def _format_nested_commands(self, parser, base_indent, unified_cmd_desc_column):
-    """Format nested commands within a group."""
+    """Format nested cmd_tree within a group."""
     lines = []
     command_indent = base_indent + 2
 
@@ -455,7 +454,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     return lines
 
   def _format_final_command_arguments(self, parser, unified_cmd_desc_column):
-    """Format arguments for final commands."""
+    """Format arguments for final cmd_tree."""
     lines = []
     required_args, optional_args = self._analyze_arguments(parser)
 

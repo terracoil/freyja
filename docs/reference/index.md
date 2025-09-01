@@ -116,7 +116,7 @@ def from_class(
 **Instance Methods**
 ```python
 def display(self) -> Optional[int]:
-    """Display FreyjaCLI interface and execute commands."""
+    """Display FreyjaCLI interface and execute command tree."""
 
 def run(self) -> Optional[int]:
     """Alias for display() method."""

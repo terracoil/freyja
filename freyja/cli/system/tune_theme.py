@@ -1,4 +1,4 @@
-"""System-level FreyjaCLI commands for freyja."""
+"""System-level FreyjaCLI cmd_tree for freyja."""
 
 import os
 from typing import Dict, Set
@@ -40,7 +40,7 @@ class TuneTheme:
       ("command_group_description", "Command group descriptions (inner class descriptions)"),
       ("command_group_option_name", "Command group option flags"),
       ("command_group_option_description", "Command group option descriptions"),
-      # Grouped Command Level (commands within the group)
+      # Grouped Command Level (cmd_tree within the group)
       ("grouped_command_name", "Grouped command names (methods within groups)"),
       ("grouped_command_description", "Grouped command descriptions (method descriptions)"),
       ("grouped_command_option_name", "Grouped command option flags"),
@@ -218,7 +218,7 @@ class TuneTheme:
       ("command_group_description", theme.command_group_description.fg, "Command group description"),
       ("command_group_option_name", theme.command_group_option_name.fg, "Command group option name"),
       ("command_group_option_description", theme.command_group_option_description.fg, "Command group option description"),
-      # Grouped Command Level (commands within the group)
+      # Grouped Command Level (cmd_tree within the group)
       ("grouped_command_name", theme.grouped_command_name.fg, "Grouped command name"),
       ("grouped_command_description", theme.grouped_command_description.fg, "Grouped command description"),
       ("grouped_command_option_name", theme.grouped_command_option_name.fg, "Grouped command option name"),
@@ -607,7 +607,7 @@ class TuneTheme:
     while True:
       self.display_theme_info()
 
-      print("Available commands:")
+      print("Available cmd_tree:")
       print(f"  [+] Increase adjustment by {self.ADJUSTMENT_INCREMENT}")
       print(f"  [-] Decrease adjustment by {self.ADJUSTMENT_INCREMENT}")
       print("  [s] Select adjustment strategy")

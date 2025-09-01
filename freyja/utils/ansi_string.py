@@ -1,4 +1,5 @@
-"""ANSI-aware string wrapper for proper alignment in format strings.
+"""
+ANSI-aware string wrapper for proper alignment in format strings.
 
 This module provides the AnsiString class which enables proper text alignment
 in f-strings and format() calls when working with ANSI escape codes for terminal colors.
@@ -7,20 +8,11 @@ in f-strings and format() calls when working with ANSI escape codes for terminal
 import re
 from typing import Union
 
-# Regex pattern to match ANSI escape sequences
-ANSI_ESCAPE_PATTERN = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-
-
-def strip_ansi_codes(text: str) -> str:
-  """Remove ANSI escape sequences from text to get visible character count.
-
-  :param text: Text that may contain ANSI escape codes
-  :return: Text with ANSI codes removed
-  """
-  return ANSI_ESCAPE_PATTERN.sub('', text) if text else ''
-
 
 class AnsiString:
+  # Regex pattern to match ANSI escape sequences
+  ANSI_ESCAPE_PATTERN = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+
   """String wrapper that implements proper alignment with ANSI escape codes.
 
   This class wraps a string containing ANSI escape codes and provides
@@ -39,7 +31,19 @@ class AnsiString:
     :param text: The string to wrap (may contain ANSI codes)
     """
     self.text = text if text is not None else ''
-    self._visible_text = strip_ansi_codes(self.text)
+    self._visible_text = self.strip_ansi_codes(self.text)
+
+
+  @classmethod
+  def strip_ansi_codes(cls, text: str) -> str:
+    """Remove ANSI escape sequences from text to get visible character count.
+
+    :param text: Text that may contain ANSI escape codes
+    :return: Text with ANSI codes removed
+    """
+    return cls.ANSI_ESCAPE_PATTERN.sub('', text) if text else ''
+
+
 
   def __str__(self) -> str:
     """Return the original text with ANSI codes intact."""

@@ -2,7 +2,7 @@
 
 [← Back to Help](../help.md) | [📦 Installation](installation.md) | [📖 Basic Usage](basic-usage.md)
 
-## Table of Contents
+# Table of Contents
 - [Installation](#installation)
 - [5-Minute Introduction](#5-minute-introduction)
 - [Choose Your Mode](#choose-your-mode)

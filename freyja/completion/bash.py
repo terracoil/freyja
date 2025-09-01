@@ -83,7 +83,7 @@ complete -F _{prog_name}_completion {prog_name}
       options = self.get_available_options(parser)
       return self.complete_partial_word(options, current_word)
 
-    # Complete commands/command groups
+    # Complete cmd_tree/command groups
     commands = self.get_available_commands(parser)
     if commands:
       return self.complete_partial_word(commands, current_word)

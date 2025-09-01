@@ -2,7 +2,7 @@
 
 [← Back to Help](../help.md) | [🔧 Basic Usage](../getting-started/basic-usage.md)
 
-## Table of Contents
+# Table of Contents
 - [CLI Class](#cli-class)
 - [Factory Methods](#factory-methods)
 - [Configuration Options](#configuration-options)

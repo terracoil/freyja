@@ -74,7 +74,7 @@ class TestModernizedCLI:
     # Should not include private functions or classes
     command_names = list(cli.commands.keys())
     assert not any(name.startswith('_') for name in command_names)
-    # Classes should not appear as commands
+    # Classes should not appear as cmd_tree
 
   def test_custom_function_filter(self, sample_module):
     """Test custom function filter."""

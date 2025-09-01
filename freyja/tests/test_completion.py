@@ -77,14 +77,14 @@ class TestCompletionHandler:
     assert context.cli == cli
 
   def test_get_available_commands(self):
-    """Test getting available commands from parser."""
+    """Test getting available cmd_tree from parser."""
     cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
     handler = BashCompletionHandler(cli)
     parser = cli.create_parser(no_color=True)
 
     commands = handler.get_available_commands(parser)
     assert "test-function" in commands
-    assert "nested--command" in commands  # Dunder notation now creates flat commands
+    assert "nested--command" in commands  # Dunder notation now creates flat cmd_tree
 
   def test_get_available_options(self):
     """Test getting available options from parser."""
@@ -134,7 +134,7 @@ class TestCompletionIntegration:
     system_cli = FreyjaCLI(System)
     parser = system_cli.create_parser()
     help_text = parser.format_help()
-    assert "completion" in help_text  # System class provides completion commands
+    assert "completion" in help_text  # System class provides completion cmd_tree
 
   def test_cli_with_completion_disabled(self):
     """Test FreyjaCLI with completion disabled."""

@@ -15,7 +15,7 @@ class UserRole(enum.Enum):
   ADMIN = "admin"
 
 
-# Test functions for hierarchical commands
+# Test functions for hierarchical cmd_tree
 def flat_hello(name: str = "World"):
   """Simple flat command.
 
@@ -90,7 +90,7 @@ class TestHierarchicalCommandGroups:
     self.cli = FreyjaCLI(test_module, "Test FreyjaCLI with Hierarchical Commands")
 
   def test_function_discovery_and_grouping(self):
-    """Test that functions are correctly discovered as flat commands (no grouping)."""
+    """Test that functions are correctly discovered as flat cmd_tree (no grouping)."""
     commands = self.cli.commands
 
     # Check flat command
@@ -98,7 +98,7 @@ class TestHierarchicalCommandGroups:
     assert commands["flat-hello"]["type"] == "command"
     assert commands["flat-hello"]["function"] == flat_hello
 
-    # Check user commands (now flat with double-dash)
+    # Check user cmd_tree (now flat with double-dash)
     assert "user--create" in commands
     assert commands["user--create"]["type"] == "command"
     assert commands["user--create"]["function"] == user__create
@@ -111,12 +111,12 @@ class TestHierarchicalCommandGroups:
     assert commands["user--delete"]["type"] == "command"
     assert commands["user--delete"]["function"] == user__delete
 
-    # Check db commands (now flat with double-dash)
+    # Check db cmd_tree (now flat with double-dash)
     assert "db--migrate" in commands
     assert commands["db--migrate"]["type"] == "command"
     assert commands["db--migrate"]["function"] == db__migrate
 
-    # Check nested admin commands (now flat with double-dash)
+    # Check nested admin cmd_tree (now flat with double-dash)
     assert "admin--user--reset-password" in commands
     assert commands["admin--user--reset-password"]["type"] == "command"
     assert commands["admin--user--reset-password"]["function"] == admin__user__reset_password
@@ -126,7 +126,7 @@ class TestHierarchicalCommandGroups:
     assert commands["admin--system--backup"]["function"] == admin__system__backup
 
   def test_parser_creation_flat_commands(self):
-    """Test parser creation with flat commands only."""
+    """Test parser creation with flat cmd_tree only."""
     parser = self.cli.create_parser()
 
     # Test that parser has subparsers
@@ -139,7 +139,7 @@ class TestHierarchicalCommandGroups:
     assert subparsers_action is not None
     choices = list(subparsers_action.choices.keys())
 
-    # Should have flat commands only
+    # Should have flat cmd_tree only
     assert "flat-hello" in choices
     assert "user--create" in choices
     assert "user--list" in choices
@@ -149,12 +149,12 @@ class TestHierarchicalCommandGroups:
     assert "admin--system--backup" in choices
 
   def test_flat_command_execution(self):
-    """Test execution of flat commands."""
+    """Test execution of flat cmd_tree."""
     result = self.cli.run(["flat-hello", "--name", "Alice"])
     assert result == "Hello, Alice!"
 
   def test_flat_command_execution_with_args(self):
-    """Test execution of flat commands with arguments."""
+    """Test execution of flat cmd_tree with arguments."""
     # Test user create (now flat command)
     result = self.cli.run([
       "user--create",
@@ -173,7 +173,7 @@ class TestHierarchicalCommandGroups:
     assert result == "Migrating 3 steps down"
 
   def test_deeply_nested_flat_command_execution(self):
-    """Test execution of deeply nested commands as flat commands."""
+    """Test execution of deeply nested cmd_tree as flat cmd_tree."""
     # Test admin user reset-password (notify is True by default)
     result = self.cli.run([
       "admin--user--reset-password",
@@ -198,7 +198,7 @@ class TestHierarchicalCommandGroups:
 
   def test_help_display_flat_command(self):
     """Test flat command help."""
-    # Flat commands don't have group help - they execute directly or show command help
+    # Flat cmd_tree don't have group help - they execute directly or show command help
     with patch('sys.stdout') as mock_stdout:
       with pytest.raises(SystemExit):
         self.cli.run(["user--create", "--help"])
@@ -208,7 +208,7 @@ class TestHierarchicalCommandGroups:
 
   def test_help_display_deeply_nested_flat_command(self):
     """Test deeply nested flat command help."""
-    # No nested groups - all commands are flat
+    # No nested groups - all cmd_tree are flat
     with patch('sys.stdout') as mock_stdout:
       with pytest.raises(SystemExit):
         self.cli.run(["admin--system--backup", "--help"])
@@ -217,7 +217,7 @@ class TestHierarchicalCommandGroups:
     assert mock_stdout.write.called
 
   def test_missing_command_handling(self):
-    """Test handling of missing commands."""
+    """Test handling of missing cmd_tree."""
     with patch('builtins.print') as mock_print:
       result = self.cli.run([])
 
@@ -225,7 +225,7 @@ class TestHierarchicalCommandGroups:
     assert result == 0
 
   def test_invalid_command_handling(self):
-    """Test handling of invalid commands."""
+    """Test handling of invalid cmd_tree."""
     with patch('builtins.print') as mock_print:
       with patch('sys.stderr'):
         with pytest.raises(SystemExit):
@@ -238,13 +238,13 @@ class TestHierarchicalCommandGroups:
     # Check that function names with underscores become dashed
     assert "flat-hello" in commands  # flat_hello -> flat-hello
 
-    # Check flat commands with double-dash conversion
+    # Check flat cmd_tree with double-dash conversion
     assert "user--create" in commands  # user__create -> user--create
     assert "admin--user--reset-password" in commands  # admin__user__reset_password -> admin--user--reset-password
     assert "admin--system--backup" in commands  # admin__system__backup -> admin--system--backup
 
   def test_command_original_name_storage(self):
-    """Test that original function names are stored correctly for flat commands."""
+    """Test that original function names are stored correctly for flat cmd_tree."""
     commands = self.cli.commands
 
     # Check original function name storage
@@ -255,8 +255,8 @@ class TestHierarchicalCommandGroups:
     assert backup_cmd["original_name"] == "admin__system__backup"
 
   def test_mixed_simple_and_complex_flat_commands(self):
-    """Test FreyjaCLI with mix of simple and complex flat commands."""
-    # Should be able to execute both simple and complex flat commands
+    """Test FreyjaCLI with mix of simple and complex flat cmd_tree."""
+    # Should be able to execute both simple and complex flat cmd_tree
     simple_result = self.cli.run(["flat-hello", "--name", "Test"])
     assert simple_result == "Hello, Test!"
 
@@ -307,7 +307,7 @@ class TestHierarchicalEdgeCases:
     # The function shouldn't be included in normal discovery due to naming
 
   def test_single_vs_double_underscore_distinction(self):
-    """Test that both single and double underscores create flat commands."""
+    """Test that both single and double underscores create flat cmd_tree."""
 
     def single_underscore_func():
       """Function with single underscore."""
@@ -339,7 +339,7 @@ class TestHierarchicalEdgeCases:
       delattr(test_module, 'double__underscore__func')
 
   def test_deep_nesting_as_flat_command(self):
-    """Test that deep nesting creates flat commands."""
+    """Test that deep nesting creates flat cmd_tree."""
 
     def level1__level2__level3__level4__deep_command():
       """Very deeply nested command."""

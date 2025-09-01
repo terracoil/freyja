@@ -25,9 +25,9 @@ print('System parser has _commands?', hasattr(system_parser, '_commands'))
 print('Config parser has _commands?', hasattr(config_parser, '_commands'))
 
 if hasattr(system_parser, '_commands'):
-    print('System commands:', system_parser._commands)
+    print('System cmd_tree:', system_parser._commands)
 if hasattr(config_parser, '_commands'):
-    print('Config commands:', config_parser._commands)
+    print('Config cmd_tree:', config_parser._commands)
 
 # Check if system parser has sub-global arguments
 required_args, optional_args = [], []

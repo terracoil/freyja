@@ -2,7 +2,7 @@
 
 [← Back to Help](help.md) | [🗂️ Module-based Guide](module-cli-guide.md)
 
-## Table of Contents
+# Table of Contents
 - [Overview](#overview)
 - [When to Use Class-based CLI](#when-to-use-class-based-cli)
 - [Basic Setup](#basic-setup)
@@ -802,7 +802,7 @@ class DocumentedApp:
         
         Creates a new item with the specified properties and adds it
         to the internal collection. Items can be managed using other
-        commands in this application.
+        command tree in this application.
         
         Args:
             name: The name/title of the item (must be unique)

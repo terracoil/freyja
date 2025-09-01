@@ -3,14 +3,14 @@ from typing import Dict, Type, List, Tuple, Optional, Any
 
 """Multi-class FreyjaCLI command handling and collision detection.
 
-Provides services for managing commands from multiple classes in a single FreyjaCLI,
+Provides services for managing cmd_tree from multiple classes in a single FreyjaCLI,
 including collision detection, command ordering, and source tracking.
 """
 
 
 
 class ClassHandler:
-  """Handles commands from multiple classes with collision detection and ordering."""
+  """Handles cmd_tree from multiple classes with collision detection and ordering."""
 
   def __init__(self):
     """Initialize multi-class handler."""
@@ -34,7 +34,7 @@ class ClassHandler:
     else:
       self.command_sources[command_name] = source_class
 
-    # Track commands per class for ordering
+    # Track cmd_tree per class for ordering
     if source_class not in self.class_commands:
       self.class_commands[source_class] = []
     self.class_commands[source_class].append(command_name)
@@ -57,7 +57,7 @@ class ClassHandler:
 
   def get_ordered_commands(self, class_order: List[Type]) -> List[str]:
     """
-    Get commands ordered by class sequence, then alphabetically within each class.
+    Get cmd_tree ordered by class sequence, then alphabetically within each class.
 
     :param class_order: Desired order of classes
     :return: List of command names in proper order
@@ -67,7 +67,7 @@ class ClassHandler:
     # Process classes in the specified order
     for cls in class_order:
       if cls in self.class_commands:
-        # Sort commands within this class alphabetically
+        # Sort cmd_tree within this class alphabetically
         class_commands = sorted(self.class_commands[cls])
         ordered_commands.extend(class_commands)
 
@@ -124,11 +124,11 @@ class ClassHandler:
   def _simulate_class_commands(self, handler: 'ClassHandler', cls: Type) -> None:
     """Simulate command discovery for collision detection.
 
-    :param handler: Handler to track commands in
-    :param cls: Class to simulate commands for"""
+    :param handler: Handler to track cmd_tree in
+    :param cls: Class to simulate cmd_tree for"""
     from freyja.utils.text_util import TextUtil
 
-    # Check for inner classes (hierarchical commands)
+    # Check for inner classes (hierarchical cmd_tree)
     inner_classes = self._discover_inner_classes(cls)
 
     if inner_classes:

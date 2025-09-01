@@ -74,6 +74,22 @@ class CompletionHandler(ABC):
 
     return result
 
+  def complete(self) -> None:
+    """Handle completion request and output completions."""
+    shell = self.detect_shell()
+    if not shell:
+      return
+    
+    # Get completion environment variables
+    if shell == 'bash':
+      # Handle bash completion
+      from .bash import handle_bash_completion
+      handle_bash_completion()
+    else:
+      # For other shells, we need to implement completion handling
+      # For now, just return empty to avoid errors
+      pass
+
   def get_command_group_parser(self, parser: argparse.ArgumentParser,
                                command_group_path: List[str]) -> Optional[argparse.ArgumentParser]:
     """Navigate to command group parser following the path.
@@ -105,9 +121,9 @@ class CompletionHandler(ABC):
     return result
 
   def get_available_commands(self, parser: argparse.ArgumentParser) -> List[str]:
-    """Get list of available commands from parser.
+    """Get list of available cmd_tree from parser.
 
-    :param parser: Parser to extract commands from
+    :param parser: Parser to extract cmd_tree from
     :return: List of command names
     """
     commands = []

@@ -9,7 +9,7 @@ from typing import Any, Dict, Type, Optional
 
 
 class CommandExecutor:
-  """Centralized service for executing FreyjaCLI commands with different patterns."""
+  """Centralized service for executing FreyjaCLI cmd_tree with different patterns."""
 
   def __init__(self, target_class: Optional[Type] = None, target_module: Optional[Any] = None):
     """Initialize command executor with target information.
@@ -30,10 +30,14 @@ class CommandExecutor:
     command_path = parsed._command_path
 
     # Extract inner class information from the method object
-    # The method qualname is like "OuterClass.InnerClass.method_name"
+    # The method qualname can be:
+    # - "OuterClass.InnerClass.method_name" (normal case, 3 parts)
+    # - "InnerClass.method_name" (System class case, 2 parts)
     qualname_parts = method.__qualname__.split('.')
-    if len(qualname_parts) < 3:
+    if len(qualname_parts) < 2:
       raise RuntimeError(f"Invalid method qualname for inner class method: {method.__qualname__}")
+    
+    # For both cases, the inner class name is the second-to-last part
     inner_class_name = qualname_parts[-2]  # Get the inner class name
     
     # Find the actual inner class object from the main target class

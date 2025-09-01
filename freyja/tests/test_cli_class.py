@@ -116,11 +116,11 @@ class TestClassBasedCLI:
     # Should not include private methods or special methods
     command_names = list(cli.commands.keys())
     
-    # Check that commands have proper structure
+    # Check that cmd_tree have proper structure
     for command_name, command_info in cli.commands.items():
       if command_info.get('type') == 'command':
         assert callable(command_info.get('function'))
-      assert not command_name.startswith('_')  # No private methods in commands  # Methods should be callable
+      assert not command_name.startswith('_')  # No private methods in cmd_tree  # Methods should be callable
 
   def test_method_execution(self):
     """Test method execution through FreyjaCLI."""
@@ -210,10 +210,10 @@ class TestClassBasedCLI:
     from freyja.cli.system import System
     cli = FreyjaCLI(System)
 
-    # System class uses inner class pattern, so should have hierarchical commands
+    # System class uses inner class pattern, so should have hierarchical cmd_tree
     assert 'tune-theme' in cli.commands
     assert cli.commands['tune-theme']['type'] == 'group'
-    assert 'increase-adjustment' in cli.commands['tune-theme']['commands']
+    assert 'increase-adjustment' in cli.commands['tune-theme']['cmd_tree']
 
   def test_completion_integration(self):
     """Test that completion works with class-based FreyjaCLI."""
@@ -251,8 +251,8 @@ class TestClassVsModuleComparison:
     assert module_result['number'] == class_result['number']
 
   def test_hierarchical_command_parity(self):
-    """Test that dunder notation creates flat commands for both classes and modules."""
-    # Dunder notation should create flat commands with double dashes
+    """Test that dunder notation creates flat cmd_tree for both classes and modules."""
+    # Dunder notation should create flat cmd_tree with double dashes
     cli = FreyjaCLI(SampleClass)
 
     result = cli.run(['hierarchical--nested--command', '--value', 'test'])
@@ -314,7 +314,7 @@ class TestEdgeCases:
         pass
 
     cli = FreyjaCLI(EmptyClass)
-    # Should have no commands (only __init__ is excluded)
+    # Should have no cmd_tree (only __init__ is excluded)
     command_count = len([k for k, v in cli.commands.items() if v.get('type') == 'command'])
     assert command_count == 0
 
@@ -369,7 +369,7 @@ class SampleClassWithDefaults:
 
 
 class SampleClassWithInnerClasses:
-  """Class with inner classes for hierarchical commands."""
+  """Class with inner classes for hierarchical cmd_tree."""
 
   def __init__(self, base_config: str = "base.json"):
     """Initialize with base configuration."""
@@ -408,10 +408,10 @@ class TestConstructorParameterValidation:
     # Should work because both main class and inner class have defaults
     cli = FreyjaCLI(SampleClassWithInnerClasses)
     assert cli.target_mode == TargetMode.CLASS
-    # Inner class methods become hierarchical commands with proper nesting
+    # Inner class methods become hierarchical cmd_tree with proper nesting
     assert 'good-inner-class' in cli.commands
     assert cli.commands['good-inner-class']['type'] == 'group'
-    assert 'create-item' in cli.commands['good-inner-class']['commands']
+    assert 'create-item' in cli.commands['good-inner-class']['cmd_tree']
 
   def test_inner_class_pattern_with_bad_inner_class_fails(self):
     """Test that inner class pattern fails when inner class has required parameters."""

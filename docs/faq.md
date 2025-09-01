@@ -2,7 +2,7 @@
 
 [← Back to Help](help.md) | [🔧 Basic Usage](getting-started/basic-usage.md)
 
-## Table of Contents
+# Table of Contents
 - [General Questions](#general-questions)
 - [Comparison with Other Tools](#comparison-with-other-tools)
 - [Technical Questions](#technical-questions)
@@ -286,7 +286,7 @@ For large applications, use class-based CLI with logical method grouping:
 
 ```python
 class DatabaseCLI:
-    """Database management commands."""
+    """Database management command tree."""
     
     def __init__(self):
         self.connection = None

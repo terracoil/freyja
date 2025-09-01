@@ -16,7 +16,7 @@
 - **[FAQ](faq.md)** - Frequently asked questions
 - **[Development](development/index.md)** - For contributors and maintainers
 
-## Table of Contents
+# Table of Contents
 - [Overview](#overview)
 - [Two CLI Creation Modes](#two-cli-creation-modes)
 - [Quick Comparison](#quick-comparison)
@@ -60,7 +60,7 @@ Use inner classes for hierarchical command organization with three argument leve
 ```python
 # cls_example.py
 class UserManager:
-    """User management FreyjaCLI with hierarchical commands."""
+    """User management FreyjaCLI with hierarchical command tree."""
     
     def __init__(self, config_file: str = "config.json", debug: bool = False):
         """

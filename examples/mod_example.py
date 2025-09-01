@@ -352,7 +352,7 @@ def restore_database(
   print("✓ Restore completed successfully")
 
 
-# Admin operations (converted from nested command groups to flat commands)
+# Admin operations (converted from nested command groups to flat cmd_tree)
 def reset_user_password(username: str, notify_user: bool = True):
   """Reset a user's password (admin operation).
 

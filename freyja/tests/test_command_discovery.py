@@ -133,7 +133,7 @@ class TestCommandDiscovery:
         assert "Target must be module, class, or list of classes" in str(exc_info.value)
     
     def test_discover_from_module(self):
-        """Test discovering commands from a module."""
+        """Test discovering cmd_tree from a module."""
         # Create a mock module
         mock_module = types.ModuleType('test_module')
         mock_module.__name__ = 'test_module'
@@ -162,7 +162,7 @@ class TestCommandDiscovery:
         mock_module._test_private_function = _test_private_function
         
         discovery = CommandDiscovery(mock_module)
-        commands = discovery.commands
+        commands = discovery.cmd_tree
         
         # Should find public functions only - check tree keys
         command_names = list(commands.keys())
@@ -179,9 +179,9 @@ class TestCommandDiscovery:
         assert not mock_cmd_dict['command_info'].is_hierarchical
     
     def test_discover_from_simple_class(self):
-        """Test discovering commands from a simple class without inner classes."""
+        """Test discovering cmd_tree from a simple class without inner classes."""
         discovery = CommandDiscovery(MockClassSimple, completion=False)
-        commands = discovery.commands
+        commands = discovery.cmd_tree
         
         # Should find public methods only
         command_names = list(commands.keys())
@@ -197,9 +197,9 @@ class TestCommandDiscovery:
         assert cmd_dict['command_info'].inner_class is None
     
     def test_discover_from_class_with_inner_classes(self):
-        """Test discovering commands from class with inner classes."""
+        """Test discovering cmd_tree from class with inner classes."""
         discovery = CommandDiscovery(MockClassWithInner, completion=False)
-        commands = discovery.commands
+        commands = discovery.cmd_tree
         
         # Should have direct method at top level
         assert 'direct-method' in commands
@@ -213,15 +213,15 @@ class TestCommandDiscovery:
         
         # Check methods within inner-operations group
         inner_ops = commands['inner-operations']
-        assert 'inner-method-one' in inner_ops['commands']
-        assert 'inner-method-two' in inner_ops['commands']
+        assert 'inner-method-one' in inner_ops['cmd_tree']
+        assert 'inner-method-two' in inner_ops['cmd_tree']
         
         # Check methods within data-processing group  
         data_proc = commands['data-processing']
-        assert 'process-data' in data_proc['commands']
+        assert 'process-data' in data_proc['cmd_tree']
         
         # Check command structure within groups
-        hierarchical_cmd = inner_ops['commands']['inner-method-one']
+        hierarchical_cmd = inner_ops['cmd_tree']['inner-method-one']
         assert hierarchical_cmd['type'] == 'command'
         assert hierarchical_cmd['command_info'].is_hierarchical
         assert hierarchical_cmd['command_info'].parent_class == 'InnerOperations'
@@ -237,26 +237,33 @@ class TestCommandDiscovery:
         assert direct_cmd['command_info'].parent_class is None
     
     def test_discover_from_multi_class(self):
-        """Test discovering commands from multiple classes."""
+        """Test discovering cmd_tree from multiple classes."""
         classes = [MockClass, MockClassSimple]
         discovery = CommandDiscovery(classes, completion=False)
-        commands = discovery.commands
+        commands = discovery.cmd_tree
         
-        # Should have commands from both classes
+        # Should have hierarchical structure for namespaced class and flat cmd_tree for primary class
         command_names = list(commands.keys())
-        assert 'method-one' in command_names  # From MockClass
-        assert 'method-two' in command_names  # From MockClass
-        assert 'simple-method' in command_names  # From MockClassSimple
+        assert 'mock-class' in command_names  # From MockClass (namespaced group)
+        assert 'simple-method' in command_names  # From MockClassSimple (primary class, flat)
+        
+        # Check that MockClass methods are inside the mock-class group
+        mock_class_group = commands['mock-class']
+        assert mock_class_group['type'] == 'group'
+        assert 'method-one' in mock_class_group['cmd_tree']  # From MockClass
+        assert 'method-two' in mock_class_group['cmd_tree']  # From MockClass
         
         # Check metadata for namespacing
-        # First class (MockClass) should be namespaced
-        all_command_infos = commands.get_all_commands()
-        method_one_cmd = next(cmd for cmd in all_command_infos if cmd.name == 'method-one' and cmd.metadata.get('source_class') == MockClass)
+        # First class (MockClass) cmd_tree should be namespaced
+        method_one_cmd_dict = mock_class_group['cmd_tree']['method-one']
+        method_one_cmd = method_one_cmd_dict['command_info']
         assert method_one_cmd.metadata['is_namespaced'] == True
         assert method_one_cmd.metadata['class_namespace'] == 'mock-class'
+        assert method_one_cmd.metadata['source_class'] == MockClass
         
         # Last class (MockClassSimple) should be in global namespace
-        simple_cmd = next(cmd for cmd in all_command_infos if cmd.name == 'simple-method')
+        simple_cmd_dict = commands['simple-method']
+        simple_cmd = simple_cmd_dict['command_info']
         assert simple_cmd.metadata['is_namespaced'] == False
         assert simple_cmd.metadata['class_namespace'] is None
     
@@ -283,7 +290,7 @@ class TestCommandDiscovery:
             return name.startswith('mock') and callable(obj) and inspect.isfunction(obj)
         
         discovery = CommandDiscovery(mock_module, function_filter=custom_filter, completion=False)
-        commands = discovery.commands
+        commands = discovery.cmd_tree
         
         # Should only find mock_function_test
         command_names = list(commands.keys())
@@ -298,7 +305,7 @@ class TestCommandDiscovery:
             return name.startswith('method') and callable(obj)
         
         discovery = CommandDiscovery(MockClass, method_filter=custom_filter, completion=False)
-        commands = discovery.commands
+        commands = discovery.cmd_tree
         
         # Should find method_one and method_two but not others
         command_names = list(commands.keys())
@@ -310,7 +317,7 @@ class TestCommandDiscovery:
     def test_command_info_structure(self):
         """Test CommandInfo data structure completeness."""
         discovery = CommandDiscovery(MockClassSimple, completion=False)
-        commands = discovery.commands
+        commands = discovery.cmd_tree
         
         # Get the first command from the tree
         command_names = list(commands.keys())

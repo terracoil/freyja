@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-## Table of Contents
+# Table of Contents
 - [Project Overview](#project-overview)
 - [Development Environment Setup](#development-environment-setup)
 - [Common Commands](#common-commands)
@@ -104,7 +104,7 @@ poetry run python mod_example.py --help
 poetry run python cls_example.py
 poetry run python cls_example.py --help
 
-# Try example commands (all commands are flat)
+# Try example command tree (all command tree are flat)
 poetry run python mod_example.py hello --name "Alice" --excited
 poetry run python cls_example.py file-operations--process-single --input-file "test.txt"
 ```
@@ -174,7 +174,7 @@ from src import CLI
 
 
 class SimpleCalculator:
-  """Simple calculator commands."""
+  """Simple calculator command tree."""
 
   def __init__(self):
     """Initialize calculator."""
@@ -213,9 +213,9 @@ from pathlib import Path
 
 class ProjectManager:
   """
-  Project Management FreyjaCLI with flat double-dash commands.
+  Project Management FreyjaCLI with flat double-dash command tree.
   
-  Manage projects with organized flat commands and global/sub-global arguments.
+  Manage projects with organized flat command tree and global/sub-global arguments.
   """
 
   def __init__(self, config_file: str = "config.json", debug: bool = False):
@@ -296,7 +296,7 @@ if __name__ == '__main__':
 
 **Usage with Flat Double-Dash Commands:**
 ```bash
-# Global + Sub-global + Command arguments (all flat commands)
+# Global + Sub-global + Command arguments (all flat command tree)
 python project_mgr.py --config-file prod.json --debug \
   project-operations--create --workspace /prod/projects --auto-save \
   --name "web-app" --description "Production web app"
@@ -304,13 +304,13 @@ python project_mgr.py --config-file prod.json --debug \
 # Commands without sub-global arguments  
 python project_mgr.py report-generation--summary --detailed
 
-# All commands are flat with double-dash notation
+# All command tree are flat with double-dash notation
 python project_mgr.py project-operations--create --name "my-project"
 python project_mgr.py task-management--add --title "New task" --priority "high"
 python project_mgr.py report-generation--export --format "json"
 
-# Help shows all flat commands
-python project_mgr.py --help  # Shows all available flat commands
+# Help shows all flat command tree
+python project_mgr.py --help  # Shows all available flat command tree
 ```
 
 ### Common Patterns by Use Case
@@ -318,7 +318,7 @@ python project_mgr.py --help  # Shows all available flat commands
 #### 1. Configuration Management (Inner Class Pattern)
 ```python
 class ConfigManager:
-    """Application configuration FreyjaCLI with hierarchical organization using flat commands."""
+    """Application configuration FreyjaCLI with hierarchical organization using flat command tree."""
     
     def __init__(self, config_file: str = "app.config"):
         """Initialize with global configuration file."""
@@ -602,6 +602,89 @@ All constructor parameters must have default values to be used as CLI arguments.
 - **[Type Annotations](docs/features/type-annotations.md)** - Supported types reference
 - **[Troubleshooting](docs/guides/troubleshooting.md)** - Common issues and solutions
 - **[Examples](examples/mod_example.py)** (module-based) and **[Examples](examples/cls_example.py)** (class-based)
+
+## Class Namespacing Rules (CRITICAL)
+
+**IMPORTANT**: The following rules apply to non-primary classes when multiple classes are provided to FreyjaCLI. These rules prevent regression from flat dash-prefixed commands to proper hierarchical structures.
+
+### Namespacing Behavior for Non-Primary Classes
+
+When providing multiple classes to FreyjaCLI, only the **last class** (primary) gets global namespace. All other classes become **namespaced** with TRUE hierarchical structure:
+
+#### ✅ CORRECT Hierarchical Structure
+
+Non-primary classes create proper hierarchical command groups:
+
+```python
+class System:
+    """System command tree and utilities."""
+    
+    class Completion:
+        """Shell completion management."""
+        
+        def install(self, shell: str = "bash") -> None:
+            """Install shell completion."""
+            pass
+        
+        def uninstall(self, shell: str = "bash") -> None:
+            """Remove shell completion."""
+            pass
+```
+
+**Results in CORRECT hierarchy:**
+```
+system                    System commands and utilities
+  completion              Shell completion management  
+    install               Install shell completion
+    uninstall             Remove shell completion
+```
+
+**Usage:**
+```bash
+my_cli system completion install --shell bash
+my_cli system completion uninstall --shell zsh
+```
+
+#### ❌ INCORRECT Flat Dash-Prefixed Commands (DO NOT ALLOW)
+
+**NEVER** create flat commands with dash prefixes like:
+- `system-completion → install` (OLD INCORRECT BEHAVIOR)
+- `system-completion → uninstall` (OLD INCORRECT BEHAVIOR)
+
+**NEVER** use dunder syntax like:
+- `system__completion → install` (PREVIOUS INCORRECT ATTEMPT)
+- `system__completion → uninstall` (PREVIOUS INCORRECT ATTEMPT)
+
+### Implementation Rules
+
+1. **CommandDiscovery**: Non-primary classes must create top-level groups using `kebab_case(class_name)`
+2. **Inner Classes**: Inner classes within non-primary classes become **subgroups**, not flat commands
+3. **Command Tree**: Use `add_subgroup_to_group()` and `add_command_to_subgroup()` for nested structures
+4. **Command Parser**: Must handle nested groups (groups containing other groups)
+5. **System Commands**: Non-primary system classes should appear first in help output before alphabetized commands
+
+### Code Pattern
+
+```python
+# In CommandDiscovery._discover_from_class()
+if is_namespaced:
+    # Create top-level group for the namespaced class
+    class_namespace = TextUtil.kebab_case(target_cls.__name__)
+    command_tree.add_group(class_namespace, class_description, is_system_command=self.is_system(target_cls))
+    
+    # Inner classes become subgroups, NOT flat dash-prefixed command tree
+    for inner_class_name, inner_class in inner_classes.items():
+        subgroup_name = TextUtil.kebab_case(inner_class_name)
+        command_tree.add_subgroup_to_group(class_namespace, subgroup_name, description, inner_class=inner_class)
+```
+
+### Test Verification
+
+Always verify that:
+- `system completion install` works (hierarchical)
+- `system-completion install` does NOT exist (flat dash-prefixed forbidden)
+- Help output shows proper nesting with indentation
+- System commands appear first before alphabetized commands
 
 ## Architecture
 

@@ -219,14 +219,14 @@ class TestModuleCLI:
     """Test command structure generation from functions."""
     cli = self.create_test_cli()
 
-    # Should have flat commands
+    # Should have flat cmd_tree
     assert 'simple-function' in cli.commands
     assert cli.commands['simple-function']['type'] == 'command'
 
     assert 'process-data' in cli.commands
     assert cli.commands['process-data']['type'] == 'command'
 
-    # Should have flat commands only
+    # Should have flat cmd_tree only
     assert 'backup-create' in cli.commands
     assert cli.commands['backup-create']['type'] == 'command'
 
@@ -237,7 +237,7 @@ class TestModuleCLI:
     assert cli.commands['create-task']['type'] == 'command'
 
   def test_flat_command_execution(self):
-    """Test execution of flat commands."""
+    """Test execution of flat cmd_tree."""
     cli = self.create_test_cli()
 
     # Test simple function
@@ -248,7 +248,7 @@ class TestModuleCLI:
     assert result['age'] == 30
 
   def test_flat_command_execution(self):
-    """Test execution of flat commands."""
+    """Test execution of flat cmd_tree."""
     cli = self.create_test_cli()
 
     # Test backup create (now flat command)
@@ -344,21 +344,21 @@ class TestModuleCLI:
 
     help_text = parser.format_help()
 
-    # Should show flat commands
+    # Should show flat cmd_tree
     assert 'simple-function' in help_text
     assert 'process-data' in help_text
 
-    # Should show flat commands
+    # Should show flat cmd_tree
     assert 'backup-create' in help_text
     assert 'backup-restore' in help_text
     assert 'set-config-value' in help_text
     assert 'get-config-value' in help_text
 
   def test_command_help(self):
-    """Test help for flat commands."""
+    """Test help for flat cmd_tree."""
     cli = self.create_test_cli()
 
-    # Test that we can parse help for commands without errors
+    # Test that we can parse help for cmd_tree without errors
     with pytest.raises(SystemExit):  # argparse exits after showing help
       cli.run(['backup-create', '--help'])
 
@@ -421,7 +421,7 @@ class TestModuleCLIErrorHandling:
                '--output-format', 'INVALID'])
 
   def test_invalid_command(self):
-    """Test handling of invalid commands."""
+    """Test handling of invalid cmd_tree."""
     cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
     # Should raise SystemExit for invalid command
@@ -429,7 +429,7 @@ class TestModuleCLIErrorHandling:
       cli.run(['nonexistent-command'])
 
   def test_invalid_command(self):
-    """Test handling of invalid commands."""
+    """Test handling of invalid cmd_tree."""
     cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
     # Should raise SystemExit for invalid command
@@ -483,10 +483,10 @@ class TestModuleCLICommandGrouping:
   """Test command grouping in module FreyjaCLI."""
 
   def test_flat_command_structure(self):
-    """Test that all functions create flat commands in modules."""
+    """Test that all functions create flat cmd_tree in modules."""
     cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
-    # Should create flat commands (no groups)
+    # Should create flat cmd_tree (no groups)
     assert 'backup-create' in cli.commands
     assert cli.commands['backup-create']['type'] == 'command'
 
@@ -506,10 +506,10 @@ class TestModuleCLICommandGrouping:
     assert cli.commands['list-tasks']['type'] == 'command'
 
   def test_all_flat_commands(self):
-    """Test that modules only support flat commands."""
+    """Test that modules only support flat cmd_tree."""
     cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI")
 
-    # Should have all flat commands only
+    # Should have all flat cmd_tree only
     assert 'simple-function' in cli.commands
     assert 'process-data' in cli.commands
     assert 'export-data' in cli.commands
@@ -520,7 +520,7 @@ class TestModuleCLICommandGrouping:
     assert 'create-task' in cli.commands
     assert 'list-tasks' in cli.commands
 
-    # All commands should be type 'command' in modules (flat structure)
+    # All cmd_tree should be type 'command' in modules (flat structure)
     assert cli.commands['simple-function']['type'] == 'command'
     assert cli.commands['export-data']['type'] == 'command'
     assert cli.commands['backup-create']['type'] == 'command'

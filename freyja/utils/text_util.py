@@ -5,6 +5,7 @@ import json
 import re
 from functools import lru_cache
 from typing import Dict, Sequence
+from .data_struct_util import DataStructUtil
 
 class TextUtil:
   """Centralized string conversion utilities with performance optimizations."""
@@ -13,30 +14,9 @@ class TextUtil:
   _conversion_cache: Dict[str, str] = {}
 
   @classmethod
-  def jsonify(cls, obj: any, *args, **kwargs) -> str:
-    # print(f"\n\n{type(obj)}: {isinstance(obj, list)} / {isinstance(obj, dict)}\n\n")
-    return json.dumps(cls.collectify(obj), indent=4, sort_keys=True)
-
-
-  @classmethod
-  def collectify(cls, obj):
-    def _filter(d):
-      return {k:v for k,v in d.items() if not k.startswith("_")}
-
-    if isinstance(obj, type):
-      result=cls.collectify(_filter(obj.__dict__))
-    elif isinstance(obj, dict):
-      result={k:cls.collectify(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-      result= [cls.collectify(o) for o in obj]
-    elif hasattr(obj, '__dict__'):
-      result=cls.collectify(_filter(vars(obj)))
-    else:
-      result = str(obj)
-
-    return result
-
-
+  def json_pretty(cls, obj: any) -> str:
+    """ Format any object or collection as a pretty JSON string"""
+    return json.dumps(DataStructUtil.simplify(obj), indent=4, sort_keys=True)
 
 
   @classmethod
@@ -73,22 +53,6 @@ class TextUtil:
     """
     return text.replace('-', '_').lower()
 
-  @staticmethod
-  # @lru_cache(maxsize=256)
-  def format_pretty(text: str, *args, **kwargs) -> str:
-    formatted_args = [TextUtil.jsonify(v) for v in args]
-    formatted_kwargs = {k: TextUtil.jsonify(v) for k, v in kwargs.items()}
-    return text.format(*formatted_args, **formatted_kwargs)
-
-  @staticmethod
-  def pprint(text: str, *args, **kwargs):
-    """
-    Pretty print a string with given args and kwargs, which are formatted using JSON if possible
-    :param text: The base string to be formatted and printed
-    :return:
-    """
-    print(TextUtil.format_pretty(text, *args, **kwargs))
-
   @classmethod
   def clear_cache(cls) -> None:
     """Reset string conversion cache for testing isolation.
@@ -97,15 +61,13 @@ class TextUtil:
     """
     TextUtil.kebab_case.cache_clear()
     TextUtil.snake_case.cache_clear()
-    TextUtil.format_pretty.cache_clear()
     TextUtil._conversion_cache.clear()
 
   @classmethod
   def get_cache_info(cls, **kwarg) -> dict:
     """Get cache statistics for performance monitoring."""
     return {
-      'format_pretty': TextUtil.format_pretty.cache_info()._asdict(),
-      'kebab_case': TextUtil.kebab_case.cache_info()._asdict(),
-      'kebab_to_snake': TextUtil.snake_case.cache_info()._asdict(),
-      'conversion_cache_size': len(TextUtil._conversion_cache)
+      'kebab_case': cls.kebab_case.cache_info()._asdict(),
+      'kebab_to_snake': cls.snake_case.cache_info()._asdict(),
+      'conversion_cache_size': len(cls._conversion_cache)
     }

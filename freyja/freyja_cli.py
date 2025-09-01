@@ -28,7 +28,7 @@ class FreyjaCLI:
     :param function_filter: Optional filter for functions (module mode)
     :param method_filter: Optional filter for methods (class mode)
     :param theme: Optional theme for colored output
-    :param alphabetize: Whether to sort commands and options alphabetically
+    :param alphabetize: Whether to sort cmd_tree and options alphabetically
     :param completion: Whether to enable shell completion
     """
 
@@ -50,8 +50,8 @@ class FreyjaCLI:
     # Store only essential config
     self.enable_completion = completion
 
-    # Discover commands
-    # self.discovery.commands = discovery.commands
+    # Discover cmd_tree
+    # self.discovery.cmd_tree = discovery.cmd_tree
 
     # Initialize command executors
     executors = self._initialize_executors()
@@ -73,7 +73,7 @@ class FreyjaCLI:
       self.target_classes = None
 
     # Get command structure from discovery (no need to build separately)
-    self.commands = self.discovery.commands.to_dict()
+    self.commands = self.discovery.cmd_tree.to_dict()
 
     # Essential compatibility properties only
     self.target_module = self.discovery.target_module
@@ -105,7 +105,7 @@ class FreyjaCLI:
   def _execute_with_context(self, parser, args) -> Any:
     """Execute command with FreyjaCLI context."""
     # Add context information to the execution coordinator
-    self.execution_coordinator.command_tree = self.discovery.commands
+    self.execution_coordinator.command_tree = self.discovery.cmd_tree
 
     return self.execution_coordinator.parse_and_execute(parser, args)
 

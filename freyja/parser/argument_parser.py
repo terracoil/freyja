@@ -45,7 +45,7 @@ class ArgumentParser:
   def add_global_class_args(parser: argparse.ArgumentParser, target_class: type) -> None:
     """Enable class-based FreyjaCLI with global configuration options.
 
-    Class constructors define application-wide settings that apply to all commands.
+    Class constructors define application-wide settings that apply to all cmd_tree.
     """
     init_method = target_class.__init__
     sig = inspect.signature(init_method)
@@ -86,7 +86,7 @@ class ArgumentParser:
   def add_subglobal_class_args(parser: argparse.ArgumentParser, inner_class: type, command_name: str) -> None:
     """Enable command group configuration for hierarchical FreyjaCLI organization.
 
-    Inner class constructors provide group-specific settings shared across related commands.
+    Inner class constructors provide group-specific settings shared across related cmd_tree.
     """
     init_method = inner_class.__init__
     sig = inspect.signature(init_method)

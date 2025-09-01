@@ -714,7 +714,7 @@ python apiclient.py login --username user@example.com
 python apiclient.py request /users --params page=2 limit=50
 python apiclient.py request /users --method POST --data '{"name": "New User"}'
 
-# Use resource commands
+# Use resource command tree
 python apiclient.py resources--list-items users --sort -created_at --limit 100
 python apiclient.py resources--get-item users 12345 --expand groups permissions
 ```

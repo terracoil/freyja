@@ -10,7 +10,7 @@ from ..theme import create_default_theme
 
 class CommandParser:
   """
-  Creates and configures ArgumentParser instances for FreyjaCLI commands.
+  Creates and configures ArgumentParser instances for FreyjaCLI cmd_tree.
 
   Handles both flat command structures and hierarchical command groups
   with proper argument handling and help formatting.
@@ -28,7 +28,7 @@ class CommandParser:
 
     :param title: FreyjaCLI application title
     :param theme: Optional theme for colored output
-    :param alphabetize: Whether to alphabetize commands and options
+    :param alphabetize: Whether to alphabetize cmd_tree and options
     :param enable_completion: Whether to enable shell completion
     """
     self.title = title
@@ -44,7 +44,7 @@ class CommandParser:
       no_color: bool = False
   ) -> argparse.ArgumentParser:
     """
-    Create ArgumentParser with all commands using pre-built command tree.
+    Create ArgumentParser with all cmd_tree using pre-built command tree.
 
     :param command_tree: Pre-built nested command structure
     :param target_mode: Target mode ('module', 'class', or 'multi_class')
@@ -76,19 +76,19 @@ class CommandParser:
     # Add global arguments
     self._add_global_arguments(parser, target_mode, target_class, command_tree)
 
-    # Create subparsers for commands
+    # Create subparsers for cmd_tree
     subparsers = parser.add_subparsers(
       title='COMMANDS',
       dest='command',
       required=False,
-      help='Available commands',
+      help='Available cmd_tree',
       metavar=''
     )
 
     # Store theme reference
     subparsers._theme = effective_theme
 
-    # Add commands to parser using command tree
+    # Add cmd_tree to parser using command tree
     self._add_commands_from_tree(subparsers, command_tree, effective_theme)
 
     # Apply parser patches for styling and formatter access
@@ -127,7 +127,7 @@ class CommandParser:
         help=argparse.SUPPRESS
       )
 
-    # Add global class arguments for hierarchical commands
+    # Add global class arguments for hierarchical cmd_tree
     if (target_mode == 'class' and target_class and
         any(info.get('type') == 'group' for info in command_tree.values())):
       ArgumentParser.add_global_class_args(parser, target_class)
@@ -138,7 +138,7 @@ class CommandParser:
       command_tree: Dict[str, Any],
       theme
   ):
-    """Add commands to parser from pre-built command tree."""
+    """Add cmd_tree to parser from pre-built command tree."""
     for command_name, command_info in command_tree.items():
       if command_info['type'] == 'command':
         # Add flat command
@@ -177,7 +177,7 @@ class CommandParser:
       '_function_name': command_info['original_name']
     }
 
-    # Add command path for hierarchical commands
+    # Add command path for hierarchical cmd_tree
     if command_info.get('group_name'):
       defaults['_command_path'] = command_info['group_name']
 
@@ -210,6 +210,10 @@ class CommandParser:
     group_parser._command_type = 'group'
     group_parser._theme = theme
     group_parser._command_group_description = group_help
+    
+    # Set system command flag if present
+    if group_info.get('is_system_command'):
+      group_parser._is_system_command = True
 
     # Add sub-global arguments from inner class
     if inner_class:
@@ -217,30 +221,38 @@ class CommandParser:
         group_parser, inner_class, group_name
       )
 
-    # Store command help information
+    # Store command help information (only for cmd_tree, not subgroups)
     command_help = {}
-    for cmd_name, cmd_info in group_info['commands'].items():
-      desc, _ = DocStringParser.extract_function_help(cmd_info['function'])
-      command_help[cmd_name] = desc
+    for cmd_name, cmd_info in group_info['cmd_tree'].items():
+      if cmd_info.get('type') == 'command':
+        desc, _ = DocStringParser.extract_function_help(cmd_info['function'])
+        command_help[cmd_name] = desc
+      elif cmd_info.get('type') == 'group':
+        # For subgroups, use their description
+        command_help[cmd_name] = cmd_info.get('description', 'Command group')
 
     group_parser._commands = command_help
 
-    # Create subparsers for group commands
+    # Create subparsers for group cmd_tree
     dest_name = f'{group_name}_command'
     sub_subparsers = group_parser.add_subparsers(
       title=f'{group_name.title().replace("-", " ")} COMMANDS',
       dest=dest_name,
       required=False,
-      help=f'Available {group_name} commands',
+      help=f'Available {group_name} cmd_tree',
       metavar=''
     )
 
     sub_subparsers._enhanced_help = True
     sub_subparsers._theme = theme
 
-    # Add individual commands in the group
-    for cmd_name, cmd_info in group_info['commands'].items():
-      self._add_flat_command_from_tree(sub_subparsers, cmd_name, cmd_info, theme)
+    # Add individual cmd_tree and subgroups in the group
+    for cmd_name, cmd_info in group_info['cmd_tree'].items():
+      if cmd_info.get('type') == 'command':
+        self._add_flat_command_from_tree(sub_subparsers, cmd_name, cmd_info, theme)
+      elif cmd_info.get('type') == 'group':
+        # Add nested command group
+        self._add_command_group_from_tree(sub_subparsers, cmd_name, cmd_info, theme)
 
   def _apply_parser_patches(self, parser: argparse.ArgumentParser, theme):
     """Apply patches to parser for enhanced functionality."""

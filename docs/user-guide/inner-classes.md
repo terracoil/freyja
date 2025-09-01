@@ -12,8 +12,8 @@ The inner classes pattern in freyja provides a way to organize related commands 
 All commands remain flat - there are no hierarchical command groups. Inner class methods become commands with double-dash notation:
 
 ```bash
-# All commands are at the same level
-python freyja_cli.py --help                                    # Show all commands
+# All command tree are at the same level
+python freyja_cli.py --help                                    # Show all command tree
 python freyja_cli.py project-operations--create --name "app"  # Inner class method
 python freyja_cli.py task-management--add --title "Task"      # Another inner class method
 python freyja_cli.py generate-report --format json             # Main class method
@@ -25,7 +25,7 @@ python freyja_cli.py generate-report --format json             # Main class meth
 ```python
 class ProjectManager:
     def __init__(self, config_file: str = "config.json", debug: bool = False):
-        # These become global arguments available to all commands
+        # These become global arguments available to all command tree
         self.config_file = config_file
         self.debug = debug
 ```
@@ -35,7 +35,7 @@ class ProjectManager:
 class ProjectManager:
     class ProjectOperations:
         def __init__(self, workspace: str = "./projects", auto_save: bool = True):
-            # These become sub-global arguments for this inner class's commands
+            # These become sub-global arguments for this inner class's command tree
             self.workspace = workspace
             self.auto_save = auto_save
 ```
@@ -49,7 +49,7 @@ from typing import List
 
 
 class ProjectManager:
-  """Project Management FreyjaCLI with organized flat commands."""
+  """Project Management FreyjaCLI with organized flat command tree."""
 
   def __init__(self, config_file: str = "config.json", debug: bool = False):
     """
@@ -204,7 +204,7 @@ if __name__ == '__main__':
 
 ### Basic Usage
 ```bash
-# Show all available commands (flat structure)
+# Show all available command tree (flat structure)
 python project_mgr.py --help
 
 # Main class method
@@ -218,7 +218,7 @@ python project_mgr.py report-generation--summary --format json --detailed
 
 ### With Global Arguments
 ```bash
-# Global arguments apply to all commands
+# Global arguments apply to all command tree
 python project_mgr.py --config-file prod.json --debug status
 python project_mgr.py --debug project-operations--list-projects
 ```

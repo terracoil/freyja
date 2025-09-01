@@ -2,7 +2,7 @@
 
 [← Back to Help](../help.md) | [↑ Getting Started](../help.md#getting-started)
 
-## Table of Contents
+# Table of Contents
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
   - [Install from PyPI](#install-from-pypi)

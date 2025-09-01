@@ -26,7 +26,7 @@ class ThemeStyle:
 class CommandStyleSection:
   """
   Hierarchical command styling configuration for a specific command level.
-  Groups related styling attributes for commands and their options.
+  Groups related styling attributes for cmd_tree and their options.
   """
   command_name: ThemeStyle  # Style for command names at this level
   command_description: ThemeStyle  # Style for command descriptions at this level

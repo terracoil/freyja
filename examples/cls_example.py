@@ -26,7 +26,7 @@ class DataProcessor:
 
   This class demonstrates the inner class pattern where each inner class
   provides command organization. Methods within inner classes become
-  hierarchical commands (e.g., file-operations process-single) with
+  hierarchical cmd_tree (e.g., file-operations process-single) with
   proper command groups and subcommands.
   """
 

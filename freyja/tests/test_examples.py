@@ -115,7 +115,7 @@ class TestClassExample:
     assert "Setting default processing mode to: fast" in result.stdout
 
   def test_class_example_config_help(self):
-    """Test that config management commands are listed in main help."""
+    """Test that config management cmd_tree are listed in main help."""
     examples_path = Path(__file__).parent.parent.parent / "examples" / "cls_example.py"
     result = subprocess.run(
       [sys.executable, str(examples_path), "--help"],

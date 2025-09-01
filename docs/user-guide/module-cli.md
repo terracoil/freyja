@@ -2,7 +2,7 @@
 
 [← Back to User Guide](index.md) | [↑ Documentation Hub](../help.md) | [Class CLI Guide →](class-cli.md)
 
-## Table of Contents
+# Table of Contents
 - [Overview](#overview)
 - [When to Use Module-Based CLI](#when-to-use-module-based-cli)
 - [Getting Started](#getting-started)
@@ -21,7 +21,7 @@
 Module-based CLI generation creates command-line interfaces from functions defined in a Python module. This is the original and most straightforward approach in freyja, perfect for scripts, utilities, and functional programming styles.
 
 ```python
-# Your functions become FreyjaCLI commands automatically!
+# Your functions become FreyjaCLI command tree automatically!
 def process_data(input_file: str, output_dir: str = "./output", verbose: bool = False):
     """Process data from input file."""
     print(f"Processing {input_file} -> {output_dir}")
@@ -224,7 +224,7 @@ cli = CLI.from_module(
 Use double underscores to create command hierarchies:
 
 ```python
-# Database commands group
+# Database command tree group
 @CLI.CommandGroup("Database operations")
 def db__create(name: str, type: str = "postgres"):
     """Create a new database."""
@@ -238,7 +238,7 @@ def db__restore(name: str, backup_file: str):
     """Restore database from backup."""
     print(f"Restoring {name} from {backup_file}")
 
-# User management commands
+# User management command tree
 @CLI.CommandGroup("User management operations")  
 def user__create(username: str, email: str, admin: bool = False):
     """Create a new user account."""

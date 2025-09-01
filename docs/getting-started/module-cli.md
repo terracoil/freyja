@@ -41,7 +41,7 @@ if __name__ == '__main__':
 # Show help
 python hello_cli.py --help
 
-# Use commands
+# Use command tree
 python hello_cli.py hello --name Alice --excited
 python hello_cli.py goodbye --name Bob --formal
 ```

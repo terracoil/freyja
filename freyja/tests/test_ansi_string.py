@@ -1,6 +1,6 @@
 """Tests for AnsiString ANSI-aware alignment functionality."""
 
-from freyja.utils import AnsiString, strip_ansi_codes
+from freyja.utils import AnsiString
 
 
 class TestStripAnsiCodes:
@@ -10,47 +10,47 @@ class TestStripAnsiCodes:
     """Test removing basic ANSI color codes."""
     # Red text with reset
     colored_text = "\x1b[31mRed\x1b[0m"
-    result = strip_ansi_codes(colored_text)
+    result = AnsiString.strip_ansi_codes(colored_text)
     assert result == "Red"
 
   def test_strip_complex_ansi_codes(self):
     """Test removing complex ANSI sequences."""
     # Bold red background with blue foreground
     colored_text = "\x1b[1;41;34mComplex\x1b[0m"
-    result = strip_ansi_codes(colored_text)
+    result = AnsiString.strip_ansi_codes(colored_text)
     assert result == "Complex"
 
   def test_strip_256_color_codes(self):
     """Test removing 256-color ANSI sequences."""
     # 256-color foreground and background
     colored_text = "\x1b[38;5;196mText\x1b[48;5;21m\x1b[0m"
-    result = strip_ansi_codes(colored_text)
+    result = AnsiString.strip_ansi_codes(colored_text)
     assert result == "Text"
 
   def test_strip_rgb_color_codes(self):
     """Test removing RGB ANSI sequences."""
     # RGB color codes
     colored_text = "\x1b[38;2;255;0;0mRGB\x1b[0m"
-    result = strip_ansi_codes(colored_text)
+    result = AnsiString.strip_ansi_codes(colored_text)
     assert result == "RGB"
 
   def test_strip_empty_string(self):
     """Test stripping ANSI codes from empty string."""
-    assert strip_ansi_codes("") == ""
+    assert AnsiString.strip_ansi_codes("") == ""
 
   def test_strip_none_input(self):
     """Test stripping ANSI codes from None."""
-    assert strip_ansi_codes(None) == ""
+    assert AnsiString.strip_ansi_codes(None) == ""
 
   def test_strip_no_ansi_codes(self):
     """Test text without ANSI codes remains unchanged."""
     plain_text = "Plain text"
-    assert strip_ansi_codes(plain_text) == plain_text
+    assert AnsiString.strip_ansi_codes(plain_text) == plain_text
 
   def test_strip_mixed_content(self):
     """Test text with mixed ANSI codes and plain text."""
     mixed_text = "Start \x1b[31mred\x1b[0m middle \x1b[32mgreen\x1b[0m end"
-    result = strip_ansi_codes(mixed_text)
+    result = AnsiString.strip_ansi_codes(mixed_text)
     assert result == "Start red middle green end"
 
 

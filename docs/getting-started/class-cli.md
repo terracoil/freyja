@@ -115,14 +115,14 @@ class ProjectManager:
         self.workspace = workspace
     
     class FileOperations:
-        """File-related commands."""
+        """File-related command tree."""
         
         def create(self, name: str, template: str = "default") -> None:
             """Create a new file."""
             print(f"Creating {name} from template {template}")
     
     class GitOperations:
-        """Git-related commands."""
+        """Git-related command tree."""
         
         def commit(self, message: str) -> None:
             """Create a git commit."""

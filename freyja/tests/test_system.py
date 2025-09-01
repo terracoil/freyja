@@ -241,26 +241,26 @@ class TestSystemCLIGeneration:
     """Test System FreyjaCLI creates proper command structure."""
     cli = FreyjaCLI(System)
 
-    # Should have hierarchical commands
+    # Should have hierarchical cmd_tree
     assert 'tune-theme' in cli.commands
     assert 'completion' in cli.commands
 
     # Groups should have hierarchical structure
     tune_theme_group = cli.commands['tune-theme']
     assert tune_theme_group['type'] == 'group'
-    assert 'increase-adjustment' in tune_theme_group['commands']
-    assert 'decrease-adjustment' in tune_theme_group['commands']
+    assert 'increase-adjustment' in tune_theme_group['cmd_tree']
+    assert 'decrease-adjustment' in tune_theme_group['cmd_tree']
 
     completion_group = cli.commands['completion']
     assert completion_group['type'] == 'group'
-    assert 'install' in completion_group['commands']
-    assert 'show' in completion_group['commands']
+    assert 'install' in completion_group['cmd_tree']
+    assert 'show' in completion_group['cmd_tree']
 
   def test_system_tune_theme_methods(self):
     """Test System FreyjaCLI includes TuneTheme methods as hierarchical command groups."""
     cli = FreyjaCLI(System)
 
-    # Check that TuneTheme methods are included as commands under tune-theme group
+    # Check that TuneTheme methods are included as cmd_tree under tune-theme group
     tune_theme_group = cli.commands['tune-theme']
     expected_commands = [
       'increase-adjustment', 'decrease-adjustment',
@@ -269,23 +269,23 @@ class TestSystemCLIGeneration:
     ]
 
     for command in expected_commands:
-      assert command in tune_theme_group['commands']
-      assert tune_theme_group['commands'][command]['type'] == 'command'
+      assert command in tune_theme_group['cmd_tree']
+      assert tune_theme_group['cmd_tree'][command]['type'] == 'command'
 
   def test_system_completion_methods(self):
     """Test System FreyjaCLI includes Completion methods as hierarchical command groups."""
     cli = FreyjaCLI(System)
 
-    # Check that Completion methods are included as commands under completion group
+    # Check that Completion methods are included as cmd_tree under completion group
     completion_group = cli.commands['completion']
     expected_commands = ['install', 'show']
 
     for command in expected_commands:
-      assert command in completion_group['commands']
-      assert completion_group['commands'][command]['type'] == 'command'
+      assert command in completion_group['cmd_tree']
+      assert completion_group['cmd_tree'][command]['type'] == 'command'
 
   def test_system_cli_execution(self):
-    """Test System FreyjaCLI can execute commands."""
+    """Test System FreyjaCLI can execute cmd_tree."""
     cli = FreyjaCLI(System)
 
     # Test that we can create a parser without errors

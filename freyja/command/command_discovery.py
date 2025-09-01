@@ -1,41 +1,21 @@
 # Command discovery functionality extracted from FreyjaCLI class.
 import inspect
-from collections.abc import Callable as CallableABC
-from dataclasses import dataclass, field
 from types import ModuleType
 from typing import *
 
-from freyja.cli.enums import TargetMode
-from freyja.utils.text_util import TextUtil
+from freyja.cli import TargetMode, SystemClassBuilder
+from freyja.utils import TextUtil
 from freyja.parser import DocStringParser
+from .command_info import CommandInfo
+from .command_tree import CommandTree
 from .validation import ValidationService
-from ..cli.system import SystemClassBuilder
 
 TargetType = ModuleType | type | list[type]
 
 
-@dataclass
-class CommandInfo:
-  """Information about a discovered command."""
-  name: str
-  original_name: str
-  function: CallableABC
-  signature: inspect.Signature
-  docstring: Optional[str] = None
-  is_hierarchical: bool = False
-  parent_class: Optional[str] = None
-  command_path: Optional[str] = None
-  is_system_command: bool = False
-  inner_class: Optional[Type] = None
-  metadata: Dict[str, Any] = field(default_factory=dict)
-  # New fields for nested command structure
-  group_name: Optional[str] = None  # For hierarchical commands (kebab-cased inner class name)
-  method_name: Optional[str] = None  # For hierarchical commands (kebab-cased method name)
-
-
 class CommandDiscovery:
   """
-  Discovers commands from modules or classes using introspection.
+  Discovers cmd_tree from modules or classes using introspection.
 
   Handles both flat command structures (direct functions/methods) and
   hierarchical structures (inner classes with methods).
@@ -82,18 +62,17 @@ class CommandDiscovery:
     else:
       raise ValueError(f"Target must be module, class, or list of classes, got {type(target).__name__}")
 
-    self.commands = self.discover_commands()
+    self.cmd_tree:CommandTree = self.discover_commands()
+    print(self.cmd_tree)
 
-  def discover_commands(self):
+  def discover_commands(self) -> CommandTree:
     """
-    Discover all commands from the target.
+    Discover all cmd_tree from the target.
 
     :return: CommandTree with hierarchical command structure
     """
     # Import CommandTree here to avoid circular imports
-    from .command_tree import CommandTree
-    
-    command_tree = CommandTree()
+    command_tree:CommandTree = CommandTree()
 
     if self.mode == TargetMode.MODULE:
       self._discover_from_module(command_tree)
@@ -132,19 +111,28 @@ class CommandDiscovery:
         ValidationService.validate_inner_class_constructor_parameters(
           inner_class, f"inner class '{class_name}'"
         )
-
-      # Discover direct methods
-      self._discover_direct_methods(target_cls, command_tree, is_namespaced)
-
-      # Discover inner class methods
-      self._discover_methods_from_inner_classes(target_cls, inner_classes, command_tree, is_namespaced)
-
     else:
       # Direct methods only (flat pattern)
       ValidationService.validate_constructor_parameters(
         target_cls, "class", allow_parameterless_only=True
       )
-      self._discover_direct_methods(target_cls, command_tree, is_namespaced)
+
+    # Create top-level group for namespaced classes (whether they have inner classes or not)
+    if is_namespaced:
+      class_namespace = TextUtil.kebab_case(target_cls.__name__)
+      class_description = self._get_class_description(target_cls)
+      command_tree.add_group(
+        class_namespace, 
+        class_description,
+        is_system_command=self.is_system(target_cls)
+      )
+
+    # Discover direct methods
+    self._discover_direct_methods(target_cls, command_tree, is_namespaced)
+
+    # Discover inner class methods (if any)
+    if inner_classes:
+      self._discover_methods_from_inner_classes(target_cls, inner_classes, command_tree, is_namespaced)
 
   @staticmethod
   def _validate_classes(targets: list[type]) -> None:
@@ -170,10 +158,10 @@ class CommandDiscovery:
 
     # Process namespaced classes first (with class name prefixes)
     for target_class in namespaced_classes:
-      # Discover commands for this class and add to tree
+      # Discover cmd_tree for this class and add to tree
       self._discover_from_class(target_class, command_tree, is_namespaced=True)
 
-    # Discover commands for primary class (no namespace)
+    # Discover cmd_tree for primary class (no namespace)
     self._discover_from_class(self.primary_class, command_tree, is_namespaced=False)
 
   def _discover_inner_classes(self, target_class: Type) -> Dict[str, Type]:
@@ -203,26 +191,41 @@ class CommandDiscovery:
         command_info.metadata['is_namespaced'] = is_namespaced
         if is_namespaced:
           command_info.metadata['class_namespace'] = TextUtil.kebab_case(target_class.__name__)
+          # Add command to the parent class group
+          class_namespace = TextUtil.kebab_case(target_class.__name__)
+          command_tree.add_command_to_group(class_namespace, command_info.name, command_info)
         else:
           command_info.metadata['class_namespace'] = None
-        
-        command_tree.add_command(command_info.name, command_info)
+          command_tree.add_command(command_info.name, command_info)
 
   def _discover_methods_from_inner_classes(self, target_cls: type, inner_classes: Dict[str, Type], command_tree, is_namespaced: bool = False) -> None:
-    """Discover methods from inner classes for hierarchical commands and add to tree."""
+    """Discover methods from inner classes for hierarchical cmd_tree and add to tree."""
     for class_name, inner_class in inner_classes.items():
       command_name = TextUtil.kebab_case(class_name)
-
+      
       # Get group description from inner class docstring
       description = self._get_group_description(inner_class, command_name)
       
-      # Create the group in the command tree
-      command_tree.add_group(
-        command_name, 
-        description,
-        inner_class=inner_class,
-        is_system_command=self.is_system(target_cls)
-      )
+      if is_namespaced:
+        # Create subgroup under the parent class group
+        class_namespace = TextUtil.kebab_case(target_cls.__name__)
+        command_tree.add_subgroup_to_group(
+          class_namespace,
+          command_name, 
+          description,
+          inner_class=inner_class,
+          is_system_command=self.is_system(target_cls)
+        )
+        full_group_path = f"{class_namespace}.{command_name}"
+      else:
+        # Create top-level group
+        command_tree.add_group(
+          command_name, 
+          description,
+          inner_class=inner_class,
+          is_system_command=self.is_system(target_cls)
+        )
+        full_group_path = command_name
 
       for method_name, method_obj in inspect.getmembers(inner_class):
         if (not method_name.startswith('_') and
@@ -240,10 +243,10 @@ class CommandDiscovery:
             docstring=inspect.getdoc(method_obj),
             is_hierarchical=True,
             parent_class=class_name,
-            command_path=command_name,
+            command_path=full_group_path,
             inner_class=inner_class,
             is_system_command=self.is_system(target_cls),
-            group_name=command_name,  # Kebab-cased inner class name
+            group_name=command_name,  # Just the inner class name
             method_name=method_kebab  # Kebab-cased method name
           )
 
@@ -259,16 +262,23 @@ class CommandDiscovery:
           
           if is_namespaced:
             command_info.metadata['class_namespace'] = TextUtil.kebab_case(target_cls.__name__)
+            # Add command to subgroup
+            command_tree.add_command_to_subgroup(
+              TextUtil.kebab_case(target_cls.__name__),
+              command_name,
+              method_kebab, 
+              command_info,
+              method_name=method_kebab
+            )
           else:
             command_info.metadata['class_namespace'] = None
-
-          # Add command to the group
-          command_tree.add_command_to_group(
-            command_name, 
-            method_kebab, 
-            command_info,
-            method_name=method_kebab
-          )
+            # Add command to top-level group
+            command_tree.add_command_to_group(
+              command_name, 
+              method_kebab, 
+              command_info,
+              method_name=method_kebab
+            )
           
   def _get_group_description(self, inner_class: type, group_name: str) -> str:
     """Get description for command group from inner class docstring."""
@@ -279,6 +289,16 @@ class CommandDiscovery:
     
     # Fallback to generating description from group name
     return f"{group_name.title().replace('-', ' ')} operations"
+
+  def _get_class_description(self, target_cls: type) -> str:
+    """Get description for class group from class docstring."""
+    if target_cls and target_cls.__doc__:
+      description, _ = DocStringParser.parse_docstring(target_cls.__doc__)
+      return description
+    
+    # Fallback to generating description from class name
+    class_name = TextUtil.kebab_case(target_cls.__name__)
+    return f"{class_name.title().replace('-', ' ')} cmd_tree and utilities"
 
   def is_system(self, cls: type) -> bool:
     return cls.__name__ == 'System'

@@ -1,6 +1,6 @@
 """Formatting engine for FreyjaCLI help text generation.
 
-Consolidates all formatting logic for commands, options, groups, and descriptions.
+Consolidates all formatting logic for cmd_tree, options, groups, and descriptions.
 Eliminates duplication across formatter methods while maintaining consistent alignment.
 """
 

@@ -2,7 +2,7 @@
 
 [← Back to Help](../help.md) | [🏗️ Basic Usage](../getting-started/basic-usage.md)
 
-## Table of Contents
+# Table of Contents
 - [Overview](#overview)
 - [Required vs Optional Types](#required-vs-optional-types)
 - [Basic Types](#basic-types)

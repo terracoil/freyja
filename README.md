@@ -1,7 +1,7 @@
-# freyja
+# Freyja (CLI tool)
 No-dependency, zero-configuration CLI tool to build command-line interfaces purely from your code.  
 
-## Table of Contents
+# Table of Contents
 - [Documentation](#documentation)
 - [Quick Start](#quick-start)
 - [Two CLI Creation Modes](#two-cli-creation-modes)
@@ -78,12 +78,12 @@ if __name__ == '__main__':
 #### Inner Classes (Flat Commands with Double-Dash Notation)
 
 ```python
-# Inner Class Pattern (NEW) - Flat commands with organized naming
+# Inner Class Pattern (NEW) - Flat command tree with organized naming
 from src import CLI
 
 
 class UserManager:
-  """User management with flat double-dash commands."""
+  """User management with flat double-dash command tree."""
 
   def __init__(self, config_file: str = "config.json"):  # Global arguments
     self.config_file = config_file

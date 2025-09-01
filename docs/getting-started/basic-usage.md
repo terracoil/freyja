@@ -2,7 +2,7 @@
 
 [← Back to Help](../help.md) | [🚀 Quick Start](quick-start.md) | [📦 Installation](installation.md)
 
-## Table of Contents
+# Table of Contents
 - [Core Concepts](#core-concepts)
 - [Type Annotation Requirements](#type-annotation-requirements)
 - [Common Patterns](#common-patterns)
@@ -26,10 +26,10 @@ freyja uses Python's introspection capabilities to automatically generate comman
 ### Two Creation Patterns
 
 ```python
-# Module-based: Functions become commands
+# Module-based: Functions become command tree
 CLI.from_module(module, title="My FreyjaCLI")
 
-# Class-based: Methods become commands, instance maintains state
+# Class-based: Methods become command tree, instance maintains state
 CLI.from_class(SomeClass, title="My App")
 ```
 
@@ -297,7 +297,7 @@ class DatabaseManager:
         self.current_database = None
     
     def connect(self, host: str, database: str, port: int = 5432) -> None:
-        """Connect to database (state persists for other commands)."""
+        """Connect to database (state persists for other command tree)."""
         # Connection logic here
         self.connection = f"mock_connection_{database}"
         self.current_database = database
