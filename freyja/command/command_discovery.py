@@ -82,9 +82,9 @@ class CommandDiscovery:
     else:
       raise ValueError(f"Target must be module, class, or list of classes, got {type(target).__name__}")
 
-    self.commands : List[CommandInfo] = self._discover_commands()
+    self.commands : List[CommandInfo] = self.discover_commands()
 
-  def _discover_commands(self) -> List[CommandInfo]:
+  def discover_commands(self) -> List[CommandInfo]:
     """
     Discover all commands from the target.
 
