@@ -1,6 +1,6 @@
 # Inner Classes Pattern
 
-[← Back to User Guide](index.md) | [↑ Documentation Hub](../help.md)
+[← Back to User Guide](README) | [↑ Documentation Hub](../help.md)
 
 ## Overview
 

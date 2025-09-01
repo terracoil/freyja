@@ -44,7 +44,7 @@ By the end of this section, you'll know how to:
 
 After getting started, explore:
 
-- [User Guide](../user-guide/index.md) - Comprehensive documentation
+- [User Guide](../user-guide/README) - Comprehensive documentation
 - [Features](../features/index.md) - Advanced capabilities
 - [Examples](../guides/examples.md) - Real-world use cases
 

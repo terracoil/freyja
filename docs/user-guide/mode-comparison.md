@@ -1,6 +1,6 @@
 # Mode Comparison
 
-[← Back to User Guide](index.md) | [↑ Documentation Hub](../help.md)
+[← Back to User Guide](README) | [↑ Documentation Hub](../help.md)
 
 ## Overview
 
@@ -320,4 +320,4 @@ def add(x: float, y: float) -> None:
 
 ---
 
-**Navigation**: [← Inner Classes](inner-classes.md) | [User Guide →](index.md)
+**Navigation**: [← Inner Classes](inner-classes.md) | [User Guide →](README)

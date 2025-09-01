@@ -6,7 +6,7 @@
 
 ### 📚 Core Documentation
 - **[Getting Started](getting-started/index.md)** - Installation, quick start, and basics
-- **[User Guide](user-guide/index.md)** - Comprehensive guides for both CLI modes
+- **[User Guide](user-guide/README)** - Comprehensive guides for both CLI modes
 - **[Features](features/index.md)** - Type annotations, themes, completion, and more
 - **[Advanced Topics](advanced/index.md)** - State management, testing, migration
 - **[API Reference](reference/index.md)** - Complete API documentation
@@ -173,7 +173,7 @@ Both CLI modes support the same advanced features:
 4. Read the appropriate guide: **[Module CLI](user-guide/module-cli.md)** or **[Class CLI](user-guide/class-cli.md)**
 
 ### 📖 For Learning
-- **[User Guide](user-guide/index.md)** - Comprehensive documentation
+- **[User Guide](user-guide/README)** - Comprehensive documentation
 - **[Features](features/index.md)** - Explore all capabilities
 - **[Examples](guides/examples.md)** - Real-world use cases
 - **[FAQ](faq.md)** - Common questions answered

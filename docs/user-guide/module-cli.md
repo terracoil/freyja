@@ -1,6 +1,6 @@
 # 🗂️ Module-Based CLI Guide
 
-[← Back to User Guide](index.md) | [↑ Documentation Hub](../help.md) | [Class CLI Guide →](class-cli.md)
+[← Back to User Guide](README) | [↑ Documentation Hub](../help.md) | [Class CLI Guide →](class-cli.md)
 
 # Table of Contents
 - [Overview](#overview)
@@ -695,4 +695,4 @@ if __name__ == "__main__":
 
 ---
 
-**Navigation**: [← User Guide](index.md) | [↑ Documentation Hub](../help.md) | [Class CLI Guide →](class-cli.md)
+**Navigation**: [← User Guide](README) | [↑ Documentation Hub](../help.md) | [Class CLI Guide →](class-cli.md)
