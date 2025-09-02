@@ -56,13 +56,13 @@ class DataProcessor:
   class BatchOperations:
     """Batch processing operations for large datasets."""
 
-    def __init__(self, main_instance, work_dir: str = "./batch_data", max_workers: int = 4):
+    def __init__(self, main, work_dir: str = "./batch_data", max_workers: int = 4):
       """Initialize batch operations.
 
-      :param main_instance: Main DataProcessor instance
+      :param main: Main DataProcessor instance
       :param work_dir: Working directory for batch operations
       :param max_workers: Maximum number of parallel workers"""
-      self.main_instance = main_instance
+      self.main = main
       self.work_dir = work_dir
       self.max_workers = max_workers
 
@@ -76,7 +76,7 @@ class DataProcessor:
       print(f"📁 Batch processing directory: {directory}")
       print(f"Pattern: {pattern}, Mode: {mode.value}")
       print(f"Workers: {self.max_workers}, Work dir: {self.work_dir}")
-      print(f"Using config: {self.main_instance.config_file}")
+      print(f"Using config: {self.main.config_file}")
 
     def parallel_process(self, file_list: List[str], chunk_size: int = 10) -> None:
       """Process files in parallel chunks.
@@ -89,12 +89,12 @@ class DataProcessor:
   class ValidationOperations:
     """Data validation and quality assurance operations."""
 
-    def __init__(self, main_instance, strict_mode: bool = True):
+    def __init__(self, main, strict_mode: bool = True):
       """Initialize validation operations.
 
-      :param main_instance: Main DataProcessor instance
+      :param main: Main DataProcessor instance
       :param strict_mode: Enable strict validation rules"""
-      self.main_instance = main_instance
+      self.main = main
       self.strict_mode = strict_mode
 
     def validate_schema(self, schema_file: str, data_file: str) -> None:
@@ -142,12 +142,12 @@ class FileManager:
   class OrganizationOperations:
     """File organization and cleanup operations."""
 
-    def __init__(self, main_instance, auto_organize: bool = False):
+    def __init__(self, main, auto_organize: bool = False):
       """Initialize organization operations.
 
-      :param main_instance: Main FileManager instance
+      :param main: Main FileManager instance
       :param auto_organize: Enable automatic file organization"""
-      self.main_instance = main_instance
+      self.main = main
       self.auto_organize = auto_organize
 
     def organize_by_type(self, source_dir: str, create_subdirs: bool = True) -> None:
@@ -158,7 +158,7 @@ class FileManager:
       print(f"🗂️  Organizing {source_dir} by file type")
       print(f"Create subdirs: {create_subdirs}")
       print(f"Auto-organize mode: {self.auto_organize}")
-      if self.main_instance.backup_enabled:
+      if self.main.backup_enabled:
         print("📋 Backup will be created before organization")
 
     def cleanup_duplicates(self, directory: str, dry_run: bool = True) -> None:
@@ -168,17 +168,17 @@ class FileManager:
       :param dry_run: Show what would be removed without actual deletion"""
       action = "Simulating" if dry_run else "Performing"
       print(f"🧹 {action} duplicate cleanup in {directory}")
-      print(f"Base path: {self.main_instance.base_path}")
+      print(f"Base path: {self.main.base_path}")
 
   class SyncOperations:
     """File synchronization and backup operations."""
 
-    def __init__(self, main_instance, compression: bool = True):
+    def __init__(self, main, compression: bool = True):
       """Initialize sync operations.
 
-      :param main_instance: Main FileManager instance
+      :param main: Main FileManager instance
       :param compression: Enable compression for sync operations"""
-      self.main_instance = main_instance
+      self.main = main
       self.compression = compression
 
     def sync_directories(self, source: str, destination: str,
@@ -230,12 +230,12 @@ class ReportGenerator:
   class AnalyticsReports:
     """Advanced analytics and statistical reports."""
 
-    def __init__(self, main_instance, statistical_confidence: float = 0.95):
+    def __init__(self, main, statistical_confidence: float = 0.95):
       """Initialize analytics reports.
 
-      :param main_instance: Main ReportGenerator instance
+      :param main: Main ReportGenerator instance
       :param statistical_confidence: Statistical confidence level"""
-      self.main_instance = main_instance
+      self.main = main
       self.statistical_confidence = statistical_confidence
 
     def trend_analysis(self, data_file: str, time_period: int = 30) -> None:
@@ -245,7 +245,7 @@ class ReportGenerator:
       :param time_period: Analysis time period in days"""
       print(f"📊 Trend analysis: {data_file} ({time_period} days)")
       print(f"Confidence level: {self.statistical_confidence}")
-      print(f"Output: {self.main_instance.output_dir}")
+      print(f"Output: {self.main.output_dir}")
 
     def correlation_matrix(self, dataset: str, variables: List[str] = None) -> None:
       """Generate correlation matrix report.
@@ -254,7 +254,7 @@ class ReportGenerator:
       :param variables: List of variables to analyze (all if None)"""
       var_info = f"({len(variables)} variables)" if variables else "(all variables)"
       print(f"🔗 Correlation matrix: {dataset} {var_info}")
-      print(f"Templates: {self.main_instance.template_dir}")
+      print(f"Templates: {self.main.template_dir}")
 
 
 def demonstrate_multi_class_usage():

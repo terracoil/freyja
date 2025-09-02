@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "freyja"
-version = "0.0.0"  # Will use poetry-dynamic-versioning
+version = "0.0.1"  # Will use poetry-dynamic-versioning
 description = "Python Library that builds a complete CLI given one or more functions using introspection"
 authors = ["Steven Miers <steven.miers@gmail.com>"]
 readme = "README.md"
@@ -75,7 +75,7 @@ line-length = 100
 [tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings  
+    "W",   # pycodestyle warnings
     "F",   # pyflakes
     "I",   # isort
     "B",   # flake8-bugbear
