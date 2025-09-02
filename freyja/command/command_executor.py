@@ -47,10 +47,10 @@ class CommandExecutor:
     inner_class_obj = getattr(self.target_class, inner_class_name)
 
     # 1. Create main class instance with global arguments
-    main_instance = self._create_main_instance(parsed)
+    main = self._create_main(parsed)
 
     # 2. Create inner class instance with sub-global arguments
-    inner_instance = self._create_inner_instance(inner_class_obj, command_path, parsed, main_instance)
+    inner_instance = self._create_inner_instance(inner_class_obj, command_path, parsed, main)
 
     # 3. Execute method with command arguments
     return self._execute_method(inner_instance, original_name, parsed)
@@ -80,7 +80,7 @@ class CommandExecutor:
     function = parsed._cli_function
     return self._execute_function(function, parsed)
 
-  def _create_main_instance(self, parsed) -> Any:
+  def _create_main(self, parsed) -> Any:
     """Create main class instance with global arguments."""
     main_kwargs = {}
     main_sig = inspect.signature(self.target_class.__init__)
@@ -102,7 +102,7 @@ class CommandExecutor:
     except TypeError as e:
       raise RuntimeError(f"Cannot instantiate {self.target_class.__name__} with global args: {e}") from e
 
-  def _create_inner_instance(self, inner_class: Type, command_name: str, parsed, main_instance: Any) -> Any:
+  def _create_inner_instance(self, inner_class: Type, command_name: str, parsed, main: Any) -> Any:
     """Create inner class instance with sub-global arguments."""
     inner_kwargs = {}
     inner_sig = inspect.signature(inner_class.__init__)
@@ -120,7 +120,7 @@ class CommandExecutor:
         inner_kwargs[param_name] = value
 
     try:
-      return inner_class(main_instance, **inner_kwargs)
+      return inner_class(main, **inner_kwargs)
     except TypeError as e:
       raise RuntimeError(f"Cannot instantiate {inner_class.__name__} with sub-global args: {e}") from e
 

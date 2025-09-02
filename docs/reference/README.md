@@ -158,4 +158,4 @@ freya/
 
 ---
 
-**Need source code?** Visit [GitHub](https://github.com/tangledpath/freyja)
+**Need source code?** Visit [GitHub](https://github.com/terracoil/freyja)

@@ -161,9 +161,9 @@ python my_cli.py --help
 If you're still having issues:
 
 1. Check the [FAQ](../faq.md)
-2. Search [GitHub Issues](https://github.com/tangledpath/freyja/issues)
-3. Ask in [Discussions](https://github.com/tangledpath/freyja/discussions)
-4. File a [bug report](https://github.com/tangledpath/freyja/issues/new)
+2. Search [GitHub Issues](https://github.com/terracoil/freyja/issues)
+3. Ask in [Discussions](https://github.com/terracoil/freyja/discussions)
+4. File a [bug report](https://github.com/terracoil/freyja/issues/new)
 
 ---
 

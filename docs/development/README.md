@@ -43,7 +43,7 @@ How releases are managed.
 ### Development Setup
 ```bash
 # Clone the repository
-git clone https://github.com/tangledpath/freyja.git
+git clone https://github.com/terracoil/freyja.git
 cd freyja
 
 # Install development dependencies
@@ -133,14 +133,14 @@ poetry install
 ## Getting Help
 
 ### For Contributors
-- Open a [Discussion](https://github.com/tangledpath/freyja/discussions) for questions
+- Open a [Discussion](https://github.com/terracoil/freyja/discussions) for questions
 - Join our [Discord](#) community (coming soon)
-- Check existing [Issues](https://github.com/tangledpath/freyja/issues)
+- Check existing [Issues](https://github.com/terracoil/freyja/issues)
 - Read the [Architecture](architecture.md) guide
 
 ### Maintainer Contacts
 - **Steven** - Project Lead
-- **Contributors** - See [AUTHORS](https://github.com/tangledpath/freyja/blob/main/AUTHORS)
+- **Contributors** - See [AUTHORS](https://github.com/terracoil/freyja/blob/main/AUTHORS)
 
 ## Next Steps
 
@@ -151,4 +151,4 @@ poetry install
 
 ---
 
-**Ready to contribute?** Check out [good first issues](https://github.com/tangledpath/freyja/labels/good%20first%20issue)
+**Ready to contribute?** Check out [good first issues](https://github.com/terracoil/freyja/labels/good%20first%20issue)

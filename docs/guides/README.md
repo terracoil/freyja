@@ -130,4 +130,4 @@ Have a guide to share? We welcome contributions! See our [Contributing Guide](..
 
 ---
 
-**Still stuck?** Open an issue on [GitHub](https://github.com/tangledpath/freyja/issues)
+**Still stuck?** Open an issue on [GitHub](https://github.com/terracoil/freyja/issues)

@@ -64,16 +64,16 @@ class ValidationService:
             if not params or params[0][0] != 'self':
                 raise ValueError(f"Constructor for {context} '{cls.__name__}' is malformed (missing self parameter)")
             
-            # Determine if this follows the new main_instance pattern or old pattern
+            # Determine if this follows the new main pattern or old pattern
             if len(params) >= 2:
-                # Check if second parameter is likely main_instance (no type annotation for main_instance is expected)
+                # Check if second parameter is likely main (no type annotation for main is expected)
                 second_param_name, second_param = params[1]
                 
-                # If second parameter has no default and no annotation, assume it's main_instance
+                # If second parameter has no default and no annotation, assume it's main
                 if (second_param.default == second_param.empty and 
                     second_param.annotation == second_param.empty):
-                    # New pattern: main_instance parameter - check remaining params for defaults
-                    for param_name, param in params[2:]:  # Skip 'self' and main_instance
+                    # New pattern: main parameter - check remaining params for defaults
+                    for param_name, param in params[2:]:  # Skip 'self' and main
                         if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
                             continue
                         if param.default == param.empty:

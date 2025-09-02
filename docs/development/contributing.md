@@ -232,8 +232,8 @@ def example_function(param1: str, param2: int = 10) -> bool:
 ## Getting Help
 
 ### Resources
-- [GitHub Issues](https://github.com/tangledpath/freyja/issues)
-- [Discussions](https://github.com/tangledpath/freyja/discussions)
+- [GitHub Issues](https://github.com/terracoil/freyja/issues)
+- [Discussions](https://github.com/terracoil/freyja/discussions)
 - Review existing code and tests
 
 ### Questions?

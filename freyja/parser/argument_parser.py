@@ -92,10 +92,10 @@ class ArgumentParser:
     sig = inspect.signature(init_method)
     _, param_help = DocStringParser.extract_function_help(init_method)
 
-    # Get parameters as a list to skip main_instance parameter
+    # Get parameters as a list to skip main parameter
     params = list(sig.parameters.items())
 
-    # Skip self (index 0) and main_instance (index 1), start from index 2
+    # Skip self (index 0) and main (index 1), start from index 2
     for param_name, param in params[2:]:
       # Skip varargs
       if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):

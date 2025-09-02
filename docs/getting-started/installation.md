@@ -1,4 +1,4 @@
-![Freyja Thumb](../../freyja-thumb.png)
+![Freyja Thumb](https://github.com/terracoil/freyja/blob/f7f3411a3ea7346d9294e394629e78f078352579/freyja-thumb.png)
 
 # 📦 Installation Guide
 
@@ -45,30 +45,30 @@ pip install freyja==0.5.0
 #### From GitHub (Latest)
 
 ```bash
-pip install git+https://github.com/tangledpath/freyja.git
+pip install git+https://github.com/terracoil/freyja.git
 ```
 
 #### From GitHub (Specific Branch)
 
 ```bash
 # Install from specific branch (e.g., feature/modernization)
-pip install git+https://github.com/tangledpath/freyja.git@feature/modernization
+pip install git+https://github.com/terracoil/freyja.git@feature/modernization
 
 # Or add to requirements.txt
-git+https://github.com/tangledpath/freyja.git@feature/modernization
+git+https://github.com/terracoil/freyja.git@feature/modernization
 
 # Or add to pyproject.toml (Poetry)
 [tool.poetry.dependencies]
-freyja = {git = "https://github.com/tangledpath/freyja.git", branch = "feature/modernization"}
+freyja = {git = "https://github.com/terracoil/freyja.git", branch = "feature/modernization"}
 
 # Install from main branch (latest development)
-pip install git+https://github.com/tangledpath/freyja.git@main
+pip install git+https://github.com/terracoil/freyja.git@main
 ```
 
 ### Clone and Install
 
 ```bash
-git clone https://github.com/tangledpath/freyja.git
+git clone https://github.com/terracoil/freyja.git
 cd freyja
 pip install .
 ```
@@ -84,7 +84,7 @@ curl -sSL https://install.python-poetry.org | python3 -
 
 2. Clone the repository:
 ```bash
-git clone https://github.com/tangledpath/freyja.git
+git clone https://github.com/terracoil/freyja.git
 cd freyja
 ```
 
@@ -102,7 +102,7 @@ poetry shell
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/tangledpath/freyja.git
+git clone https://github.com/terracoil/freyja.git
 cd freyja
 ```
 
@@ -197,7 +197,7 @@ Or use a virtual environment (recommended).
 
 If you encounter issues:
 
-1. Check [GitHub Issues](https://github.com/tangledpath/freyja/issues)
+1. Check [GitHub Issues](https://github.com/terracoil/freyja/issues)
 2. Search for similar problems
 3. Create a new issue with:
    - Python version

@@ -1,4 +1,4 @@
-![Freyja](freyja.png)
+![Freyja](https://github.com/terracoil/freyja/blob/f7f3411a3ea7346d9294e394629e78f078352579/freyja.png)
 
 # CLAUDE.md
 
@@ -52,7 +52,7 @@ poetry run pre-commit install
 pip install freyja
 
 # Install from GitHub (specific branch)
-pip install git+https://github.com/tangledpath/freyja.git@branch-name
+pip install git+https://github.com/terracoil/freyja.git@branch-name
 ```
 
 ## Common Commands

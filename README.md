@@ -1,4 +1,4 @@
-![Freyja](freyja.png)
+![Freyja](https://github.com/terracoil/freyja/blob/f7f3411a3ea7346d9294e394629e78f078352579/freyja.png)
 
 # Freyja ⚡
 **No-dependency, zero-configuration CLI tool to build command-line interfaces purely from your code.**
@@ -267,7 +267,7 @@ python project_manager.py --help
 
 ```bash
 # Clone and setup
-git clone https://github.com/tangledpath/freyja.git
+git clone https://github.com/terracoil/freyja.git
 cd freyja
 
 # Install Poetry and setup environment  
