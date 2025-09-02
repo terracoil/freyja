@@ -1,6 +1,6 @@
 # Advanced Topics
 
-[↑ Documentation Hub](../help.md)
+[↑ Documentation Hub](../README.md)
 
 Advanced patterns and techniques for power users of freyja.
 
@@ -66,7 +66,7 @@ Migrating from other CLI frameworks.
 ### Dynamic Command Registration
 ```python
 class DynamicCLI:
-    """FreyjaCLI with runtime command registration."""
+    """Freyja with runtime command registration."""
     
     def __init__(self):
         self._commands = {}
@@ -80,7 +80,7 @@ class DynamicCLI:
 ### Advanced State Management
 ```python
 class StatefulCLI:
-    """FreyjaCLI with sophisticated state handling."""
+    """Freyja with sophisticated state handling."""
     
     def __init__(self):
         self._state = {}
@@ -134,4 +134,4 @@ class NetworkCLI:
 
 ---
 
-**Need more?** Check the [API Reference](../reference/index.md) for detailed documentation
+**Need more?** Check the [API Reference](../reference/README.md) for detailed documentation

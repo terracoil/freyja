@@ -1,6 +1,6 @@
 # Development
 
-[↑ Documentation Hub](../help.md)
+[↑ Documentation Hub](../README.md)
 
 Documentation for contributors and developers working on freyja.
 

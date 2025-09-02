@@ -1,6 +1,6 @@
 # Class-based CLI Guide
 
-[← Back to Help](help.md) | [🗂️ Module-based Guide](module-cli-guide.md)
+[← Back to Help](README.md) | [🗂️ Module-based Guide](module-cli-guide.md)
 
 # Table of Contents
 - [Overview](#overview)
@@ -53,7 +53,7 @@ if __name__ == '__main__':
 ```python
 CLI.from_class(
     cls,                       # The class (not instance) to use
-    title: str = None,         # FreyjaCLI title (from class docstring if None)
+    title: str = None,         # Freyja title (from class docstring if None)
     function_opts: dict = None,# Per-method options (optional)
     theme_name: str = 'universal', # Theme name
     no_color: bool = False,    # Disable colors
@@ -70,7 +70,7 @@ The CLI title is automatically extracted from your class docstring:
 ```python
 class DatabaseManager:
     """
-    Database Management FreyjaCLI Tool
+    Database Management Freyja Tool
     
     A comprehensive tool for managing database operations,
     including backup, restore, and maintenance tasks.
@@ -139,15 +139,15 @@ class DataAnalyzer:
         self._save_results(results)  # Private helper
     
     def _load_data(self, file_path: str):
-        """Private method - not exposed in FreyjaCLI."""
+        """Private method - not exposed in Freyja."""
         pass
     
     def _perform_analysis(self, data):
-        """Private method - not exposed in FreyjaCLI."""
+        """Private method - not exposed in Freyja."""
         pass
     
     def _save_results(self, results):
-        """Private method - not exposed in FreyjaCLI."""
+        """Private method - not exposed in Freyja."""
         pass
 ```
 
@@ -159,7 +159,7 @@ Let's build a user management system using [cls_example.py](../cls_example.py):
 
 ```python
 # cls_example.py
-"""User Management FreyjaCLI Application"""
+"""User Management Freyja Application"""
 
 from enum import Enum
 from typing import List, Optional
@@ -175,7 +175,7 @@ class UserManager:
     """
     User Management System
     
-    A comprehensive FreyjaCLI tool for managing users, roles,
+    A comprehensive Freyja tool for managing users, roles,
     and permissions in your application.
     """
     
@@ -409,7 +409,7 @@ if __name__ == '__main__':
 ### Step 3: Usage Examples
 
 ```bash
-# Run the FreyjaCLI
+# Run the Freyja
 python cls_example.py
 
 # Create users
@@ -438,7 +438,7 @@ The key advantage of class-based CLIs is persistent state between commands:
 
 ```python
 class ProjectManager:
-    """Project management FreyjaCLI."""
+    """Project management Freyja."""
     
     def __init__(self):
         self.current_project = None
@@ -739,7 +739,7 @@ class WellOrganizedApp:
 
 ```python
 class RobustApp:
-    """Example of good error handling in class-based FreyjaCLI."""
+    """Example of good error handling in class-based Freyja."""
     
     def __init__(self):
         self.connections = {}
@@ -852,5 +852,5 @@ class DocumentedApp:
 
 ---
 
-**Navigation**: [← Help Hub](help.md) | [Module-based Guide →](module-cli-guide.md)  
+**Navigation**: [← Help Hub](README.md) | [Module-based Guide →](module-cli-guide.md)  
 **Example**: [cls_example.py](../cls_example.py)

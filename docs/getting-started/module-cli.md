@@ -1,6 +1,6 @@
 # Module CLI Quick Start
 
-[← Back to Getting Started](index.md) | [↑ Documentation Hub](../help.md)
+[← Back to Getting Started](README.md) | [↑ Documentation Hub](../README.md)
 
 ## Overview
 
@@ -31,7 +31,7 @@ def goodbye(name: str = "World", formal: bool = False) -> None:
 
 
 if __name__ == '__main__':
-  cli = CLI(sys.modules[__name__], title="Greeting FreyjaCLI")
+  cli = CLI(sys.modules[__name__], title="Greeting Freyja")
   cli.display()
 ```
 

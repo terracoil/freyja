@@ -1,6 +1,8 @@
-# Frequently Asked Questions (FAQ)
+![Freyja Thumb](../freyja-thumb.png)
 
-[← Back to Help](help.md) | [🔧 Basic Usage](getting-started/basic-usage.md)
+# ❓ Frequently Asked Questions (FAQ)
+
+[← Back to Documentation Hub](README.md) | [🔧 Basic Usage](getting-started/basic-usage.md)
 
 # Table of Contents
 - [General Questions](#general-questions)
@@ -162,7 +164,7 @@ def process(data: str) -> None:
     """Sync wrapper for async processing."""
     asyncio.run(async_process(data))
 
-# FreyjaCLI uses the sync wrapper
+# Freyja uses the sync wrapper
 cli = CLI.from_module(sys.modules[__name__])
 ```
 
@@ -440,11 +442,11 @@ def my_function(name: str) -> None:
 
 2. **Private function (starts with underscore)**:
 ```python
-# ❌ Ignored by FreyjaCLI
+# ❌ Ignored by Freyja
 def _private_function(data: str) -> None:
     pass
 
-# ✅ Visible to FreyjaCLI
+# ✅ Visible to Freyja
 def public_function(data: str) -> None:
     pass
 ```
@@ -453,7 +455,7 @@ def public_function(data: str) -> None:
 ```python
 # ❌ Function inside main block
 if __name__ == '__main__':
-    def my_function(data: str) -> None:  # Not found by FreyjaCLI
+    def my_function(data: str) -> None:  # Not found by Freyja
         pass
     
     cli = CLI.from_module(sys.modules[__name__])
@@ -584,9 +586,9 @@ def load_plugins():
         except ImportError as e:
             print(f"Warning: Could not load plugin {plugin_file}: {e}")
 
-# Load plugins before creating FreyjaCLI
+# Load plugins before creating Freyja
 load_plugins()
-cli = CLI.from_module(sys.modules[__name__], title="Extensible FreyjaCLI")
+cli = CLI.from_module(sys.modules[__name__], title="Extensible Freyja")
 ```
 
 ### How do I add progress bars or interactive features?
@@ -633,5 +635,5 @@ def process_large_dataset(
 
 ---
 
-**Navigation**: [← Help Hub](help.md) | [Troubleshooting →](guides/troubleshooting.md)  
+**Navigation**: [← Help Hub](README.md) | [Troubleshooting →](guides/troubleshooting.md)  
 **Examples**: [Module Example](mod_example.py) | [Class Example](cls_example.py)

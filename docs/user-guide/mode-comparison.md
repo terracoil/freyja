@@ -1,6 +1,6 @@
 # Mode Comparison
 
-[← Back to User Guide](README) | [↑ Documentation Hub](../help.md)
+[← Back to User Guide](README) | [↑ Documentation Hub](../README.md)
 
 ## Overview
 

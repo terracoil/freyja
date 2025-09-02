@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-[← Back to Guides](index.md) | [↑ Documentation Hub](../help.md)
+[← Back to Guides](README.md) | [↑ Documentation Hub](../README.md)
 
 ## Common Issues and Solutions
 
@@ -141,7 +141,7 @@ def process_data(file: str) -> None:
 #### Problem: "CLI tests failing"
 **Solution**: Test functions directly
 ```python
-# Test the function, not the FreyjaCLI
+# Test the function, not the Freyja
 def test_process():
     result = process_data("test.txt")
     assert result == expected_value
@@ -167,4 +167,4 @@ If you're still having issues:
 
 ---
 
-**Navigation**: [← Guides](index.md) | [Best Practices →](best-practices.md)
+**Navigation**: [← Guides](README.md) | [Best Practices →](best-practices.md)

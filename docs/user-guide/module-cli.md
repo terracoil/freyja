@@ -1,6 +1,6 @@
 # 🗂️ Module-Based CLI Guide
 
-[← Back to User Guide](README) | [↑ Documentation Hub](../help.md) | [Class CLI Guide →](class-cli.md)
+[← Back to User Guide](README) | [↑ Documentation Hub](../README.md) | [Class CLI Guide →](class-cli.md)
 
 # Table of Contents
 - [Overview](#overview)
@@ -21,7 +21,7 @@
 Module-based CLI generation creates command-line interfaces from functions defined in a Python module. This is the original and most straightforward approach in freyja, perfect for scripts, utilities, and functional programming styles.
 
 ```python
-# Your functions become FreyjaCLI command tree automatically!
+# Your functions become Freyja command tree automatically!
 def process_data(input_file: str, output_dir: str = "./output", verbose: bool = False):
     """Process data from input file."""
     print(f"Processing {input_file} -> {output_dir}")
@@ -74,7 +74,7 @@ def greet(name: str, times: int = 1, excited: bool = False):
 if __name__ == '__main__':
     cli = CLI.from_module(
         sys.modules[__name__],
-        title="My Greeting FreyjaCLI"
+        title="My Greeting Freyja"
     )
     cli.run()
 ```
@@ -167,7 +167,7 @@ def deploy(
 ### Basic CLI Creation
 
 ```python
-# Simple FreyjaCLI with all module functions
+# Simple Freyja with all module functions
 cli = CLI.from_module(
     sys.modules[__name__],
     title="My Tool"
@@ -326,7 +326,7 @@ Here's a complete example showing various features:
 
 ```python
 #!/usr/bin/env python
-"""File management FreyjaCLI tool."""
+"""File management Freyja tool."""
 
 import sys
 from pathlib import Path
@@ -471,7 +471,7 @@ def admin__cleanup(
 
 
 if __name__ == '__main__':
-  # Create FreyjaCLI with all features
+  # Create Freyja with all features
   theme = create_default_theme()
   cli = CLI.from_module(
     sys.modules[__name__],
@@ -481,7 +481,7 @@ if __name__ == '__main__':
     enable_completion=True
   )
 
-  # Run FreyjaCLI
+  # Run Freyja
   result = cli.run()
   sys.exit(result if isinstance(result, int) else 0)
 ```
@@ -578,7 +578,7 @@ import subprocess
 import sys
 
 def test_cli_help():
-    """Test FreyjaCLI help display."""
+    """Test Freyja help display."""
     result = subprocess.run(
         [sys.executable, "mycli.py", "--help"],
         capture_output=True,
@@ -588,7 +588,7 @@ def test_cli_help():
     assert "usage:" in result.stdout
 
 def test_cli_command():
-    """Test FreyjaCLI command execution."""
+    """Test Freyja command execution."""
     result = subprocess.run(
         [sys.executable, "mycli.py", "greet", "--name", "Test"],
         capture_output=True,
@@ -695,4 +695,4 @@ if __name__ == "__main__":
 
 ---
 
-**Navigation**: [← User Guide](README) | [↑ Documentation Hub](../help.md) | [Class CLI Guide →](class-cli.md)
+**Navigation**: [← User Guide](README) | [↑ Documentation Hub](../README.md) | [Class CLI Guide →](class-cli.md)

@@ -1,6 +1,6 @@
 # Basic Usage Guide
 
-[← Back to Help](../help.md) | [🚀 Quick Start](quick-start.md) | [📦 Installation](installation.md)
+[← Back to Help](../README.md) | [🚀 Quick Start](quick-start.md) | [📦 Installation](installation.md)
 
 # Table of Contents
 - [Core Concepts](#core-concepts)
@@ -27,7 +27,7 @@ freyja uses Python's introspection capabilities to automatically generate comman
 
 ```python
 # Module-based: Functions become command tree
-CLI.from_module(module, title="My FreyjaCLI")
+CLI.from_module(module, title="My Freyja")
 
 # Class-based: Methods become command tree, instance maintains state
 CLI.from_class(SomeClass, title="My App")
@@ -111,7 +111,7 @@ import json
 
 class ConfigManager:
   """
-      Configuration Management FreyjaCLI    
+      Configuration Management Freyja    
   Manage application configuration with persistent state.
   """
 
@@ -329,11 +329,11 @@ class DatabaseManager:
 # Module-based configuration
 cli = CLI.from_module(
     module=sys.modules[__name__],
-    title="Custom FreyjaCLI Title",           # Override auto-detected title
+    title="Custom Freyja Title",           # Override auto-detected title
     function_opts={                     # Per-function configuration
         'function_name': {
             'description': 'Custom description',
-            'hidden': False,            # Hide from FreyjaCLI listing
+            'hidden': False,            # Hide from Freyja listing
         }
     },
     theme_name="colorful",             # Built-in theme: "universal", "colorful"
@@ -463,7 +463,7 @@ def good_function(items: List[str]) -> None:
 ```python
 class MyApp:
     def public_command(self) -> None:
-        """This becomes a FreyjaCLI command."""
+        """This becomes a Freyja command."""
         pass
     
     def _private_method(self) -> None:
@@ -498,5 +498,5 @@ def good_function(items: List[str] = None) -> None:
 
 ---
 
-**Navigation**: [← Help Hub](../help.md) | [Quick Start →](quick-start.md) | [Installation →](installation.md)  
+**Navigation**: [← Help Hub](../README.md) | [Quick Start →](quick-start.md) | [Installation →](installation.md)  
 **Examples**: [Module Example](../../examples/mod_example.py) | [Class Example](../../examples/cls_example.py)

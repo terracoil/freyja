@@ -1,6 +1,6 @@
 # Choosing Your CLI Mode
 
-[← Back to Getting Started](index.md) | [↑ Documentation Hub](../help.md)
+[← Back to Getting Started](README.md) | [↑ Documentation Hub](../README.md)
 
 ## Overview
 

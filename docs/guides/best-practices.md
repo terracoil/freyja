@@ -1,6 +1,6 @@
 # Best Practices
 
-[← Back to Guides](index.md) | [↑ Documentation Hub](../help.md)
+[← Back to Guides](README.md) | [↑ Documentation Hub](../README.md)
 
 ## CLI Design Principles
 
@@ -242,7 +242,7 @@ def user__delete(username: str, force: bool = False) -> None:
 For class-based CLIs:
 ```python
 class ApplicationCLI:
-    """Application FreyjaCLI with consistent state management."""
+    """Application Freyja with consistent state management."""
     
     def __init__(self, config_file: str = "app.config"):
         self.config = self._load_config(config_file)

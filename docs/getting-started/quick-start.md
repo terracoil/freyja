@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-[← Back to Help](../help.md) | [📦 Installation](installation.md) | [📖 Basic Usage](basic-usage.md)
+[← Back to Help](../README.md) | [📦 Installation](installation.md) | [📖 Basic Usage](basic-usage.md)
 
 # Table of Contents
 - [Installation](#installation)
@@ -97,7 +97,7 @@ from typing import List
 class TaskManager:
   """
       Task Management Application    
-  A simple FreyjaCLI for managing your daily tasks.
+  A simple Freyja for managing your daily tasks.
   """
 
   def __init__(self):
@@ -207,5 +207,5 @@ cli = CLI.from_module(module, no_color=True)
 
 ---
 
-**Navigation**: [← Help Hub](../help.md) | [Installation →](installation.md) | [Basic Usage →](basic-usage.md)  
+**Navigation**: [← Help Hub](../README.md) | [Installation →](installation.md) | [Basic Usage →](basic-usage.md)  
 **Examples**: [Module Example](../../examples/mod_example.py) | [Class Example](../../examples/cls_example.py)

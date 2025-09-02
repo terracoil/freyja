@@ -1,6 +1,6 @@
 # API Reference
 
-[↑ Documentation Hub](../help.md)
+[↑ Documentation Hub](../README.md)
 
 Complete API documentation and technical reference for freyja.
 
@@ -41,7 +41,7 @@ import sys
 
 cli = CLI(
   sys.modules[__name__],
-  title="My FreyjaCLI",
+  title="My Freyja",
   theme_name="universal",
   no_color=False,
   completion=True
@@ -56,7 +56,7 @@ from src import CLI
 
 cli = CLI(
   MyClass,
-  title="My FreyjaCLI",
+  title="My Freyja",
   theme_name="colorful",
   function_opts={
     'method_name': {
@@ -100,8 +100,8 @@ def from_module(
     module,
     title: Optional[str] = None,
     **kwargs
-) -> 'FreyjaCLI':
-    """Create FreyjaCLI from module functions."""
+) -> 'Freyja':
+    """Create Freyja from module functions."""
 
 @classmethod  
 def from_class(
@@ -109,14 +109,14 @@ def from_class(
     class_type: Type,
     title: Optional[str] = None,
     **kwargs
-) -> 'FreyjaCLI':
-    """Create FreyjaCLI from class methods."""
+) -> 'Freyja':
+    """Create Freyja from class methods."""
 ```
 
 **Instance Methods**
 ```python
 def display(self) -> Optional[int]:
-    """Display FreyjaCLI interface and execute command tree."""
+    """Display Freyja interface and execute command tree."""
 
 def run(self) -> Optional[int]:
     """Alias for display() method."""
@@ -127,7 +127,7 @@ def add_command(
     function: Callable,
     description: Optional[str] = None
 ) -> None:
-    """Add a command to the FreyjaCLI."""
+    """Add a command to the Freyja."""
 ```
 
 ## Architecture Overview

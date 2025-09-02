@@ -1,6 +1,6 @@
 # Theme System
 
-[← Back to Features](index.md) | [↑ Documentation Hub](../help.md)
+[← Back to Features](README.md) | [↑ Documentation Hub](../README.md)
 
 ## Overview
 
@@ -29,10 +29,10 @@ A vibrant theme with rich colors:
 ```python
 from src import CLI
 
-# Module-based FreyjaCLI with theme
+# Module-based Freyja with theme
 cli = CLI(sys.modules[__name__], theme_name="colorful")
 
-# Class-based FreyjaCLI with theme
+# Class-based Freyja with theme
 cli = CLI(MyClass, theme_name="universal")
 ```
 
@@ -51,8 +51,8 @@ python my_cli.py --help
 The theme tuner is a built-in command that helps you preview and adjust themes:
 
 ```bash
-# Enable theme tuner in your FreyjaCLI
-cli = FreyjaCLI(MyClass, theme_tuner=True)
+# Enable theme tuner in your Freyja
+cli = Freyja(MyClass, theme_tuner=True)
 
 # Use the tuner
 python my_cli.py theme-tuner
@@ -78,4 +78,4 @@ freyja respects terminal capabilities:
 
 ---
 
-**Navigation**: [← Features](index.md) | [Type Annotations →](type-annotations.md)
+**Navigation**: [← Features](README.md) | [Type Annotations →](type-annotations.md)

@@ -1,6 +1,6 @@
 # Shell Completion
 
-[← Back to Features](index.md) | [↑ Documentation Hub](../help.md)
+[← Back to Features](README.md) | [↑ Documentation Hub](../README.md)
 
 ## Overview
 

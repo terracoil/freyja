@@ -1,6 +1,6 @@
 # Inner Classes Pattern
 
-[← Back to User Guide](README) | [↑ Documentation Hub](../help.md)
+[← Back to User Guide](README) | [↑ Documentation Hub](../README.md)
 
 ## Overview
 
@@ -49,7 +49,7 @@ from typing import List
 
 
 class ProjectManager:
-  """Project Management FreyjaCLI with organized flat command tree."""
+  """Project Management Freyja with organized flat command tree."""
 
   def __init__(self, config_file: str = "config.json", debug: bool = False):
     """

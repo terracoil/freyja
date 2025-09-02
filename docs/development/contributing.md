@@ -1,6 +1,6 @@
 # Contributing to freyja
 
-[← Back to Development](index.md) | [↑ Documentation Hub](../help.md)
+[← Back to Development](README.md) | [↑ Documentation Hub](../README.md)
 
 ## Welcome Contributors!
 
@@ -254,4 +254,4 @@ Your contributions help make freyja better for everyone. We appreciate your time
 
 ---
 
-**Navigation**: [← Development](index.md) | [Architecture →](architecture.md)
+**Navigation**: [← Development](README.md) | [Architecture →](architecture.md)

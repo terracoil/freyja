@@ -1,6 +1,8 @@
-# Installation Guide
+![Freyja Thumb](../../freyja-thumb.png)
 
-[← Back to Help](../help.md) | [↑ Getting Started](../help.md#getting-started)
+# 📦 Installation Guide
+
+[← Getting Started](README.md) | [🚀 Quick Start](quick-start.md)
 
 # Table of Contents
 - [Prerequisites](#prerequisites)

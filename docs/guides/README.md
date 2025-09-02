@@ -1,6 +1,6 @@
 # Guides
 
-[↑ Documentation Hub](../help.md)
+[↑ Documentation Hub](../README.md)
 
 Practical guides and how-to documentation for common tasks.
 

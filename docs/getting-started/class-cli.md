@@ -1,6 +1,6 @@
 # Class CLI Quick Start
 
-[← Back to Getting Started](index.md) | [↑ Documentation Hub](../help.md)
+[← Back to Getting Started](README.md) | [↑ Documentation Hub](../README.md)
 
 ## Overview
 
@@ -50,7 +50,7 @@ class Calculator:
 
 
 if __name__ == '__main__':
-  cli = CLI(Calculator, title="Calculator FreyjaCLI")
+  cli = CLI(Calculator, title="Calculator Freyja")
   cli.display()
 ```
 
@@ -109,7 +109,7 @@ For better organization, use inner classes (creates flat commands with double-da
 
 ```python
 class ProjectManager:
-    """Project management FreyjaCLI."""
+    """Project management Freyja."""
     
     def __init__(self, workspace: str = "./projects"):
         self.workspace = workspace

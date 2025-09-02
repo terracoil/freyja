@@ -1,6 +1,6 @@
 # Error Handling
 
-[← Back to Features](index.md) | [↑ Documentation Hub](../help.md)
+[← Back to Features](README.md) | [↑ Documentation Hub](../README.md)
 
 ## Overview
 
@@ -163,4 +163,4 @@ Run 'my-cli process --help' for more information.
 
 ---
 
-**Navigation**: [← Shell Completion](shell-completion.md) | [Features Index →](index.md)
+**Navigation**: [← Shell Completion](shell-completion.md) | [Features Index →](README.md)

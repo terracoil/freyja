@@ -1,6 +1,6 @@
 # Type Annotations Reference
 
-[← Back to Help](../help.md) | [🏗️ Basic Usage](../getting-started/basic-usage.md)
+[← Back to Help](../README.md) | [🏗️ Basic Usage](../getting-started/basic-usage.md)
 
 # Table of Contents
 - [Overview](#overview)
@@ -35,7 +35,7 @@ def process_file(input_file: str, output_format: str) -> None:
     """Process a file with specified format."""
     pass
 
-# FreyjaCLI Usage: Both parameters are required
+# Freyja Usage: Both parameters are required
 # python script.py process-file --input-file data.txt --output-format json
 ```
 
@@ -50,7 +50,7 @@ def process_file(
     """Process a file with optional settings."""
     pass
 
-# FreyjaCLI Usage: Only input-file is required
+# Freyja Usage: Only input-file is required
 # python script.py process-file --input-file data.txt
 # python script.py process-file --input-file data.txt --output-format csv --verbose
 ```
@@ -64,7 +64,7 @@ def greet(name: str, message: str = "Hello") -> None:
     """Greet someone with a message."""
     print(f"{message}, {name}!")
 
-# FreyjaCLI: --name VALUE, --message VALUE
+# Freyja: --name VALUE, --message VALUE
 # Usage: --name "John" --message "Hi there"
 ```
 
@@ -81,7 +81,7 @@ def repeat_action(count: int, max_attempts: int = 10) -> None:
     for i in range(min(count, max_attempts)):
         print(f"Action {i+1}")
 
-# FreyjaCLI: --count INTEGER, --max-attempts INTEGER  
+# Freyja: --count INTEGER, --max-attempts INTEGER  
 # Usage: --count 5 --max-attempts 3
 ```
 
@@ -98,7 +98,7 @@ def calculate_interest(principal: float, rate: float = 0.05) -> None:
     interest = principal * rate
     print(f"Interest: ${interest:.2f}")
 
-# FreyjaCLI: --principal FLOAT, --rate FLOAT
+# Freyja: --principal FLOAT, --rate FLOAT
 # Usage: --principal 1000.0 --rate 0.03
 ```
 
@@ -118,7 +118,7 @@ def backup_files(source_dir: str, compress: bool = False, verify: bool = True) -
     if verify:
         print("Verification enabled")
 
-# FreyjaCLI: --source-dir TEXT, --compress (flag), --verify/--no-verify
+# Freyja: --source-dir TEXT, --compress (flag), --verify/--no-verify
 # Usage: --source-dir /data --compress --no-verify
 ```
 
@@ -143,7 +143,7 @@ def process_files(files: List[str], extensions: List[str] = None) -> None:
     for file in files:
         print(f"Processing: {file}")
 
-# FreyjaCLI: --files FILE1 FILE2 FILE3, --extensions EXT1 EXT2
+# Freyja: --files FILE1 FILE2 FILE3, --extensions EXT1 EXT2
 # Usage: --files data.txt log.txt config.py --extensions .txt .log
 ```
 
@@ -165,7 +165,7 @@ def analyze_numbers(values: List[int], thresholds: List[int] = None) -> None:
     print(f"Values: {values}")
     print(f"Thresholds: {thresholds}")
 
-# FreyjaCLI: --values 1 2 3 4, --thresholds 5 25 75
+# Freyja: --values 1 2 3 4, --thresholds 5 25 75
 # Usage: --values 12 45 78 23 --thresholds 20 60
 ```
 
@@ -190,7 +190,7 @@ def connect_database(
     if port:
         print(f"Port: {port}")
 
-# FreyjaCLI: All parameters become optional if they have None default
+# Freyja: All parameters become optional if they have None default
 # Usage: --host localhost --database mydb --username admin --port 5432
 ```
 
@@ -211,7 +211,7 @@ def process_identifier(id_value: Union[str, int], format_output: bool = False) -
     else:
         print(f"Processing string ID: {id_value}")
 
-# FreyjaCLI: freyja will try int first, then str
+# Freyja: freyja will try int first, then str
 # Usage: --id-value 12345 or --id-value "user_abc123"
 ```
 
@@ -247,7 +247,7 @@ def process_logs(
     print(f"Processing {log_file} at {level.value} level")
     print(f"Output format: {output_format.value}")
 
-# FreyjaCLI: --level {debug,info,warning,error}, --output-format {json,csv,xml}
+# Freyja: --level {debug,info,warning,error}, --output-format {json,csv,xml}
 # Usage: --log-file app.log --level debug --output-format csv
 ```
 
@@ -270,7 +270,7 @@ def create_task(title: str, priority: Priority = Priority.MEDIUM) -> None:
     """Create a task with specified priority."""
     print(f"Task: {title} (Priority: {priority.value})")
 
-# FreyjaCLI validates against enum values
+# Freyja validates against enum values
 # Usage: --title "Fix bug" --priority high
 ```
 
@@ -304,7 +304,7 @@ def process_directory(input_dir: Path, output_dir: Path = Path("./output")) -> N
     if input_dir.exists():
         print("Input directory exists")
 
-# FreyjaCLI: Accepts string paths, converts to Path objects
+# Freyja: Accepts string paths, converts to Path objects
 # Usage: --input-dir /data/source --output-dir /data/processed
 ```
 
@@ -394,7 +394,7 @@ def process_data_file(data_file: str, encoding: str = "utf-8") -> None:
     except FileNotFoundError:
         print(f"File not found: {data_file}")
 
-# FreyjaCLI handles file path, function handles file operations
+# Freyja handles file path, function handles file operations
 # Usage: --data-file data.txt --encoding utf-8
 ```
 
@@ -443,7 +443,7 @@ def good_function(items: List[str] = None) -> None:
 ### 4. Complex Types Not Supported
 
 ```python
-# ❌ Too complex for direct FreyjaCLI mapping
+# ❌ Too complex for direct Freyja mapping
 def complex_function(callback: Callable[[str], int]) -> None:
     pass
 
@@ -527,5 +527,5 @@ def export_data(data: str, format: str = "json") -> None:
 
 ---
 
-**Navigation**: [← Help Hub](../help.md) | [Basic Usage →](../getting-started/basic-usage.md)  
+**Navigation**: [← Help Hub](../README.md) | [Basic Usage →](../getting-started/basic-usage.md)  
 **Examples**: [Module Example](../../examples/mod_example.py) | [Class Example](../../examples/cls_example.py)

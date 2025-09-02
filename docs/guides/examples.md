@@ -1,6 +1,6 @@
 # Examples
 
-[← Back to Guides](index.md) | [↑ Documentation Hub](../help.md)
+[← Back to Guides](README.md) | [↑ Documentation Hub](../README.md)
 
 ## Real-World CLI Examples
 
@@ -190,7 +190,7 @@ A class-based database management tool:
 
 ```python
 #!/usr/bin/env python3
-"""Database management FreyjaCLI with connection state."""
+"""Database management Freyja with connection state."""
 
 from src import CLI
 from datetime import datetime
@@ -727,4 +727,4 @@ python apiclient.py resources--get-item users 12345 --expand groups permissions
 
 ---
 
-**Navigation**: [← Best Practices](best-practices.md) | [Guides Index →](index.md)
+**Navigation**: [← Best Practices](best-practices.md) | [Guides Index →](README.md)
