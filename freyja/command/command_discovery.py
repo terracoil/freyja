@@ -63,7 +63,6 @@ class CommandDiscovery:
       raise ValueError(f"Target must be module, class, or list of classes, got {type(target).__name__}")
 
     self.cmd_tree:CommandTree = self.discover_commands()
-    print(self.cmd_tree)
 
   def discover_commands(self) -> CommandTree:
     """
