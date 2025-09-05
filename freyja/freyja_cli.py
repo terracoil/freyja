@@ -58,6 +58,9 @@ class FreyjaCLI:
 
     # Initialize execution coordinator
     self.execution_coordinator = ExecutionCoordinator(self.target_mode, executors)
+    # Pass command tree and CLI instance for completion
+    self.execution_coordinator.command_tree = self.discovery.cmd_tree
+    self.execution_coordinator.cli_instance = self
 
     # Initialize parser service
     self.parser_service = CommandParser(title=self.title, theme=theme, alphabetize=alphabetize, enable_completion=completion)
@@ -106,6 +109,7 @@ class FreyjaCLI:
     """Execute command with FreyjaCLI context."""
     # Add context information to the execution coordinator
     self.execution_coordinator.command_tree = self.discovery.cmd_tree
+    self.execution_coordinator.cli_instance = self
 
     return self.execution_coordinator.parse_and_execute(parser, args)
 
@@ -128,16 +132,12 @@ class FreyjaCLI:
 
   def _is_completion_request(self) -> bool:
     """Check if this is a shell completion request."""
-    return os.getenv('_FREYA_COMPLETE') is not None
+    return os.getenv('_FREYJA_COMPLETE') is not None
 
   def _handle_completion(self):
     """Handle shell completion request."""
-    try:
-      completion_handler = get_completion_handler(self)
-      completion_handler.complete()
-    except ImportError:
-      # Completion module    not available
-      pass
+    # Use the execution coordinator's completion handler directly
+    self.execution_coordinator._handle_completion_request()
 
   def create_parser(self, no_color: bool = False):
     """Create argument parser using pre-built command tree."""

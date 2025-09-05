@@ -59,7 +59,7 @@ from src.cli import CLI
 ```python
 def greet(name: str, times: int = 1, excited: bool = False):
     """
-        Greet someone multiple times.    
+    Greet someone multiple times.    
     :param name: Person's name to greet
     :param times: Number of greetings
     :param excited: Add excitement to greeting

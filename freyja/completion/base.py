@@ -80,11 +80,15 @@ class CompletionHandler(ABC):
     if not shell:
       return
     
-    # Get completion environment variables
+    # Get completion environment variables  
     if shell == 'bash':
       # Handle bash completion
       from .bash import handle_bash_completion
       handle_bash_completion()
+    elif shell == 'zsh':
+      # Handle zsh completion
+      from .zsh import handle_zsh_completion
+      handle_zsh_completion()
     else:
       # For other shells, we need to implement completion handling
       # For now, just return empty to avoid errors

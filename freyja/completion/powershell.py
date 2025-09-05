@@ -17,7 +17,7 @@ Register-ArgumentCompleter -Native -CommandName {prog_name} -ScriptBlock {{
     param($wordToComplete, $commandAst, $cursorPosition)
     
     # Set up completion environment
-    $env:_FREYA_COMPLETE = "powershell"
+    $env:_FREYJA_COMPLETE = "powershell"
     $env:COMP_WORDS_STR = $commandAst.ToString()
     $env:COMP_CWORD_NUM = $commandAst.CommandElements.Count
     
@@ -31,7 +31,7 @@ Register-ArgumentCompleter -Native -CommandName {prog_name} -ScriptBlock {{
         # Silently ignore errors
     }} finally {{
         # Clean up environment
-        $env:_FREYA_COMPLETE = $null
+        $env:_FREYJA_COMPLETE = $null
         $env:COMP_WORDS_STR = $null  
         $env:COMP_CWORD_NUM = $null
     }}

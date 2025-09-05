@@ -5,21 +5,34 @@ from typing import Optional
 class Completion:
   """Shell completion management."""
 
-  def __init__(self, shell: str = "bash", cli_instance=None):
+  def __init__(self, shell: str = None, cli_instance=None):
     """Initialize completion manager.
 
-    :param shell: Default shell type
+    :param shell: Shell type (auto-detect if None)
     :param cli_instance: FreyjaCLI instance for completion functionality (set by FreyjaCLI class)
     """
+    # Auto-detect shell if not specified
+    if shell is None:
+      shell_env = os.environ.get('SHELL', '')
+      if 'zsh' in shell_env:
+        shell = 'zsh'
+      elif 'fish' in shell_env:
+        shell = 'fish'
+      elif os.name == 'nt' or 'pwsh' in shell_env or 'powershell' in shell_env:
+        shell = 'powershell'
+      else:
+        shell = 'bash'  # Default fallback
+    
     self.shell = shell
     self._cli_instance = cli_instance
     self._completion_handler = None
 
-  def install(self, shell: Optional[str] = None, force: bool = False) -> bool:
+  def install(self, shell: Optional[str] = None, force: bool = False, patterns: Optional[str] = None) -> bool:
     """Install shell completion for the current FreyjaCLI.
 
     :param shell: Shell type (bash/zsh/fish) or auto-detect
     :param force: Force overwrite existing completion
+    :param patterns: Additional command patterns (comma-separated, e.g., "bin/dev-tools,./dev-tools")
     :return: True if installation successful
     """
     target_shell = shell or self.shell
@@ -41,17 +54,23 @@ class Completion:
         if prog_name.endswith('.py'):
           prog_name = prog_name[:-3]
 
-        installer = CompletionInstaller(self._completion_handler, prog_name)
+        # Parse additional command patterns
+        command_patterns = []
+        if patterns:
+          command_patterns = [p.strip() for p in patterns.split(',')]
+
+        installer = CompletionInstaller(self._completion_handler, prog_name, command_patterns)
         result = installer.install(target_shell, force)
       except ImportError:
         print("Completion installer not available.", file=sys.stderr)
 
     return result
 
-  def show(self, shell: Optional[str] = None) -> None:
+  def show(self, shell: Optional[str] = None, patterns: Optional[str] = None) -> None:
     """Show shell completion script.
 
     :param shell: Shell type (bash/zsh/fish)
+    :param patterns: Additional command patterns (comma-separated, e.g., "bin/dev-tools,./dev-tools")
     """
     target_shell = shell or self.shell
 
@@ -69,8 +88,13 @@ class Completion:
         if prog_name.endswith('.py'):
           prog_name = prog_name[:-3]
 
+        # Parse additional command patterns
+        command_patterns = []
+        if patterns:
+          command_patterns = [p.strip() for p in patterns.split(',')]
+
         try:
-          script = self._completion_handler.generate_script(prog_name)
+          script = self._completion_handler.generate_script(prog_name, command_patterns)
           print(script)
         except Exception as e:
           print(f"Error generating completion script: {e}", file=sys.stderr)
@@ -151,5 +175,5 @@ class Completion:
     """Check if this is a completion request."""
     return (
         '--_complete' in sys.argv or
-        os.environ.get('_FREYA_COMPLETE') is not None
+        os.environ.get('_FREYJA_COMPLETE') is not None
     )

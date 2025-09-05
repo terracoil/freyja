@@ -5,6 +5,7 @@ by creating appropriate instances and invoking methods with parsed arguments.
 """
 
 import inspect
+import sys
 from typing import Any, Dict, Type, Optional
 
 
@@ -120,9 +121,24 @@ class CommandExecutor:
         inner_kwargs[param_name] = value
 
     try:
-      return inner_class(main, **inner_kwargs)
+      # Special handling for System commands - they need CLI instance, not main class instance
+      if self._is_system_inner_class(inner_class):
+        # For System inner classes, pass CLI instance if available
+        cli_instance = getattr(parsed, '_cli_instance', None)
+        if 'cli_instance' in inner_sig.parameters:
+          inner_kwargs['cli_instance'] = cli_instance
+        return inner_class(**inner_kwargs)
+      else:
+        # Regular inner class - pass main class instance as first argument
+        return inner_class(main, **inner_kwargs)
     except TypeError as e:
       raise RuntimeError(f"Cannot instantiate {inner_class.__name__} with sub-global args: {e}") from e
+
+  def _is_system_inner_class(self, inner_class: Type) -> bool:
+    """Check if this is a System inner class."""
+    # Check if the module path indicates this is a system command
+    module_name = getattr(inner_class, '__module__', '')
+    return 'freyja.cli.system' in module_name
 
   def _execute_method(self, instance: Any, method_name: str, parsed) -> Any:
     """Execute method on instance with parsed arguments."""

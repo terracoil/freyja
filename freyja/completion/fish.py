@@ -15,7 +15,7 @@ class FishCompletionHandler(CompletionHandler):
 
 function __{prog_name}_complete
     # Set up completion environment
-    set -x _FREYA_COMPLETE fish
+    set -x _FREYJA_COMPLETE fish
     set -x COMP_WORDS_STR (commandline -cp)
     set -x COMP_CWORD_NUM (count (commandline -cp))
 

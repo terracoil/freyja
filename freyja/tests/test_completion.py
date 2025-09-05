@@ -144,7 +144,7 @@ class TestCompletionIntegration:
     # Test that FreyjaCLI without completion doesn't handle completion requests
     assert cli._is_completion_request() is False
 
-  @patch.dict(os.environ, {"_FREYA_COMPLETE": "bash"})
+  @patch.dict(os.environ, {"_FREYJA_COMPLETE": "bash"})
   def test_completion_request_detection(self):
     """Test completion request detection."""
     cli = FreyjaCLI(sys.modules[__name__], "Test FreyjaCLI", completion=True)

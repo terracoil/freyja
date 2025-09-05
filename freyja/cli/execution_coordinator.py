@@ -16,6 +16,7 @@ class ExecutionCoordinator:
     self.target_mode = target_mode
     self.executors = executors
     self.command_tree = None
+    self.cli_instance = None
 
   def parse_and_execute(self, parser, args: Optional[List[str]]) -> Any:
     """Parse arguments and execute command."""
@@ -24,6 +25,10 @@ class ExecutionCoordinator:
     # Get actual args (convert None to sys.argv[1:] like argparse does)
     import sys
     actual_args = args if args is not None else sys.argv[1:]
+
+    # Check for completion request first
+    if '--_complete' in actual_args:
+      return self._handle_completion_request()
 
     # Check if this is a hierarchical command that needs subgroup help
     if actual_args and self._should_show_subgroup_help(parser, actual_args):
@@ -71,6 +76,9 @@ class ExecutionCoordinator:
 
   def _execute_command(self, parsed) -> Any:
     """Execute the command from parsed arguments."""
+    # Inject CLI instance for system commands
+    self._inject_cli_instance(parsed)
+    
     # Check if we have multiple classes (multiple executors)
     if len(self.executors) > 1 and 'primary' not in self.executors:
       return self._execute_multi_class_command(parsed)
@@ -84,6 +92,14 @@ class ExecutionCoordinator:
         parsed=parsed,
         target_mode=self.target_mode
       )
+
+  def _inject_cli_instance(self, parsed) -> None:
+    """Inject CLI instance into parsed arguments for system commands."""
+    # Check if this is a system command that needs CLI instance
+    if hasattr(parsed, '_command_path') and getattr(parsed, '_command_path', '').startswith('system'):
+      # Inject CLI instance
+      if self.cli_instance:
+        parsed._cli_instance = self.cli_instance
 
   def _execute_multi_class_command(self, parsed) -> Any:
     """Execute command for multiple-class FreyjaCLI."""
@@ -193,6 +209,77 @@ class ExecutionCoordinator:
     # Show help for the final subparser
     current_parser.print_help()
     return 0
+
+  def _handle_completion_request(self):
+    """Handle shell completion requests."""
+    import os
+    import sys
+    from pathlib import Path
+    
+    # Determine which shell type is requesting
+    shell_type = os.environ.get('_FREYJA_COMPLETE', '')
+    
+    if not shell_type:
+      # No completion environment set, just return
+      return 0
+    
+    # Get the command tree for dynamic completion
+    if not self.command_tree:
+      return 0
+    
+    # Get completion words from environment
+    words_str = os.environ.get('COMP_WORDS_STR', '')
+    cword_num = int(os.environ.get('COMP_CWORD_NUM', '0'))
+    
+    words = words_str.split() if words_str else []
+    
+    # Create completion context  
+    from freyja.completion.base import CompletionContext
+    
+    # Parse the current word being completed
+    current_word = ""
+    if words and cword_num > 0 and cword_num <= len(words):
+      current_word = words[cword_num - 1] if cword_num <= len(words) else ""
+    
+    # Extract command group path (exclude the current word being completed)
+    command_group_path = []
+    if len(words) > 1:
+      # Only include words up to but not including the current word being completed
+      for i in range(1, min(cword_num - 1, len(words))):
+        word = words[i]
+        if not word.startswith('-'):
+          command_group_path.append(word)
+    
+    # Create parser for context
+    parser = self.cli_instance.create_parser(no_color=True) if self.cli_instance else None
+    
+    # Create completion context
+    context = CompletionContext(
+      words=words,
+      current_word=current_word,
+      cursor_position=0,
+      command_group_path=command_group_path,
+      parser=parser,
+      cli=self.cli_instance
+    )
+    
+    # Import the appropriate completion handler
+    if shell_type == 'zsh':
+      from freyja.completion.zsh import ZshCompletionHandler
+      handler = ZshCompletionHandler(self.cli_instance)
+    else:
+      # Use bash handler as fallback
+      from freyja.completion.bash import BashCompletionHandler
+      handler = BashCompletionHandler(self.cli_instance)
+    
+    # Get completions
+    completions = handler.get_completions(context)
+    
+    # Output completions
+    for completion in completions:
+      print(completion)
+    
+    sys.exit(0)
 
   @staticmethod
   def check_no_color_flag(args: List[str]) -> bool:

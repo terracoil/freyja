@@ -3,7 +3,7 @@
 import os
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 from .base import CompletionHandler
 
@@ -11,14 +11,16 @@ from .base import CompletionHandler
 class CompletionInstaller:
   """Handles installation of shell completion scripts."""
 
-  def __init__(self, handler: CompletionHandler, prog_name: str):
+  def __init__(self, handler: CompletionHandler, prog_name: str, command_patterns: Optional[list] = None):
     """Initialize installer with handler and program name.
 
     :param handler: Completion handler for specific shell
     :param prog_name: Name of the program to install completion for
+    :param command_patterns: Additional command patterns to register completion for
     """
     self.handler = handler
     self.prog_name = prog_name
+    self.command_patterns = command_patterns or []
     self.shell = handler.detect_shell()
 
   def install(self, shell: Optional[str] = None, force: bool = False) -> bool:
@@ -82,23 +84,27 @@ class CompletionInstaller:
 
   def _install_zsh_completion(self, force: bool) -> bool:
     """Install zsh completion."""
-    # Try user completion directory
+    # Try standard user completion directories in order of preference  
     completion_dirs = [
+      Path.home() / '.zfunc',  # Most standard location
       Path.home() / '.zsh' / 'completions',
-      Path.home() / '.oh-my-zsh' / 'completions',
-      Path('/usr/local/share/zsh/site-functions')
     ]
-
-    # Find first writable directory
+    
+    # Use first directory that exists or can be created
     completion_dir = None
     for dir_path in completion_dirs:
-      if dir_path.exists() or dir_path.parent.exists():
+      if dir_path.exists():
         completion_dir = dir_path
         break
-
+      try:
+        dir_path.mkdir(parents=True, exist_ok=True)
+        completion_dir = dir_path
+        break
+      except:
+        continue
+    
     if not completion_dir:
-      completion_dir = completion_dirs[0]  # Default to first option
-
+      completion_dir = completion_dirs[0]  # Default to .zfunc
     completion_dir.mkdir(parents=True, exist_ok=True)
     completion_file = completion_dir / f'_{self.prog_name}'
 
@@ -107,12 +113,67 @@ class CompletionInstaller:
       print(f"Completion already exists at {completion_file}. Use --force to overwrite.")
       return False
 
-    # Generate and write completion script
-    script = self.handler.generate_script(self.prog_name)
+    # Generate and write completion script with command patterns
+    script = self.handler.generate_script(self.prog_name, self.command_patterns)
     completion_file.write_text(script)
 
     print(f"Zsh completion installed to {completion_file}")
-    print("Restart your shell for changes to take effect")
+    
+    # Clear completion cache to ensure new completions are loaded
+    zcompdump_files = [
+      Path.home() / '.zcompdump',
+      Path.home() / f'.zcompdump-{os.getenv("HOST", "")}-{os.getenv("ZSH_VERSION", "")}',
+    ]
+    
+    for zcompdump_file in zcompdump_files:
+      if zcompdump_file.exists():
+        try:
+          zcompdump_file.unlink()
+          print(f"Cleared completion cache: {zcompdump_file}")
+        except:
+          pass  # Ignore if we can't remove it
+    
+    # Check if completion directory is in fpath and auto-configure if needed
+    import subprocess
+    needs_fpath_config = True
+    try:
+      result = subprocess.run(['zsh', '-c', 'echo $fpath'], capture_output=True, text=True)
+      if completion_dir.as_posix() in result.stdout:
+        needs_fpath_config = False
+    except:
+      pass  # Assume we need to configure fpath
+    
+    if needs_fpath_config:
+      # Try to automatically add fpath configuration to ~/.zshrc
+      zshrc_path = Path.home() / '.zshrc'
+      fpath_line = f'fpath=({completion_dir} $fpath)'
+      
+      try:
+        if zshrc_path.exists():
+          zshrc_content = zshrc_path.read_text()
+          # Check if fpath line already exists in some form
+          if str(completion_dir) not in zshrc_content or 'fpath=' not in zshrc_content:
+            with open(zshrc_path, 'a') as f:
+              f.write(f'\n# Freyja completion directory\n')
+              f.write(f'{fpath_line}\n')
+            print(f"Added fpath configuration to {zshrc_path}")
+          else:
+            print(f"fpath already configured in {zshrc_path}")
+        else:
+          # Create .zshrc with fpath configuration
+          with open(zshrc_path, 'w') as f:
+            f.write(f'# Freyja completion directory\n')
+            f.write(f'{fpath_line}\n')
+          print(f"Created {zshrc_path} with fpath configuration")
+        
+        print("Restart your shell or run: source ~/.zshrc && autoload -U compinit && compinit")
+      except Exception as e:
+        print(f"\nCould not automatically configure fpath. Please add this line to your ~/.zshrc:")
+        print(f"{fpath_line}")
+        print("Then run: autoload -U compinit && compinit")
+    else:
+      print("fpath already configured. Run: autoload -U compinit && compinit")
+    
     return True
 
   def _install_fish_completion(self, force: bool) -> bool:

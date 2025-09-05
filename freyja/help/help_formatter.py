@@ -276,8 +276,15 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
   def _format_single_command(self, choice, subparser, base_indent, unified_cmd_desc_column):
     """Format a single command (either flat or group)."""
+    # Check if this is a namespaced group that needs extra indentation
+    effective_indent = base_indent
+    if hasattr(subparser, '_is_namespaced') and subparser._is_namespaced:
+      # Namespaced groups should have their contents indented 2 more spaces
+      # but keep the group name at the original indent
+      pass  # The group name stays at base_indent, contents get extra indent inside
+    
     return self._format_group_with_command_groups_global(
-      choice, subparser, base_indent, unified_cmd_desc_column, unified_cmd_desc_column
+      choice, subparser, effective_indent, unified_cmd_desc_column, unified_cmd_desc_column
     )
 
   def _command_has_required_args(self, subparser):
@@ -310,8 +317,12 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
                                                unified_cmd_desc_column, global_option_column):
     """Format a command group with unified command description column alignment."""
     lines = []
+    
+    # Check if this is a namespaced group - its contents need extra indentation
+    is_namespaced = hasattr(parser, '_is_namespaced') and parser._is_namespaced
+    content_indent_adjustment = 2 if is_namespaced else 0
 
-    # Group header
+    # Group header (stays at base_indent)
     group_description = (getattr(parser, '_command_group_description', None) or
                          parser.description or
                          getattr(parser, 'help', ''))
@@ -331,12 +342,19 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
       styled_name = self._apply_style(name, 'grouped_command_name')
       lines.append(f"{' ' * base_indent}{styled_name}")
 
-    # Add arguments
-    lines.extend(self._format_command_arguments(parser, unified_cmd_desc_column))
+    # Add arguments (with extra indent for namespaced groups)
+    if is_namespaced:
+      arg_lines = self._format_command_arguments_with_indent(
+        parser, unified_cmd_desc_column, content_indent_adjustment
+      )
+      lines.extend(arg_lines)
+    else:
+      lines.extend(self._format_command_arguments(parser, unified_cmd_desc_column))
 
-    # Add nested cmd_tree
+    # Add nested cmd_tree (with extra indent for namespaced groups)
     if hasattr(parser, '_commands'):
-      lines.extend(self._format_nested_commands(parser, base_indent, unified_cmd_desc_column))
+      content_base_indent = base_indent + content_indent_adjustment
+      lines.extend(self._format_nested_commands(parser, content_base_indent, unified_cmd_desc_column))
 
     return lines
 
@@ -365,16 +383,46 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     return lines
 
+  def _format_command_arguments_with_indent(self, parser, unified_cmd_desc_column, extra_indent):
+    """Format command arguments with additional indentation."""
+    lines = []
+    required_args, optional_args = self._analyze_arguments(parser)
+
+    # Format required arguments with extra indent
+    for arg_name, arg_help in required_args:
+      arg_lines = self._format_single_argument(
+        arg_name, arg_help, unified_cmd_desc_column,
+        'command_group_option_name', 'command_group_option_description',
+        required=True,
+        extra_indent=extra_indent
+      )
+      lines.extend(arg_lines)
+
+    # Format optional arguments with extra indent
+    for arg_name, arg_help in optional_args:
+      arg_lines = self._format_single_argument(
+        arg_name, arg_help, unified_cmd_desc_column,
+        'command_group_option_name', 'command_group_option_description',
+        required=False,
+        extra_indent=extra_indent
+      )
+      lines.extend(arg_lines)
+
+    return lines
+
   def _format_single_argument(self, arg_name, arg_help, unified_cmd_desc_column,
-                              name_style, desc_style, required=False):
+                              name_style, desc_style, required=False, extra_indent=0):
     """Format a single argument with consistent styling."""
     lines = []
+    
+    # Apply extra indentation if specified
+    effective_indent = self._arg_indent + extra_indent
 
     if arg_help:
       arg_lines = self._format_inline_description(
         name=arg_name,
         description=arg_help,
-        name_indent=self._arg_indent,
+        name_indent=effective_indent,
         description_column=unified_cmd_desc_column + 2,
         style_name=name_style,
         style_description=desc_style
@@ -387,7 +435,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     else:
       styled_arg = self._apply_style(arg_name, name_style)
       asterisk = self._apply_style(" *", 'required_asterisk') if required else ""
-      lines.append(f"{' ' * self._arg_indent}{styled_arg}{asterisk}")
+      lines.append(f"{' ' * effective_indent}{styled_arg}{asterisk}")
 
     return lines
 

@@ -214,6 +214,10 @@ class CommandParser:
     # Set system command flag if present
     if group_info.get('is_system_command'):
       group_parser._is_system_command = True
+    
+    # Set namespaced flag if present
+    if group_info.get('is_namespaced'):
+      group_parser._is_namespaced = True
 
     # Add sub-global arguments from inner class
     if inner_class:

@@ -123,7 +123,8 @@ class CommandDiscovery:
       command_tree.add_group(
         class_namespace, 
         class_description,
-        is_system_command=self.is_system(target_cls)
+        is_system_command=self.is_system(target_cls),
+        is_namespaced=True
       )
 
     # Discover direct methods
