@@ -34,8 +34,14 @@ class ArgumentParser:
     elif annotation == Path:
       return {'type': Path}
     elif inspect.isclass(annotation) and issubclass(annotation, enum.Enum):
+      def enum_converter(x):
+        try:
+          return annotation[x.split('.')[-1]]
+        except KeyError:
+          # Let argparse handle the invalid choice error
+          raise ValueError(f"invalid choice: '{x}' (choose from {', '.join(e.name for e in annotation)})")
       return {
-        'type': lambda x: annotation[x.split('.')[-1]],
+        'type': enum_converter,
         'choices': list(annotation),
         'metavar': f"{{{','.join(e.name for e in annotation)}}}"
       }

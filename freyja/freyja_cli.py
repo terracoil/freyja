@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import sys
 import types
 from typing import *
 
@@ -131,13 +132,54 @@ class FreyjaCLI:
     }
 
   def _is_completion_request(self) -> bool:
-    """Check if this is a shell completion request."""
-    return os.getenv('_FREYJA_COMPLETE') is not None
+    """
+    Check if this is a shell completion request.
+    
+    Uses multiple indicators to ensure we only enter completion mode
+    when explicitly requested by shell completion systems.
+    """
+    # Check for main completion environment variable
+    if os.getenv('_FREYJA_COMPLETE') is not None:
+      return True
+    
+    # Check for shell-specific completion variables  
+    completion_vars = [
+      '_FREYJA_COMPLETE_ZSH',
+      '_FREYJA_COMPLETE_BASH', 
+      '_FREYJA_COMPLETE_FISH',
+      '_FREYJA_COMPLETE_POWERSHELL'
+    ]
+    
+    for var in completion_vars:
+      if os.getenv(var) is not None:
+        return True
+    
+    # Check for --_complete flag (legacy support)
+    if '--_complete' in sys.argv:
+      return True
+    
+    return False
 
   def _handle_completion(self):
-    """Handle shell completion request."""
-    # Use the execution coordinator's completion handler directly
-    self.execution_coordinator._handle_completion_request()
+    """
+    Handle shell completion request.
+    
+    Ensures completion mode is completely isolated from normal execution.
+    """
+    try:
+      # Use the execution coordinator's completion handler
+      result = self.execution_coordinator._handle_completion_request()
+      
+      # Explicitly exit after completion to prevent any further processing
+      sys.exit(0 if result == 0 else 1)
+      
+    except Exception as e:
+      # In case of completion errors, fail gracefully
+      print(f"Completion error: {e}", file=sys.stderr)
+      sys.exit(1)
+    finally:
+      # Ensure we exit - completion should never continue to normal execution
+      sys.exit(0)
 
   def create_parser(self, no_color: bool = False):
     """Create argument parser using pre-built command tree."""

@@ -149,7 +149,8 @@ class TestSystemCompletion:
   def test_completion_initialization(self):
     """Test Completion class initializes correctly."""
     completion = System().Completion()
-    assert completion.shell == "bash"
+    # Shell should auto-detect (could be bash, zsh, fish, etc.)
+    assert completion.shell in ['bash', 'zsh', 'fish', 'powershell']
     assert completion._cli_instance is None
     assert completion._completion_handler is None
 
@@ -158,6 +159,14 @@ class TestSystemCompletion:
     mock_cli = MagicMock()
     completion = System.Completion(cli_instance=mock_cli)
     assert completion._cli_instance == mock_cli
+
+  def test_completion_explicit_shell(self):
+    """Test Completion class with explicitly specified shell."""
+    completion = System().Completion(shell='bash')
+    assert completion.shell == 'bash'
+    
+    completion = System().Completion(shell='zsh')
+    assert completion.shell == 'zsh'
 
   def test_is_completion_request_false(self):
     """Test completion request detection returns False normally."""

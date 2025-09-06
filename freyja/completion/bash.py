@@ -33,25 +33,30 @@ _{func_name}_completion()
     cur="${{COMP_WORDS[COMP_CWORD]}}"
     prev="${{COMP_WORDS[COMP_CWORD-1]}}"
 
-    # Set up completion environment
-    export _FREYJA_COMPLETE=bash
-    export COMP_WORDS_STR="${{COMP_WORDS[@]}}"
-    export COMP_CWORD_NUM=${{COMP_CWORD}}
-    
     # Get the actual command being completed (first word)
     # Extract basename to handle path-based invocations (e.g., examples/{prog_basename})
     local prog="${{COMP_WORDS[0]}}"
     local prog_basename="$(basename "$prog")"
     
-    # Get completions from the program
+    # Get completions from the program with inline environment variables to prevent shell persistence
     local completions
     # Check if this looks like a Python script
     if [[ "$prog" == *.py ]] || [[ ! -x "$prog" ]] || [[ -f "$prog" && "$(head -n1 "$prog" 2>/dev/null)" == *"python"* ]]; then
         # For Python scripts, use python interpreter
-        completions=$(PYTHONPATH=. python "$prog" --_complete 2>/dev/null)
+        completions=$(
+            _FREYJA_COMPLETE=bash \\
+            COMP_WORDS_STR="${{COMP_WORDS[@]}}" \\
+            COMP_CWORD_NUM=${{COMP_CWORD}} \\
+            PYTHONPATH=. python "$prog" --_complete 2>/dev/null
+        )
     else
         # For direct executables
-        completions=$(PYTHONPATH=. "$prog" --_complete 2>/dev/null)
+        completions=$(
+            _FREYJA_COMPLETE=bash \\
+            COMP_WORDS_STR="${{COMP_WORDS[@]}}" \\
+            COMP_CWORD_NUM=${{COMP_CWORD}} \\
+            PYTHONPATH=. "$prog" --_complete 2>/dev/null
+        )
     fi
     
     if [ $? -eq 0 ]; then

@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# Debug script to identify persistent environment state issues
+
+echo "=== Environment Variable Analysis ==="
+echo "Current shell: $SHELL"
+echo "Current PID: $$"
+echo
+
+echo "Freyja completion environment variables:"
+env | grep -i "freyja\|comp_" || echo "None found"
+echo
+
+echo "All environment variables with pattern matching:"
+env | grep -E "(COMPLETE|COMP_|_FREYJA)" | sort || echo "None found"
+echo
+
+echo "=== Shell Function Analysis ==="
+echo "Checking for shell functions containing 'cls_example':"
+if command -v declare >/dev/null 2>&1; then
+    declare -F | grep -i cls_example || echo "None found (bash)"
+elif command -v functions >/dev/null 2>&1; then
+    functions | grep -i cls_example || echo "None found (zsh functions)"
+fi
+echo
+
+echo "=== ZSH Completion System Analysis ==="
+if [[ -n "$ZSH_VERSION" ]]; then
+    echo "ZSH completion system status:"
+    echo "  compdef available: $(command -v compdef >/dev/null && echo "✅" || echo "❌")"
+    
+    if command -v compdef >/dev/null; then
+        echo "  Registered completions for 'cls_example':"
+        if [[ -n "${_comps[cls_example]:-}" ]]; then
+            echo "    Direct: ${_comps[cls_example]}"
+        else
+            echo "    Direct: Not registered"
+        fi
+        
+        # Check for pattern-based registrations
+        echo "  Pattern-based registrations:"
+        for key in ${(k)_comps}; do
+            if [[ "$key" == *"cls_example"* ]] || [[ "$key" == "*cls_example" ]] || [[ "$key" == "*/cls_example" ]]; then
+                echo "    $key: ${_comps[$key]}"
+            fi
+        done
+    fi
+    
+    echo "  ZSH completion search paths:"
+    echo "$fpath" | tr ' ' '\n' | grep -v "^$" | head -5
+fi
+echo
+
+echo "=== Test Completion Trigger ==="
+echo "Testing if current environment triggers completion detection:"
+cd "$(dirname "$0")/.."
+PYTHONPATH=. python -c "
+import os, sys
+import importlib.util
+spec = importlib.util.spec_from_file_location('cls_example', 'examples/cls_example')
+cls_example = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(cls_example)
+
+from freyja.freyja_cli import FreyjaCLI
+
+print('Environment variables checked:')
+completion_vars = [
+    '_FREYJA_COMPLETE',
+    '_FREYJA_COMPLETE_ZSH', 
+    '_FREYJA_COMPLETE_BASH',
+    '_FREYJA_COMPLETE_FISH',
+    '_FREYJA_COMPLETE_POWERSHELL'
+]
+for var in completion_vars:
+    value = os.getenv(var)
+    print(f'  {var}: {value}')
+
+print()
+print('Command line args:', sys.argv)
+print('--_complete in args:', '--_complete' in sys.argv)
+
+cli = FreyjaCLI(cls_example.DataProcessor, completion=True)
+print('Is completion request:', cli._is_completion_request())
+"
+echo
+
+echo "=== Process Information ==="
+echo "Current working directory: $(pwd)"
+echo "Python path: $PYTHONPATH"
+echo "PATH (first 5 entries):"
+echo "$PATH" | tr ':' '\n' | head -5
+
+echo
+echo "=== Shell History Clues ==="
+echo "Recent history containing 'cls_example' or completion:"
+if command -v history >/dev/null; then
+    history | grep -E "(cls_example|completion|_complete)" | tail -5 || echo "None found"
+else
+    echo "History command not available"
+fi

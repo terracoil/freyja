@@ -3,6 +3,7 @@
 Handles argument parsing and command execution coordination.
 Extracted from FreyjaCLI class to reduce its size and improve separation of concerns.
 """
+import os
 from typing import *
 
 from .enums import TargetMode
@@ -19,16 +20,27 @@ class ExecutionCoordinator:
     self.cli_instance = None
 
   def parse_and_execute(self, parser, args: Optional[List[str]]) -> Any:
-    """Parse arguments and execute command."""
+    """
+    Parse arguments and execute command.
+    
+    This method should only be called for normal execution, not completion.
+    Completion should be handled by the main CLI before reaching this point.
+    """
     result = None
 
     # Get actual args (convert None to sys.argv[1:] like argparse does)
     import sys
     actual_args = args if args is not None else sys.argv[1:]
 
-    # Check for completion request first
-    if '--_complete' in actual_args:
-      return self._handle_completion_request()
+    # Sanity check: if we detect completion here, it's a bug
+    completion_indicators = ['--_complete']
+    completion_vars = ['_FREYJA_COMPLETE', '_FREYJA_COMPLETE_ZSH', '_FREYJA_COMPLETE_BASH']
+    
+    if any(indicator in actual_args for indicator in completion_indicators):
+      raise RuntimeError("Completion request reached normal execution path - this is a bug")
+    
+    if any(os.getenv(var) for var in completion_vars):
+      raise RuntimeError("Completion environment detected in normal execution - this is a bug")
 
     # Check if this is a hierarchical command that needs subgroup help
     if actual_args and self._should_show_subgroup_help(parser, actual_args):
@@ -152,9 +164,13 @@ class ExecutionCoordinator:
       if not hasattr(parsed, '_cli_function'):
         return self._is_hierarchical_path(parser, args)
       return False  # Has _cli_function, so it's a complete command
-    except SystemExit:
-      # If parsing failed, this might still be a hierarchical path issue
-      return self._is_hierarchical_path(parser, args)
+    except SystemExit as e:
+      # Only catch help-related SystemExits (exit code 0), let error SystemExits (non-0) propagate
+      if e.code == 0:
+        return self._is_hierarchical_path(parser, args)
+      else:
+        # This is an actual argument parsing error, let it propagate
+        raise
 
   def _is_hierarchical_path(self, parser, args: List[str]) -> bool:
     """Check if args represent a valid hierarchical path to a subgroup."""
@@ -211,20 +227,34 @@ class ExecutionCoordinator:
     return 0
 
   def _handle_completion_request(self):
-    """Handle shell completion requests."""
+    """
+    Handle shell completion requests with complete isolation.
+    
+    This method handles completion generation and ensures it never
+    interferes with normal command execution.
+    """
     import os
     import sys
     from pathlib import Path
     
-    # Determine which shell type is requesting
-    shell_type = os.environ.get('_FREYJA_COMPLETE', '')
+    # Determine which shell type is requesting (try multiple variables)
+    shell_type = (
+      os.environ.get('_FREYJA_COMPLETE') or
+      os.environ.get('_FREYJA_COMPLETE_ZSH') and 'zsh' or
+      os.environ.get('_FREYJA_COMPLETE_BASH') and 'bash' or
+      os.environ.get('_FREYJA_COMPLETE_FISH') and 'fish' or
+      os.environ.get('_FREYJA_COMPLETE_POWERSHELL') and 'powershell' or
+      ''
+    )
     
     if not shell_type:
-      # No completion environment set, just return
+      # No completion environment set - this should not be called
+      # Return immediately to avoid any interference  
       return 0
     
-    # Get the command tree for dynamic completion
+    # Verify we have the required command tree
     if not self.command_tree:
+      # No command tree available - return empty completion
       return 0
     
     # Get completion words from environment
@@ -272,14 +302,23 @@ class ExecutionCoordinator:
       from freyja.completion.bash import BashCompletionHandler
       handler = BashCompletionHandler(self.cli_instance)
     
-    # Get completions
-    completions = handler.get_completions(context)
-    
-    # Output completions
-    for completion in completions:
-      print(completion)
-    
-    sys.exit(0)
+    # Get completions and output them
+    try:
+      completions = handler.get_completions(context)
+      
+      # Output completions to stdout (one per line for shell parsing)
+      for completion in completions:
+        print(completion)
+      
+      # Flush output to ensure completions are sent immediately
+      sys.stdout.flush()
+      
+      return 0
+      
+    except Exception as e:
+      # If completion generation fails, don't crash but return empty
+      print(f"Completion generation error: {e}", file=sys.stderr)
+      return 1
 
   @staticmethod
   def check_no_color_flag(args: List[str]) -> bool:
