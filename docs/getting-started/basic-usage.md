@@ -1,3 +1,4 @@
+![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
 # Basic Usage Guide
 
 [← Back to Help](../README.md) | [🚀 Quick Start](quick-start.md) | [📦 Installation](installation.md)

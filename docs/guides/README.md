@@ -1,3 +1,4 @@
+![Freyja Action](https://github.com/terracoil/freyja/raw/main/docs/freyja-action.png)
 # Guides
 
 [↑ Documentation Hub](../README.md)

@@ -1,3 +1,4 @@
+![Freyja Action](https://github.com/terracoil/freyja/raw/main/docs/freyja-action.png)
 # Quick Start Guide
 
 [← Back to Help](../README.md) | [📦 Installation](installation.md) | [📖 Basic Usage](basic-usage.md)

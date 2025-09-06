@@ -1,3 +1,4 @@
+![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
 # Inner Classes Pattern
 
 [← Back to User Guide](README) | [↑ Documentation Hub](../README.md)

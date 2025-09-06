@@ -1,3 +1,4 @@
+![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
 # Type Annotations Reference
 
 [← Back to Help](../README.md) | [🏗️ Basic Usage](../getting-started/basic-usage.md)

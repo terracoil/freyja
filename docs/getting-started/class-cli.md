@@ -1,3 +1,4 @@
+![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
 # Class CLI Quick Start
 
 [← Back to Getting Started](README.md) | [↑ Documentation Hub](../README.md)

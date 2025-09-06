@@ -1,3 +1,4 @@
+![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
 # Error Handling
 
 [← Back to Features](README.md) | [↑ Documentation Hub](../README.md)

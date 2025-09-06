@@ -1,3 +1,4 @@
+![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
 # Troubleshooting Guide
 
 [← Back to Guides](README.md) | [↑ Documentation Hub](../README.md)

@@ -1,3 +1,4 @@
+![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
 # 🎯 Flexible Argument Ordering
 
 *→ [Back to Features](README.md) | [Home](../README.md)*

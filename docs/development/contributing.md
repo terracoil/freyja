@@ -1,3 +1,4 @@
+![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
 # Contributing to freyja
 
 [← Back to Development](README.md) | [↑ Documentation Hub](../README.md)
