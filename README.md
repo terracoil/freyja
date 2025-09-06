@@ -3,12 +3,11 @@
 # Freyja ⚡
 **No-dependency, zero-configuration CLI tool to build command-line interfaces purely from your code.**
 
-Transform your Python functions and classes into powerful command-line applications in seconds! Freyja uses introspection and type annotations to automatically generate professional CLIs with zero configuration required.
+Transform your Python classes into powerful command-line applications in seconds! Freyja uses introspection and type annotations to automatically generate professional CLIs with zero configuration required.
 
 ## Table of Contents
 * [🚀 Why Freyja?](#-why-freyja)
 * [⚡ Quick Start](#-quick-start)
-* [🗂️ Module-based CLI](#️-module-based-cli)
 * [🏗️ Class-based CLI](#️-class-based-cli)
   * [Direct Methods Pattern](#direct-methods-pattern)
   * [Inner Classes Pattern](#inner-classes-pattern)
@@ -19,7 +18,7 @@ Transform your Python functions and classes into powerful command-line applicati
 
 ## 🚀 Why Freyja?
 
-**Build CLIs in under 5 minutes!** No configuration files, no complex setup, no learning curve. Just add type annotations to your functions and Freyja does the rest.
+**Build CLIs in under 5 minutes!** No configuration files, no complex setup, no learning curve. Just add type annotations to your class methods and Freyja does the rest.
 
 ```bash
 pip install freyja
@@ -33,7 +32,7 @@ python script.py --config-file /path/to/config --database-host localhost --datab
 
 **After Freyja:**
 ```bash
-python script.py database--create-user --name Alice --email alice@example.com
+python script.py database create-user --name Alice --email alice@example.com
 # Global config handled automatically, clean syntax, built-in help
 ```
 
@@ -44,23 +43,31 @@ python script.py database--create-user --name Alice --email alice@example.com
 pip install freyja
 ```
 
-**Step 2:** Add type annotations to your functions
+**Step 2:** Create a class with typed methods
 ```python
-def greet(name: str = "World", excited: bool = False) -> None:
-    """Greet someone by name."""
-    greeting = f"Hello, {name}!"
-    if excited:
-        greeting += " 🎉"
-    print(greeting)
+from freyja import CLI
+
+
+class Greeter:
+    """Simple greeting application."""
+
+    def __init__(self, default_name: str = "World"):
+        """Initialize greeter with default name."""
+        self.default_name = default_name
+
+    def greet(self, name: str = None, excited: bool = False) -> None:
+        """Greet someone by name."""
+        actual_name = name or self.default_name
+        greeting = f"Hello, {actual_name}!"
+        if excited:
+            greeting += " 🎉"
+        print(greeting)
 ```
 
 **Step 3:** Add 3 lines of Freyja code
 ```python
-from freyja import CLI
-import sys
-
 if __name__ == '__main__':
-    cli = CLI(sys.modules[__name__], title="My CLI")
+    cli = CLI(Greeter, title="My CLI")
     cli.display()
 ```
 
@@ -73,43 +80,10 @@ python script.py --help
 # Automatic help generation with beautiful formatting
 ```
 
-## 🗂️ Module-based CLI
-
-Perfect for functional programming styles and simple utilities. Every function becomes a command:
-
-```python
-# data_processor.py
-from freyja import CLI
-import sys
-
-
-def process_csv(input_file: str, output_format: str = "json", verbose: bool = False) -> None:
-    """Process CSV file and convert to specified format."""
-    print(f"Processing {input_file} -> {output_format}")
-    if verbose:
-        print("Verbose mode enabled")
-
-
-def analyze_logs(log_file: str, pattern: str, max_lines: int = 1000) -> None:
-    """Analyze log files for specific patterns."""
-    print(f"Analyzing {log_file} for pattern: {pattern} (max {max_lines} lines)")
-
-
-if __name__ == '__main__':
-    cli = CLI(sys.modules[__name__], title="Data Processing Tools")
-    cli.display()
-```
-
-**Usage:**
-```bash
-python data_processor.py process-csv --input-file data.csv --output-format xml --verbose
-python data_processor.py analyze-logs --log-file app.log --pattern "ERROR" --max-lines 500
-python data_processor.py --help  # Beautiful auto-generated help
-```
 
 ## 🏗️ Class-based CLI
 
-Ideal for stateful applications and complex workflows. Supports two powerful patterns:
+Freyja transforms your Python classes into powerful CLI applications. Supports two flexible patterns:
 
 ### Direct Methods Pattern
 
@@ -220,18 +194,18 @@ if __name__ == '__main__':
 
 **Usage:**
 ```bash
-# Global + Sub-global + Command arguments (all flat)
+# Global + Sub-global + Command arguments (hierarchical)
 python project_manager.py --config-file prod.json --debug \
-  database--migrate --connection-string postgres://prod --version 2.1.0 --dry-run
+  database migrate --connection-string postgres://prod --version 2.1.0 --dry-run
 
 # Create new project with custom workspace
-python project_manager.py projects--create --workspace /prod/projects --auto-save \
+python project_manager.py projects create --workspace /prod/projects --auto-save \
   --name "web-app" --template "react" --description "Production web application"
 
 # Deploy with force flag
-python project_manager.py projects--deploy --project-name web-app --environment production --force
+python project_manager.py projects deploy --project-name web-app --environment production --force
 
-# Beautiful help shows all flat commands organized by group
+# Beautiful help shows all commands organized by group
 python project_manager.py --help
 ```
 
@@ -242,7 +216,7 @@ python project_manager.py --help
 🎯 **Type Safe** - Automatic validation from your type hints  
 📚 **Auto Documentation** - Help text generated from your docstrings  
 🎨 **Beautiful Output** - Professional themes and formatting  
-🔧 **Flexible Architecture** - Module-based or class-based patterns  
+🔧 **Flexible Architecture** - Direct methods or inner class patterns  
 📦 **No Dependencies** - Uses only Python standard library  
 🌈 **Shell Completion** - Bash, Zsh, Fish, and PowerShell support  
 ✅ **Production Ready** - Battle-tested in enterprise applications  
@@ -253,7 +227,7 @@ python project_manager.py --help
 
 ### Quick Links
 * **[🚀 Getting Started](docs/getting-started/README.md)** - Installation and first steps
-* **[👤 User Guide](docs/user-guide/README.md)** - Comprehensive guides for both CLI modes  
+* **[👤 User Guide](docs/user-guide/README.md)** - Comprehensive guides for class-based CLI patterns  
 * **[⚙️ Features](docs/features/README.md)** - Type annotations, themes, completion, and more
 * **[📋 Examples & Best Practices](docs/guides/README.md)** - Real-world examples and patterns
 * **[❓ FAQ](docs/faq.md)** - Frequently asked questions
@@ -276,8 +250,7 @@ curl -sSL https://install.python-poetry.org | python3 -
 
 # Run tests and examples
 ./bin/test.sh
-poetry run python examples/mod_example.py --help
-poetry run python examples/cls_example.py --help
+poetry run python examples/cls_example --help
 ```
 
 ### Development Commands

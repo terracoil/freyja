@@ -1,6 +1,5 @@
 """Test configuration and fixtures for freyja tests."""
 import enum
-import sys
 from pathlib import Path
 
 import pytest
@@ -62,10 +61,40 @@ def function_with_args_kwargs(required: str, *args, **kwargs):
   return f"Required: {required}, args: {args}, kwargs: {kwargs}"
 
 
+class SampleTestClass:
+  """Sample class for testing."""
+
+  def __init__(self, config: str = "test.json", debug: bool = False):
+    self.config = config
+    self.debug = debug
+
+  def sample_method(self, name: str = "world", count: int = 1):
+    """Sample method with parameters."""
+    return f"Hello {name}! " * count
+
+  def method_with_types(
+      self,
+      text: str,
+      number: int = 42,
+      ratio: float = 3.14,
+      active: bool = False,
+      choice: TestEnum = TestEnum.OPTION_A,
+      file_path: Path | None = None
+  ):
+    """Method with various type annotations."""
+    return {
+      'text': text,
+      'number': number,
+      'ratio': ratio,
+      'active': active,
+      'choice': choice,
+      'file_path': file_path
+    }
+
 @pytest.fixture
-def sample_module():
-  """Provide a sample module for testing."""
-  return sys.modules[__name__]
+def sample_test_class():
+  """Provide a sample class for testing."""
+  return SampleTestClass
 
 
 @pytest.fixture

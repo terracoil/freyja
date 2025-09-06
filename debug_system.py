@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import sys
+
 sys.path.insert(0, '.')
+import argparse
+
 from examples.cls_example import DataProcessor
 from freyja import FreyjaCLI
-import argparse
 
 # Create a debug version to see what's happening
 cli = FreyjaCLI(DataProcessor, enable_completion=True)

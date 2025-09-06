@@ -7,6 +7,7 @@
 - [When to Use Class-based CLI](#when-to-use-class-based-cli)
 - [Basic Setup](#basic-setup)
 - [Class Design Requirements](#class-design-requirements)
+- [New Features](#new-features)
 - [Complete Example Walkthrough](#complete-example-walkthrough)
 - [State Management](#state-management)
 - [Advanced Patterns](#advanced-patterns)
@@ -149,6 +150,197 @@ class DataAnalyzer:
     def _save_results(self, results):
         """Private method - not exposed in Freyja."""
         pass
+```
+
+## New Features
+
+### 🎯 Flexible Argument Ordering in Class CLIs
+
+Class-based CLIs support flexible argument ordering at all levels: global (constructor), sub-global (inner class constructors), and command (method) arguments:
+
+```python
+class ProjectManager:
+    def __init__(self, workspace: str = "./projects", debug: bool = False):
+        """Global settings for project management."""
+        self.workspace = workspace
+        self.debug = debug
+
+    def create_project(self, project_name: str, template: str = "basic", 
+                      description: str = "", private: bool = False):
+        """Create new project - project_name becomes positional."""
+        if self.debug:
+            print(f"Debug: Creating project in {self.workspace}")
+        print(f"Creating project '{project_name}' with template '{template}'")
+
+    def deploy_project(self, project_name: str, environment: str = "staging",
+                      replicas: int = 1, wait: bool = False):
+        """Deploy project - project_name becomes positional."""
+        pass
+
+    class Database:
+        def __init__(self, connection_timeout: int = 30, pool_size: int = 10):
+            """Sub-global database settings."""
+            self.timeout = connection_timeout
+            self.pool_size = pool_size
+
+        def migrate_schema(self, migration_file: str, dry_run: bool = False,
+                          backup_first: bool = True):
+            """Apply migration - migration_file becomes positional."""
+            pass
+```
+
+**Flexible usage at all levels:**
+```bash
+# Global + Command arguments in any order
+project-mgr --debug --workspace /projects create-project "web-app" --template "react" --private
+
+# Rearranged - same result
+project-mgr create-project "web-app" --workspace /projects --template "react" --debug --private
+
+# Hierarchical with sub-global + flexible ordering
+project-mgr --debug database--migrate-schema "001_init.sql" --connection-timeout 60 --dry-run --backup-first
+
+# All mixed up - still works perfectly
+project-mgr database--migrate-schema --backup-first --debug "001_init.sql" --connection-timeout 60 --dry-run
+```
+
+### 📍 Positional Parameters in Class Methods
+
+The **first parameter without a default value** in class methods automatically becomes positional:
+
+```python
+class FileManager:
+    def __init__(self, base_directory: str = "./files"):
+        """Global base directory setting."""
+        self.base_directory = base_directory
+
+    def copy_file(self, source_file: str, destination: str = None,
+                  preserve_attrs: bool = True, overwrite: bool = False):
+        """Copy file - source_file becomes positional."""
+        dest = destination or f"{self.base_directory}/copies/"
+        print(f"Copying {source_file} to {dest}")
+
+    def compress_file(self, filename: str, compression_level: int = 6,
+                     output_format: str = "gz"):
+        """Compress file - filename becomes positional."""
+        pass
+
+    class Archive:
+        def __init__(self, compression_type: str = "gzip"):
+            """Archive-specific settings."""
+            self.compression_type = compression_type
+
+        def create_archive(self, archive_name: str, files: list = None,
+                          exclude_patterns: list = None):
+            """Create archive - archive_name becomes positional."""
+            pass
+```
+
+**Natural class-based usage:**
+```bash
+# Clean positional parameters with class hierarchy
+file-mgr --base-directory /data copy-file document.pdf --destination /backup --preserve-attrs
+
+# Hierarchical with positional
+file-mgr archive--create-archive "backup-2023.tar.gz" --files /data/docs --compression-type bzip2
+
+# Flexible ordering + positional + hierarchical
+file-mgr --base-directory /data archive--create-archive "project.tar.gz" --compression-type gzip --exclude-patterns temp,cache
+```
+
+### 🏗️ Complex Hierarchical Examples
+
+Inner classes create hierarchical command structures with full flexible ordering support:
+
+```python
+class CloudManager:
+    def __init__(self, region: str = "us-west-2", profile: str = "default"):
+        """Global cloud settings."""
+        self.region = region
+        self.profile = profile
+
+    class Compute:
+        def __init__(self, instance_type: str = "t3.micro"):
+            """Compute-specific settings."""
+            self.instance_type = instance_type
+
+        def launch_instance(self, ami_id: str, key_pair: str = "default",
+                           security_groups: list = None, user_data: str = None):
+            """Launch instance - ami_id becomes positional."""
+            pass
+
+        def terminate_instance(self, instance_id: str, force: bool = False):
+            """Terminate instance - instance_id becomes positional."""
+            pass
+
+    class Storage:
+        def __init__(self, volume_type: str = "gp3"):
+            """Storage settings."""
+            self.volume_type = volume_type
+
+        def create_volume(self, size_gb: int, availability_zone: str = None,
+                         encrypted: bool = True):
+            """Create volume - size_gb becomes positional."""
+            pass
+```
+
+**Complex flexible combinations:**
+```bash
+# Global + Sub-global + Positional + Optional in any order
+cloud --region us-east-1 compute--launch-instance ami-12345 --instance-type t3.large --key-pair prod-key --security-groups web,db
+
+# Completely rearranged - identical functionality
+cloud compute--launch-instance ami-12345 --key-pair prod-key --region us-east-1 --instance-type t3.large --security-groups web,db
+
+# Storage operations with flexible ordering
+cloud --profile production storage--create-volume 100 --volume-type gp3 --availability-zone us-east-1a --encrypted
+```
+
+### 🔄 State + Positional + Flexible Ordering
+
+The real power emerges when combining state management with the new features:
+
+```python
+class DatabaseManager:
+    def __init__(self, host: str = "localhost", port: int = 5432):
+        """Database connection settings."""
+        self.host = host
+        self.port = port
+        self.connected_db = None
+
+    def connect(self, database_name: str, username: str = "admin"):
+        """Connect to database - database_name becomes positional."""
+        self.connected_db = database_name
+        print(f"Connected to {database_name} at {self.host}:{self.port}")
+
+    def backup(self, output_file: str, tables: list = None, 
+               compress: bool = True):
+        """Backup database - output_file becomes positional."""
+        if not self.connected_db:
+            print("Error: Not connected to database")
+            return 1
+        print(f"Backing up {self.connected_db} to {output_file}")
+
+    def restore(self, backup_file: str, overwrite: bool = False):
+        """Restore from backup - backup_file becomes positional."""
+        if not self.connected_db:
+            print("Error: Not connected to database")
+            return 1
+        print(f"Restoring {backup_file} to {self.connected_db}")
+```
+
+**Stateful workflow with flexible ordering:**
+```bash
+# Connect with flexible ordering
+db-mgr --host prod-db --port 5432 connect production_db --username admin
+# or: db-mgr connect production_db --host prod-db --username admin --port 5432
+
+# Use state from previous command, with positional + flexible ordering
+db-mgr backup prod_backup.sql --tables users,orders --compress
+# or: db-mgr backup --compress prod_backup.sql --tables users,orders
+
+# Restore with natural positional parameter
+db-mgr restore prod_backup.sql --overwrite
 ```
 
 ## Complete Example Walkthrough

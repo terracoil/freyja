@@ -45,7 +45,7 @@ class DataStructUtil:
       elif isinstance(o, (list, tuple, set, frozenset)):
         # Handle list-like objects:
         result = [to_prim(item, depth + 1, saw) for item in o]
-      elif hasattr(o, 'to_dict') and callable(getattr(o, 'to_dict')):
+      elif hasattr(o, 'to_dict') and callable(o.to_dict):
         # Handle Special case for when object has a "to_dict" method:
         result = {str(k): to_prim(v, depth + 1, saw) for k, v in o.to_dict().items()}
       elif hasattr(o, '__dict__') or hasattr(o, '__slots__'):

@@ -4,7 +4,7 @@ import argparse
 import enum
 import inspect
 from pathlib import Path
-from typing import Any, Dict, Union, get_args, get_origin
+from typing import Any, Union, get_args, get_origin
 
 from .docstring_parser import DocStringParser
 
@@ -13,7 +13,7 @@ class ArgumentParser:
   """Centralized service for handling argument parser configuration and setup."""
 
   @staticmethod
-  def get_arg_type_config(annotation: type) -> Dict[str, Any]:
+  def get_arg_type_config(annotation: type) -> dict[str, Any]:
     """Configure argparse arguments based on Python type annotations.
 
     Enables FreyjaCLI generation from function signatures by mapping Python types to argparse behavior.
@@ -137,33 +137,84 @@ class ArgumentParser:
     """Generate FreyjaCLI arguments directly from function signatures.
 
     Eliminates manual argument configuration by leveraging Python type hints and docstrings.
+    Supports positional parameters (first non-default param) for more natural CLI usage.
     """
     sig = inspect.signature(fn)
     _, param_help = DocStringParser.extract_function_help(fn)
+
+    # Check if first parameter (excluding self) has no default - this becomes positional
+    first_positional_param = ArgumentParser._get_first_positional_param(fn)
 
     for name, param in sig.parameters.items():
       # Skip self parameter and varargs
       if name == 'self' or param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
         continue
 
-      arg_config: Dict[str, Any] = {
-        'dest': name,
-        'help': param_help.get(name, f"{name} parameter")
-      }
+      # Check if this is the positional parameter
+      is_positional = first_positional_param and name == first_positional_param.name
 
-      # Handle type annotations
-      if param.annotation != param.empty:
-        type_config = ArgumentParser.get_arg_type_config(param.annotation)
-        arg_config.update(type_config)
+      if is_positional:
+        # Add as positional argument (ArgumentPreprocessor handles flag->positional conversion)
+        arg_config: dict[str, Any] = {
+          'help': param_help.get(name, f"{name} parameter")
+        }
 
-      # Handle defaults - determine if argument is required
-      if param.default != param.empty:
-        arg_config['default'] = param.default
-        # Don't set required for optional args
+        # Handle type annotations
+        if param.annotation != param.empty:
+          type_config = ArgumentParser.get_arg_type_config(param.annotation)
+          arg_config.update(type_config)
+
+        # Only add metavar for positional args that don't use action (non-boolean)
+        if 'action' not in arg_config:
+          # Convert parameter name to uppercase for positional display
+          from freyja.utils.text_util import TextUtil
+          positional_name = name.upper()
+          arg_config['metavar'] = positional_name
+
+        # Positional arguments are required by default, but check if this has a default anyway
+        if param.default == param.empty:
+          # Positional and required
+          parser.add_argument(name, **arg_config)
+        else:
+          # Positional but optional
+          arg_config['nargs'] = '?'
+          arg_config['default'] = param.default
+          parser.add_argument(name, **arg_config)
       else:
-        arg_config['required'] = True
+        # For optional arguments, specify dest
+        arg_config: dict[str, Any] = {
+          'dest': name,
+          'help': param_help.get(name, f"{name} parameter")
+        }
 
-      # Add argument with kebab-case flag name
-      from freyja.utils.text_util import TextUtil
-      flag = f"--{TextUtil.kebab_case(name)}"
-      parser.add_argument(flag, **arg_config)
+        # Handle type annotations
+        if param.annotation != param.empty:
+          type_config = ArgumentParser.get_arg_type_config(param.annotation)
+          arg_config.update(type_config)
+
+        # Handle defaults - determine if argument is required
+        if param.default != param.empty:
+          arg_config['default'] = param.default
+          # Don't set required for optional args
+        else:
+          arg_config['required'] = True
+
+        # Add argument with kebab-case flag name
+        from freyja.utils.text_util import TextUtil
+        flag = f"--{TextUtil.kebab_case(name)}"
+        parser.add_argument(flag, **arg_config)
+
+  @staticmethod
+  def _get_first_positional_param(fn: Any) -> inspect.Parameter | None:
+    """Get the first parameter without a default value (excluding self)."""
+    sig = inspect.signature(fn)
+
+    for name, param in sig.parameters.items():
+      if name == 'self' or param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+        continue
+
+      # First parameter without default value becomes positional
+      if param.default == param.empty:
+        return param
+
+    return None

@@ -3,9 +3,10 @@ import argparse
 from typing import *
 
 from freyja.help.help_formatter import HierarchicalHelpFormatter
-from .docstring_parser import DocStringParser
-from .argument_parser import ArgumentParser
+
 from ..theme import create_default_theme
+from .argument_parser import ArgumentParser
+from .docstring_parser import DocStringParser
 
 
 class CommandParser:
@@ -47,7 +48,7 @@ class CommandParser:
     Create ArgumentParser with all cmd_tree using pre-built command tree.
 
     :param command_tree: Pre-built nested command structure
-    :param target_mode: Target mode ('module', 'class', or 'multi_class')
+    :param target_mode: Target mode ('class' or 'multi_class')
     :param target_class: Target class for inner class pattern
     :param no_color: Whether to disable colored output
     :return: Configured ArgumentParser
@@ -104,13 +105,7 @@ class CommandParser:
       command_tree: Dict[str, Any]
   ):
     """Add global arguments to the parser."""
-    # Add verbose flag for module-based CLIs
-    if target_mode == 'module':
-      parser.add_argument(
-        "-v", "--verbose",
-        action="store_true",
-        help="Enable verbose output"
-      )
+    # Note: verbose flag removed - was only for module-based CLIs
 
     # Add global no-color flag
     parser.add_argument(
@@ -210,11 +205,11 @@ class CommandParser:
     group_parser._command_type = 'group'
     group_parser._theme = theme
     group_parser._command_group_description = group_help
-    
+
     # Set system command flag if present
     if group_info.get('is_system_command'):
       group_parser._is_system_command = True
-    
+
     # Set namespaced flag if present
     if group_info.get('is_namespaced'):
       group_parser._is_namespaced = True

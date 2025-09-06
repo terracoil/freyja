@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import Optional
+
 
 class Completion:
   """Shell completion management."""
@@ -22,12 +22,12 @@ class Completion:
         shell = 'powershell'
       else:
         shell = 'bash'  # Default fallback
-    
+
     self.shell = shell
     self._cli_instance = cli_instance
     self._completion_handler = None
 
-  def install(self, shell: Optional[str] = None, force: bool = False, patterns: Optional[str] = None) -> bool:
+  def install(self, shell: str | None = None, force: bool = False, patterns: str | None = None) -> bool:
     """Install shell completion for the current FreyjaCLI.
 
     :param shell: Shell type (bash/zsh/fish) or auto-detect
@@ -66,7 +66,7 @@ class Completion:
 
     return result
 
-  def show(self, shell: Optional[str] = None, patterns: Optional[str] = None) -> None:
+  def show(self, shell: str | None = None, patterns: str | None = None) -> None:
     """Show shell completion script.
 
     :param shell: Shell type (bash/zsh/fish)

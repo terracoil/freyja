@@ -1,11 +1,9 @@
 """Complete color theme configuration with adjustment capabilities."""
 from __future__ import annotations
 
-from typing import Optional
-
 from .enums import Back, Fore, ForeUniversal
-from .rgb import AdjustStrategy, RGB
-from .theme_style import ThemeStyle, CommandStyleSection
+from .rgb import RGB, AdjustStrategy
+from .theme_style import CommandStyleSection, ThemeStyle
 
 
 class Theme:
@@ -19,26 +17,26 @@ class Theme:
 
   def __init__(self,
                # Hierarchical sections (new structure)
-               topLevelCommandSection: Optional[CommandStyleSection] = None,
-               commandGroupSection: Optional[CommandStyleSection] = None,
-               groupedCommandSection: Optional[CommandStyleSection] = None,
+               topLevelCommandSection: CommandStyleSection | None = None,
+               commandGroupSection: CommandStyleSection | None = None,
+               groupedCommandSection: CommandStyleSection | None = None,
                # Non-sectioned attributes
-               title: Optional[ThemeStyle] = None,
-               subtitle: Optional[ThemeStyle] = None,
-               required_asterisk: Optional[ThemeStyle] = None,
+               title: ThemeStyle | None = None,
+               subtitle: ThemeStyle | None = None,
+               required_asterisk: ThemeStyle | None = None,
                # Backward compatibility: flat attributes (legacy constructor support)
-               command_name: Optional[ThemeStyle] = None,
-               command_description: Optional[ThemeStyle] = None,
-               command_group_name: Optional[ThemeStyle] = None,
-               command_group_description: Optional[ThemeStyle] = None,
-               grouped_command_name: Optional[ThemeStyle] = None,
-               grouped_command_description: Optional[ThemeStyle] = None,
-               option_name: Optional[ThemeStyle] = None,
-               option_description: Optional[ThemeStyle] = None,
-               command_group_option_name: Optional[ThemeStyle] = None,
-               command_group_option_description: Optional[ThemeStyle] = None,
-               grouped_command_option_name: Optional[ThemeStyle] = None,
-               grouped_command_option_description: Optional[ThemeStyle] = None,
+               command_name: ThemeStyle | None = None,
+               command_description: ThemeStyle | None = None,
+               command_group_name: ThemeStyle | None = None,
+               command_group_description: ThemeStyle | None = None,
+               grouped_command_name: ThemeStyle | None = None,
+               grouped_command_description: ThemeStyle | None = None,
+               option_name: ThemeStyle | None = None,
+               option_description: ThemeStyle | None = None,
+               command_group_option_name: ThemeStyle | None = None,
+               command_group_option_description: ThemeStyle | None = None,
+               grouped_command_option_name: ThemeStyle | None = None,
+               grouped_command_option_description: ThemeStyle | None = None,
                # Adjustment settings
                adjust_strategy: AdjustStrategy = AdjustStrategy.LINEAR,
                adjust_percent: float = 0.0):
@@ -203,7 +201,7 @@ class Theme:
   def grouped_command_option_description(self, value: ThemeStyle):
     self.groupedCommandSection.option_description = value
 
-  def create_adjusted_copy(self, adjust_percent: float, adjust_strategy: Optional[AdjustStrategy] = None) -> 'Theme':
+  def create_adjusted_copy(self, adjust_percent: float, adjust_strategy: AdjustStrategy | None = None) -> Theme:
     """Create a new theme with adjusted colors.
 
     :param adjust_percent: Adjustment percentage (-5.0 to 5.0)

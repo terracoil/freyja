@@ -28,6 +28,47 @@ Error: Invalid choice for --format: 'INVALID'
 Valid choices are: json, csv, xml
 ```
 
+### 🔥 New Feature Error Scenarios
+
+#### Positional Parameter Validation Errors
+
+When positional parameters fail type validation:
+```bash
+$ my-cli compress-files ./docs not-a-number
+Error: Invalid value for positional parameter 'compression_level': 'not-a-number' is not a valid integer
+
+$ my-cli process-data ./nonexistent.csv
+Error: Positional parameter 'input_file': Path './nonexistent.csv' does not exist
+```
+
+#### Missing Positional Parameter
+```bash
+$ my-cli backup-database --output-dir /backups
+Error: Missing required positional argument: database_name
+Usage: my-cli backup-database <database_name> [--output-dir DIR] [--compress]
+```
+
+#### Conflicting Parameter Specifications
+```bash
+$ my-cli process-file data.txt --input-file other.txt
+Error: Parameter 'input_file' specified both as positional argument ('data.txt') and option ('--input-file other.txt')
+Suggestion: Use either 'my-cli process-file data.txt' or 'my-cli process-file --input-file other.txt'
+```
+
+#### Flexible Ordering Ambiguity
+```bash
+$ my-cli complex-command file1.txt file2.txt --output-dir /backup
+Error: Ambiguous argument order. Cannot determine if 'file2.txt' is a positional argument or belongs to '--output-dir'
+Suggestion: Use explicit format: 'my-cli complex-command file1.txt --output-dir file2.txt /backup'
+```
+
+#### Hierarchical Command Argument Conflicts
+```bash
+$ my-cli --debug project-ops--create --workspace /proj my-project --debug
+Error: Global argument '--debug' specified multiple times
+Suggestion: Specify global arguments only once: 'my-cli --debug project-ops--create --workspace /proj my-project'
+```
+
 ## Handling Errors in Your Code
 
 ### Return Exit Codes
@@ -107,6 +148,59 @@ def format_error(message: str, suggestion: str = None) -> str:
     return output
 ```
 
+### 🔥 Best Practices for New Features
+
+#### Positional Parameter Validation
+```python
+def process_file(input_file: str, output_format: str = "json") -> None:
+    """Process file with proper positional parameter validation."""
+    # Validate positional parameter early
+    if not input_file:
+        print("Error: Input file cannot be empty")
+        return 1
+    
+    if not Path(input_file).exists():
+        print(f"Error: Input file '{input_file}' not found")
+        print(f"💡 Suggestion: Check the file path and try again")
+        return 1
+    
+    # Continue processing...
+```
+
+#### Clear Positional Error Messages
+```python
+def backup_database(database_name: str, backup_location: str = "./backups") -> None:
+    """Backup database with clear validation."""
+    if not database_name.strip():
+        print("Error: Database name cannot be empty")
+        print("💡 Usage: backup-database <database_name> [--backup-location DIR]")
+        return 1
+        
+    # Validate database name format
+    if not re.match(r'^[a-zA-Z0-9_]+$', database_name):
+        print(f"Error: Invalid database name '{database_name}'")
+        print("💡 Database names can only contain letters, numbers, and underscores")
+        return 1
+```
+
+#### Handle Flexible Ordering Edge Cases
+```python
+def complex_operation(primary_file: str, secondary_file: str = None,
+                     output_dir: str = "./output") -> None:
+    """Handle potential conflicts in flexible ordering."""
+    # Clear validation for ambiguous cases
+    if secondary_file and primary_file == secondary_file:
+        print("Error: Primary and secondary files cannot be the same")
+        print("💡 Suggestion: Specify different files or omit --secondary-file")
+        return 1
+        
+    # Validate paths exist
+    for file_path in [f for f in [primary_file, secondary_file] if f]:
+        if not Path(file_path).exists():
+            print(f"Error: File not found: {file_path}")
+            return 1
+```
+
 ## Debugging
 
 ### Enable Debug Mode
@@ -157,9 +251,14 @@ Run 'my-cli process --help' for more information.
 
 ## See Also
 
-- [Type Annotations](type-annotations.md) - Type validation
-- [Troubleshooting](../guides/troubleshooting.md) - Common errors
-- [Best Practices](../guides/best-practices.md) - Error handling patterns
+**🔥 Related New Features**
+- **[Flexible Argument Ordering](flexible-ordering.md)** - Error scenarios for flexible ordering
+- **[Positional Parameters](positional-parameters.md)** - Positional parameter validation
+
+**📚 Error Management**
+- **[Type Annotations](type-annotations.md)** - Type validation and errors  
+- **[Troubleshooting](../guides/troubleshooting.md)** - Common errors and solutions
+- **[Best Practices](../guides/best-practices.md)** - Professional error handling patterns
 
 ---
 

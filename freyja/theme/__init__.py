@@ -2,14 +2,14 @@
 
 from .color_formatter import ColorFormatter
 from .enums import Back, Fore, ForeUniversal, Style
-from .rgb import AdjustStrategy, RGB
+from .rgb import RGB, AdjustStrategy
 from .theme import (
-  Theme,
-  create_default_theme,
-  create_default_theme_colorful,
-  create_no_color_theme,
+    Theme,
+    create_default_theme,
+    create_default_theme_colorful,
+    create_no_color_theme,
 )
-from .theme_style import ThemeStyle, CommandStyleSection
+from .theme_style import CommandStyleSection, ThemeStyle
 
 __all__ = [
   'AdjustStrategy',

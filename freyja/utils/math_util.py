@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import Union
 
 
 class MathUtil:
@@ -21,13 +21,13 @@ class MathUtil:
     return max(min_val, min(value, max_val))
 
   @classmethod
-  def minmax_range(cls, args: [Numeric], negative_lower: bool = False) -> Tuple[Numeric, Numeric]:
+  def minmax_range(cls, args: [Numeric], negative_lower: bool = False) -> tuple[Numeric, Numeric]:
     lower, upper = cls.minmax(*args)
 
     return cls.safe_negative(lower, negative_lower), upper
 
   @classmethod
-  def minmax(cls, *args: Numeric) -> Tuple[Numeric, Numeric]:
+  def minmax(cls, *args: Numeric) -> tuple[Numeric, Numeric]:
     """
     Return the minimum and maximum of a dynamic number of arguments.
       :args: Variable number of int or float arguments

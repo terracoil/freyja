@@ -1,5 +1,5 @@
 import inspect
-from typing import Dict, Type, List, Tuple, Optional, Any
+from typing import Any
 
 """Multi-class FreyjaCLI command handling and collision detection.
 
@@ -14,11 +14,11 @@ class ClassHandler:
 
   def __init__(self):
     """Initialize multi-class handler."""
-    self.command_sources: Dict[str, Type] = {}  # command_name -> source_class
-    self.class_commands: Dict[Type, List[str]] = {}  # source_class -> [command_names]
-    self.collision_tracker: Dict[str, List[Type]] = {}  # command_name -> [source_classes]
+    self.command_sources: dict[str, type] = {}  # command_name -> source_class
+    self.class_commands: dict[type, list[str]] = {}  # source_class -> [command_names]
+    self.collision_tracker: dict[str, list[type]] = {}  # command_name -> [source_classes]
 
-  def track_command(self, command_name: str, source_class: Type) -> None:
+  def track_command(self, command_name: str, source_class: type) -> None:
     """
     Track a command and its source class for collision detection.
 
@@ -39,7 +39,7 @@ class ClassHandler:
       self.class_commands[source_class] = []
     self.class_commands[source_class].append(command_name)
 
-  def detect_collisions(self) -> List[Tuple[str, List[Type]]]:
+  def detect_collisions(self) -> list[tuple[str, list[type]]]:
     """
     Detect and return command name collisions.
 
@@ -55,7 +55,7 @@ class ClassHandler:
     """
     return len(self.collision_tracker) > 0
 
-  def get_ordered_commands(self, class_order: List[Type]) -> List[str]:
+  def get_ordered_commands(self, class_order: list[type]) -> list[str]:
     """
     Get cmd_tree ordered by class sequence, then alphabetically within each class.
 
@@ -73,7 +73,7 @@ class ClassHandler:
 
     return ordered_commands
 
-  def get_command_source(self, command_name: str) -> Optional[Type]:
+  def get_command_source(self, command_name: str) -> type | None:
     """
     Get the source class for a command.
 
@@ -105,7 +105,7 @@ class ClassHandler:
 
     return "\n".join(error_lines)
 
-  def validate_classes(self, classes: List[Type]) -> None:
+  def validate_classes(self, classes: list[type]) -> None:
     """Validate that classes can be used together without collisions.
 
     :param classes: List of classes to validate
@@ -121,7 +121,7 @@ class ClassHandler:
     if temp_handler.has_collisions():
       raise ValueError(temp_handler.format_collision_error())
 
-  def _simulate_class_commands(self, handler: 'ClassHandler', cls: Type) -> None:
+  def _simulate_class_commands(self, handler: 'ClassHandler', cls: type) -> None:
     """Simulate command discovery for collision detection.
 
     :param handler: Handler to track cmd_tree in
@@ -158,7 +158,7 @@ class ClassHandler:
           cli_name = TextUtil.kebab_case(name)
           handler.track_command(cli_name, cls)
 
-  def _discover_inner_classes(self, cls: Type) -> Dict[str, Type]:
+  def _discover_inner_classes(self, cls: type) -> dict[str, type]:
     """Discover inner classes for a given class.
 
     :param cls: Class to check for inner classes
@@ -173,7 +173,7 @@ class ClassHandler:
 
     return inner_classes
 
-  def _is_valid_method(self, name: str, obj: Any, cls: Type) -> bool:
+  def _is_valid_method(self, name: str, obj: Any, cls: type) -> bool:
     """Check if a method should be included as a FreyjaCLI command.
 
     :param name: Method name

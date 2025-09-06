@@ -4,14 +4,15 @@ from __future__ import annotations
 import json
 import re
 from functools import lru_cache
-from typing import Dict, Sequence
+
 from .data_struct_util import DataStructUtil
+
 
 class TextUtil:
   """Centralized string conversion utilities with performance optimizations."""
 
   # Cache for converted strings to avoid repeated operations
-  _conversion_cache: Dict[str, str] = {}
+  _conversion_cache: dict[str, str] = {}
 
   @classmethod
   def json_pretty(cls, obj: any) -> str:

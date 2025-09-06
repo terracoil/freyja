@@ -4,7 +4,7 @@ import argparse
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
   from freyja import FreyjaCLI
@@ -16,10 +16,10 @@ if TYPE_CHECKING:
 @dataclass
 class CompletionContext:
   """Context information for generating completions."""
-  words: List[str]  # All words in current command line
+  words: list[str]  # All words in current command line
   current_word: str  # Word being completed (partial)
   cursor_position: int  # Position in current word
-  command_group_path: List[str]  # Path to current command group (e.g., ['db', 'backup'])
+  command_group_path: list[str]  # Path to current command group (e.g., ['db', 'backup'])
   parser: argparse.ArgumentParser  # Current parser context
   cli: 'FreyjaCLI'  # FreyjaCLI instance for introspection
 
@@ -43,7 +43,7 @@ class CompletionHandler(ABC):
     """
 
   @abstractmethod
-  def get_completions(self, context: CompletionContext) -> List[str]:
+  def get_completions(self, context: CompletionContext) -> list[str]:
     """Get completions for current context.
 
     :param context: Completion context with current state
@@ -58,7 +58,7 @@ class CompletionHandler(ABC):
     :return: True if installation successful
     """
 
-  def detect_shell(self) -> Optional[str]:
+  def detect_shell(self) -> str | None:
     """Detect current shell from environment."""
     shell = os.environ.get('SHELL', '')
     result = None
@@ -79,8 +79,8 @@ class CompletionHandler(ABC):
     shell = self.detect_shell()
     if not shell:
       return
-    
-    # Get completion environment variables  
+
+    # Get completion environment variables
     if shell == 'bash':
       # Handle bash completion
       from .bash import handle_bash_completion
@@ -95,7 +95,7 @@ class CompletionHandler(ABC):
       pass
 
   def get_command_group_parser(self, parser: argparse.ArgumentParser,
-                               command_group_path: List[str]) -> Optional[argparse.ArgumentParser]:
+                               command_group_path: list[str]) -> argparse.ArgumentParser | None:
     """Navigate to command group parser following the path.
 
     :param parser: Root parser to start from
@@ -124,7 +124,7 @@ class CompletionHandler(ABC):
 
     return result
 
-  def get_available_commands(self, parser: argparse.ArgumentParser) -> List[str]:
+  def get_available_commands(self, parser: argparse.ArgumentParser) -> list[str]:
     """Get list of available cmd_tree from parser.
 
     :param parser: Parser to extract cmd_tree from
@@ -138,7 +138,7 @@ class CompletionHandler(ABC):
 
     return commands
 
-  def get_available_options(self, parser: argparse.ArgumentParser) -> List[str]:
+  def get_available_options(self, parser: argparse.ArgumentParser) -> list[str]:
     """Get list of available options from parser.
 
     :param parser: Parser to extract options from
@@ -157,7 +157,7 @@ class CompletionHandler(ABC):
     return options
 
   def get_option_values(self, parser: argparse.ArgumentParser,
-                        option_name: str, partial: str = "") -> List[str]:
+                        option_name: str, partial: str = "") -> list[str]:
     """Get possible values for a specific option.
 
     :param parser: Parser containing the option
@@ -193,7 +193,7 @@ class CompletionHandler(ABC):
 
     return result
 
-  def _complete_file_path(self, partial: str) -> List[str]:
+  def _complete_file_path(self, partial: str) -> list[str]:
     """Complete file paths.
 
     :param partial: Partial path being completed
@@ -238,7 +238,7 @@ class CompletionHandler(ABC):
     except (OSError, PermissionError):
       return []
 
-  def complete_partial_word(self, candidates: List[str], partial: str) -> List[str]:
+  def complete_partial_word(self, candidates: list[str], partial: str) -> list[str]:
     """Filter candidates based on partial word match.
 
     :param candidates: List of possible completions
@@ -261,10 +261,10 @@ def get_completion_handler(cli, shell: str = None) -> CompletionHandler:
   """
   # Lazy imports to avoid circular dependency
   from .bash import BashCompletionHandler
-  from .zsh import ZshCompletionHandler  
   from .fish import FishCompletionHandler
   from .powershell import PowerShellCompletionHandler
-  
+  from .zsh import ZshCompletionHandler
+
   if not shell:
     # Try to detect shell
     handler = BashCompletionHandler(cli)  # Use bash as fallback

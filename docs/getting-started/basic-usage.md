@@ -5,6 +5,7 @@
 # Table of Contents
 - [Core Concepts](#core-concepts)
 - [Type Annotation Requirements](#type-annotation-requirements)
+- [New Features](#new-features)
 - [Common Patterns](#common-patterns)
 - [Choosing Between Modes](#choosing-between-modes)
 - [Configuration Options](#configuration-options)
@@ -65,6 +66,64 @@ def bad_function(name, count=5, verbose=False):  # No type hints
 | `List[str]` | `--items A B C` | `--items file1 file2` |
 | `Optional[str]` | `--name VALUE` (optional) | `--name "test"` |
 
+## New Features
+
+### 🎯 Flexible Argument Ordering
+
+Freyja supports **flexible argument ordering**, allowing users to specify arguments in any order that feels natural:
+
+```python
+def deploy_service(service_name: str, environment: str = "staging", 
+                  replicas: int = 1, wait: bool = False):
+    """Deploy service to environment."""
+    print(f"Deploying {service_name} to {environment} with {replicas} replicas")
+```
+
+**All of these work identically:**
+```bash
+# Traditional order
+my-app deploy-service --service-name web-api --environment prod --replicas 3 --wait
+
+# User's natural flow
+my-app deploy-service --environment prod --wait --service-name web-api --replicas 3
+
+# Options-first approach  
+my-app deploy-service --replicas 3 --wait --service-name web-api --environment prod
+```
+
+**[📖 Complete Flexible Ordering Guide →](../features/flexible-ordering.md)**
+
+### 📍 Positional Parameters
+
+The **first parameter without a default value** automatically becomes positional, creating more natural commands:
+
+```python
+def backup_database(database_name: str, output_dir: str = "./backups", 
+                   compress: bool = True):
+    """Backup database - database_name is automatically positional."""
+    pass
+```
+
+**Natural usage:**
+```bash
+# Clean, intuitive command structure
+db-tool backup-database production_db --compress --output-dir /secure/backups
+
+# Works with flexible ordering too
+db-tool backup-database production_db --output-dir /backups --compress
+
+# Traditional explicit format still works
+db-tool backup-database --database-name production_db --compress
+```
+
+**Key Benefits:**
+- **Zero Configuration** - Works by analyzing function signatures
+- **Natural Commands** - `process file.txt` vs `process --file file.txt`
+- **Type Safe** - Full validation on positional parameters
+- **Backward Compatible** - Existing explicit format continues working
+
+**[📖 Complete Positional Parameters Guide →](../features/positional-parameters.md)**
+
 ## Common Patterns
 
 ### 1. Simple Utility Functions
@@ -97,8 +156,17 @@ if __name__ == '__main__':
 
 Usage:
 ```bash
+# Traditional explicit format
 python health_calc.py convert-temperature --celsius 25 --to-fahrenheit
 python health_calc.py calculate-bmi --weight-kg 70 --height-m 1.75
+
+# With positional parameters (celsius and weight_kg become positional)
+python health_calc.py convert-temperature 25 --to-fahrenheit
+python health_calc.py calculate-bmi 70 --height-m 1.75
+
+# With flexible ordering
+python health_calc.py convert-temperature --to-fahrenheit 25  # celsius is positional
+python health_calc.py calculate-bmi --height-m 1.75 70        # weight_kg is positional
 ```
 
 ### 2. Stateful Application Class
@@ -168,11 +236,20 @@ if __name__ == '__main__':
 
 Usage:
 ```bash
+# Traditional explicit format
 python config_mgr.py set-value --key database_host --value localhost
 python config_mgr.py set-value --key port --value 5432 --config-type int
 python config_mgr.py get-value --key database_host
+
+# With positional parameters (key parameters become positional)
+python config_mgr.py set-value database_host --value localhost
+python config_mgr.py set-value port --value 5432 --config-type int
+python config_mgr.py get-value database_host
+
+# With flexible ordering
+python config_mgr.py set-value --value localhost database_host
+python config_mgr.py set-value --config-type int --value 5432 port
 python config_mgr.py list-all --format-type json
-python config_mgr.py save-config
 ```
 
 ### 3. File Processing Pipeline
@@ -490,10 +567,17 @@ def good_function(items: List[str] = None) -> None:
 
 ## See Also
 
-- **[Module-based CLI Guide](../module-cli-guide.md)** - Complete function-based CLI guide
-- **[Class-based CLI Guide](../class-cli-guide.md)** - Complete method-based CLI guide
+**🔥 New Features**
+- **[Flexible Argument Ordering](../features/flexible-ordering.md)** - Mix options and arguments in any order
+- **[Positional Parameters](../features/positional-parameters.md)** - Automatic positional argument detection
+
+**📚 Complete Guides**  
+- **[Module-based CLI Guide](../user-guide/module-cli.md)** - Complete function-based CLI guide
+- **[Class-based CLI Guide](../user-guide/class-cli.md)** - Complete method-based CLI guide
 - **[Type Annotations](../features/type-annotations.md)** - Detailed type system guide
-- **[API Reference](../reference/api.md)** - Complete method reference
+
+**🛠️ Reference & Help**
+- **[API Reference](../reference/README.md)** - Complete method reference
 - **[Troubleshooting](../guides/troubleshooting.md)** - Common issues and solutions
 
 ---

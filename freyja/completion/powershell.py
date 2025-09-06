@@ -1,6 +1,5 @@
 """PowerShell completion handler."""
 
-from typing import List
 
 from .base import CompletionContext, CompletionHandler
 
@@ -15,12 +14,12 @@ class PowerShellCompletionHandler(CompletionHandler):
 
 Register-ArgumentCompleter -Native -CommandName {prog_name} -ScriptBlock {{
     param($wordToComplete, $commandAst, $cursorPosition)
-    
+
     # Set up completion environment
     $env:_FREYJA_COMPLETE = "powershell"
     $env:COMP_WORDS_STR = $commandAst.ToString()
     $env:COMP_CWORD_NUM = $commandAst.CommandElements.Count
-    
+
     # Get completions from the program
     try {{
         $completions = & {prog_name} --_complete 2>$null
@@ -39,7 +38,7 @@ Register-ArgumentCompleter -Native -CommandName {prog_name} -ScriptBlock {{
 '''
     return script
 
-  def get_completions(self, context: CompletionContext) -> List[str]:
+  def get_completions(self, context: CompletionContext) -> list[str]:
     """Get PowerShell-specific completions."""
     # Reuse bash completion logic for now
     from .bash import BashCompletionHandler

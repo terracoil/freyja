@@ -2,6 +2,7 @@
 import re
 from dataclasses import dataclass
 
+
 @dataclass
 class ParamDoc:
   """Holds parameter documentation extracted from docstring."""

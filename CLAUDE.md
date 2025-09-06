@@ -8,7 +8,6 @@
 * [Common Commands](#common-commands)
 * [Creating Freyja CLIs in Other Projects](#creating-freyja-clis-in-other-projects)
   * [Quick Setup Checklist](#quick-setup-checklist)
-  * [Module-based CLI Pattern](#module-based-cli-pattern-functions)
   * [Class-based CLI Pattern](#class-based-cli-pattern-methods)
 * [Architecture](#architecture)
 * [File Structure](#file-structure)
@@ -20,16 +19,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an active Python library (`freyja`) that automatically builds complete CLI applications from Python functions AND class methods using introspection and type annotations. The library supports multiple modes:
+This is an active Python library (`freyja`) that automatically builds complete CLI applications from Python class methods using introspection and type annotations. The library creates CLI from class methods with organizational patterns:
 
-1. **Module-based CLI**: `CLI()` - Create flat CLI commands from module functions
-2. **Class-based CLI**: `CLI(YourClass)` - Create CLI from class methods with organizational patterns:
-   - **Direct Methods**: Simple flat commands from class methods  
-   - **Inner Classes**: Flat commands with double-dash notation (e.g., `data-operations--process-single`) supporting global and sub-global arguments
+- **Direct Methods**: Simple flat commands from class methods  
+- **Inner Classes**: Flat commands with double-dash notation (e.g., `data-operations--process-single`) supporting global and sub-global arguments
 
 **IMPORTANT**: Inner class methods create flat commands with double-dash notation (e.g., `data-operations--process-single`) supporting global and sub-global arguments.
 
-The library generates argument parsers and command-line interfaces with minimal configuration by analyzing function/method signatures. Published on PyPI at https://pypi.org/project/freyja/
+The library generates argument parsers and command-line interfaces with minimal configuration by analyzing class method signatures. Published on PyPI at https://pypi.org/project/freyja/
 
 ## Development Environment Setup
 
@@ -101,17 +98,12 @@ poetry install
 
 ### Examples
 ```bash
-# Run module-based Freyja example
-poetry run python mod_example.py
-poetry run python mod_example.py --help
-
 # Run class-based Freyja example  
-poetry run python cls_example.py
-poetry run python cls_example.py --help
+poetry run python examples/cls_example --help
 
-# Try example command tree (all command tree are flat)
-poetry run python mod_example.py hello --name "Alice" --excited
-poetry run python cls_example.py file-operations--process-single --input-file "test.txt"
+# Try example commands (all commands are flat)
+poetry run python examples/cls_example file-operations--process-single --input-file "test.txt"
+poetry run python examples/cls_example data-operations--process-batch --files "*.csv" --parallel
 ```
 
 ## Creating Freyja CLIs in Other Projects
@@ -125,50 +117,17 @@ When Claude Code is working in a project that needs a CLI, use Freyja for rapid 
 pip install freyja  # Ensure Freyja is available
 ```
 
-**Function/Method Requirements:**
+**Method Requirements:**
 - ✅ All parameters must have type annotations (`str`, `int`, `bool`, etc.)
 - ✅ Add docstrings for help text generation
 - ✅ Use sensible default values for optional parameters
-- ✅ Functions should not start with underscore (private functions ignored)
-
-### Module-based CLI Pattern (Functions)
-
-**When to use:** Simple utilities, data processing, functional programming style
-
-**IMPORTANT:** Module-based CLIs support flat commands - each function becomes a direct command.
-
-```python
-# At the end of any Python file with functions
-from src import CLI
-import sys
+- ✅ Methods should not start with underscore (private methods ignored)
+- ✅ Constructor parameters must have default values (become global/sub-global arguments)
 
 
-def process_data(input_file: str, output_format: str = "json", verbose: bool = False) -> None:
-  """Process data file and convert to specified format."""
-  print(f"Processing {input_file} -> {output_format}")
-  if verbose:
-    print("Verbose mode enabled")
+### Class-based CLI Pattern
 
-
-def analyze_logs(log_file: str, pattern: str, max_lines: int = 1000) -> None:
-  """Analyze log files for specific patterns."""
-  print(f"Analyzing {log_file} for pattern: {pattern}")
-
-
-if __name__ == '__main__':
-  cli = CLI(sys.modules[__name__], title="Data Tools")
-  cli.display()
-```
-
-**Usage:**
-```bash
-python script.py process-data --input-file data.csv --output-format xml --verbose
-python script.py analyze-logs --log-file app.log --pattern "ERROR" --max-lines 500
-```
-
-### Class-based CLI Pattern (Methods)
-
-**When to use:** Stateful applications, configuration management, complex workflows
+Freyja transforms Python classes into powerful command-line interfaces. Perfect for stateful applications, configuration management, and complex workflows.
 
 #### **Direct Methods Pattern (Simple)**
 
@@ -352,23 +311,31 @@ class ConfigManager:
             pass
 ```
 
-#### 2. File Processing Pipeline (Module Pattern)
+#### 2. File Processing Pipeline (Class Pattern)
 ```python
-def convert_files(input_dir: str, output_dir: str, format_type: str = "json") -> None:
-    """Convert files between formats."""
-    pass
+class FileProcessor:
+    """File processing utilities with batch operations."""
+    
+    def __init__(self, working_dir: str = ".", parallel: bool = False):
+        """Initialize file processor."""
+        self.working_dir = working_dir
+        self.parallel = parallel
+    
+    def convert_files(self, input_dir: str, output_dir: str, format_type: str = "json") -> None:
+        """Convert files between formats."""
+        pass
 
-def validate_files(directory: str, extensions: List[str]) -> None:
-    """Validate files in directory."""
-    pass
+    def validate_files(self, directory: str, extensions: List[str]) -> None:
+        """Validate files in directory."""
+        pass
 
-def batch_process(pattern: str, max_files: int = 100) -> None:
-    """Process multiple files matching pattern."""
-    pass
+    def batch_process(self, pattern: str, max_files: int = 100) -> None:
+        """Process multiple files matching pattern."""
+        pass
 
-def batch_validate(directory: str, parallel: bool = False) -> None:
-    """Validate files in batch."""
-    pass
+    def batch_validate(self, directory: str, parallel: bool = False) -> None:
+        """Validate files in batch."""
+        pass
 ```
 
 #### 3. API Client Tool (Inner Class Pattern)
@@ -444,14 +411,15 @@ class DatabaseCLI:
 ### Type Annotation Patterns
 
 ```python
-# Basic types
-def process(name: str, count: int, rate: float, debug: bool = False) -> None:
-    pass
+# Basic types in class methods
+class DataProcessor:
+    def process(self, name: str, count: int, rate: float, debug: bool = False) -> None:
+        pass
 
-# Collections  
-from typing import List, Optional
-def batch_process(files: List[str], options: Optional[List[str]] = None) -> None:
-    pass
+    # Collections  
+    from typing import List, Optional
+    def batch_process(self, files: List[str], options: Optional[List[str]] = None) -> None:
+        pass
 
 # Enums for choices
 from enum import Enum
@@ -461,20 +429,21 @@ class OutputFormat(Enum):
     CSV = "csv"
     XML = "xml"
 
-def export_data(data: str, format: OutputFormat = OutputFormat.JSON) -> None:
-    pass
+class DataExporter:
+    def export_data(self, data: str, format: OutputFormat = OutputFormat.JSON) -> None:
+        pass
 ```
 
 ### Configuration and Customization
 
 ```python
-# Custom configuration
+# Class-based with custom options
 cli = CLI(
-    sys.modules[__name__],
-    title="Custom Freyja Title",
+    MyClass,
+    title="Custom CLI Title",
     function_opts={
-        'function_name': {
-            'description': 'Custom description override',
+        'method_name': {
+            'description': 'Custom method description',
             'hidden': False
         }
     },
@@ -482,24 +451,15 @@ cli = CLI(
     no_color=False,         # Force disable colors if needed
     completion=True         # Enable shell completion
 )
-
-# Class-based with custom options
-cli = CLI(
-    MyClass,
-    function_opts={
-        'method_name': {
-            'description': 'Custom method description'
-        }
-    }
-)
 ```
 
-### Testing CLI Functions
+### Testing CLI Methods
 
 ```python
-# Test functions directly (preferred)
+# Test methods directly (preferred)
 def test_process_data():
-    process_data("test.csv", "json", True)  # Direct function call
+    processor = DataProcessor()
+    processor.process_data("test.csv", "json", True)  # Direct method call
     assert True  # Add proper assertions
 
 # Integration testing (when needed)
@@ -517,34 +477,39 @@ def test_cli_integration():
 
 ```python
 # ❌ Missing type annotations
-def bad_function(name, count=5):  # Will cause errors
-    pass
+class BadClass:
+    def bad_method(self, name, count=5):  # Will cause errors
+        pass
 
-# ❌ Private function (starts with _) 
-def _private_function(data: str) -> None:  # Ignored by Freyja
-    pass
+# ❌ Private method (starts with _) 
+class MyClass:
+    def _private_method(self, data: str) -> None:  # Ignored by Freyja
+        pass
 
 # ❌ Complex types not supported
-def complex_function(callback: Callable[[str], int]) -> None:  # Too complex
-    pass
+class ComplexClass:
+    def complex_method(self, callback: Callable[[str], int]) -> None:  # Too complex
+        pass
 
 # ❌ Mutable defaults
-def risky_function(items: List[str] = []) -> None:  # Dangerous
-    pass
+class RiskyClass:
+    def risky_method(self, items: List[str] = []) -> None:  # Dangerous
+        pass
 
 # ✅ Correct patterns
-def good_function(name: str, count: int = 5) -> None:
-    pass
+class GoodClass:
+    def good_method(self, name: str, count: int = 5) -> None:
+        pass
 
-def public_function(data: str) -> None:
-    pass
+    def public_method(self, data: str) -> None:
+        pass
 
-def simple_function(callback_name: str) -> None:  # Use string lookup
-    pass
+    def simple_method(self, callback_name: str) -> None:  # Use string lookup
+        pass
 
-def safe_function(items: List[str] = None) -> None:
-    if items is None:
-        items = []
+    def safe_method(self, items: List[str] = None) -> None:
+        if items is None:
+            items = []
 ```
 
 ### Constructor Parameter Requirements
@@ -606,7 +571,7 @@ All constructor parameters must have default values to be used as CLI arguments.
 - **[Complete Documentation](docs/help.md)** - Full user guide
 - **[Type Annotations](docs/features/type-annotations.md)** - Supported types reference
 - **[Troubleshooting](docs/guides/troubleshooting.md)** - Common issues and solutions
-- **[Examples](examples/mod_example.py)** (module-based) and **[Examples](examples/cls_example.py)** (class-based)
+- **[Examples](examples/cls_example)** - Class-based CLI examples
 
 ## Class Namespacing Rules (CRITICAL)
 
@@ -695,43 +660,245 @@ Always verify that:
 
 ### Core Components
 
-- **`freya/cli.py`**: Main CLI class that handles:
-  - Function signature introspection via `inspect` module
-  - Automatic argument parser generation using `argparse`
-  - Type annotation parsing (str, int, float, bool, enums)
-  - Default value handling and help text generation
-  
-- **`freya/__init__.py`**: Package initialization (minimal)
+- **`freyja/freyja_cli.py`**: Main `FreyjaCLI` class - entry point for CLI generation
+- **`freyja/cli/`**: CLI coordination and execution components
+  - `execution_coordinator.py`: Orchestrates command execution flow
+  - `class_handler.py`: Manages class-based CLI creation
+  - `enums.py`: Core enums and constants
+  - `system/`: Built-in system commands (completion, theme tuning)
+- **`freyja/command/`**: Command discovery and management
+  - `command_discovery.py`: Discovers methods and builds command tree
+  - `command_tree.py`: Hierarchical command structure representation
+  - `command_executor.py`: Executes discovered commands
+  - `command_info.py`: Command metadata and information
+- **`freyja/parser/`**: Argument parsing and preprocessing
+  - `argument_parser.py`: Main argparse integration
+  - `command_parser.py`: Command-specific argument parsing
+  - `positional_handler.py`: Handles positional argument logic
+  - `option_discovery.py`: Discovers method options and converts to CLI args
+  - `argument_preprocessor.py`: Pre-processes arguments for flexible ordering
+  - `command_path_resolver.py`: Resolves command paths (flat vs hierarchical)
+- **`freyja/completion/`**: Shell completion system
+- **`freyja/utils/`**: Utility modules (text processing, data structures, etc.)
 
 ### Key Architecture Patterns
 
-**Function Introspection**: The CLI class uses Python's `inspect.signature()` to analyze function parameters, their types, and default values to automatically generate CLI arguments.
+**Class-Only Introspection**: Freyja exclusively uses class-based CLI generation via `inspect.signature()` to analyze class methods, their parameters, types, and default values.
 
-**Type-Driven CLI Generation**: 
-- Function annotations (str, int, float, bool) become argument types
-- Enum types become choice arguments
-- Default values become argument defaults
-- Parameter names become CLI option names (--param_name)
+**Layered Command Discovery**:
+1. **CommandDiscovery** scans classes and builds command tree
+2. **ArgumentParser** creates argparse structure from command tree
+3. **ExecutionCoordinator** handles command dispatch and execution
 
-**Command Architecture**: 
-- Module functions become flat commands
-- Class methods become flat commands  
-- Inner class methods become hierarchical commands (e.g., `class-name method-name`)
+**Flexible Argument Processing**:
+- **ArgumentPreprocessor**: Enables flexible argument ordering (global, sub-global, command-specific)
+- **PositionalHandler**: Manages positional arguments (first non-default parameter)
+- **OptionDiscovery**: Converts method parameters to CLI arguments with kebab-case
 
-### Usage Pattern
+**Dual Command Structure**:
+- **Single Class**: Flat commands with double-dash notation (`inner-class--method`)
+- **Multi-Class**: True hierarchical structure for non-primary classes
+
+**Type-Driven Generation**: 
+- Method annotations become argument types and validation
+- Enum types become choice arguments  
+- Default values become optional arguments
+- Constructor parameters become global/sub-global arguments
+
+### Current Usage Pattern
 ```python
-# Define functions with type hints
-def my_function(param1: str = "default", count: int = 5):
-    # Function implementation
-    pass
+from freyja import FreyjaCLI
+
+class MyClass:
+    def __init__(self, config: str = "default.json", debug: bool = False):
+        """Constructor params become global arguments."""
+        self.config = config
+        self.debug = debug
+    
+    def process_file(self, input_file: str, output_dir: str = "./output") -> None:
+        """First param without default becomes positional argument."""
+        pass
 
 # Setup Freyja
-fn_opts = {
-    'my_function': {'description': 'Description text'}
-}
-cli = CLI(sys.modules[__name__], function_opts=fn_opts, title="My Freyja")
+cli = FreyjaCLI(MyClass, title="My CLI")
 cli.display()
+
+# Usage: my_cli process-file <input_file> [--output-dir OUTPUT_DIR] [--config CONFIG] [--debug]
 ```
+
+## Core Architectural Rules (CRITICAL)
+
+**CRITICAL**: These architectural rules must be preserved to prevent regressions. All code changes MUST comply with these rules.
+
+### 1. Positional Argument Rule
+
+**RULE**: The first method parameter WITHOUT a default value becomes a positional argument and MUST be reflected as such in usage strings.
+
+```python
+class Example:
+    def process(self, input_file: str, output_dir: str = "./output", verbose: bool = False) -> None:
+        """Process input file."""
+        pass
+```
+
+**Usage MUST show:**
+```
+usage: my_cli process <input_file> [--output-dir OUTPUT_DIR] [--verbose]
+```
+
+**NOT:**
+```
+usage: my_cli process --input-file INPUT_FILE [--output-dir OUTPUT_DIR] [--verbose]
+```
+
+### 2. Flexible Argument Ordering Rule
+
+**RULE**: Command options MUST work in ANY order, regardless of whether they are:
+- Global arguments (from main class constructor)
+- Sub-global arguments (from inner class constructors) 
+- Command-specific arguments (from method parameters)
+
+```bash
+# All of these MUST work identically:
+my_cli --global-arg value command --sub-global arg --method-arg value
+my_cli command --method-arg value --global-arg value --sub-global arg  
+my_cli --sub-global arg --global-arg value command --method-arg value
+```
+
+### 3. Class-Based CLI Only Rule
+
+**RULE**: Freyja ONLY supports class-based CLIs. There is NO support for:
+- Module-based CLIs
+- Function-based CLIs
+- Any non-class CLI generation
+
+**Implications**:
+- All CLI generation code assumes class input
+- No module introspection code exists
+- No tests for module-based CLIs exist
+- Documentation only covers class-based patterns
+
+### 4. Command Structure Rule
+
+**RULE**: The last class in a multi-class CLI should not be namespaced (i.e., they are in the global namespace".  
+- Direct class methods → with no inner classes (`my_cli method_name`)
+- Inner class methods → (`my_cli inner-class method-name`)
+
+**Other classes not in in the global namespace:
+- Multi-class: `my_cli system completion install` (true hierarchy)
+
+### 5. Type Annotation Requirement Rule
+
+**RULE**: ALL method parameters MUST have type annotations for CLI generation to work:
+
+```python
+# ✅ CORRECT - All parameters typed
+def process(self, name: str, count: int = 5, debug: bool = False) -> None:
+    pass
+
+# ❌ INCORRECT - Will cause CLI generation to fail  
+def process(self, name, count=5, debug=False):
+    pass
+```
+
+### 6. Constructor Default Values Rule
+
+**RULE**: ALL constructor parameters (main class and inner class) MUST have default values:
+- Main class constructor parameters → Global CLI arguments
+- Inner class constructor parameters → Sub-global CLI arguments
+- No defaults = CLI generation failure
+
+### 7. Private Method Exclusion Rule
+
+**RULE**: Methods starting with underscore (`_`) are automatically ignored during CLI generation:
+
+```python
+class MyClass:
+    def public_method(self) -> None:  # ✅ Becomes CLI command
+        pass
+    
+    def _private_method(self) -> None:  # ❌ Ignored by CLI generation
+        pass
+```
+
+### 8. Parameter-to-Argument Mapping Rule
+
+**RULE**: Method parameter names are converted to CLI argument names using kebab-case:
+- `input_file` → `--input-file`
+- `max_count` → `--max-count`  
+- `enableDebug` → `--enable-debug`
+
+### 9. Multi-Class Namespacing Rule
+
+**RULE**: When multiple classes are provided to Freyja:
+- **Last class (primary)**: Gets global namespace (flat commands)
+- **Non-primary classes**: Get namespaced with TRUE hierarchical structure
+- **NEVER** flat dash-prefixed commands for multi-class scenarios
+
+### 10. Command Resolution Priority Rule
+
+**RULE**: Command resolution follows strict precedence:
+1. Direct methods of primary class
+2. Inner class methods of primary class (with double-dash)
+3. Hierarchical commands from non-primary classes
+4. System commands (appear first in help)
+
+### 11. Argument Parser Generation Rule
+
+**RULE**: Argument parsers are generated automatically using:
+- `inspect.signature()` for method introspection
+- `argparse` for CLI parsing
+- Type annotations for argument type validation
+- Default values for optional arguments
+
+### 12. No Dunder Command Structure Rule
+
+**RULE**: Freyja MUST NOT use dunder (double underscore) syntax for command structuring, either internally or externally:
+
+```python
+# ❌ NEVER USE - Dunder command syntax forbidden
+my_cli system__completion__install  # FORBIDDEN
+my_cli data__ops__process           # FORBIDDEN
+
+# ✅ CORRECT - Use appropriate structure based on context
+my_cli system completion install    # Multi-class hierarchical
+my_cli data-ops--process           # Single-class flat double-dash
+```
+
+**Implications**:
+- No `__` in command names, paths, or internal representations
+- No dunder-based command discovery or resolution
+- No dunder syntax in help output or usage strings
+- Command separators are either spaces (hierarchy) or double-dash (flat)
+
+### 13. Error Prevention Rules
+
+**RULE**: The following patterns MUST cause immediate failures:
+- Missing type annotations on method parameters
+- Constructor parameters without default values
+- Complex types not supported by argparse
+- Mutable default values in method signatures
+- Any use of dunder (`__`) syntax for command structuring
+
+### Implementation Verification
+
+When implementing or modifying Freyja code, ALWAYS verify:
+
+1. **Positional Arguments**: First non-default parameter shows as `<param>` in usage
+2. **Argument Order**: All argument combinations work in any order
+3. **Class-Only**: No module/function CLI generation code paths exist
+4. **Flat Structure**: Single-class inner methods use double-dash notation
+5. **Type Safety**: All method parameters have type annotations
+6. **Constructor Defaults**: All constructor parameters have defaults
+7. **Private Exclusion**: Underscore methods are ignored
+8. **Kebab-Case**: Parameter names convert to kebab-case arguments
+9. **Namespacing**: Multi-class scenarios use true hierarchy for non-primary classes
+10. **Resolution**: Command resolution follows defined precedence
+11. **Auto-Generation**: Parsers generated from method introspection
+12. **No Dunders**: No `__` syntax in command structures, internally or externally
+13. **Error Handling**: Invalid patterns cause immediate failures
+
+**BREAKING ANY OF THESE RULES CONSTITUTES A REGRESSION AND MUST BE PREVENTED.**
 
 ## File Structure
 

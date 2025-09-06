@@ -1,8 +1,6 @@
 """Zsh shell completion handler."""
 
-import os
 import sys
-from typing import List
 
 from .base import CompletionContext, CompletionHandler
 
@@ -10,18 +8,18 @@ from .base import CompletionContext, CompletionHandler
 class ZshCompletionHandler(CompletionHandler):
   """Zsh-specific completion handler."""
 
-  def generate_script(self, prog_name: str, command_patterns: List[str] = None) -> str:
+  def generate_script(self, prog_name: str, command_patterns: list[str] = None) -> str:
     """Generate zsh completion script with pattern-based registration for path invocations.
-    
+
     :param prog_name: Base program name
     :param command_patterns: Additional command patterns to register completion for
     """
     from pathlib import Path
-    
+
     # Always use basename for consistency - this fixes path-based invocation issues
     prog_basename = Path(prog_name).name
     func_name = prog_basename.replace('-', '_').replace('.', '_')
-    
+
     # Build script with proper pattern-based registration
     script = f'''#compdef {prog_basename}
 # Zsh completion for {prog_basename} and related command patterns
@@ -32,7 +30,7 @@ _{func_name}() {{
     # Extract basename to handle path-based invocations (e.g., examples/cls_example)
     local prog="${{words[1]}}"
     local prog_basename="${{prog:t}}"  # :t modifier extracts basename
-    
+
     # Call the program to get completions
     local -a completions
     # Check if file looks like a Python script by examining its content or extension
@@ -46,7 +44,7 @@ _{func_name}() {{
             use_python=true
         fi
     fi
-    
+
     # Set completion environment variables inline to prevent shell persistence
     if [[ "$use_python" == true ]]; then
         # For Python scripts, use python interpreter
@@ -65,7 +63,7 @@ _{func_name}() {{
             PYTHONPATH=. "${{prog}}" --_complete 2>/dev/null
         ))
     fi
-    
+
     # Add completions if we got any
     if [[ $#completions -gt 0 ]]; then
         compadd -a completions
@@ -81,7 +79,7 @@ compdef _{func_name} "*/{prog_basename}"
 
 # Register completion for nested path invocations
 compdef _{func_name} "**/{prog_basename}"'''
-    
+
     # Add registration for additional command patterns if provided
     if command_patterns:
         for pattern in command_patterns:
@@ -89,10 +87,10 @@ compdef _{func_name} "**/{prog_basename}"'''
             script += f'\n\n# Additional pattern: {pattern}'
             script += f'\ncompdef _{func_name} {pattern_basename}'
             script += f'\ncompdef _{func_name} "*/{pattern_basename}"'
-    
+
     return script
 
-  def get_completions(self, context: CompletionContext) -> List[str]:
+  def get_completions(self, context: CompletionContext) -> list[str]:
     """Get zsh-specific completions."""
     # Reuse bash completion logic for now
     from .bash import BashCompletionHandler

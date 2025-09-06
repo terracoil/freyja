@@ -1,9 +1,9 @@
-"""Tests for theme color adjustment functionality."""
+"""Tests for color adjustment functionality in themes."""
 import pytest
 
 from freyja.theme import (
-  AdjustStrategy,
   RGB,
+  AdjustStrategy,
   Theme,
   ThemeStyle,
   create_default_theme,
@@ -23,17 +23,19 @@ class TestThemeColorAdjustment:
     assert theme.adjust_strategy == AdjustStrategy.LINEAR
 
   def test_proportional_adjustment_positive(self):
-    """Test proportional color adjustment with positive percentage."""
-    style = ThemeStyle(fg=RGB.from_rgb(0x808080))  # Mid gray (128, 128, 128)
+    """Test proportional color adjustment with positive percentage using RGB."""
+    original_rgb = RGB.from_ints(128, 128, 128)  # Mid gray
+    style = ThemeStyle(fg=original_rgb)
     theme = Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
       command_group_name=style, command_group_description=style,
       grouped_command_name=style, grouped_command_description=style,
-      option_name=style, option_description=style, command_group_option_name=style,
-      command_group_option_description=style, grouped_command_option_name=style,
-      grouped_command_option_description=style, required_asterisk=style,
+      option_name=style, option_description=style,
+      command_group_option_name=style, command_group_option_description=style,
+      grouped_command_option_name=style, grouped_command_option_description=style,
+      required_asterisk=style,
       adjust_strategy=AdjustStrategy.LINEAR,
-      adjust_percent=0.25  # 25% adjustment (actually darkens due to current implementation)
+      adjust_percent=0.25  # 25% adjustment
     )
 
     adjusted_style = theme.get_adjusted_style(style)
@@ -45,8 +47,9 @@ class TestThemeColorAdjustment:
     assert b == 96
 
   def test_proportional_adjustment_negative(self):
-    """Test proportional color adjustment with negative percentage."""
-    style = ThemeStyle(fg=RGB.from_rgb(0x808080))  # Mid gray (128, 128, 128)
+    """Test proportional color adjustment with negative percentage using RGB."""
+    original_rgb = RGB.from_ints(128, 128, 128)  # Mid gray
+    style = ThemeStyle(fg=original_rgb)
     theme = Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
       command_group_name=style, command_group_description=style,
@@ -67,8 +70,9 @@ class TestThemeColorAdjustment:
     assert b == 96
 
   def test_absolute_adjustment_positive(self):
-    """Test absolute color adjustment with positive percentage."""
-    style = ThemeStyle(fg=RGB.from_rgb(0x404040))  # Dark gray (64, 64, 64)
+    """Test absolute color adjustment with positive percentage using RGB."""
+    original_rgb = RGB.from_ints(64, 64, 64)  # Dark gray
+    style = ThemeStyle(fg=original_rgb)
     theme = Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
       command_group_name=style, command_group_description=style,
@@ -89,8 +93,9 @@ class TestThemeColorAdjustment:
     assert b == 0
 
   def test_absolute_adjustment_with_clamping(self):
-    """Test absolute adjustment with clamping at boundaries."""
-    style = ThemeStyle(fg=RGB.from_rgb(0xF0F0F0))  # Light gray (240, 240, 240)
+    """Test absolute adjustment with clamping at boundaries using RGB."""
+    original_rgb = RGB.from_ints(240, 240, 240)  # Light gray
+    style = ThemeStyle(fg=original_rgb)
     theme = Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
       command_group_name=style, command_group_description=style,
@@ -125,20 +130,21 @@ class TestThemeColorAdjustment:
     )
 
   def test_get_adjusted_style(self):
-    """Test getting adjusted style by name."""
-    original_style = ThemeStyle(fg=RGB.from_rgb(0x808080), bold=True, italic=False)
+    """Test getting adjusted style using RGB."""
+    original_rgb = RGB.from_ints(128, 128, 128)  # Mid gray
+    original_style = ThemeStyle(fg=original_rgb, bold=True, italic=False)
     theme = self._theme_with_style(original_style)
     adjusted_style = theme.get_adjusted_style(original_style)
 
     assert adjusted_style is not None
-    assert adjusted_style.fg != RGB.from_rgb(0x808080)  # Should be adjusted
+    assert adjusted_style.fg != original_rgb  # Should be adjusted
     assert adjusted_style.bold is True  # Non-color properties preserved
     assert adjusted_style.italic is False
 
-  def test_rgb_color_adjustment_behavior(self):
-    """Test that RGB colors are properly adjusted when possible."""
-    # Use mid-gray which will definitely be adjusted
-    style = ThemeStyle(fg=RGB.from_rgb(0x808080))  # Mid gray - will be adjusted
+  def test_rgb_adjustment_preserves_properties(self):
+    """Test that RGB adjustment preserves non-color properties."""
+    original_rgb = RGB.from_ints(128, 128, 128)  # Mid gray - will be adjusted
+    style = ThemeStyle(fg=original_rgb, bold=True, underline=True)
     theme = Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
       command_group_name=style, command_group_description=style,
@@ -150,14 +156,17 @@ class TestThemeColorAdjustment:
       adjust_percent=0.25
     )
 
-    # Test that RGB colors are properly handled
     adjusted_style = theme.get_adjusted_style(style)
-    # Color should be adjusted
-    assert adjusted_style.fg != RGB.from_rgb(0x808080)
+
+    # Color should be adjusted but other properties preserved
+    assert adjusted_style.fg != original_rgb
+    assert adjusted_style.bold is True
+    assert adjusted_style.underline is True
 
   def test_adjustment_with_zero_percent(self):
-    """Test no adjustment when percent is 0."""
-    style = ThemeStyle(fg=RGB.from_rgb(0xFF0000))
+    """Test no adjustment when percent is 0 using RGB."""
+    original_rgb = RGB.from_ints(255, 0, 0)  # Red color
+    style = ThemeStyle(fg=original_rgb)
     theme = Theme(
       title=style, subtitle=style, command_name=style, command_description=style,
       command_group_name=style, command_group_description=style,
@@ -170,7 +179,7 @@ class TestThemeColorAdjustment:
 
     adjusted_style = theme.get_adjusted_style(style)
 
-    assert adjusted_style.fg == RGB.from_rgb(0xFF0000)
+    assert adjusted_style.fg == original_rgb  # Should remain unchanged
 
   def test_create_adjusted_copy(self):
     """Test creating an adjusted copy of a theme."""
@@ -184,7 +193,7 @@ class TestThemeColorAdjustment:
     assert original_theme.adjust_percent == 0.0
 
   def test_adjustment_edge_cases(self):
-    """Test adjustment with edge case colors."""
+    """Test adjustment with edge case RGB colors."""
     theme = Theme(
       title=ThemeStyle(), subtitle=ThemeStyle(), command_name=ThemeStyle(),
       command_description=ThemeStyle(), command_group_name=ThemeStyle(), command_group_description=ThemeStyle(),

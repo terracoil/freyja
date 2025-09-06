@@ -14,8 +14,8 @@ class ThemeStyle:
   Individual style configuration for text formatting.
   Supports foreground/background colors (RGB instances only) and text decorations.
   """
-  fg: 'RGB | None' = None  # Foreground color (RGB instance only)
-  bg: 'RGB | None' = None  # Background color (RGB instance only)
+  fg: RGB | None = None  # Foreground color (RGB instance only)
+  bg: RGB | None = None  # Background color (RGB instance only)
   bold: bool = False  # Bold text
   italic: bool = False  # Italic text (may not work on all terminals)
   dim: bool = False  # Dimmed/faint text

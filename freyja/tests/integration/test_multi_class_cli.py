@@ -3,7 +3,7 @@
 import pytest
 
 from freyja import FreyjaCLI
-from freyja.cli import TargetMode, ClassHandler
+from freyja.cli import ClassHandler, TargetMode
 
 
 class MockDataProcessor:
@@ -205,12 +205,12 @@ class TestMultiClassCLI:
 
         # Should have cmd_tree from both classes
         commands = cli.commands
-        
+
         # Non-primary class should be in hierarchical group
         assert "mock-data-processor" in commands
         dp_group = commands["mock-data-processor"]
         assert "process-data" in dp_group['cmd_tree']  # From MockDataProcessor
-        
+
         # Primary class should be flat
         assert "generate-report" in commands  # From MockReportGenerator
 
@@ -256,12 +256,12 @@ class TestCommandExecutorMultiClass:
 
         # Should have cmd_tree from both classes
         commands = cli.commands
-        
+
         # Non-primary class should be in hierarchical group
         assert "mock-data-processor" in commands
         dp_group = commands["mock-data-processor"]
         assert "process-data" in dp_group['cmd_tree']
-        
+
         # Primary class should be flat
         assert "generate-report" in commands
 

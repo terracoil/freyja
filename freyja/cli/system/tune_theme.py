@@ -1,10 +1,14 @@
 """System-level FreyjaCLI cmd_tree for freyja."""
 
 import os
-from typing import Dict, Set
 
-from freyja.theme import (AdjustStrategy, ColorFormatter, create_default_theme,
-                          create_default_theme_colorful, RGB)
+from freyja.theme import (
+  RGB,
+  AdjustStrategy,
+  ColorFormatter,
+  create_default_theme,
+  create_default_theme_colorful,
+)
 from freyja.theme.theme_style import ThemeStyle
 from freyja.utils.ansi_string import AnsiString
 
@@ -26,8 +30,8 @@ class TuneTheme:
     self.formatter = ColorFormatter(enable_colors=True)
 
     # Individual color override tracking
-    self.individual_color_overrides: Dict[str, RGB] = {}
-    self.modified_components: Set[str] = set()
+    self.individual_color_overrides: dict[str, RGB] = {}
+    self.modified_components: set[str] = set()
 
     # Theme component metadata for user interface
     self.theme_components = [

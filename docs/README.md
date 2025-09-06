@@ -5,16 +5,14 @@
 
 [← Back to Main README](../README.md) | [⚙️ Development Guide](../CLAUDE.md)
 
-Welcome to the complete documentation for Freyja! Transform your Python functions and classes into powerful command-line applications in minutes.
+Welcome to the complete documentation for Freyja! Transform your Python classes into powerful command-line applications in minutes.
 
 ## Table of Contents
 * [🚀 Why Freyja?](#-why-freyja)
 * [⚡ Quick Start](#-quick-start)
-* [🗂️ Module-based CLI](#️-module-based-cli)
 * [🏗️ Class-based CLI](#️-class-based-cli)
   * [Direct Methods Pattern](#direct-methods-pattern)
   * [Inner Classes Pattern](#inner-classes-pattern)
-* [📊 Mode Comparison](#-mode-comparison)
 * [✨ Key Features](#-key-features)
 * [🎯 Getting Started](#-getting-started)
 * [📖 Next Steps](#-next-steps)
@@ -23,7 +21,7 @@ Welcome to the complete documentation for Freyja! Transform your Python function
 
 ### 📚 Core Documentation
 * **[🚀 Getting Started](getting-started/README.md)** - Installation, quick start, and first steps with Freyja
-* **[👤 User Guide](user-guide/README.md)** - Comprehensive guides for both module-based and class-based CLI patterns
+* **[👤 User Guide](user-guide/README.md)** - Comprehensive guides for class-based CLI patterns
 * **[⚙️ Features](features/README.md)** - Type annotations, shell completion, error handling, and advanced features
 * **[🔧 Advanced Topics](advanced/README.md)** - Complex patterns, performance optimization, and advanced usage
 * **[📖 API Reference](reference/README.md)** - Complete API documentation and technical specifications
@@ -58,13 +56,20 @@ process_data(args.input, args.output, args.verbose)
 ```python
 from freyja import CLI
 
-def process_data(input_file: str, output_format: str = "json", verbose: bool = False) -> None:
-    """Process data file and convert to specified format."""
-    # Your actual logic here - no argument parsing needed!
-    pass
+class DataProcessor:
+    """Process data files with various options."""
+    
+    def __init__(self, config: str = "config.json"):
+        self.config = config
+    
+    def process_data(self, input_file: str, output_format: str = "json", verbose: bool = False) -> None:
+        """Process data file and convert to specified format."""
+        # Your actual logic here - no argument parsing needed!
+        pass
 
 if __name__ == '__main__':
-    CLI.display()  # That's it! ✨
+    cli = CLI(DataProcessor)
+    cli.display()  # That's it! ✨
 ```
 
 ## ⚡ Quick Start
@@ -75,77 +80,50 @@ pip install freyja
 # Zero dependencies, works instantly!
 ```
 
-**2. Add type annotations to your function**
-```python
-def greet(name: str = "World", excited: bool = False) -> None:
-    """Greet someone by name."""
-    greeting = f"Hello, {name}!"
-    if excited:
-        greeting += " 🎉"
-    print(greeting)
-```
-
-**3. Add the magic 2 lines**
+**2. Create a class with typed methods**
 ```python
 from freyja import CLI
-CLI.display()  # Seriously, that's all! 🚀
+
+class Greeter:
+    """Simple greeting application."""
+    
+    def __init__(self, default_name: str = "World"):
+        self.default_name = default_name
+    
+    def greet(self, name: str = None, excited: bool = False) -> None:
+        """Greet someone by name."""
+        actual_name = name or self.default_name
+        greeting = f"Hello, {actual_name}!"
+        if excited:
+            greeting += " 🎉"
+        print(greeting)
+```
+
+**3. Add the magic 3 lines**
+```python
+if __name__ == '__main__':
+    cli = CLI(Greeter, title="My Greeter")
+    cli.display()  # Seriously, that's all! 🚀
 ```
 
 **4. Use your new CLI!**
 ```bash
+# Traditional explicit format
 python script.py greet --name Alice --excited
 # Output: Hello, Alice! 🎉
+
+# 🔥 NEW: Positional parameters (name becomes positional automatically!)
+python script.py greet Alice --excited
+# Output: Hello, Alice! 🎉
+
+# 🔥 NEW: Flexible argument ordering
+python script.py greet --excited Alice
+# Same result - arguments can be in any order!
 
 python script.py --help
 # Beautiful auto-generated help with your docstring!
 ```
 
-## 🗂️ Module-based CLI
-
-**Perfect for:** Functional programming, data processing scripts, simple utilities
-
-Transform any Python module into a CLI by treating each function as a command:
-
-```python
-# data_tools.py
-from freyja import CLI
-
-
-def convert_csv(input_file: str, output_format: str = "json", encoding: str = "utf-8") -> None:
-    """Convert CSV file to different formats with custom encoding."""
-    print(f"Converting {input_file} to {output_format} (encoding: {encoding})")
-    # Your conversion logic here
-
-
-def analyze_logs(log_file: str, pattern: str, max_lines: int = 1000, case_sensitive: bool = False) -> None:
-    """Analyze log files for specific patterns with line limits."""
-    sensitivity = "case-sensitive" if case_sensitive else "case-insensitive"
-    print(f"Analyzing {log_file} for '{pattern}' ({sensitivity}, max {max_lines} lines)")
-    # Your analysis logic here
-
-
-def generate_report(data_dir: str, format: str = "html", include_charts: bool = True) -> None:
-    """Generate comprehensive reports from data directory."""
-    charts = "with charts" if include_charts else "without charts"
-    print(f"Generating {format} report from {data_dir} ({charts})")
-    # Your report logic here
-
-
-if __name__ == '__main__':
-    CLI.display()
-```
-
-**Instant CLI magic:**
-```bash
-# All functions become commands automatically
-python data_tools.py convert-csv --input-file data.csv --output-format xml --encoding latin-1
-python data_tools.py analyze-logs --log-file app.log --pattern "ERROR" --max-lines 5000 --case-sensitive
-python data_tools.py generate-report --data-dir ./reports --format pdf --include-charts
-
-# Beautiful help generated from docstrings
-python data_tools.py --help
-python data_tools.py convert-csv --help
-```
 
 ## 🏗️ Class-based CLI
 
@@ -278,17 +256,20 @@ if __name__ == '__main__':
 
 **Usage with powerful flat commands:**
 ```bash
-# Global + Sub-global + Command arguments (beautifully organized)
+# Traditional Global + Sub-global + Command arguments
 python project_manager.py --config-file prod.json --environment production \
   database--migrate --connection-timeout 60 --pool-size 20 \
   --target-version 2.1.0 --dry-run
 
-# Build and deploy with custom settings
-python project_manager.py deploy--build --build-timeout 600 --parallel-jobs 8 \
-  --target production --clean --skip-tests
+# 🔥 NEW: Positional parameters (target_version, environment, etc. become positional)
+python project_manager.py database--migrate latest --connection-timeout 60 --dry-run
+python project_manager.py deploy--deploy staging --version 2.1.0 --force
 
-# Quick operations
-python project_manager.py database--backup --output-path ./backup-$(date +%Y%m%d).sql --compress
+# 🔥 NEW: Flexible argument ordering - mix global, sub-global, and command args!
+python project_manager.py database--migrate --dry-run --config-file prod.json latest --connection-timeout 60 --environment production
+
+# Complex operations with natural ordering
+python project_manager.py --environment production deploy--build production --clean --build-timeout 600 --parallel-jobs 8 --skip-tests
 python project_manager.py deploy--rollback --environment staging --steps 2 --confirm
 
 # Amazing help shows all organized commands
@@ -296,17 +277,14 @@ python project_manager.py --help
 python project_manager.py database--help
 ```
 
-## 📊 Mode Comparison
+## 🏗️ Class Patterns
 
-| Aspect | Module-based | Class-based (Direct) | Class-based (Inner) |
-|--------|-------------|---------------------|-------------------|
-| **🎯 Best For** | Scripts, utilities | Simple applications | Complex applications |
-| **🏗️ Structure** | Functions → Commands | Methods → Commands | Inner classes → Command groups |
-| **💾 State** | Parameters only | Instance variables | Global + Sub-global + Instance |
-| **📚 Organization** | Flat functions | Class methods | Hierarchical with flat execution |
-| **⚙️ Configuration** | Function parameters | Constructor parameters | Multi-level parameters |
-| **🚀 Complexity** | Simplest | Medium | Most flexible |
-| **🛠️ Maintenance** | Easy | Medium | Best for large projects |
+Freyja supports two flexible class-based patterns:
+
+| Pattern | Best For | Structure | Organization |
+|---------|----------|-----------|---------------|
+| **Direct Methods** | Simple applications | Methods → Commands | Class methods |
+| **Inner Classes** | Complex applications | Inner classes → Command groups | Hierarchical with flat execution |
 
 ## ✨ Key Features
 
@@ -315,11 +293,15 @@ python project_manager.py database--help
 🎯 **Type Safe** - Automatic validation from Python type hints  
 📚 **Auto Documentation** - Beautiful help from your docstrings  
 🎨 **Professional Themes** - Colorful output with NO_COLOR support  
-🔧 **Flexible Patterns** - Module, class, and inner class support  
+🔧 **Flexible Patterns** - Direct methods and inner class patterns  
 📦 **No Dependencies** - Pure Python standard library  
 🌈 **Shell Completion** - Tab completion for Bash, Zsh, Fish, PowerShell  
 ✅ **Production Ready** - Enterprise-tested in real applications  
 🔍 **Developer Friendly** - Clear error messages and debugging support  
+
+**🔥 New Features**  
+🔀 **Flexible Ordering** - Mix options and arguments in any natural order  
+📍 **Positional Parameters** - First parameter without default becomes positional automatically  
 
 ## 🎯 Getting Started
 
@@ -332,8 +314,8 @@ Choose your path based on your experience level:
 #### **📚 I want to understand the concepts**
 **[Basic Usage Guide →](getting-started/basic-usage.md)** - Core patterns explained
 
-#### **🤔 I need help choosing an approach**
-**[CLI Mode Comparison →](getting-started/choosing-cli-mode.md)** - Module vs Class decision guide
+#### **🤔 I need help choosing a pattern**
+**[Class Patterns Guide →](user-guide/class-cli.md)** - Direct methods vs Inner classes
 
 #### **⚙️ I need detailed installation info**
 **[Installation Guide →](getting-started/installation.md)** - Complete setup instructions
@@ -349,7 +331,7 @@ Jump straight into the comprehensive guides:
 
 ### 🎯 Learning Path for New Users
 1. **Start Here:** [Quick Start](getting-started/quick-start.md) - Get your first CLI running
-2. **Choose Mode:** [Module vs Class](getting-started/choosing-cli-mode.md) - Pick your approach
+2. **Choose Pattern:** [Class Patterns](user-guide/class-cli.md) - Direct methods vs Inner classes
 3. **Deep Dive:** [User Guide](user-guide/README.md) - Master your chosen pattern
 4. **Enhance:** [Features](features/README.md) - Add advanced capabilities
 5. **Optimize:** [Best Practices](guides/best-practices.md) - Professional techniques

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Tuple
 
 from freyja.utils.math_util import MathUtil
 
@@ -56,7 +55,7 @@ class RGB:
     return self._b
 
   @classmethod
-  def from_ints(cls, r: int, g: int, b: int) -> 'RGB':
+  def from_ints(cls, r: int, g: int, b: int) -> RGB:
     """Create RGB from integer values 0-255.
 
     :param r: Red component (0-255)
@@ -75,7 +74,7 @@ class RGB:
     return cls(r / 255.0, g / 255.0, b / 255.0)
 
   @classmethod
-  def from_rgb(cls, rgb: int) -> 'RGB':
+  def from_rgb(cls, rgb: int) -> RGB:
     """Create RGB from hex integer (0x000000 to 0xFFFFFF).
 
     :param rgb: RGB value as integer (0x000000 to 0xFFFFFF)
@@ -100,7 +99,7 @@ class RGB:
     r, g, b = self.to_ints()
     return f"#{r:02X}{g:02X}{b:02X}"
 
-  def to_ints(self) -> Tuple[int, int, int]:
+  def to_ints(self) -> tuple[int, int, int]:
     """Convert to integer RGB tuple (0-255 range).
 
     :return: RGB tuple with integer values
@@ -119,7 +118,7 @@ class RGB:
     return f"{prefix}{ansi_code}m"
 
   def adjust(self, *, brightness: float = 0.0, saturation: float = 0.0,
-             strategy: AdjustStrategy = AdjustStrategy.LINEAR) -> 'RGB':
+             strategy: AdjustStrategy = AdjustStrategy.LINEAR) -> RGB:
     """Adjust color using specified strategy."""
     # Handle strategies using modern match statement for better performance
     match strategy.value:
@@ -140,7 +139,7 @@ class RGB:
       case _:
         return self
 
-  def linear_blend(self, brightness: float = 0.0, saturation: float = 0.0) -> 'RGB':
+  def linear_blend(self, brightness: float = 0.0, saturation: float = 0.0) -> RGB:
     """Adjust color brightness and/or saturation, returning new RGB instance.
 
     :param brightness: Brightness adjustment (-5.0 to 5.0)
@@ -168,21 +167,21 @@ class RGB:
       factor = -brightness
       if brightness >= 0:
         # Original buggy behavior: negative factor makes colors darker
-        r, g, b = [int(v + (255 - v) * factor) for v in (r, g, b)]
+        r, g, b = (int(v + (255 - v) * factor) for v in (r, g, b))
       else:
         # Darker - blend with black (0, 0, 0)
         factor = 1 + brightness  # brightness is negative, so this reduces values
-        r, g, b = [int(v * factor) for v in (r, g, b)]
+        r, g, b = (int(v * factor) for v in (r, g, b))
 
     # Clamp to valid range
-    r, g, b = [int(MathUtil.clamp(v, 0, 255)) for v in (r, g, b)]
+    r, g, b = (int(MathUtil.clamp(v, 0, 255)) for v in (r, g, b))
 
     # TODO: Add saturation adjustment when needed
     # For now, just brightness adjustment to match existing behavior
 
     return RGB.from_ints(r, g, b)
 
-  def hsl(self, adjust_pct: float) -> 'RGB':
+  def hsl(self, adjust_pct: float) -> RGB:
     """HSL method: Adjust lightness while preserving hue and saturation."""
     r, g, b = self.to_ints()
     h, s, l = self._rgb_to_hsl(r, g, b)
@@ -194,7 +193,7 @@ class RGB:
     r_new, g_new, b_new = self._hsl_to_rgb(h, s, l)
     return RGB.from_ints(r_new, g_new, b_new)
 
-  def multiplicative(self, adjust_pct: float) -> 'RGB':
+  def multiplicative(self, adjust_pct: float) -> RGB:
     """Multiplicative method: Simple scaling of RGB values."""
     factor = 1.0 + adjust_pct
     r, g, b = self.to_ints()
@@ -204,7 +203,7 @@ class RGB:
       max(0, min(255, int(b * factor)))
     )
 
-  def gamma(self, adjust_pct: float) -> 'RGB':
+  def gamma(self, adjust_pct: float) -> RGB:
     """Gamma correction method: More perceptually uniform adjustments."""
     gamma = max(0.1, min(3.0, 1.0 - adjust_pct * 0.5))  # Convert to gamma value
     return RGB.from_ints(
@@ -213,7 +212,7 @@ class RGB:
       max(0, min(255, int(255 * pow(self._b, gamma))))
     )
 
-  def luminance(self, adjust_pct: float) -> 'RGB':
+  def luminance(self, adjust_pct: float) -> RGB:
     """Luminance-based method: Adjust based on perceived brightness."""
     r, g, b = self.to_ints()
     luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b  # ITU-R BT.709
@@ -224,7 +223,7 @@ class RGB:
       max(0, min(255, int(b * factor)))
     )
 
-  def overlay(self, adjust_pct: float) -> 'RGB':
+  def overlay(self, adjust_pct: float) -> RGB:
     """Overlay blend mode: Similar to Photoshop's overlay effect."""
 
     def overlay_blend(base: float, overlay: float) -> float:
@@ -238,7 +237,7 @@ class RGB:
       max(0, min(255, int(255 * overlay_blend(self._b, overlay_val))))
     )
 
-  def absolute(self, adjust_pct: float) -> 'RGB':
+  def absolute(self, adjust_pct: float) -> RGB:
     """Absolute adjustment method: Legacy absolute color adjustment."""
     r, g, b = self.to_ints()
     # Legacy behavior: color + (255 - color) * (-adjust_pct)
@@ -250,7 +249,7 @@ class RGB:
     )
 
   @staticmethod
-  def _rgb_to_hsl(r: int, g: int, b: int) -> Tuple[float, float, float]:
+  def _rgb_to_hsl(r: int, g: int, b: int) -> tuple[float, float, float]:
     """Convert RGB to HSL color space."""
     r_norm, g_norm, b_norm = r / 255.0, g / 255.0, b / 255.0
 
@@ -279,7 +278,7 @@ class RGB:
     return h, s, l
 
   @staticmethod
-  def _hsl_to_rgb(h: float, s: float, l: float) -> Tuple[int, int, int]:
+  def _hsl_to_rgb(h: float, s: float, l: float) -> tuple[int, int, int]:
     """Convert HSL to RGB color space."""
 
     def hue_to_rgb(p: float, q: float, t: float) -> float:

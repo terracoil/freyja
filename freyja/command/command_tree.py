@@ -6,9 +6,10 @@ Provides a hierarchical command structure with convenience methods for efficient
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Any, Optional, List, Type
+from typing import Any
 
 from freyja.utils import TextUtil
+
 from .command_info import CommandInfo
 
 
@@ -21,8 +22,8 @@ class CommandTree:
   for cmd_tree, groups, and source classes.
   """
 
-  tree: Dict[str, Dict[str, Any]] = field(default_factory=dict)
-  _command_info_lookup: Dict[str, CommandInfo] = field(default_factory=dict, init=False)
+  tree: dict[str, dict[str, Any]] = field(default_factory=dict)
+  _command_info_lookup: dict[str, CommandInfo] = field(default_factory=dict, init=False)
 
   def __post_init__(self):
     """Initialize lookup structures after creation."""
@@ -38,7 +39,7 @@ class CommandTree:
     self._command_info_lookup.clear()
     self._build_command_lookup(self.tree)
 
-  def _build_command_lookup(self, tree_dict: Dict[str, Any], prefix: str = ""):
+  def _build_command_lookup(self, tree_dict: dict[str, Any], prefix: str = ""):
     """Recursively build command lookup table."""
     for name, info in tree_dict.items():
       full_name = f"{prefix}{name}" if prefix else name
@@ -68,7 +69,7 @@ class CommandTree:
     if command_info.original_name != name:
       self._command_info_lookup[command_info.original_name] = command_info
 
-  def add_group(self, group_name: str, description: str, inner_class: Optional[Type] = None, **kwargs):
+  def add_group(self, group_name: str, description: str, inner_class: type | None = None, **kwargs):
     """Add a command group to the tree."""
     self.tree[group_name] = {
       'type': 'group',
@@ -102,7 +103,7 @@ class CommandTree:
     if command_info.original_name != command_name:
       self._command_info_lookup[command_info.original_name] = command_info
 
-  def add_subgroup_to_group(self, parent_group_name: str, subgroup_name: str, description: str, inner_class: Optional[Type] = None,
+  def add_subgroup_to_group(self, parent_group_name: str, subgroup_name: str, description: str, inner_class: type | None = None,
                             **kwargs):
     """Add a subgroup to an existing group."""
     if parent_group_name not in self.tree:
@@ -151,7 +152,7 @@ class CommandTree:
     if command_info.original_name != command_name:
       self._command_info_lookup[command_info.original_name] = command_info
 
-  def get_command(self, name: str) -> Optional[Dict[str, Any]]:
+  def get_command(self, name: str) -> dict[str, Any] | None:
     """Get a command by name (supports both flat and hierarchical lookups)."""
     # Try direct lookup first
     if name in self.tree and self.tree[name].get('type') == 'command':
@@ -165,13 +166,13 @@ class CommandTree:
 
     return None
 
-  def get_group(self, name: str) -> Optional[Dict[str, Any]]:
+  def get_group(self, name: str) -> dict[str, Any] | None:
     """Get a command group by name."""
     if name in self.tree and self.tree[name].get('type') == 'group':
       return self.tree[name]
     return None
 
-  def get_all_commands(self) -> List[CommandInfo]:
+  def get_all_commands(self) -> list[CommandInfo]:
     """Get a flat list of all CommandInfo objects."""
     # Use a set to deduplicate CommandInfo objects (they should be unique by identity)
     seen = set()
@@ -182,7 +183,7 @@ class CommandTree:
         unique_commands.append(command_info)
     return unique_commands
 
-  def find_command_by_function(self, func_name: str) -> Optional[CommandInfo]:
+  def find_command_by_function(self, func_name: str) -> CommandInfo | None:
     """Find a command by function name."""
     # Try exact matches first
     if func_name in self._command_info_lookup:
@@ -198,14 +199,14 @@ class CommandTree:
 
     return None
 
-  def find_source_class(self, func_name: str) -> Optional[Type]:
+  def find_source_class(self, func_name: str) -> type | None:
     """Find the source class for a function name."""
     command_info = self.find_command_by_function(func_name)
     if command_info:
       return command_info.metadata.get('source_class')
     return None
 
-  def to_dict(self) -> Dict[str, Dict[str, Any]]:
+  def to_dict(self) -> dict[str, dict[str, Any]]:
     """Return the raw hierarchical dictionary."""
     return self.tree
 

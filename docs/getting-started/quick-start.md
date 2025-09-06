@@ -5,24 +5,9 @@
 # Table of Contents
 - [Installation](#installation)
 - [5-Minute Introduction](#5-minute-introduction)
-- [Choose Your Mode](#choose-your-mode)
-- [Module-based Example](#module-based-example)
 - [Class-based Example](#class-based-example)
 - [Key Features Demonstrated](#key-features-demonstrated)
 - [Next Steps](#next-steps)
-
-## Installation
-
-
-
-## 5-Minute Introduction
-
-freyja automatically creates complete command-line interfaces from your existing Python code. Just add type annotations to your functions or methods, and you get a fully-featured CLI with argument parsing, help text, and type validation.
-
-**Two ways to create CLIs:**
-- **Module-based**: Perfect for utilities and functional code
-- **Class-based**: Ideal for stateful applications and object-oriented designs
-- 
 
 ## Installation
 
@@ -32,180 +17,168 @@ pip install freyja
 
 That's it! No dependencies, works with Python 3.8+.
 
-## Choose Your Mode
+## 5-Minute Introduction
 
-### When to use Module-based CLI
-✅ Simple utilities and scripts  
-✅ Functional programming style  
-✅ Stateless operations  
-✅ Quick prototypes  
+Freyja automatically creates complete command-line interfaces from your Python classes. Just add type annotations to your methods, and you get a fully-featured CLI with argument parsing, help text, and type validation.
 
-### When to use Class-based CLI  
-✅ Stateful applications  
-✅ Object-oriented design  
-✅ Complex workflows  
-✅ Configuration management  
-
-## Module-based Example
-
-Create a file `my_tool.py`:
-
-```python
-from src import CLI
-import sys
-
-
-def greet(name: str = "World", excited: bool = False) -> None:
-  """Greet someone by name."""
-  greeting = f"Hello, {name}!"
-  if excited:
-    greeting += " 🎉"
-  print(greeting)
-
-
-def count_words(text: str, ignore_case: bool = True) -> None:
-  """Count words in the given text."""
-  if ignore_case:
-    text = text.lower()
-
-  words = text.split()
-  print(f"Word count: {len(words)}")
-  print(f"Unique words: {len(set(words))}")
-
-
-if __name__ == '__main__':
-  cli = CLI.from_module(sys.modules[__name__], title="My Tool")
-  cli.display()
-```
-
-**Usage:**
-```bash
-python my_tool.py --help
-python my_tool.py greet --name "Alice" --excited
-python my_tool.py count-words --text "Hello world hello" --ignore-case
-```
+**Class-based approach**: Transform your Python classes into powerful CLIs with hierarchical commands, global options, and professional help generation.
 
 ## Class-based Example
 
-Create a file `my_app.py`:
+Perfect for stateful applications, configuration management, and complex workflows:
 
 ```python
-from src import CLI
-from typing import List
+# my_tool.py
+from freyja import CLI
+from pathlib import Path
 
 
-class TaskManager:
-  """
-      Task Management Application    
-  A simple Freyja for managing your daily tasks.
-  """
-
-  def __init__(self):
-    self.tasks = []
-    self.next_id = 1
-
-  def add_task(self, title: str, priority: str = "medium") -> None:
-    """Add a new task."""
-    task = {
-      'id': self.next_id,
-      'title': title,
-      'priority': priority,
-      'completed': False
-    }
-    self.tasks.append(task)
-    self.next_id += 1
-    print(f"✅ Added task: {title} (priority: {priority})")
-
-  def list_tasks(self, show_completed: bool = False) -> None:
-    """List all tasks."""
-    tasks_to_show = self.tasks
-    if not show_completed:
-      tasks_to_show = [t for t in tasks_to_show if not t['completed']]
-
-    if not tasks_to_show:
-      print("No tasks found.")
-      return
-
-    print(f"\\nTasks ({len(tasks_to_show)}):")
-    for task in tasks_to_show:
-      status = "✅" if task['completed'] else "⏳"
-      print(f"{status} {task['id']}: {task['title']} [{task['priority']}]")
-
-  def complete_task(self, task_id: int) -> None:
-    """Mark a task as completed."""
-    for task in self.tasks:
-      if task['id'] == task_id:
-        task['completed'] = True
-        print(f"✅ Completed: {task['title']}")
-        return
-
-    print(f"❌ Task {task_id} not found")
+class DataProcessor:
+    """Advanced data processing tool with configuration management."""
+    
+    def __init__(self, config_file: str = "config.json", debug: bool = False):
+        """Initialize processor with global settings."""
+        self.config_file = config_file
+        self.debug = debug
+        self.processed_files = []
+    
+    def process_file(self, input_file: Path, output_format: str = "json") -> None:
+        """Process a single data file.
+        
+        :param input_file: Input file to process
+        :param output_format: Output format (json, csv, xml)
+        """
+        result = f"Processing {input_file} -> {output_format}"
+        if self.debug:
+            result += f" (config: {self.config_file})"
+        print(result)
+        self.processed_files.append(str(input_file))
+    
+    def list_processed(self) -> None:
+        """List all files processed in this session."""
+        if self.processed_files:
+            print("Processed files:")
+            for file in self.processed_files:
+                print(f"  - {file}")
+        else:
+            print("No files processed yet")
+    
+    class BatchOperations:
+        """Batch processing operations for multiple files."""
+        
+        def __init__(self, parallel: bool = False, max_workers: int = 4):
+            """Initialize batch operations."""
+            self.parallel = parallel
+            self.max_workers = max_workers
+        
+        def process_directory(self, directory: Path, pattern: str = "*.txt") -> None:
+            """Process all files in directory matching pattern."""
+            mode = "parallel" if self.parallel else "sequential"
+            print(f"Processing directory {directory} ({pattern}) in {mode} mode")
+            if self.parallel:
+                print(f"Using {self.max_workers} workers")
 
 
 if __name__ == '__main__':
-  cli = CLI.from_class(TaskManager, theme_name="colorful")
-  cli.display()
+    cli = CLI(DataProcessor, title="Data Processing Tool")
+    cli.display()
 ```
 
-**Usage:**
+**Save and run:**
 ```bash
-python my_app.py --help
-python my_app.py add-task --title "Learn freyja" --priority "high"
-python my_app.py add-task --title "Write documentation"
-python my_app.py list-tasks
-python my_app.py complete-task --task-id 1
-python my_app.py list-tasks --show-completed
+python my_tool.py --help
+# Shows all available commands organized hierarchically
+
+python my_tool.py process-file data.txt --output-format csv
+# Processes single file
+
+python my_tool.py --debug process-file data.txt --output-format xml
+# Global debug flag affects the processing
+
+python my_tool.py batch-operations process-directory ./data --pattern "*.json" --parallel
+# Hierarchical command: batch-operations -> process-directory
+
+# ⚡ Flexible ordering examples:
+python my_tool.py --debug process-file data.txt --output-format csv
+python my_tool.py process-file --debug data.txt --output-format csv  
+python my_tool.py process-file data.txt --debug --output-format csv
+# All three commands work identically!
 ```
 
 ## Key Features Demonstrated
 
-Both examples automatically provide:
+### ✨ Automatic CLI Generation
+- **Methods → Commands**: Each method becomes a CLI command
+- **Inner Classes → Command Groups**: Organize related commands hierarchically
+- **Type Hints → Validation**: Automatic argument type checking and conversion
 
-### 🔧 **Automatic Argument Parsing**
-- `str` parameters become `--name VALUE`
-- `bool` parameters become flags `--excited`  
-- `int` parameters become `--count 42`
-- Default values are preserved
-
-### 📚 **Help Generation**
-- Function/method docstrings become command descriptions
-- Parameter names become option names (with kebab-case conversion)
-- Type information is included in help text
-
-### ✨ **Built-in Features**
-- Input validation based on type annotations
-- Colorful output with customizable themes
-- Shell completion support
-- Error handling and user-friendly messages
-
-### 🎨 **Themes and Customization**
-```python
-# Choose from built-in themes
-cli = CLI.from_module(module, theme_name="colorful")
-cli = CLI.from_class(MyClass, theme_name="universal") 
-
-# Disable colors
-cli = CLI.from_module(module, no_color=True)
+### 🎯 Professional Help Generation
+```bash
+python my_tool.py --help
 ```
+```
+Data Processing Tool
+
+Global Options:
+  --config-file TEXT     Initialize processor with global settings (default: config.json)
+  --debug               Enable debug mode (default: False)
+
+Commands:
+  process-file          Process a single data file
+  list-processed        List all files processed in this session
+  batch-operations      Batch processing operations for multiple files
+```
+
+### 🏗️ Hierarchical Command Structure
+```bash
+python my_tool.py batch-operations --help
+```
+```
+Batch processing operations for multiple files
+
+Sub-global Options:
+  --parallel            Run operations in parallel (default: False)
+  --max-workers INT     Number of parallel workers (default: 4)
+
+Commands:
+  process-directory     Process all files in directory matching pattern
+```
+
+### 🎨 Type-Safe Arguments
+- **Path types**: Automatic path validation and completion
+- **Enums**: Choice arguments with validation
+- **Numbers**: Integer and float parsing with validation
+- **Booleans**: Flag arguments (--debug/--no-debug)
+
+### ⚡ Flexible Argument Ordering
+- **Global → Command → Options**: Traditional ordering still works
+- **Mixed Positioning**: Place global, sub-global, and command options anywhere
+- **Natural Usage**: `my_cli --global-opt command --command-opt --another-global-opt`
+
+### 📍 Positional Parameters
+- **First Non-Default Parameter**: Automatically becomes positional argument
+- **Flexible Usage**: `my_cli command <required_param> [--optional-flags]`
+- **Backward Compatible**: Both positional and `--flag` versions work
 
 ## Next Steps
 
-### 📖 Learn More
-- **[Module-based CLI Guide](../module-cli-guide.md)** - Complete guide for function-based CLIs
-- **[Class-based CLI Guide](../class-cli-guide.md)** - Complete guide for method-based CLIs  
-- **[Installation Guide](installation.md)** - Detailed setup instructions
-- **[Basic Usage](basic-usage.md)** - Core concepts and patterns
+### 🚀 Build More CLIs
+- **[Class CLI Guide →](../user-guide/class-cli.md)** - Complete patterns and advanced techniques
+- **[Basic Usage →](basic-usage.md)** - Core concepts and fundamentals
+- **[Type Annotations →](../features/type-annotations.md)** - Advanced type handling
 
-### 🚀 Advanced Features
-- **[Type Annotations](../features/type-annotations.md)** - Supported types and validation
-- **[Theme System](../features/themes.md)** - Customize colors and appearance
-- **[Autocompletion](../features/autocompletion.md)** - Shell completion setup
+### 📚 Explore Features
+- **[Error Handling →](../features/error-handling.md)** - Robust error management
+- **[Shell Completion →](../features/shell-completion.md)** - Tab completion for your CLIs
+- **[Themes →](../features/themes.md)** - Beautiful, customizable output
 
-### 💡 Examples and Inspiration
-- **[Complete Examples](../guides/examples.md)** - Real-world usage patterns
-- **[Best Practices](../guides/best-practices.md)** - Recommended approaches
+### 🔧 Advanced Topics
+- **[Best Practices →](../guides/best-practices.md)** - Professional CLI development
+- **[Examples →](../guides/examples.md)** - Real-world applications
+- **[Troubleshooting →](../guides/troubleshooting.md)** - Common issues and solutions
 
 ---
 
-**Navigation**: [← Help Hub](../README.md) | [Installation →](installation.md) | [Basic Usage →](basic-usage.md)  
-**Examples**: [Module Example](../../examples/mod_example.py) | [Class Example](../../examples/cls_example.py)
+**Ready for more?** [📖 Learn the fundamentals →](basic-usage.md) or [🏗️ dive into class patterns →](../user-guide/class-cli.md)
+
+**Examples**: [Class Example](../../examples/cls_example.py)

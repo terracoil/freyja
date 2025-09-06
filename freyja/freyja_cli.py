@@ -3,30 +3,26 @@ from __future__ import annotations
 
 import os
 import sys
-import types
 from typing import *
 
 from freyja.cli import ClassHandler, ExecutionCoordinator
 from freyja.command import CommandDiscovery, CommandExecutor
-from freyja.completion.base import get_completion_handler
 from freyja.parser import CommandParser
 
-Target = Union[types.ModuleType, Type[Any], Sequence[Type[Any]]]
+Target = Union[Type[Any], Sequence[Type[Any]]]
 
 class FreyjaCLI:
   """
   Simplified FreyjaCLI coordinator that orchestrates command discovery, parsing, and execution.
   """
 
-  def __init__(self, target: Target, title: Optional[str] = None, function_filter: Optional[callable] = None,
-               method_filter: Optional[callable] = None, theme=None, alphabetize: bool = True, completion: bool = True,
-               theme_tuner=False):
+  def __init__(self, target: Target, title: Optional[str] = None, method_filter: Optional[callable] = None,
+               theme=None, alphabetize: bool = True, completion: bool = True, theme_tuner=False):
     """
     Initialize FreyjaCLI with target and configuration.
 
-    :param target: Module, class, or list of classes to generate FreyjaCLI from
+    :param target: Class or list of classes to generate FreyjaCLI from
     :param title: FreyjaCLI application title
-    :param function_filter: Optional filter for functions (module mode)
     :param method_filter: Optional filter for methods (class mode)
     :param theme: Optional theme for colored output
     :param alphabetize: Whether to sort cmd_tree and options alphabetically
@@ -34,12 +30,12 @@ class FreyjaCLI:
     """
 
     # Initialize discovery service (replaces TargetAnalyzer)
-    self.discovery = CommandDiscovery(target=target, function_filter=function_filter, method_filter=method_filter, completion=completion,
+    self.discovery = CommandDiscovery(target=target, method_filter=method_filter, completion=completion,
                                   theme_tuner=theme_tuner)
-    
+
     # Get target mode and validation from discovery
     self.target_mode = self.discovery.mode
-    
+
     # Validate class mode for command collisions when multiple classes are present
     if self.discovery.target_classes and len(self.discovery.target_classes) > 1:
       handler = ClassHandler()
@@ -67,20 +63,14 @@ class FreyjaCLI:
     self.parser_service = CommandParser(title=self.title, theme=theme, alphabetize=alphabetize, enable_completion=completion)
 
     # Set target_class and target_classes properties for compatibility
-    if self.discovery.target_classes:
-      # Class mode: set both for backward compatibility
-      self.target_class = self.discovery.primary_class
-      self.target_classes = self.discovery.target_classes
-    else:
-      # Module mode
-      self.target_class = None
-      self.target_classes = None
+    self.target_class = self.discovery.primary_class
+    self.target_classes = self.discovery.target_classes
 
     # Get command structure from discovery (no need to build separately)
     self.commands = self.discovery.cmd_tree.to_dict()
 
     # Essential compatibility properties only
-    self.target_module = self.discovery.target_module
+    # Note: target_module removed - class-based CLI only
 
   def run(self, args: List[str] = None) -> Any:
     """
@@ -101,7 +91,7 @@ class FreyjaCLI:
       # Create parser and parse arguments
       parser = self.create_parser(no_color=no_color)
 
-      # Parse and execute with context  
+      # Parse and execute with context
       result = self._execute_with_context(parser, args)
 
     return result
@@ -119,60 +109,59 @@ class FreyjaCLI:
     if self.discovery.target_classes and len(self.discovery.target_classes) > 1:
       # Multiple classes: create executor for each class
       return {
-        target_class: CommandExecutor(target_class=target_class, target_module=None)
+        target_class: CommandExecutor(target_class=target_class)
         for target_class in self.discovery.target_classes
       }
-    
-    # Single class or module: create single primary executor
+
+    # Single class: create single primary executor
     return {
       'primary': CommandExecutor(
-        target_class=self.discovery.primary_class,
-        target_module=self.discovery.target_module
+        target_class=self.discovery.primary_class
       )
     }
 
   def _is_completion_request(self) -> bool:
     """
     Check if this is a shell completion request.
-    
+
     Uses multiple indicators to ensure we only enter completion mode
     when explicitly requested by shell completion systems.
     """
     # Check for main completion environment variable
     if os.getenv('_FREYJA_COMPLETE') is not None:
       return True
-    
-    # Check for shell-specific completion variables  
+
+    # Check for shell-specific completion variables
     completion_vars = [
       '_FREYJA_COMPLETE_ZSH',
-      '_FREYJA_COMPLETE_BASH', 
+      '_FREYJA_COMPLETE_BASH',
       '_FREYJA_COMPLETE_FISH',
       '_FREYJA_COMPLETE_POWERSHELL'
     ]
-    
+
     for var in completion_vars:
       if os.getenv(var) is not None:
         return True
-    
+
     # Check for --_complete flag (legacy support)
     if '--_complete' in sys.argv:
       return True
-    
+
     return False
 
   def _handle_completion(self):
     """
     Handle shell completion request.
-    
+
     Ensures completion mode is completely isolated from normal execution.
     """
     try:
       # Use the execution coordinator's completion handler
       result = self.execution_coordinator._handle_completion_request()
-      
+
       # Explicitly exit after completion to prevent any further processing
       sys.exit(0 if result == 0 else 1)
-      
+
     except Exception as e:
       # In case of completion errors, fail gracefully
       print(f"Completion error: {e}", file=sys.stderr)

@@ -8,6 +8,7 @@ Discover the powerful features that make Freyja a complete CLI solution. From au
 
 ## Table of Contents
 * [🎯 Core Features](#-core-features)
+* [🔥 New Features](#-new-features)
 * [✨ Feature Highlights](#-feature-highlights)
 * [🔧 Developer Experience](#-developer-experience)
 * [🚀 Next Steps](#-next-steps)
@@ -18,6 +19,10 @@ Discover the powerful features that make Freyja a complete CLI solution. From au
 * **[🏷️ Type Annotations](type-annotations.md)** - Complete guide to supported types including basic types, collections, enums, and custom converters
 * **[🌈 Shell Completion](shell-completion.md)** - Enable tab completion for Bash, Zsh, Fish, and PowerShell with zero configuration
 * **[❌ Error Handling](error-handling.md)** - Robust error management with user-friendly messages and proper exit codes
+
+### 🔥 New Features
+* **[🎯 Flexible Argument Ordering](flexible-ordering.md)** - Mix options and arguments in any order for natural command flow
+* **[📍 Positional Parameters](positional-parameters.md)** - Automatic positional detection creates intuitive command interfaces
 
 ## 🎯 Core Features
 
@@ -51,6 +56,64 @@ Create user-friendly CLIs with robust error handling:
 - **🚪 Proper Exit Codes** - Standard exit codes for shell script integration
 - **🛡️ Exception Safety** - Graceful handling of unexpected errors
 - **🔍 Debug Support** - Detailed error information for development
+
+## 🔥 New Features
+
+### 🎯 Flexible Argument Ordering
+**[Complete Guide →](flexible-ordering.md)**
+
+Experience the freedom of natural command-line interaction:
+- **🔀 Any Order** - Mix options and arguments however feels natural
+- **💭 Intuitive Flow** - Commands that match how users think
+- **🚀 Zero Learning Curve** - Works with existing commands instantly
+- **⚡ Smart Parsing** - Automatic argument reordering and validation
+
+```python
+def deploy_app(app_name: str, environment: str = "staging", 
+               replicas: int = 1, wait: bool = False):
+    """Deploy application with flexible argument ordering."""
+    pass
+```
+
+**All of these work identically:**
+```bash
+# Traditional order
+my-app deploy-app --app-name web-service --environment prod --replicas 3 --wait
+
+# Natural user flow  
+my-app deploy-app --environment prod --wait --app-name web-service --replicas 3
+
+# Options first approach
+my-app deploy-app --replicas 3 --wait --app-name web-service --environment prod
+```
+
+### 📍 Positional Parameters  
+**[Complete Guide →](positional-parameters.md)**
+
+Create CLIs that feel natural with automatic positional parameter detection:
+- **🔍 Auto-Detection** - First parameter without default becomes positional
+- **💬 Natural Commands** - `my-tool process file.txt` instead of `my-tool process --file file.txt`
+- **🧠 Zero Configuration** - Works by analyzing your function signatures
+- **🔧 Type Safe** - Full type validation on positional parameters
+
+```python
+def backup_database(database_name: str, output_dir: str = "./backups", 
+                   compress: bool = True):
+    """Backup database - database_name becomes positional automatically."""
+    pass
+```
+
+**Clean, intuitive usage:**
+```bash
+# Natural command structure
+db-tool backup-database production_db --compress --output-dir /backups
+
+# Works with flexible ordering too
+db-tool backup-database production_db --output-dir /secure/backups --compress
+
+# Traditional explicit format still works
+db-tool backup-database --database-name production_db --compress
+```
 
 ## ✨ Feature Highlights
 
@@ -154,6 +217,10 @@ Choose the features most important for your use case:
 - **[Type System →](type-annotations.md)** - Master all supported types and validation
 - **[Shell Completion →](shell-completion.md)** - Enable professional tab completion
 - **[Error Handling →](error-handling.md)** - Create user-friendly error experiences
+
+**🔥 Latest Features**  
+- **[Flexible Ordering →](flexible-ordering.md)** - Natural argument ordering for better UX
+- **[Positional Parameters →](positional-parameters.md)** - Automatic positional detection
 
 ### 🔧 Advanced Implementation
 Once you've mastered the basics:

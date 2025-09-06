@@ -1,13 +1,13 @@
 """Tests for System class and inner classes."""
 
 import sys
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from freyja import FreyjaCLI
 from freyja.cli import SystemClassBuilder
+
 System = SystemClassBuilder.build(True, True)
 
 class TestSystem:
@@ -164,7 +164,7 @@ class TestSystemCompletion:
     """Test Completion class with explicitly specified shell."""
     completion = System().Completion(shell='bash')
     assert completion.shell == 'bash'
-    
+
     completion = System().Completion(shell='zsh')
     assert completion.shell == 'zsh'
 

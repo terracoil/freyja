@@ -1,6 +1,7 @@
 import inspect
+from collections.abc import Callable as CallableABC
 from dataclasses import dataclass, field
-from typing import Callable as CallableABC, Optional, Type, Dict, Any
+from typing import Any
 
 
 @dataclass
@@ -10,13 +11,13 @@ class CommandInfo:
   original_name: str
   function: CallableABC
   signature: inspect.Signature
-  docstring: Optional[str] = None
+  docstring: str | None = None
   is_hierarchical: bool = False
-  parent_class: Optional[str] = None
-  command_path: Optional[str] = None
+  parent_class: str | None = None
+  command_path: str | None = None
   is_system_command: bool = False
-  inner_class: Optional[Type] = None
-  metadata: Dict[str, Any] = field(default_factory=dict)
+  inner_class: type | None = None
+  metadata: dict[str, Any] = field(default_factory=dict)
   # New fields for nested command structure
-  group_name: Optional[str] = None  # For hierarchical cmd_tree (kebab-cased inner class name)
-  method_name: Optional[str] = None  # For hierarchical cmd_tree (kebab-cased method name)
+  group_name: str | None = None  # For hierarchical cmd_tree (kebab-cased inner class name)
+  method_name: str | None = None  # For hierarchical cmd_tree (kebab-cased method name)

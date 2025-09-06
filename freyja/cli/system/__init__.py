@@ -1,6 +1,7 @@
 from .completion import Completion
 from .tune_theme import TuneTheme
 
+
 class SystemClassBuilder:
   @staticmethod
   def build(completion:bool=True, theme_tuner:bool=False) -> type:

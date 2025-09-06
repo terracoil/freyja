@@ -18,19 +18,17 @@ Welcome to Freyja! This section will transform you from zero to CLI hero in minu
 * **[📦 Installation](installation.md)** - Install Freyja and set up your development environment
 * **[🚀 Quick Start](quick-start.md)** - Build your first CLI in under 5 minutes with working examples
 * **[🔧 Basic Usage](basic-usage.md)** - Master fundamental concepts, patterns, and type annotations
-* **[🤔 Choosing Your CLI Mode](choosing-cli-mode.md)** - Module vs Class decision guide with real examples
 
-### 🏗️ Implementation Patterns
-* **[📝 Module CLI Basics](module-cli.md)** - Transform functions into commands (functional programming style)
-* **[🏗️ Class CLI Basics](class-cli.md)** - Transform methods into commands (object-oriented style)
+### 🏗️ Class-based CLI Patterns
+* **[🏗️ Class CLI Guide](../user-guide/class-cli.md)** - Transform methods into commands with comprehensive examples
 
 ## 🚀 Start Here
 
 ### 🆕 First Time with Freyja?
 **[Quick Start →](quick-start.md)** - Get a working CLI in 5 minutes!
 
-### 🤔 Not sure which approach to use?
-**[CLI Mode Guide →](choosing-cli-mode.md)** - Module vs Class comparison
+### 🏗️ Ready to build with classes?
+**[Class CLI Guide →](../user-guide/class-cli.md)** - Comprehensive class-based patterns
 
 ### 📚 Want to understand the concepts?
 **[Basic Usage →](basic-usage.md)** - Core patterns and principles
@@ -44,7 +42,7 @@ By completing this getting started section, you'll master:
 
 ### ⚡ Core Skills
 1. **🔧 Installation** - Set up Freyja in seconds with pip
-2. **🎯 Mode Selection** - Choose module-based vs class-based patterns
+2. **🎯 Pattern Selection** - Choose direct methods vs inner class patterns
 3. **🏗️ CLI Creation** - Transform functions/methods into commands automatically
 4. **📚 Help Generation** - Beautiful documentation from your docstrings
 5. **🎨 Type Handling** - Use type annotations for automatic validation
@@ -57,10 +55,10 @@ By completing this getting started section, you'll master:
 - **Build both simple utilities and complex applications**
 
 ### 💡 Advanced Understanding
-- **When to use module-based vs class-based** approaches
 - **How to structure code** for optimal CLI generation
 - **Best practices** for maintainable CLI applications
 - **Common patterns** for real-world scenarios
+- **Inner class patterns** for hierarchical command structures
 
 ## ⚙️ Prerequisites
 
@@ -89,12 +87,12 @@ By completing this getting started section, you'll master:
 **📋 Complete Beginner Path:**
 1. **[Installation →](installation.md)** - Get Freyja installed
 2. **[Quick Start →](quick-start.md)** - Build your first CLI
-3. **[Choosing Mode →](choosing-cli-mode.md)** - Pick your approach
-4. **[Basic Usage →](basic-usage.md)** - Master the fundamentals
+3. **[Basic Usage →](basic-usage.md)** - Master the fundamentals
+4. **[Class CLI →](../user-guide/class-cli.md)** - Advanced class-based patterns
 
 **⚡ I Want to Code Now Path:**
 1. **[Quick Start →](quick-start.md)** - Jump straight in!
-2. **[Module CLI →](module-cli.md)** or **[Class CLI →](class-cli.md)** - Pick your style
+2. **[Class CLI →](../user-guide/class-cli.md)** - Master class-based patterns
 
 ### 🚀 After Getting Started
 
@@ -123,4 +121,4 @@ pip install freyja
 # That's literally all the setup you need! 🚀
 ```
 
-**[📦 Install Now →](installation.md)** | **[⚡ Quick Start →](quick-start.md)** | **[🤔 Choose Mode →](choosing-cli-mode.md)**
+**[📦 Install Now →](installation.md)** | **[⚡ Quick Start →](quick-start.md)** | **[🏗️ Class CLI →](../user-guide/class-cli.md)**

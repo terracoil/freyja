@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import sys
-from typing import Union
 
 from .enums import Style
 from .rgb import RGB
@@ -12,7 +11,7 @@ from .theme_style import ThemeStyle
 class ColorFormatter:
   """Handles color application and terminal compatibility."""
 
-  def __init__(self, enable_colors: Union[bool, None] = None):
+  def __init__(self, enable_colors: bool | None = None):
     """Initialize color formatter with automatic color detection.
 
     :param enable_colors: Force enable/disable colors, or None for auto-detection

@@ -282,7 +282,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
       # Namespaced groups should have their contents indented 2 more spaces
       # but keep the group name at the original indent
       pass  # The group name stays at base_indent, contents get extra indent inside
-    
+
     return self._format_group_with_command_groups_global(
       choice, subparser, effective_indent, unified_cmd_desc_column, unified_cmd_desc_column
     )
@@ -317,7 +317,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
                                                unified_cmd_desc_column, global_option_column):
     """Format a command group with unified command description column alignment."""
     lines = []
-    
+
     # Check if this is a namespaced group - its contents need extra indentation
     is_namespaced = hasattr(parser, '_is_namespaced') and parser._is_namespaced
     content_indent_adjustment = 2 if is_namespaced else 0
@@ -414,7 +414,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
                               name_style, desc_style, required=False, extra_indent=0):
     """Format a single argument with consistent styling."""
     lines = []
-    
+
     # Apply extra indentation if specified
     effective_indent = self._arg_indent + extra_indent
 
@@ -452,7 +452,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
       cmd_parser = self._find_subparser(parser, cmd)
       if cmd_parser:
         if (hasattr(cmd_parser, '_command_type') and
-            getattr(cmd_parser, '_command_type') == 'group' and
+            cmd_parser._command_type == 'group' and
             hasattr(cmd_parser, '_commands') and
             cmd_parser._commands):
           # Nested group

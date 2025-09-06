@@ -26,6 +26,103 @@ Type annotations are **required** for all parameters in functions/methods that w
 
 **Critical Rule**: Every parameter must have a type annotation, or the function will be rejected.
 
+## Positional Parameter Types
+
+### 📍 Automatic Positional Detection
+
+The **first parameter without a default value** automatically becomes positional, and all type annotations work seamlessly:
+
+```python
+def process_data(input_file: str, output_format: str = "json", 
+                verbose: bool = False) -> None:
+    """Process data file - input_file becomes positional automatically."""
+    pass
+
+def compress_files(directory_path: Path, compression_level: int = 6) -> None:
+    """Compress files - directory_path becomes positional."""
+    pass
+
+def backup_database(database_name: str, backup_location: str = "./backups"):
+    """Backup database - database_name becomes positional."""
+    pass
+```
+
+**Natural usage with type validation:**
+```bash
+# Path validation on positional parameter
+process-data /path/to/data.csv --output-format xml --verbose
+
+# Integer validation on positional parameter  
+compress-files ./documents 9  # compression_level=9
+
+# String validation on positional parameter
+backup-database production_db --backup-location /secure/backups
+```
+
+### 🔧 Type Validation for Positional Parameters
+
+All type checking applies to positional parameters:
+
+```python
+from enum import Enum
+from pathlib import Path
+
+class OutputFormat(Enum):
+    JSON = "json"
+    CSV = "csv" 
+    XML = "xml"
+
+def convert_file(input_file: Path, output_format: OutputFormat = OutputFormat.JSON,
+                validate_input: bool = True) -> None:
+    """Convert file with type-safe positional parameter."""
+    pass
+```
+
+**Usage with validation:**
+```bash
+# Path existence validation
+convert-file ./data.json --output-format csv
+
+# Path validation error
+convert-file ./nonexistent.json --output-format xml
+# Error: Path './nonexistent.json' does not exist
+
+# Enum validation 
+convert-file ./data.json xml  # Valid enum value
+convert-file ./data.json invalid  # Error: invalid choice
+```
+
+### 🎯 Best Practices for Positional Types
+
+```python
+# ✅ Good: Clear primary input with appropriate type
+def analyze_log(log_file: Path, pattern: str = "ERROR") -> None:
+    """Analyze log file - Path ensures file validation."""
+    pass
+
+def process_dataset(data_file: str, analysis_type: str = "basic") -> None:
+    """Process dataset - str for flexible file handling."""
+    pass
+
+def deploy_service(service_name: str, replicas: int = 1) -> None:  
+    """Deploy service - str for service identifier."""
+    pass
+
+# ✅ Excellent: Complex type on positional parameter
+def backup_database(database_url: str, backup_format: BackupFormat = BackupFormat.SQL,
+                   compress: bool = True) -> None:
+    """Backup with enum validation on optional parameter."""
+    pass
+```
+
+**Type-specific behaviors:**
+- **`str`**: No validation, accepts any text
+- **`int`/`float`**: Numeric validation with clear error messages  
+- **`bool`**: For positional, accepts "true"/"false", "1"/"0", "yes"/"no"
+- **`Path`**: File/directory existence validation (if appropriate)
+- **`Enum`**: Choice validation with available options listed
+- **`List[T]`**: Multiple values accepted for positional (advanced usage)
+
 ## Required vs Optional Types
 
 ### Required Parameters (No Default Value)
@@ -35,8 +132,11 @@ def process_file(input_file: str, output_format: str) -> None:
     """Process a file with specified format."""
     pass
 
-# Freyja Usage: Both parameters are required
+# Traditional usage: Both parameters are required  
 # python script.py process-file --input-file data.txt --output-format json
+
+# 🔥 NEW: input_file becomes positional automatically
+# python script.py process-file data.txt --output-format json
 ```
 
 ### Optional Parameters (With Default Values)
@@ -50,9 +150,13 @@ def process_file(
     """Process a file with optional settings."""
     pass
 
-# Freyja Usage: Only input-file is required
+# Traditional usage: Only input-file is required
 # python script.py process-file --input-file data.txt
 # python script.py process-file --input-file data.txt --output-format csv --verbose
+
+# 🔥 NEW: input_file becomes positional automatically  
+# python script.py process-file data.txt
+# python script.py process-file data.txt --output-format csv --verbose
 ```
 
 ## Basic Types

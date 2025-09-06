@@ -84,7 +84,7 @@ class TestClassBasedCLI:
     assert cli.title == "Sample class for testing FreyjaCLI generation."  # From docstring
     assert 'simple-method' in cli.commands
     assert 'method-with-types' in cli.commands
-    assert cli.target_module is None
+    # Note: target_module removed - class-based CLI only
 
   def test_from_class_with_custom_title(self):
     """Test FreyjaCLI creation with custom title."""
@@ -115,7 +115,7 @@ class TestClassBasedCLI:
 
     # Should not include private methods or special methods
     command_names = list(cli.commands.keys())
-    
+
     # Check that cmd_tree have proper structure
     for command_name, command_info in cli.commands.items():
       if command_info.get('type') == 'command':
@@ -230,50 +230,27 @@ class TestClassBasedCLI:
 
 
 
-class TestClassVsModuleComparison:
-  """Test that class and module modes have feature parity."""
+class TestClassHierarchicalCommands:
+  """Test class-based hierarchical command functionality."""
 
-  def test_type_annotation_parity(self):
-    """Test that type annotations work the same for classes and modules."""
-    import freyja.tests.conftest as sample_module
-
-    # Module-based FreyjaCLI
-    cli_module = FreyjaCLI(sample_module, "Module FreyjaCLI")
-
-    # Class-based FreyjaCLI
-    cli_class = FreyjaCLI(SampleClass, "Class FreyjaCLI")
-
-    # Both should handle types correctly
-    module_result = cli_module.run(['function-with-types', '--text', 'test', '--number', '456'])
-    class_result = cli_class.run(['method-with-types', '--text', 'test', '--number', '456'])
-
-    assert module_result['text'] == class_result['text']
-    assert module_result['number'] == class_result['number']
-
-  def test_hierarchical_command_parity(self):
-    """Test that dunder notation creates flat cmd_tree for both classes and modules."""
-    # Dunder notation should create flat cmd_tree with double dashes
+  def test_hierarchical_command_execution(self):
+    """Test that dunder notation creates flat commands for classes."""
+    # Dunder notation should create flat commands with double dashes
     cli = FreyjaCLI(SampleClass)
 
     result = cli.run(['hierarchical--nested--command', '--value', 'test'])
     assert "Hierarchical: test" in result
 
-  def test_help_generation_parity(self):
-    """Test that help generation works similarly for classes and modules."""
-    import freyja.tests.conftest as sample_module
-
-    cli_module = FreyjaCLI(sample_module, "Module FreyjaCLI")
+  def test_class_help_generation(self):
+    """Test that help generation works properly for class-based CLIs."""
     cli_class = FreyjaCLI(SampleClass, "Class FreyjaCLI")
 
-    module_help = cli_module.create_parser().format_help()
     class_help = cli_class.create_parser().format_help()
 
-    # Both should contain their respective titles
-    assert "Module FreyjaCLI" in module_help
+    # Should contain the title
     assert "Class FreyjaCLI" in class_help
 
-    # Both should have similar structure
-    assert "COMMANDS" in module_help
+    # Should have proper structure
     assert "COMMANDS" in class_help
 
 

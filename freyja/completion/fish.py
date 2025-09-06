@@ -1,6 +1,5 @@
 """Fish shell completion handler."""
 
-from typing import List
 
 from .base import CompletionContext, CompletionHandler
 
@@ -34,7 +33,7 @@ complete -c {prog_name} -l install-completion -d "Install shell completion"
 '''
     return script
 
-  def get_completions(self, context: CompletionContext) -> List[str]:
+  def get_completions(self, context: CompletionContext) -> list[str]:
     """Get fish-specific completions."""
     # Reuse bash completion logic for now
     from .bash import BashCompletionHandler
