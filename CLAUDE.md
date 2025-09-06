@@ -1,4 +1,4 @@
-![Freyja](https://github.com/terracoil/freyja/raw/main/freyja.png)
+![Freyja](https://github.com/terracoil/freyja/raw/main/docs/freyja.png)
 
 # CLAUDE.md
 

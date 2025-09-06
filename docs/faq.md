@@ -1,4 +1,4 @@
-![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/freyja-thumb.png)
+![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
 
 # ❓ Frequently Asked Questions (FAQ)
 
