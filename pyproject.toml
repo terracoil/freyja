@@ -7,7 +7,7 @@ readme = "README.md"
 license = "MIT"
 repository = "https://github.com/terracoil/freyja"
 homepage = "https://pypi.org/project/freyja/"
-documentation = "https://github.com/terracoil/freyja/docs"
+documentation = "https://github.com/terracoil/freyja/tree/main/docs"
 keywords = ["cli", "auto", "introspection", "argparse", "command-line"]
 classifiers = [
     "Development Status :: 4 - Beta",
