@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "freyja"
-version = "1.0.4"  # Will use poetry-dynamic-versioning
+version = "1.0.6"  # Will use poetry-dynamic-versioning
 description = "Python Library that builds a complete CLI given one or more functions using introspection"
 authors = ["Steven Miers <steven.miers@gmail.com>"]
 readme = "README.md"
@@ -39,6 +39,7 @@ ruff = "^0.2.0"
 black = "^24.0.0"
 pre-commit = "^3.6.0"
 ipython = "^8.20.0"
+poetry-dynamic-versioning = "^1.9.1"
 
 [tool.poetry-dynamic-versioning]
 enable = true
