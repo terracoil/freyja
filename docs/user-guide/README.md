@@ -1,4 +1,4 @@
-![Freyja Action](https://github.com/terracoil/freyja/blob/main/freyja-action.png)
+![Freyja Action](https://github.com/terracoil/freyja/raw/main/freyja-action.png)
 
 # 👤 User Guide
 

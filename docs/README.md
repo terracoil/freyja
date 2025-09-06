@@ -1,4 +1,4 @@
-![Freyja](https://github.com/terracoil/freyja/blob/main/freyja.png
+![Freyja](https://github.com/terracoil/freyja/raw/main/freyja.png
 
 # 📚 Freyja Documentation Hub
 **No-dependency, zero-configuration CLI tool to build command-line interfaces purely from your code.**

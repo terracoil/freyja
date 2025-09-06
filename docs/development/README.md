@@ -140,7 +140,7 @@ poetry install
 
 ### Maintainer Contacts
 - **Steven** - Project Lead
-- **Contributors** - See [AUTHORS](https://github.com/terracoil/freyja/blob/main/AUTHORS)
+- **Contributors** - See [AUTHORS](https://github.com/terracoil/freyja/raw/main/AUTHORS)
 
 ## Next Steps
 
