@@ -5,9 +5,9 @@ description = "Python Library that builds a complete CLI given one or more funct
 authors = ["Steven Miers <steven.miers@gmail.com>"]
 readme = "README.md"
 license = "MIT"
-repository = "https://github.com/tangledpath/freyja"
+repository = "https://github.com/terracoil/freyja"
 homepage = "https://pypi.org/project/freyja/"
-documentation = "https://github.com/tangledpath/freyja/docs"
+documentation = "https://github.com/terracoil/freyja/docs"
 keywords = ["cli", "auto", "introspection", "argparse", "command-line"]
 classifiers = [
     "Development Status :: 4 - Beta",
