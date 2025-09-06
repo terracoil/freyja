@@ -1,0 +1,45 @@
+#!/usr/bin/env zsh
+# Test Freyja ZSH completion functionality
+# This script verifies that tab completion is working properly
+
+# Ensure ~/.zshrc is loaded (since this is run as a script)
+if [[ -f ~/.zshrc ]]; then
+    source ~/.zshrc
+fi
+
+echo "=== Freyja ZSH Completion Test ==="
+echo "Shell: $SHELL ($ZSH_VERSION)"
+echo ""
+
+cd /Users/windfox/src/freyja
+
+echo "System check:"
+echo "  compdef: $(command -v compdef >/dev/null 2>&1 && echo "✅" || echo "❌")"
+echo "  _cls_example: $(type _cls_example >/dev/null 2>&1 && echo "✅" || echo "❌")"
+echo "  fpath: $(echo "$fpath" | grep -q "\.zfunc" && echo "✅" || echo "❌")"
+
+echo ""
+echo "Registration check:"
+echo "  cls_example -> ${_comps[cls_example]:-❌ NOT REGISTERED}"
+echo "  examples/cls_example -> ${_comps[examples/cls_example]:-❌ NOT REGISTERED}"
+
+echo ""
+echo "Manual completion test:"
+export PYTHONPATH=.
+result=$(PYTHONPATH=. _FREYJA_COMPLETE=zsh COMP_WORDS_STR="examples/cls_example fo" COMP_CWORD_NUM=2 python examples/cls_example --_complete 2>/dev/null)
+echo "  examples/cls_example fo -> $result"
+
+if [[ "$result" == "foo" ]]; then
+    echo ""
+    echo "✅ COMPLETION SYSTEM IS WORKING!"
+    echo ""
+    echo "Try these manual tests:"
+    echo "  examples/cls_example fo<TAB>    (should complete to 'foo')"
+    echo "  examples/cls_example sys<TAB>   (should complete to 'system')" 
+    echo "  examples/cls_example <TAB>      (should show all commands)"
+else
+    echo ""
+    echo "❌ COMPLETION SYSTEM NOT WORKING"
+    echo "The manual test failed, which means there's still an issue."
+fi
+echo ""

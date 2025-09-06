@@ -15,11 +15,15 @@ class CompletionInstaller:
     """Initialize installer with handler and program name.
 
     :param handler: Completion handler for specific shell
-    :param prog_name: Name of the program to install completion for
+    :param prog_name: Name of the program to install completion for (will be normalized to basename)
     :param command_patterns: Additional command patterns to register completion for
     """
+    from pathlib import Path
+    
     self.handler = handler
-    self.prog_name = prog_name
+    # Normalize program name to basename to handle path-based invocations
+    # This ensures examples/cls_example becomes cls_example for consistent completion registration
+    self.prog_name = Path(prog_name).name
     self.command_patterns = command_patterns or []
     self.shell = handler.detect_shell()
 
