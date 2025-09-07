@@ -1,4 +1,4 @@
-![Freyja Thumb](![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
+![Freyja](https://github.com/terracoil/freyja/raw/main/docs/freyja.png)
 
 # ❓ Frequently Asked Questions (FAQ)
 
@@ -39,27 +39,27 @@ args = parser.parse_args()
 greet(args.name, args.excited)
 
 # freyja approach
-def greet(name: str, excited: bool = False) -> None:
-    """Greet someone by name."""
-    pass
+class Greeter:
+    """Simple greeting application."""
+    
+    def greet(self, name: str, excited: bool = False) -> None:
+        """Greet someone by name."""
+        pass
 
-cli = CLI.from_module(sys.modules[__name__])
+cli = CLI(Greeter)
 cli.display()
 ```
 
-### When should I use module-based vs class-based CLI?
+### What are the benefits of class-based CLIs?
 
-**Module-based CLI (functions)**:
-- ✅ Simple utilities and scripts
-- ✅ Stateless operations  
-- ✅ Functional programming style
-- ✅ Data processing pipelines
-
-**Class-based CLI (methods)**:
-- ✅ Applications that need persistent state
-- ✅ Configuration management
-- ✅ Database connections or file handles
-- ✅ Complex workflows with dependencies
+**Class-based CLIs offer significant advantages:**
+- ✅ **State Management**: Persistent application state across commands
+- ✅ **Configuration**: Easy global and sub-global argument handling
+- ✅ **Organization**: Clean separation of concerns with inner classes
+- ✅ **Resource Management**: Database connections, file handles, API clients
+- ✅ **Complex Workflows**: Multi-step operations with dependencies
+- ✅ **Code Reusability**: Methods can be called programmatically
+- ✅ **Testing**: Easy to unit test individual methods
 
 ### Does freyja have any dependencies?
 
@@ -636,4 +636,4 @@ def process_large_dataset(
 ---
 
 **Navigation**: [← Help Hub](README.md) | [Troubleshooting →](guides/troubleshooting.md)  
-**Examples**: [Module Example](mod_example.py) | [Class Example](cls_example.py)
+**Examples**: [Class Example](../examples/cls_example)

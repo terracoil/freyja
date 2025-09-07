@@ -15,23 +15,23 @@ How to contribute to freyja.
 - Issue reporting guidelines
 - Community standards
 
-### 🏗️ [Architecture](architecture.md)
-Understanding the codebase structure.
+### 🏗️ Architecture
+Understanding the codebase structure - see [CLAUDE.md](../../CLAUDE.md).
 - Project organization
 - Core components
 - Design decisions
 - Extension points
 - Future roadmap
 
-### 🧪 [Testing](testing.md)
-Testing guidelines and strategies.
+### 🧪 Testing
+Testing guidelines and strategies - see [CLAUDE.md](../../CLAUDE.md).
 - Running the test suite
 - Writing new tests
 - Test organization
 - Coverage requirements
 - CI/CD pipeline
 
-### 📦 [Release Process](release-process.md)
+### 📦 Release Process
 How releases are managed.
 - Version numbering
 - Release checklist
@@ -134,21 +134,21 @@ poetry install
 ## Getting Help
 
 ### For Contributors
-- Open a [Discussion](https://github.com/terracoil/freyja/discussions) for questions
+- Open an [Issue](https://github.com/terracoil/freyja/issues) for questions
 - Join our [Discord](#) community (coming soon)
 - Check existing [Issues](https://github.com/terracoil/freyja/issues)
-- Read the [Architecture](architecture.md) guide
+- Read the Architecture guide in [CLAUDE.md](../../CLAUDE.md)
 
 ### Maintainer Contacts
 - **Steven** - Project Lead
-- **Contributors** - See [AUTHORS](https://github.com/terracoil/freyja/raw/main/docs/AUTHORS)
+- **Contributors** - See [contributors on GitHub](https://github.com/terracoil/freyja/graphs/contributors)
 
 ## Next Steps
 
 - Read [Contributing Guidelines](contributing.md)
-- Understand the [Architecture](architecture.md)
-- Set up [Testing](testing.md)
-- Learn the [Release Process](release-process.md)
+- Understand the Architecture (see [CLAUDE.md](../../CLAUDE.md))
+- Set up Testing (see [CLAUDE.md](../../CLAUDE.md))
+- Learn the Release Process (see [CLAUDE.md](../../CLAUDE.md))
 
 ---
 

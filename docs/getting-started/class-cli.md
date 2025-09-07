@@ -138,8 +138,8 @@ class ProjectManager:
 
 - For comprehensive documentation, see the [Complete Class CLI Guide](../user-guide/class-cli.md)
 - Learn about [Inner Classes Pattern](../user-guide/inner-classes.md) for complex CLIs
-- Compare with [Module CLI Quick Start](module-cli.md)
+- Compare with [Module CLI Quick Start](basic-usage.md)
 
 ---
 
-**Navigation**: [← Module CLI Quick Start](module-cli.md) | [Basic Usage →](basic-usage.md)
+**Navigation**: [← Module CLI Quick Start](basic-usage.md) | [Basic Usage →](basic-usage.md)

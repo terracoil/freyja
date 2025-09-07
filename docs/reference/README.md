@@ -14,7 +14,7 @@ Full API documentation for all public interfaces.
 - Configuration options
 - Return types and exceptions
 
-### 🏗️ [CLI Class](cli-class.md)
+### 🏗️ [CLI Class](api.md)
 Detailed documentation of the CLI class.
 - Constructor parameters
 - Instance methods
@@ -22,13 +22,13 @@ Detailed documentation of the CLI class.
 - Properties and attributes
 - Internal behavior
 
-### 🔤 [Parameter Types](parameter-types.md)
+### 🔤 [Type Annotations](../features/type-annotations.md)
 Complete guide to supported parameter types.
 - Type mapping table
-- Custom type handlers
-- Collection types
+- Collection types (List, Dict, etc.)
 - Optional and Union types
-- Type conversion rules
+- Enum type support
+- Path and File types
 
 ## Quick Reference
 
@@ -153,8 +153,8 @@ freya/
 ## Next Steps
 
 - Explore the [Complete API](api.md)
-- Understand the [CLI Class](cli-class.md)
-- Review [Parameter Types](parameter-types.md)
+- Understand the [CLI Class](api.md)
+- Review [Type Annotations](../features/type-annotations.md) and [Positional Parameters](../features/positional-parameters.md)
 - See [Examples](../guides/examples.md) for usage
 
 ---

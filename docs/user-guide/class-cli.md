@@ -1,7 +1,7 @@
 ![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
 # Class-based CLI Guide
 
-[← Back to Help](README.md) | [🗂️ Module-based Guide](module-cli-guide.md)
+[← Back to Help](README.md) | [🏢 Inner Classes →](inner-classes.md)
 
 # Table of Contents
 - [Overview](#overview)
@@ -346,12 +346,12 @@ db-mgr restore prod_backup.sql --overwrite
 
 ## Complete Example Walkthrough
 
-Let's build a user management system using [cls_example.py](../cls_example.py):
+Let's build a user management system using [../examples/cls_example](../../examples/cls_example):
 
 ### Step 1: Define Your Class
 
 ```python
-# cls_example.py
+# ../examples/cls_example
 """User Management Freyja Application"""
 
 from enum import Enum
@@ -571,7 +571,7 @@ class UserManager:
 ### Step 2: Create CLI
 
 ```python
-# At the end of cls_example.py
+# At the end of ../examples/cls_example
 if __name__ == '__main__':
   from src import CLI
 
@@ -603,24 +603,24 @@ if __name__ == '__main__':
 
 ```bash
 # Run the Freyja
-python cls_example.py
+python ../examples/cls_example
 
 # Create users
-python cls_example.py add-user --username john --email john@example.com
-python cls_example.py add-user --username admin --email admin@company.com --role ADMIN
-python cls_example.py add-user --username guest --email guest@test.com --role GUEST --active False
+python ../examples/cls_example add-user --username john --email john@example.com
+python ../examples/cls_example add-user --username admin --email admin@company.com --role ADMIN
+python ../examples/cls_example add-user --username guest --email guest@test.com --role GUEST --active False
 
 # List users with filtering
-python cls_example.py list-users
-python cls_example.py list-users --role-filter ADMIN
-python cls_example.py list-users --active-only --format-output json
+python ../examples/cls_example list-users
+python ../examples/cls_example list-users --role-filter ADMIN
+python ../examples/cls_example list-users --active-only --format-output json
 
 # Modify users
-python cls_example.py modify-user --username john --new-email john.doe@example.com
-python cls_example.py modify-user --username guest --active True
+python ../examples/cls_example modify-user --username john --new-email john.doe@example.com
+python ../examples/cls_example modify-user --username guest --active True
 
 # Show statistics
-python cls_example.py show-stats
+python ../examples/cls_example show-stats
 ```
 
 ## State Management
@@ -1037,7 +1037,7 @@ class DocumentedApp:
 
 ## See Also
 
-- [Module-based CLI Guide](module-cli.md) - For functional approaches
+- [Module-based CLI Guide](../getting-started/basic-usage.md) - For functional approaches
 - [Type Annotations](../features/type-annotations.md) - Detailed type system guide
 - [Theme System](../features/themes.md) - Customizing appearance  
 - [Complete Examples](../guides/examples.md) - More real-world examples
@@ -1045,5 +1045,5 @@ class DocumentedApp:
 
 ---
 
-**Navigation**: [← Help Hub](README.md) | [Module-based Guide →](module-cli-guide.md)  
-**Example**: [cls_example.py](../cls_example.py)
+**Navigation**: [← Help Hub](README.md) | [Module-based Guide →](inner-classes.md)  
+**Example**: [../examples/cls_example](../../examples/cls_example)

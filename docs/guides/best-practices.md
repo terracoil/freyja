@@ -295,7 +295,7 @@ def create_backup(
 
 - [Troubleshooting](troubleshooting.md) - Common issues
 - [Examples](examples.md) - Real-world patterns
-- [Testing CLIs](../advanced/testing-clis.md) - Testing strategies
+- [Basic Usage](../getting-started/basic-usage.md) - Testing fundamentals
 
 ---
 

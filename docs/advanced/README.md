@@ -7,32 +7,32 @@ Advanced patterns and techniques for power users of freyja.
 
 ## Topics
 
-### 🔄 [State Management](state-management.md)
-Managing state in class-based CLIs.
+### 🔄 State Management
+Managing state in class-based CLIs - see [Class CLI Guide](../user-guide/class-cli.md).
 - Instance lifecycle patterns
 - Shared state between commands
 - Database connection management
 - Session and context handling
 - Thread safety considerations
 
-### ⚙️ [Custom Configuration](custom-configuration.md)
-Advanced CLI configuration options.
+### ⚙️ Custom Configuration
+Advanced CLI configuration options - see [Type Annotations](../features/type-annotations.md).
 - Function/method metadata
 - Custom parameter handlers
 - Argument validation hooks
 - Command aliases and shortcuts
 - Dynamic command generation
 
-### 🧪 [Testing CLIs](testing-clis.md)
-Comprehensive testing strategies.
+### 🧪 Testing CLIs
+Comprehensive testing strategies - see [Best Practices](../guides/best-practices.md).
 - Unit testing functions/methods
 - Integration testing CLIs
 - Mocking and fixtures
 - Output capture techniques
 - Coverage best practices
 
-### 🔀 [Migration Guide](migration-guide.md)
-Migrating from other CLI frameworks.
+### 🔀 Migration Guide
+Migrating from other CLI frameworks - see [Getting Started](../getting-started/README.md).
 - From argparse to freyja
 - From click to freyja
 - From fire to freyja
@@ -128,10 +128,10 @@ class NetworkCLI:
 
 ## Next Steps
 
-- Implement [State Management](state-management.md) patterns
-- Configure [Custom Behavior](custom-configuration.md)
-- Set up [Comprehensive Testing](testing-clis.md)
-- Plan your [Migration Strategy](migration-guide.md)
+- Implement State Management patterns (see [Class CLI Guide](../user-guide/class-cli.md))
+- Configure Custom Behavior (see [Type Annotations](../features/type-annotations.md))
+- Set up Comprehensive Testing (see [Best Practices](../guides/best-practices.md))
+- Plan your Migration Strategy (see [Getting Started](../getting-started/README.md))
 
 ---
 

@@ -49,7 +49,7 @@ poetry run pre-commit install
 pip install freyja
 
 # Install from GitHub (specific branch)
-pip install git+https://github.com/terracoil/freyja.git@branch-name
+pip install git+https://github.com/terracoil/freyja.git@main
 ```
 
 ## Common Commands
@@ -568,7 +568,7 @@ All constructor parameters must have default values to be used as CLI arguments.
 
 ### Quick Reference Links
 
-- **[Complete Documentation](docs/help.md)** - Full user guide
+- **[Complete Documentation](docs/README.md)** - Full user guide
 - **[Type Annotations](docs/features/type-annotations.md)** - Supported types reference
 - **[Troubleshooting](docs/guides/troubleshooting.md)** - Common issues and solutions
 - **[Examples](examples/cls_example)** - Class-based CLI examples

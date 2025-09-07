@@ -573,7 +573,7 @@ def good_function(items: List[str] = None) -> None:
 - **[Positional Parameters](../features/positional-parameters.md)** - Automatic positional argument detection
 
 **📚 Complete Guides**  
-- **[Module-based CLI Guide](../user-guide/module-cli.md)** - Complete function-based CLI guide
+- **[Class-based CLI Guide](../user-guide/class-cli.md)** - Complete class-based CLI guide
 - **[Class-based CLI Guide](../user-guide/class-cli.md)** - Complete method-based CLI guide
 - **[Type Annotations](../features/type-annotations.md)** - Detailed type system guide
 
@@ -584,4 +584,4 @@ def good_function(items: List[str] = None) -> None:
 ---
 
 **Navigation**: [← Help Hub](../README.md) | [Quick Start →](quick-start.md) | [Installation →](installation.md)  
-**Examples**: [Module Example](../../examples/mod_example.py) | [Class Example](../../examples/cls_example.py)
+**Examples**: [Class Example](../../examples/cls_example)

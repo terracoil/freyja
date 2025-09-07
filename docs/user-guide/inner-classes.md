@@ -1,7 +1,7 @@
 ![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
 # Inner Classes Pattern
 
-[← Back to User Guide](README) | [↑ Documentation Hub](../README.md)
+[← Back to User Guide](README.md) | [↑ Documentation Hub](../README.md)
 
 ## Overview
 
@@ -310,10 +310,10 @@ class CLI:
 ## See Also
 
 - [Class CLI Guide](class-cli.md) - Complete class-based CLI documentation
-- [Module CLI Guide](module-cli.md) - Module-based alternative
-- [Mode Comparison](mode-comparison.md) - Choosing between approaches
+- [Module CLI Guide](class-cli.md) - Module-based alternative
+- [Mode Comparison](../features/README.md) - Choosing between approaches
 - [Best Practices](../guides/best-practices.md) - General guidelines
 
 ---
 
-**Navigation**: [← Class CLI](class-cli.md) | [Mode Comparison →](mode-comparison.md)
+**Navigation**: [← Class CLI](class-cli.md) | [Mode Comparison →](../features/README.md)

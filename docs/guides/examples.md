@@ -723,7 +723,7 @@ python apiclient.py resources--get-item users 12345 --expand groups permissions
 ## See Also
 
 - [Best Practices](best-practices.md) - Design patterns
-- [Module CLI Guide](../user-guide/module-cli.md) - Module-based examples
+- [Class CLI Guide](../user-guide/class-cli.md) - Class-based examples
 - [Class CLI Guide](../user-guide/class-cli.md) - Class-based examples
 
 ---

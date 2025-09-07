@@ -107,16 +107,16 @@ def analyze_logs(
 ## How-To Recipes
 
 ### Create a Multi-Command CLI
-See [Module CLI Guide](../user-guide/module-cli.md#hierarchical-commands) for hierarchical commands.
+See [Class CLI Guide](../user-guide/class-cli.md) for hierarchical commands.
 
 ### Add Custom Validation
-See [Advanced Configuration](../advanced/custom-configuration.md#validation-hooks) for validation patterns.
+See [Type Annotations](../features/type-annotations.md) for validation patterns.
 
 ### Enable Shell Completion
 See [Shell Completion](../features/shell-completion.md) for setup instructions.
 
 ### Test Your CLI
-See [Testing CLIs](../advanced/testing-clis.md) for comprehensive testing strategies.
+See [Best Practices](best-practices.md) for comprehensive testing strategies.
 
 ## Community Guides
 

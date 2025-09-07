@@ -17,7 +17,7 @@ Please read and follow our code of conduct to ensure a welcoming environment for
 
 ```bash
 # Fork the repository on GitHub, then:
-git clone https://github.com/YOUR_USERNAME/freyja.git
+git clone https://github.com/terracoil/freyja.git
 cd freyja
 ```
 
@@ -234,7 +234,6 @@ def example_function(param1: str, param2: int = 10) -> bool:
 
 ### Resources
 - [GitHub Issues](https://github.com/terracoil/freyja/issues)
-- [Discussions](https://github.com/terracoil/freyja/discussions)
 - Review existing code and tests
 
 ### Questions?
@@ -255,4 +254,4 @@ Your contributions help make freyja better for everyone. We appreciate your time
 
 ---
 
-**Navigation**: [← Development](README.md) | [Architecture →](architecture.md)
+**Navigation**: [← Development](README.md) | [Architecture →](../../CLAUDE.md)

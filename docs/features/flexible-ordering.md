@@ -349,7 +349,7 @@ This will show the argument preprocessing steps in the output.
 - **[📍 Positional Parameters](positional-parameters.md)** - Automatic positional argument detection
 - **[🏷️ Type Annotations](type-annotations.md)** - Type system integration
 - **[⚠️ Error Handling](error-handling.md)** - Error messages and validation
-- **[📘 Module CLI Guide](../user-guide/module-cli.md)** - Module-specific usage
+- **[📘 Module CLI Guide](../user-guide/class-cli.md)** - Module-specific usage
 - **[🏗️ Class CLI Guide](../user-guide/class-cli.md)** - Class-based patterns
 
 ---

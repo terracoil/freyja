@@ -625,12 +625,12 @@ def export_data(data: str, format: str = "json") -> None:
 ## See Also
 
 - **[Basic Usage](../getting-started/basic-usage.md)** - Core concepts and patterns
-- **[Module CLI Guide](../module-cli-guide.md)** - Function-based CLI details
-- **[Class CLI Guide](../class-cli-guide.md)** - Method-based CLI details
+- **[Module CLI Guide](../user-guide/class-cli.md)** - Function-based CLI details
+- **[Class CLI Guide](../user-guide/class-cli.md)** - Method-based CLI details
 - **[API Reference](../reference/api.md)** - Complete method reference
 - **[Troubleshooting](../guides/troubleshooting.md)** - Common issues and solutions
 
 ---
 
 **Navigation**: [← Help Hub](../README.md) | [Basic Usage →](../getting-started/basic-usage.md)  
-**Examples**: [Module Example](../../examples/mod_example.py) | [Class Example](../../examples/cls_example.py)
+**Examples**: [Class Example](../../examples/cls_example)

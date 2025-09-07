@@ -51,15 +51,15 @@ pip install git+https://github.com/terracoil/freyja.git
 #### From GitHub (Specific Branch)
 
 ```bash
-# Install from specific branch (e.g., feature/modernization)
-pip install git+https://github.com/terracoil/freyja.git@feature/modernization
+# Install from specific branch (e.g., main)
+pip install git+https://github.com/terracoil/freyja.git@main
 
 # Or add to requirements.txt
-git+https://github.com/terracoil/freyja.git@feature/modernization
+git+https://github.com/terracoil/freyja.git@main
 
 # Or add to pyproject.toml (Poetry)
 [tool.poetry.dependencies]
-freyja = {git = "https://github.com/terracoil/freyja.git", branch = "feature/modernization"}
+freyja = {git = "https://github.com/terracoil/freyja.git", branch = "main"}
 
 # Install from main branch (latest development)
 pip install git+https://github.com/terracoil/freyja.git@main
@@ -208,9 +208,9 @@ If you encounter issues:
 ## See Also
 
 - [Quick Start Guide](quick-start.md) - Get started quickly
-- [Module-based CLI](module-cli.md) - Create your first module CLI
+- [Basic Usage](basic-usage.md) - Learn the fundamentals
 - [Class-based CLI](class-cli.md) - Create your first class CLI
 - [Contributing](../development/contributing.md) - Setup for contributors
 
 ---
-**Navigation**: [← Quick Start](quick-start.md) | [Module-based CLI →](module-cli.md)
+**Navigation**: [← Quick Start](quick-start.md) | [Basic Usage →](basic-usage.md)

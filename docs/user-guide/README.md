@@ -17,19 +17,16 @@ Master the art of building CLIs with Freyja! This comprehensive guide covers eve
 # Children
 
 ### 🗂️ Module-based CLIs
-* **[📝 Module CLI Guide](module-cli.md)** - Complete guide to function-based CLIs with patterns, organization, and best practices
+* **[📝 Module CLI Guide](class-cli.md)** - Complete guide to function-based CLIs with patterns, organization, and best practices
 
 ### 🏗️ Class-based CLIs  
 * **[🏗️ Class CLI Guide](class-cli.md)** - Comprehensive guide to method-based CLIs with state management and design patterns
 * **[🏢 Inner Classes Pattern](inner-classes.md)** - Advanced pattern using inner classes for organized flat command structures
 
-### 🔄 Decision Making
-* **[📊 Mode Comparison](mode-comparison.md)** - Detailed comparison of approaches with use case recommendations and migration strategies
-
 ## 🎯 Core Concepts
 
-### 🗂️ Module CLI Mastery
-**[Complete Module CLI Guide →](module-cli.md)**
+### 🏗️ Class CLI Mastery
+**[Complete Class CLI Guide →](class-cli.md)**
 
 Transform your Python functions into powerful CLIs:
 - **Function Design** - Best practices for CLI-ready functions
@@ -58,7 +55,7 @@ Organize complex applications with hierarchical flat commands:
 - **Real-world Examples** - Database tools, deployment systems, and more
 
 ### 🔄 Choosing Your Approach
-**[Mode Comparison Guide →](mode-comparison.md)**
+**[Mode Comparison Guide →](class-cli.md)**
 
 Make the right architectural decision:
 - **Feature-by-feature Analysis** - Detailed comparison matrix
@@ -261,10 +258,10 @@ python project_manager.py --help  # Shows all available commands
 ## 🚀 Next Steps
 
 ### 📚 Deep Dive into Your Chosen Pattern
-- **[Module CLI →](module-cli.md)** - Master function-based CLIs
+- **[Module CLI →](class-cli.md)** - Master function-based CLIs
 - **[Class CLI →](class-cli.md)** - Master object-oriented CLIs  
 - **[Inner Classes →](inner-classes.md)** - Advanced hierarchical organization
-- **[Mode Comparison →](mode-comparison.md)** - Choose the right approach
+- **[Mode Comparison →](class-cli.md)** - Choose the right approach
 
 ### 🔧 Enhance Your CLIs
 - **[Features Guide →](../features/README.md)** - Type annotations, themes, completion

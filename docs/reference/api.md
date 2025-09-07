@@ -22,52 +22,6 @@ from src import CLI
 
 ### Factory Methods
 
-#### `CLI.from_module()`
-
-Create CLI from module functions (module-based approach).
-
-```python
-@classmethod
-def from_module(
-    cls,
-    module: ModuleType,
-    title: str = None,
-    function_opts: Dict[str, Dict[str, Any]] = None,
-    theme_name: str = "universal",
-    no_color: bool = False,
-    completion: bool = True
-) -> CLI:
-```
-
-**Parameters:**
-- **`module`** (`ModuleType`): The Python module containing functions to expose as CLI commands
-- **`title`** (`str`, optional): CLI application title. If None, extracted from module docstring
-- **`function_opts`** (`Dict[str, Dict[str, Any]]`, optional): Per-function configuration options
-- **`theme_name`** (`str`): Built-in theme name ("universal" or "colorful")
-- **`no_color`** (`bool`): Disable colored output
-- **`completion`** (`bool`): Enable shell completion support
-
-**Returns:** `CLI` instance
-
-**Example:**
-
-```python
-import sys
-from src import CLI
-
-
-def greet(name: str = "World") -> None:
-  """Greet someone by name."""
-  print(f"Hello, {name}!")
-
-
-cli = CLI.from_module(
-  sys.modules[__name__],
-  title="Greeting Freyja",
-  theme_name="colorful"
-)
-cli.display()
-```
 
 #### `CLI.from_class()`
 
@@ -405,13 +359,12 @@ if __name__ == '__main__':
 
 ## See Also
 
-- **[Type Annotations](type-annotations.md)** - Detailed type system guide
+- **[Type Annotations](../features/type-annotations.md)** - Detailed type system guide
 - **[Basic Usage](../getting-started/basic-usage.md)** - Core concepts and patterns
 - **[Troubleshooting](../guides/troubleshooting.md)** - Common issues and solutions
-- **[Module CLI Guide](../module-cli-guide.md)** - Function-based CLI guide
-- **[Class CLI Guide](../class-cli-guide.md)** - Method-based CLI guide
+- **[Class CLI Guide](../user-guide/class-cli.md)** - Method-based CLI guide
 
 ---
 
-**Navigation**: [← Help Hub](../README.md) | [Type Annotations →](type-annotations.md)  
-**Examples**: [Module Example](../../examples/mod_example.py) | [Class Example](../../examples/cls_example.py)
+**Navigation**: [← Help Hub](../README.md) | [Type Annotations →](../features/type-annotations.md)  
+**Examples**: [Class Example](../../examples/cls_example)

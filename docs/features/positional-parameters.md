@@ -170,7 +170,7 @@ class ProjectManager:
 **Complex Hierarchical Commands:**
 ```bash
 # Global + Sub-global + Positional + Optional
-project-mgr --workspace /projects --verbose repository--clone-repo https://github.com/user/repo.git --directory-name my-project --shallow --remote-url upstream
+project-mgr --workspace /projects --verbose repository--clone-repo https://github.com/terracoil/freyja.git --directory-name my-project --shallow --remote-url upstream
 
 # Natural commit commands
 project-mgr repository--push-changes "Add new feature" --force
@@ -446,17 +446,17 @@ def load_test(base_url: str, concurrent_users: int = 10,
 **API Testing Commands:**
 ```bash
 # Simple endpoint tests
-api-tester test-endpoint https://api.example.com/users --method POST --timeout 45
+api-tester test-endpoint https://httpbin.org/get --method POST --timeout 45
 
 # Load testing  
-api-tester load-test https://api.example.com --concurrent-users 50 --duration 120
+api-tester load-test https://httpbin.org --concurrent-users 50 --duration 120
 ```
 
 ## Related Documentation
 
 - **[🎯 Flexible Ordering](flexible-ordering.md)** - Mix positional and optional arguments freely
 - **[🏷️ Type Annotations](type-annotations.md)** - Type validation for positional parameters
-- **[📘 Module CLI Guide](../user-guide/module-cli.md)** - Module-specific positional usage  
+- **[📘 Module CLI Guide](../user-guide/class-cli.md)** - Module-specific positional usage  
 - **[🏗️ Class CLI Guide](../user-guide/class-cli.md)** - Class-based positional patterns
 - **[⚠️ Error Handling](error-handling.md)** - Error messages and validation
 

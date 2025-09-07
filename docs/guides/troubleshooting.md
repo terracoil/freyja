@@ -163,8 +163,8 @@ If you're still having issues:
 
 1. Check the [FAQ](../faq.md)
 2. Search [GitHub Issues](https://github.com/terracoil/freyja/issues)
-3. Ask in [Discussions](https://github.com/terracoil/freyja/discussions)
-4. File a [bug report](https://github.com/terracoil/freyja/issues/new)
+3. Ask in [Issues](https://github.com/terracoil/freyja/issues)
+4. File a [bug report](https://github.com/terracoil/freyja/issues)
 
 ---
 
