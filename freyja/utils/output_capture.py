@@ -2,19 +2,66 @@
 
 import sys
 from contextlib import contextmanager
+from dataclasses import dataclass
 from io import StringIO
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Dict, Any
+
+
+@dataclass
+class OutputCaptureConfig:
+  """Configuration for output capture behavior."""
+  enabled: bool = False
+  capture_stdout: bool = True
+  capture_stderr: bool = False
+  capture_stdin: bool = False
+  buffer_size: int = 1024 * 1024  # 1MB default
+  encoding: str = 'utf-8'
+  errors: str = 'replace'
+
+  @classmethod
+  def from_kwargs(cls, **kwargs) -> 'OutputCaptureConfig':
+    """Create config from FreyjaCLI kwargs."""
+    output_capture_config = kwargs.get('output_capture_config') or {}
+    return cls(
+      enabled=kwargs.get('capture_output', False),
+      capture_stdout=kwargs.get('capture_stdout', True),
+      capture_stderr=kwargs.get('capture_stderr', False),
+      capture_stdin=kwargs.get('capture_stdin', False),
+      **output_capture_config
+    )
 
 
 class OutputCapture:
     """Captures stdout and stderr during command execution."""
     
-    def __init__(self):
-        """Initialize output capture."""
-        self.stdout_buffer = StringIO()
-        self.stderr_buffer = StringIO()
+    def __init__(self, capture_stdout: bool = True, capture_stderr: bool = False, 
+                 capture_stdin: bool = False, buffer_size: int = 1024 * 1024,
+                 encoding: str = 'utf-8', errors: str = 'replace'):
+        """Initialize output capture with configurable streams.
+        
+        :param capture_stdout: Whether to capture stdout
+        :param capture_stderr: Whether to capture stderr
+        :param capture_stdin: Whether to capture stdin
+        :param buffer_size: Buffer size for captured streams
+        :param encoding: Text encoding for buffers
+        :param errors: Error handling for encoding
+        """
+        self.capture_stdout = capture_stdout
+        self.capture_stderr = capture_stderr
+        self.capture_stdin = capture_stdin
+        self.buffer_size = buffer_size
+        self.encoding = encoding
+        self.errors = errors
+        
+        # Create buffers only for streams we're capturing
+        self.stdout_buffer = StringIO() if capture_stdout else None
+        self.stderr_buffer = StringIO() if capture_stderr else None
+        self.stdin_buffer = StringIO() if capture_stdin else None
+        
+        # Original streams
         self.original_stdout: Optional[object] = None
         self.original_stderr: Optional[object] = None
+        self.original_stdin: Optional[object] = None
         self._active = False
     
     def start(self):
@@ -25,12 +72,18 @@ class OutputCapture:
         if self._active:
             raise RuntimeError("Output capture is already active")
         
-        self.original_stdout = sys.stdout
-        self.original_stderr = sys.stderr
-        
-        # Replace stdout and stderr with our buffers
-        sys.stdout = self.stdout_buffer
-        sys.stderr = self.stderr_buffer
+        # Store original streams and replace with buffers if capturing
+        if self.capture_stdout:
+            self.original_stdout = sys.stdout
+            sys.stdout = self.stdout_buffer
+            
+        if self.capture_stderr:
+            self.original_stderr = sys.stderr
+            sys.stderr = self.stderr_buffer
+            
+        if self.capture_stdin:
+            self.original_stdin = sys.stdin
+            sys.stdin = self.stdin_buffer
         
         self._active = True
     
@@ -43,23 +96,25 @@ class OutputCapture:
         if not self._active:
             raise RuntimeError("Output capture is not active")
         
-        # Restore original stdout/stderr
+        # Get captured content before restoring streams
+        stdout_content = self.stdout_buffer.getvalue() if self.stdout_buffer else ""
+        stderr_content = self.stderr_buffer.getvalue() if self.stderr_buffer else ""
+        
+        # Restore original streams
         if self.original_stdout:
             sys.stdout = self.original_stdout
         if self.original_stderr:
             sys.stderr = self.original_stderr
-        
-        # Get captured content
-        stdout_content = self.stdout_buffer.getvalue()
-        stderr_content = self.stderr_buffer.getvalue()
-        
-        # Reset buffers for next use
-        self.stdout_buffer = StringIO()
-        self.stderr_buffer = StringIO()
+        if self.original_stdin:
+            sys.stdin = self.original_stdin
         
         self._active = False
         self.original_stdout = None
         self.original_stderr = None
+        self.original_stdin = None
+        
+        # Note: We DON'T reset buffers here so captured content remains available
+        # Users can call clear() if they want to reset
         
         return stdout_content, stderr_content
     
@@ -71,12 +126,12 @@ class OutputCapture:
         return self._active
     
     @contextmanager
-    def capture(self):
+    def capture_output(self):
         """Context manager for output capture.
         
         Usage:
             capture = OutputCapture()
-            with capture.capture():
+            with capture.capture_output():
                 print("This will be captured")
             stdout, stderr = capture.stop()
         """
@@ -86,6 +141,45 @@ class OutputCapture:
         finally:
             if self._active:  # Only stop if still active
                 self.stop()
+
+    def get_output(self, stream: str = 'stdout') -> Optional[str]:
+        """Get captured output for specific stream.
+        
+        :param stream: Stream name ('stdout', 'stderr', 'stdin')
+        :return: Captured content or None if stream not captured
+        """
+        buffer_map = {
+            'stdout': self.stdout_buffer,
+            'stderr': self.stderr_buffer,
+            'stdin': self.stdin_buffer
+        }
+        buffer = buffer_map.get(stream)
+        if buffer:
+            return buffer.getvalue()
+        return None
+
+    def get_all_output(self) -> Dict[str, Optional[str]]:
+        """Get all captured output.
+        
+        :return: Dictionary with captured content for each stream
+        """
+        return {
+            'stdout': self.get_output('stdout'),
+            'stderr': self.get_output('stderr'),
+            'stdin': self.get_output('stdin')
+        }
+
+    def clear(self) -> None:
+        """Clear all capture buffers."""
+        if self.stdout_buffer:
+            self.stdout_buffer.seek(0)
+            self.stdout_buffer.truncate(0)
+        if self.stderr_buffer:
+            self.stderr_buffer.seek(0)
+            self.stderr_buffer.truncate(0)
+        if self.stdin_buffer:
+            self.stdin_buffer.seek(0)
+            self.stdin_buffer.truncate(0)
 
 
 class OutputFormatter:

@@ -16,15 +16,15 @@ class TestOutputCapture:
     def test_initialization(self):
         """Test OutputCapture initializes correctly."""
         capture = OutputCapture()
-        assert capture.stdout_buffer is not None
-        assert capture.stderr_buffer is not None
+        assert capture.stdout_buffer is not None  # Default: capture stdout
+        assert capture.stderr_buffer is None      # Default: don't capture stderr
         assert capture.original_stdout is None
         assert capture.original_stderr is None
         assert capture._active is False
 
     def test_start_capture(self):
         """Test starting output capture."""
-        capture = OutputCapture()
+        capture = OutputCapture(capture_stderr=True)  # Enable stderr capture for this test
         original_stdout = sys.stdout
         original_stderr = sys.stderr
         
@@ -46,7 +46,7 @@ class TestOutputCapture:
 
     def test_stop_capture(self):
         """Test stopping output capture."""
-        capture = OutputCapture()
+        capture = OutputCapture(capture_stderr=True)  # Enable stderr capture
         original_stdout = sys.stdout
         original_stderr = sys.stderr
         
@@ -87,7 +87,7 @@ class TestOutputCapture:
         capture = OutputCapture()
         original_stdout = sys.stdout
         
-        with capture.capture():
+        with capture.capture_output():
             print("test output")
             assert sys.stdout is capture.stdout_buffer
             assert capture.is_active() is True
@@ -101,7 +101,7 @@ class TestOutputCapture:
         original_stdout = sys.stdout
         
         with pytest.raises(ValueError):
-            with capture.capture():
+            with capture.capture_output():
                 print("test output")
                 raise ValueError("Test error")
         
@@ -122,7 +122,7 @@ class TestOutputCapture:
 
     def test_capture_stderr_only(self):
         """Test capturing only stderr."""
-        capture = OutputCapture()
+        capture = OutputCapture(capture_stdout=False, capture_stderr=True)
         
         capture.start()
         print("stderr message", file=sys.stderr)
@@ -133,7 +133,7 @@ class TestOutputCapture:
 
     def test_capture_both_streams(self):
         """Test capturing both stdout and stderr."""
-        capture = OutputCapture()
+        capture = OutputCapture(capture_stderr=True)  # Enable stderr capture
         
         capture.start()
         print("stdout message")
@@ -144,7 +144,7 @@ class TestOutputCapture:
         assert "stderr message" in stderr_content
 
     def test_multiple_captures(self):
-        """Test multiple capture sessions reset buffers."""
+        """Test multiple capture sessions accumulate in buffers."""
         capture = OutputCapture()
         
         # First capture
@@ -152,15 +152,24 @@ class TestOutputCapture:
         print("first message")
         first_stdout, _ = capture.stop()
         
-        # Second capture  
+        # Second capture (should accumulate, not reset)
         capture.start()
         print("second message")
         second_stdout, _ = capture.stop()
         
-        # Buffer should be reset between captures
+        # Buffers now accumulate content unless explicitly cleared
         assert "first message" in first_stdout
         assert "second message" in second_stdout
-        assert "first message" not in second_stdout
+        assert "first message" in second_stdout  # Accumulated from previous capture
+        
+        # Test explicit clearing
+        capture.clear()
+        capture.start()
+        print("third message")
+        third_stdout, _ = capture.stop()
+        
+        assert "third message" in third_stdout
+        assert "first message" not in third_stdout  # Should be cleared
 
 
 class TestOutputFormatter:

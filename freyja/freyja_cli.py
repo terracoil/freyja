@@ -5,9 +5,11 @@ import os
 import sys
 from typing import *
 
+from contextlib import contextmanager
 from freyja.cli import ClassHandler, ExecutionCoordinator
 from freyja.command import CommandDiscovery, CommandExecutor
 from freyja.parser import CommandParser
+from freyja.utils.output_capture import OutputCaptureConfig
 
 Target = Union[Type[Any], Sequence[Type[Any]]]
 
@@ -17,7 +19,10 @@ class FreyjaCLI:
   """
 
   def __init__(self, target: Target, title: Optional[str] = None, method_filter: Optional[callable] = None,
-               theme=None, alphabetize: bool = True, completion: bool = True, theme_tuner=False):
+               theme=None, alphabetize: bool = True, completion: bool = True, theme_tuner=False,
+               # Output capture parameters
+               capture_output: bool = False, capture_stdout: bool = True, capture_stderr: bool = False,
+               capture_stdin: bool = False, output_capture_config: Optional[Dict[str, Any]] = None):
     """
     Initialize FreyjaCLI with target and configuration.
 
@@ -27,6 +32,11 @@ class FreyjaCLI:
     :param theme: Optional theme for colored output
     :param alphabetize: Whether to sort cmd_tree and options alphabetically
     :param completion: Whether to enable shell completion
+    :param capture_output: Enable output capture (opt-in, default: False)
+    :param capture_stdout: Capture stdout when output capture is enabled
+    :param capture_stderr: Capture stderr when output capture is enabled
+    :param capture_stdin: Capture stdin when output capture is enabled
+    :param output_capture_config: Advanced OutputCapture configuration
     """
 
     # Initialize discovery service (replaces TargetAnalyzer)
@@ -48,6 +58,15 @@ class FreyjaCLI:
     self.theme = theme
     self.enable_completion = completion
 
+    # Create output capture configuration
+    self.output_capture_config = OutputCaptureConfig.from_kwargs(
+      capture_output=capture_output,
+      capture_stdout=capture_stdout,
+      capture_stderr=capture_stderr,
+      capture_stdin=capture_stdin,
+      output_capture_config=output_capture_config
+    )
+
     # Discover cmd_tree
     # self.discovery.cmd_tree = discovery.cmd_tree
 
@@ -55,7 +74,7 @@ class FreyjaCLI:
     executors = self._initialize_executors()
 
     # Initialize execution coordinator
-    self.execution_coordinator = ExecutionCoordinator(self.target_mode, executors)
+    self.execution_coordinator = ExecutionCoordinator(self.target_mode, executors, self.output_capture_config)
     # Pass command tree and CLI instance for completion
     self.execution_coordinator.command_tree = self.discovery.cmd_tree
     self.execution_coordinator.cli_instance = self
@@ -96,6 +115,68 @@ class FreyjaCLI:
       result = self._execute_with_context(parser, args)
 
     return result
+
+  # Output Capture Public API
+  @property
+  def output_capture(self) -> Optional['OutputCapture']:
+    """Access the OutputCapture instance if enabled."""
+    return self.execution_coordinator.output_capture
+
+  def get_captured_output(self, stream: str = 'stdout') -> Optional[str]:
+    """Get captured output if capture is enabled.
+    
+    :param stream: Stream name ('stdout', 'stderr', 'stdin')
+    :return: Captured content or None if capture disabled
+    """
+    if self.output_capture:
+      return self.output_capture.get_output(stream)
+    return None
+
+  def get_all_captured_output(self) -> Dict[str, Optional[str]]:
+    """Get all captured output if capture is enabled.
+    
+    :return: Dictionary with captured content for each stream
+    """
+    if self.output_capture:
+      return self.output_capture.get_all_output()
+    return {'stdout': None, 'stderr': None, 'stdin': None}
+
+  def clear_captured_output(self) -> None:
+    """Clear captured output buffer."""
+    if self.output_capture:
+      self.output_capture.clear()
+
+  def enable_output_capture(self, **kwargs) -> None:
+    """Enable output capture dynamically.
+    
+    :param kwargs: OutputCaptureConfig parameters (capture_stdout, capture_stderr, etc.)
+    """
+    self.execution_coordinator.enable_output_capture(**kwargs)
+
+  def disable_output_capture(self) -> None:
+    """Disable output capture dynamically."""
+    self.execution_coordinator.disable_output_capture()
+
+  @contextmanager
+  def capture_output(self, **kwargs):
+    """Context manager for temporary output capture.
+    
+    :param kwargs: OutputCaptureConfig parameters
+    """
+    was_enabled = self.execution_coordinator.has_output_capture()
+    old_config = None
+    
+    if was_enabled:
+      old_config = self.execution_coordinator.get_output_config()
+    
+    try:
+      self.enable_output_capture(**kwargs)
+      yield self.output_capture
+    finally:
+      if was_enabled and old_config:
+        self.execution_coordinator.set_output_config(old_config)
+      elif not was_enabled:
+        self.disable_output_capture()
 
   def _execute_with_context(self, parser, args) -> Any:
     """Execute command with FreyjaCLI context."""

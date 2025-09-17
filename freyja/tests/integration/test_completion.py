@@ -12,7 +12,7 @@ from freyja.completion.bash import BashCompletionHandler
 
 
 # Test class for completion
-class TestCompletionClass:
+class CompletionTestClass:
   """Test class for completion functionality."""
 
   def __init__(self, config: str = "test"):
@@ -40,7 +40,7 @@ class TestCompletionHandler:
   def test_get_completion_handler(self):
     """Test completion handler factory function."""
     # Create test FreyjaCLI
-    cli = FreyjaCLI(TestCompletionClass, "Test FreyjaCLI")
+    cli = FreyjaCLI(CompletionTestClass, "Test FreyjaCLI")
 
     # Test bash handler
     handler = get_completion_handler(cli, 'bash')
@@ -52,7 +52,7 @@ class TestCompletionHandler:
 
   def test_bash_completion_handler(self):
     """Test bash completion handler."""
-    cli = FreyjaCLI(TestCompletionClass, "Test FreyjaCLI")
+    cli = FreyjaCLI(CompletionTestClass, "Test FreyjaCLI")
     handler = BashCompletionHandler(cli)
 
     # Test script generation
@@ -63,7 +63,7 @@ class TestCompletionHandler:
 
   def test_completion_context(self):
     """Test completion context creation."""
-    cli = FreyjaCLI(TestCompletionClass, "Test FreyjaCLI")
+    cli = FreyjaCLI(CompletionTestClass, "Test FreyjaCLI")
     parser = cli.create_parser(no_color=True)
 
     context = CompletionContext(
@@ -81,7 +81,7 @@ class TestCompletionHandler:
 
   def test_get_available_commands(self):
     """Test getting available cmd_tree from parser."""
-    cli = FreyjaCLI(TestCompletionClass, "Test FreyjaCLI")
+    cli = FreyjaCLI(CompletionTestClass, "Test FreyjaCLI")
     handler = BashCompletionHandler(cli)
     parser = cli.create_parser(no_color=True)
 
@@ -91,7 +91,7 @@ class TestCompletionHandler:
 
   def test_get_available_options(self):
     """Test getting available options from parser."""
-    cli = FreyjaCLI(TestCompletionClass, "Test FreyjaCLI")
+    cli = FreyjaCLI(CompletionTestClass, "Test FreyjaCLI")
     handler = BashCompletionHandler(cli)
     parser = cli.create_parser(no_color=True)
 
@@ -105,7 +105,7 @@ class TestCompletionHandler:
 
   def test_complete_partial_word(self):
     """Test partial word completion."""
-    cli = FreyjaCLI(TestCompletionClass, "Test FreyjaCLI")
+    cli = FreyjaCLI(CompletionTestClass, "Test FreyjaCLI")
     handler = BashCompletionHandler(cli)
 
     candidates = ["test-function", "test-command", "other-command"]
@@ -143,7 +143,7 @@ class TestFileCompletion:
 
   def test_file_path_completion(self):
     """Test file path completion functionality."""
-    cli = FreyjaCLI(TestCompletionClass, "Test FreyjaCLI")
+    cli = FreyjaCLI(CompletionTestClass, "Test FreyjaCLI")
     handler = BashCompletionHandler(cli)
 
     # Create temporary directory with test files

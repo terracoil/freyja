@@ -7,17 +7,70 @@ import os
 from typing import *
 
 from .enums import TargetMode
+from freyja.utils.output_capture import OutputCapture, OutputCaptureConfig
 
 
 class ExecutionCoordinator:
   """Coordinates FreyjaCLI argument parsing and command execution."""
 
-  def __init__(self, target_mode: TargetMode, executors: Dict[str, Any]):
+  def __init__(self, target_mode: TargetMode, executors: Dict[str, Any], 
+               output_capture_config: Optional[OutputCaptureConfig] = None):
     """Initialize execution coordinator."""
     self.target_mode = target_mode
     self.executors = executors
     self.command_tree = None
     self.cli_instance = None
+    
+    # Initialize output capture configuration
+    self.output_capture_config = output_capture_config or OutputCaptureConfig()
+    self.output_capture: Optional[OutputCapture] = None
+    
+    # Initialize output capture if enabled
+    if self.output_capture_config.enabled:
+      self._initialize_output_capture()
+
+  def _initialize_output_capture(self) -> None:
+    """Initialize OutputCapture based on config."""
+    self.output_capture = OutputCapture(
+      capture_stdout=self.output_capture_config.capture_stdout,
+      capture_stderr=self.output_capture_config.capture_stderr,
+      capture_stdin=self.output_capture_config.capture_stdin,
+      buffer_size=self.output_capture_config.buffer_size,
+      encoding=self.output_capture_config.encoding,
+      errors=self.output_capture_config.errors
+    )
+
+  def enable_output_capture(self, **kwargs) -> None:
+    """Enable output capture dynamically."""
+    self.output_capture_config = OutputCaptureConfig.from_kwargs(
+      enabled=True, **kwargs
+    )
+    self._initialize_output_capture()
+
+  def disable_output_capture(self) -> None:
+    """Disable output capture and cleanup."""
+    if self.output_capture and self.output_capture._active:
+      self.output_capture.stop()
+    self.output_capture = None
+    self.output_capture_config.enabled = False
+
+  def has_output_capture(self) -> bool:
+    """Check if output capture is enabled."""
+    return self.output_capture is not None
+
+  def get_output_config(self) -> OutputCaptureConfig:
+    """Get current output capture configuration."""
+    return self.output_capture_config
+
+  def set_output_config(self, config: OutputCaptureConfig) -> None:
+    """Set output capture configuration."""
+    was_enabled = self.has_output_capture()
+    if was_enabled:
+      self.disable_output_capture()
+    
+    self.output_capture_config = config
+    if config.enabled:
+      self._initialize_output_capture()
 
   def parse_and_execute(self, parser, args: Optional[List[str]]) -> Any:
     """
@@ -132,6 +185,15 @@ class ExecutionCoordinator:
     # Detect verbose flag from parsed arguments
     verbose = getattr(parsed, 'verbose', False) or getattr(parsed, '_global_verbose', False)
 
+    # Execute with conditional output capture
+    if self.output_capture:
+      with self.output_capture.capture_output():
+        return self._execute_internal(parsed, verbose)
+    else:
+      return self._execute_internal(parsed, verbose)
+
+  def _execute_internal(self, parsed, verbose: bool) -> Any:
+    """Internal method to execute command (used by both capture and non-capture paths)."""
     # Check if we have multiple classes (multiple executors)
     if len(self.executors) > 1 and 'primary' not in self.executors:
       return self._execute_multi_class_command(parsed, verbose)

@@ -19,6 +19,7 @@ Discover the powerful features that make Freyja a complete CLI solution. From au
 * **[🏷️ Type Annotations](type-annotations.md)** - Complete guide to supported types including basic types, collections, enums, and custom converters
 * **[🌈 Shell Completion](shell-completion.md)** - Enable tab completion for Bash, Zsh, Fish, and PowerShell with zero configuration
 * **[❌ Error Handling](error-handling.md)** - Robust error management with user-friendly messages and proper exit codes
+* **[📝 Output Capture](output-capture.md)** - Capture and control command output programmatically for testing and monitoring
 
 ### 🔥 New Features
 * **[🎯 Flexible Argument Ordering](flexible-ordering.md)** - Mix options and arguments in any order for natural command flow
@@ -56,6 +57,16 @@ Create user-friendly CLIs with robust error handling:
 - **🚪 Proper Exit Codes** - Standard exit codes for shell script integration
 - **🛡️ Exception Safety** - Graceful handling of unexpected errors
 - **🔍 Debug Support** - Detailed error information for development
+
+### 📝 Output Capture Control
+**[Complete Output Guide →](output-capture.md)**
+
+Capture and control command output programmatically:
+- **🔒 Opt-in Design** - Disabled by default for zero performance overhead
+- **🎛️ Stream Control** - Capture stdout, stderr, stdin individually or together
+- **🧪 Testing Ready** - Perfect for unit testing CLI output without subprocess calls
+- **🧠 Smart Context** - Temporary capture with automatic cleanup
+- **📊 Full API** - Complete control with enable/disable/clear operations
 
 ## 🔥 New Features
 
@@ -217,6 +228,7 @@ Choose the features most important for your use case:
 - **[Type System →](type-annotations.md)** - Master all supported types and validation
 - **[Shell Completion →](shell-completion.md)** - Enable professional tab completion
 - **[Error Handling →](error-handling.md)** - Create user-friendly error experiences
+- **[Output Capture →](output-capture.md)** - Control and capture command output for testing
 
 **🔥 Latest Features**  
 - **[Flexible Ordering →](flexible-ordering.md)** - Natural argument ordering for better UX
