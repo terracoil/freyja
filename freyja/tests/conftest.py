@@ -104,3 +104,15 @@ def sample_function_opts():
     'sample_function': {'description': 'Sample function for testing'},
     'function_with_types': {'description': 'Function with various types'}
   }
+
+
+def pytest_configure(config):
+  """Configure pytest markers."""
+  config.addinivalue_line("markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')")
+
+
+def pytest_collection_modifyitems(config, items):
+  """Automatically mark certain tests as slow."""
+  for item in items:
+    if "external_links" in item.nodeid:
+      item.add_marker(pytest.mark.slow)

@@ -24,6 +24,7 @@ class Theme:
                title: ThemeStyle | None = None,
                subtitle: ThemeStyle | None = None,
                required_asterisk: ThemeStyle | None = None,
+               command_output: ThemeStyle | None = None,
                # Backward compatibility: flat attributes (legacy constructor support)
                command_name: ThemeStyle | None = None,
                command_description: ThemeStyle | None = None,
@@ -87,6 +88,7 @@ class Theme:
     self.title = title or ThemeStyle()
     self.subtitle = subtitle or ThemeStyle()
     self.required_asterisk = required_asterisk or ThemeStyle()
+    self.command_output = command_output or ThemeStyle()
 
   # Backward compatibility properties for flat attribute access
 

@@ -129,14 +129,20 @@ class ExecutionCoordinator:
     # Inject CLI instance for system commands
     self._inject_cli_instance(parsed)
 
+    # Detect verbose flag from parsed arguments
+    verbose = getattr(parsed, 'verbose', False) or getattr(parsed, '_global_verbose', False)
+
     # Check if we have multiple classes (multiple executors)
     if len(self.executors) > 1 and 'primary' not in self.executors:
-      return self._execute_multi_class_command(parsed)
+      return self._execute_multi_class_command(parsed, verbose)
     else:
       # Single class execution
       executor = self.executors.get('primary')
       if not executor:
         raise RuntimeError("No executor available for command execution")
+
+      # Update executor verbose setting
+      executor.verbose = verbose
 
       return executor.execute_command(
         parsed=parsed,
@@ -151,7 +157,7 @@ class ExecutionCoordinator:
       if self.cli_instance:
         parsed._cli_instance = self.cli_instance
 
-  def _execute_multi_class_command(self, parsed) -> Any:
+  def _execute_multi_class_command(self, parsed, verbose: bool = False) -> Any:
     """Execute command for multiple-class FreyjaCLI."""
     function_name = parsed._function_name
     source_class = self._find_source_class_for_function(function_name)
@@ -163,6 +169,9 @@ class ExecutionCoordinator:
 
     if not executor:
       raise ValueError(f"No executor found for class: {source_class.__name__}")
+
+    # Update executor verbose setting
+    executor.verbose = verbose
 
     return executor.execute_command(
       parsed=parsed,

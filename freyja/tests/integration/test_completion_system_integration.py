@@ -189,7 +189,7 @@ class TestCompletionSystemIntegration(unittest.TestCase):
 
     def test_integration_with_examples(self):
         """Integration test with actual example files."""
-        examples_dir = Path(__file__).parent.parent.parent / "examples"
+        examples_dir = Path(__file__).parent.parent.parent.parent / "examples"
 
         if not examples_dir.exists():
             self.skipTest("Examples directory not found")
@@ -225,7 +225,7 @@ class TestCompletionSystemIntegration(unittest.TestCase):
 
     def test_completion_after_normal_execution(self):
         """Test that completion works after normal execution."""
-        examples_dir = Path(__file__).parent.parent.parent / "examples"
+        examples_dir = Path(__file__).parent.parent.parent.parent / "examples"
         cls_example = examples_dir / "cls_example"
 
         if not cls_example.exists():

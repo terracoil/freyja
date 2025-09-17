@@ -45,6 +45,7 @@ class FreyjaCLI:
     self.title = title or self.discovery.generate_title()
 
     # Store only essential config
+    self.theme = theme
     self.enable_completion = completion
 
     # Discover cmd_tree
@@ -106,17 +107,34 @@ class FreyjaCLI:
 
   def _initialize_executors(self) -> dict:
     """Initialize command executors based on target mode."""
+    # Create color formatter from theme
+    color_formatter = None
+    theme = self.theme
+    if not theme:
+      from freyja.theme.defaults import create_default_theme
+      theme = create_default_theme()
+    
+    if theme:
+      from freyja.theme import ColorFormatter
+      color_formatter = ColorFormatter()
+    
     if self.discovery.target_classes and len(self.discovery.target_classes) > 1:
       # Multiple classes: create executor for each class
       return {
-        target_class: CommandExecutor(target_class=target_class)
+        target_class: CommandExecutor(
+          target_class=target_class,
+          color_formatter=color_formatter,
+          verbose=False  # Will be updated during execution
+        )
         for target_class in self.discovery.target_classes
       }
 
     # Single class: create single primary executor
     return {
       'primary': CommandExecutor(
-        target_class=self.discovery.primary_class
+        target_class=self.discovery.primary_class,
+        color_formatter=color_formatter,
+        verbose=False  # Will be updated during execution
       )
     }
 

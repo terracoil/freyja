@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "freyja"
-version = "1.0.13"  # Will use poetry-dynamic-versioning
+version = "1.0.14"  # Will use poetry-dynamic-versioning
 description = "Python Library that builds a complete CLI given one or more functions using introspection"
 authors = ["Steven Miers <steven.miers@gmail.com>"]
 readme = "README.md"
@@ -12,7 +12,7 @@ keywords = ["cli", "auto", "introspection", "argparse", "command-line"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.13.7",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: Developers",
@@ -27,7 +27,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.13.7"
+python = "^3.13"
 # No runtime dependencies - the library uses only stdlib
 
 [tool.poetry.group.dev.dependencies]
@@ -70,7 +70,7 @@ extend-exclude = '''
 '''
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py313"
 line-length = 100
 
 [tool.ruff.lint]
@@ -94,7 +94,7 @@ ignore = [
 "tests/*" = ["S101", "S603"]
 
 [tool.mypy]
-python_version = "3.13.7"
+python_version = "3.13"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false  # Start lenient, can be tightened later
