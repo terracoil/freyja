@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+# Test script to reproduce the completion interference bug
+
+cd "$(dirname "$0")/.."
+
+echo "=== Testing Completion Interference Bug ==="
+echo
+
+# Test 1: Normal execution (should show help)
+echo "Test 1: Normal execution"
+echo "Command: PYTHONPATH=. python examples/cls_example"
+OUTPUT1=$(PYTHONPATH=. python examples/cls_example 2>&1)
+if echo "$OUTPUT1" | grep -q "usage:"; then
+    echo "✅ PASS: Shows usage"
+else
+    echo "❌ FAIL: Does not show usage"
+    echo "Output: $OUTPUT1"
+fi
+echo
+
+# Test 2: Completion request (should output "foo")
+echo "Test 2: Completion request"
+echo "Command: _FREYJA_COMPLETE=zsh COMP_WORDS_STR='examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python examples/cls_example --_complete"
+OUTPUT2=$(_FREYJA_COMPLETE=zsh COMP_WORDS_STR='examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python examples/cls_example --_complete 2>&1)
+if echo "$OUTPUT2" | grep -q "foo"; then
+    echo "✅ PASS: Shows completion"
+    echo "Output: $OUTPUT2"
+else
+    echo "❌ FAIL: Does not show completion"
+    echo "Output: $OUTPUT2"
+fi
+echo
+
+# Test 3: Normal execution after completion (should show help again)
+echo "Test 3: Normal execution after completion"
+echo "Command: PYTHONPATH=. python examples/cls_example"
+OUTPUT3=$(PYTHONPATH=. python examples/cls_example 2>&1)
+if echo "$OUTPUT3" | grep -q "usage:"; then
+    echo "✅ PASS: Shows usage"
+else
+    echo "❌ FAIL: Does not show usage"
+    echo "Output: $OUTPUT3"
+fi
+echo
+
+# Test 4: Check for potential argument parsing issues
+echo "Test 4: Test empty args behavior"
+echo "Command: PYTHONPATH=. python -c 'import sys; sys.argv=[\"cls_example\"]; exec(open(\"examples/cls_example\").read())'"
+OUTPUT4=$(PYTHONPATH=. python -c 'import sys; sys.argv=["cls_example"]; exec(open("examples/cls_example").read())' 2>&1)
+if echo "$OUTPUT4" | grep -q "usage:"; then
+    echo "✅ PASS: Empty args show usage"
+else
+    echo "❌ FAIL: Empty args do not show usage"
+    echo "Output: $OUTPUT4"
+fi
+echo
+
+# Test 5: Test with just the --_complete flag (without environment)
+echo "Test 5: Test --_complete flag without environment"
+echo "Command: PYTHONPATH=. python examples/cls_example --_complete"
+OUTPUT5=$(PYTHONPATH=. python examples/cls_example --_complete 2>&1)
+if echo "$OUTPUT5" | grep -q "usage:"; then
+    echo "❌ FAIL: Shows usage when should handle completion"
+    echo "Output: $OUTPUT5"
+else
+    echo "✅ PASS: Handles completion mode"
+    echo "Output: $OUTPUT5"
+fi
+echo
+
+# Test 6: Test foo command directly (to see expected output)
+echo "Test 6: Test foo command directly"
+echo "Command: PYTHONPATH=. python examples/cls_example foo --text 'test_string'"
+OUTPUT6=$(PYTHONPATH=. python examples/cls_example foo --text "test_string" 2>&1)
+echo "Output: $OUTPUT6"
+if echo "$OUTPUT6" | grep -q "test_string"; then
+    echo "✅ PASS: foo command works correctly"
+else
+    echo "❌ FAIL: foo command does not work correctly"
+fi
+echo
+
+# Test 7: The critical test - if somehow 'foo' gets cached as the command
+echo "Test 7: Critical test - check for argument caching"
+echo "Simulating the bug described by checking if 'foo' somehow becomes default command"
+echo
+
+# Test with args that should show help but might trigger foo
+echo "Command: PYTHONPATH=. python examples/cls_example"
+OUTPUT7=$(PYTHONPATH=. python examples/cls_example 2>&1)
+if echo "$OUTPUT7" | grep -q "^foo$"; then
+    echo "❌ CRITICAL BUG DETECTED: Output is just 'foo'"
+    echo "This matches the user's reported bug!"
+elif echo "$OUTPUT7" | grep -q "usage:"; then
+    echo "✅ PASS: Shows usage (bug not reproduced)"
+else
+    echo "⚠️  UNKNOWN: Unexpected output"
+    echo "Output: $OUTPUT7"
+fi
+
+echo
+echo "=== Summary ==="
+echo "If Test 7 shows '❌ CRITICAL BUG DETECTED', the bug is reproduced."
+echo "Otherwise, the bug might be shell-specific or require a different trigger."

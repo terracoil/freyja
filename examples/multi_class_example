@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+"""Multi-class Freyja CLI example - executable wrapper."""
+import sys
+from pathlib import Path
+
+# Add parent directory to path so we can import freyja
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Import Freyja and the classes
+from freyja import FreyjaCLI
+from multi_class_example import DataProcessor, FileManager, ReportGenerator
+
+if __name__ == '__main__':
+  cli = FreyjaCLI(
+    [DataProcessor, FileManager, ReportGenerator],
+    title="Multi-Class Utility Suite",
+    theme_name="colorful",
+    completion=True
+  )
+  cli.display()
