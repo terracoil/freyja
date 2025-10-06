@@ -15,19 +15,22 @@ from ..utils.output_capture import OutputCapture, OutputFormatter
 class CommandExecutor:
   """Centralized service for executing FreyjaCLI commands with different patterns."""
 
-  def __init__(self, target_class: type | None = None, color_formatter=None, verbose: bool = False):
+  def __init__(self, target_class: type | None = None, color_formatter=None, verbose: bool = False, 
+               enable_output_capture: bool = False):
     """Initialize command executor with target information.
 
     :param target_class: Class containing methods to execute
     :param color_formatter: ColorFormatter instance for styling output
     :param verbose: Whether to run in verbose mode
+    :param enable_output_capture: Whether to enable output capture (default: False)
     """
     self.target_class = target_class
     self.color_formatter = color_formatter
     self.verbose = verbose
+    self.enable_output_capture = enable_output_capture
     self.spinner = ExecutionSpinner(color_formatter, verbose)
-    self.output_capture = OutputCapture()
-    self.output_formatter = OutputFormatter(color_formatter)
+    self.output_capture = OutputCapture() if enable_output_capture else None
+    self.output_formatter = OutputFormatter(color_formatter) if enable_output_capture else None
 
   def _build_command_context(self, parsed) -> CommandContext:
     """Build command context from parsed arguments for spinner display.
@@ -88,7 +91,7 @@ class CommandExecutor:
   def _execute_inner_class_command(self, parsed) -> Any:
     """Execute command using inner class pattern.
 
-    Creates main class instance, inner class instance, then invokes method.
+    Creates parent class instance, inner class instance, then invokes method.
     """
     method = parsed._cli_function
     original_name = parsed._function_name
@@ -105,17 +108,17 @@ class CommandExecutor:
     # For both cases, the inner class name is the second-to-last part
     inner_class_name = qualname_parts[-2]  # Get the inner class name
 
-    # Find the actual inner class object from the main target class
+    # Find the actual inner class object from the parent target class
     if not hasattr(self.target_class, inner_class_name):
       raise RuntimeError(f"Inner class {inner_class_name} not found in {self.target_class.__name__}")
 
     inner_class_obj = getattr(self.target_class, inner_class_name)
 
-    # 1. Create main class instance with global arguments
-    main = self._create_main(parsed)
+    # 1. Create parent class instance with global arguments
+    parent = self._create_parent(parsed)
 
     # 2. Create inner class instance with sub-global arguments
-    inner_instance = self._create_inner_instance(inner_class_obj, command_path, parsed, main)
+    inner_instance = self._create_inner_instance(inner_class_obj, command_path, parsed, parent)
 
     # 3. Execute method with command arguments
     return self._execute_method(inner_instance, original_name, parsed)
@@ -128,18 +131,18 @@ class CommandExecutor:
     method = parsed._cli_function
 
     # Create class instance with global arguments
-    class_instance = self._create_main(parsed)
+    class_instance = self._create_parent(parsed)
 
     # Execute method with arguments
     return self._execute_method(class_instance, method.__name__, parsed)
 
 
-  def _create_main(self, parsed) -> Any:
-    """Create main class instance with global arguments."""
-    main_kwargs = {}
-    main_sig = inspect.signature(self.target_class.__init__)
+  def _create_parent(self, parsed) -> Any:
+    """Create parent class instance with global arguments."""
+    parent_kwargs = {}
+    parent_sig = inspect.signature(self.target_class.__init__)
 
-    for param_name, param in main_sig.parameters.items():
+    for param_name, param in parent_sig.parameters.items():
       if param_name == 'self':
         continue
       if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
@@ -149,14 +152,14 @@ class CommandExecutor:
       global_attr = f'_global_{param_name}'
       if hasattr(parsed, global_attr):
         value = getattr(parsed, global_attr)
-        main_kwargs[param_name] = value
+        parent_kwargs[param_name] = value
 
     try:
-      return self.target_class(**main_kwargs)
+      return self.target_class(**parent_kwargs)
     except TypeError as e:
       raise RuntimeError(f"Cannot instantiate {self.target_class.__name__} with global args: {e}") from e
 
-  def _create_inner_instance(self, inner_class: type, command_name: str, parsed, main: Any) -> Any:
+  def _create_inner_instance(self, inner_class: type, command_name: str, parsed, parent: Any) -> Any:
     """Create inner class instance with sub-global arguments."""
     inner_kwargs = {}
     inner_sig = inspect.signature(inner_class.__init__)
@@ -174,7 +177,7 @@ class CommandExecutor:
         inner_kwargs[param_name] = value
 
     try:
-      # Special handling for System commands - they need CLI instance, not main class instance
+      # Special handling for System commands - they need CLI instance, not parent class instance
       if self._is_system_inner_class(inner_class):
         # For System inner classes, pass CLI instance if available
         cli_instance = getattr(parsed, '_cli_instance', None)
@@ -182,8 +185,8 @@ class CommandExecutor:
           inner_kwargs['cli_instance'] = cli_instance
         return inner_class(**inner_kwargs)
       else:
-        # Regular inner class - pass main class instance as first argument
-        return inner_class(main, **inner_kwargs)
+        # Regular inner class - pass parent class instance as first argument
+        return inner_class(parent, **inner_kwargs)
     except TypeError as e:
       raise RuntimeError(f"Cannot instantiate {inner_class.__name__} with sub-global args: {e}") from e
 
@@ -248,9 +251,30 @@ class CommandExecutor:
       # Get command name for output formatting (before spinner stops)
       command_name = self.spinner._format_command_name()
       
-      # Capture output during execution
-      self.output_capture.start()
-      try:
+      # Only use output capture if explicitly enabled
+      if self.enable_output_capture and self.output_capture:
+        # Capture output during execution
+        self.output_capture.start()
+        try:
+          # Check if this is a hierarchical command with command path
+          if hasattr(parsed, '_command_path'):
+            # Execute inner class method
+            result = self._execute_inner_class_command(parsed)
+          else:
+            # Execute direct method from class
+            result = self._execute_direct_method_command(parsed)
+        except Exception:
+          success = False
+          raise
+        finally:
+          # Get captured output before stopping
+          stdout_content, stderr_content = self.output_capture.stop()
+        
+        # Display output conditionally
+        if self.output_formatter.should_display_output(self.verbose, success):
+          self.output_formatter.format_output(command_name, stdout_content, stderr_content)
+      else:
+        # Execute commands directly without output capture - output flows naturally to user
         # Check if this is a hierarchical command with command path
         if hasattr(parsed, '_command_path'):
           # Execute inner class method
@@ -258,16 +282,6 @@ class CommandExecutor:
         else:
           # Execute direct method from class
           result = self._execute_direct_method_command(parsed)
-      except Exception:
-        success = False
-        raise
-      finally:
-        # Get captured output before stopping
-        stdout_content, stderr_content = self.output_capture.stop()
-      
-      # Display output conditionally
-      if self.output_formatter.should_display_output(self.verbose, success):
-        self.output_formatter.format_output(command_name, stdout_content, stderr_content)
     
     return result
 

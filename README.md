@@ -246,21 +246,22 @@ cd freyja
 
 # Install Poetry and setup environment  
 curl -sSL https://install.python-poetry.org | python3 -
-./bin/setup-dev.sh
+./bin/dev-tools setup env
 
 # Run tests and examples
-./bin/test.sh
+./bin/dev-tools test run
 poetry run python examples/cls_example --help
 ```
 
 ### Development Commands
 
 ```bash
-poetry install              # Install dependencies
-./bin/test.sh              # Run tests with coverage
-./bin/lint.sh              # Run all linters and formatters
-poetry build               # Build package
-./bin/publish.sh           # Publish to PyPI (maintainers)
+poetry install                    # Install dependencies
+./bin/dev-tools test run          # Run tests with coverage
+./bin/dev-tools build lint        # Run all linters and formatters
+./bin/dev-tools build compile     # Build package
+./bin/dev-tools build publish     # Publish to PyPI (maintainers)
+./bin/dev-tools build tag-version # Create version tags
 ```
 
 ## ⚙️ Requirements

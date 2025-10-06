@@ -81,7 +81,7 @@ freyja/
 **Testing**
 ```bash
 # Run all tests with coverage
-./bin/test.sh
+./bin/dev-tools test run
 
 # Run specific test file
 poetry run pytest tests/test_cli.py -v

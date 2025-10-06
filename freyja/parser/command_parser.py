@@ -5,6 +5,7 @@ from typing import *
 from freyja.help.help_formatter import HierarchicalHelpFormatter
 
 from ..theme import create_default_theme
+from ..utils.version import format_title_with_version
 from .argument_parser import ArgumentParser
 from .docstring_parser import DocStringParser
 
@@ -68,9 +69,10 @@ class CommandParser:
         **kwargs
       )
 
-    # Create main parser
+    # Create main parser with version-enhanced title
+    enhanced_title = format_title_with_version(self.title)
     parser = argparse.ArgumentParser(
-      description=self.title,
+      description=enhanced_title,
       formatter_class=create_formatter_with_theme
     )
 

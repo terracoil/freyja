@@ -49,14 +49,14 @@ class DataProcessor:
   class FileOperations:
     """File processing operations with batch capabilities."""
 
-    def __init__(self, main, work_dir: str = "./data", backup: bool = True):
+    def __init__(self, parent, work_dir: str = "./data", backup: bool = True):
       """Initialize file operations with working directory settings.
 
-      :param main: Main DataProcessor instance with global configuration
+      :param parent: Parent DataProcessor instance with global configuration
       :param work_dir: Working directory for file operations
       :param backup: Create backup copies before processing
       """
-      self.main = main
+      self.parent = parent
       self.work_dir = work_dir
       self.backup = backup
 
@@ -71,14 +71,14 @@ class DataProcessor:
       """
       action = "Would process" if dry_run else "Processing"
       print(f"{action} file: {input_file}")
-      print(f"Global config: {self.main.config_file}")
+      print(f"Global config: {self.parent.config_file}")
       print(f"Working directory: {self.work_dir}")
       print(f"Mode: {mode.value}")
       print(f"Backup enabled: {self.backup}")
 
-      if self.main.verbose:
-        print(f"📝 Verbose: Using global settings from {self.main.config_file}")
-        print(f"📝 Verbose: Main instance processed count: {self.main.processed_count}")
+      if self.parent.verbose:
+        print(f"📝 Verbose: Using global settings from {self.parent.config_file}")
+        print(f"📝 Verbose: Main instance processed count: {self.parent.processed_count}")
 
       if not dry_run:
         print(f"✓ File processed successfully")
@@ -95,13 +95,13 @@ class DataProcessor:
       """
       processing_mode = "parallel" if parallel else "sequential"
       print(f"Batch processing {max_files} files matching '{pattern}'")
-      print(f"Global config: {self.main.config_file}")
+      print(f"Global config: {self.parent.config_file}")
       print(f"Working directory: {self.work_dir}")
       print(f"Processing mode: {processing_mode}")
       print(f"Backup enabled: {self.backup}")
 
-      if self.main.verbose:
-        print(f"📝 Verbose: Batch processing using global config from {self.main.config_file}")
+      if self.parent.verbose:
+        print(f"📝 Verbose: Batch processing using global config from {self.parent.config_file}")
 
       # Simulate processing
       for i in range(min(3, max_files)):  # Demo with just 3 files
@@ -113,13 +113,13 @@ class DataProcessor:
   class ExportOperations:
     """Data export operations with format conversion."""
 
-    def __init__(self, main, output_dir: str = "./exports"):
+    def __init__(self, parent, output_dir: str = "./exports"):
       """Initialize export operations.
 
-      :param main: Main DataProcessor instance with global configuration
+      :param parent: Parent DataProcessor instance with global configuration
       :param output_dir: Output directory for exported files
       """
-      self.main = main
+      self.parent = parent
       self.output_dir = output_dir
 
     def export_results(self, format: OutputFormat = OutputFormat.JSON,
@@ -167,12 +167,12 @@ class DataProcessor:
   class ConfigManagement:
     """Configuration management operations."""
 
-    def __init__(self, main):
+    def __init__(self, parent):
       """Initialize configuration management.
 
-      :param main: Main DataProcessor instance with global configuration
+      :param parent: Parent DataProcessor instance with global configuration
       """
-      self.main = main
+      self.parent = parent
 
     def set_default_mode(self, mode: ProcessingMode):
       """Set the default processing mode for future operations.
@@ -203,13 +203,13 @@ class DataProcessor:
   class Statistics:
     """Processing statistics and reporting."""
 
-    def __init__(self, main, include_history: bool = False):
+    def __init__(self, parent, include_history: bool = False):
       """Initialize statistics reporting.
 
-      :param main: Main DataProcessor instance with global configuration
+      :param parent: Parent DataProcessor instance with global configuration
       :param include_history: Include historical statistics in reports
       """
-      self.main = main
+      self.parent = parent
       self.include_history = include_history
 
     def summary(self, detailed: bool = False):

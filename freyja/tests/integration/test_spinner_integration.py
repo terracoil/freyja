@@ -38,8 +38,8 @@ class TestSpinnerIntegration:
                 self.config = config
             
             class FileOps:
-                def __init__(self, main, workspace: str = "./data"):
-                    self.main = main
+                def __init__(self, parent, workspace: str = "./data"):
+                    self.parent = parent
                     self.workspace = workspace
                 
                 def process(self, filename: str) -> str:
@@ -149,8 +149,8 @@ class TestSpinnerIntegration:
                 self.verbose = verbose
             
             class Operations:
-                def __init__(self, main, workspace: str = "./data", backup: bool = True):
-                    self.main = main
+                def __init__(self, parent, workspace: str = "./data", backup: bool = True):
+                    self.parent = parent
                     self.workspace = workspace
                     self.backup = backup
                 
@@ -274,8 +274,8 @@ class TestSpinnerIntegration:
                 self.config = config
             
             class FileOps:
-                def __init__(self, main, workspace: str = "./files", backup: bool = False):
-                    self.main = main
+                def __init__(self, parent, workspace: str = "./files", backup: bool = False):
+                    self.parent = parent
                     self.workspace = workspace
                     self.backup = backup
                 

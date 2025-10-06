@@ -78,13 +78,15 @@ class ProjectManager:
   class ProjectOperations:
     """Project creation and management operations."""
 
-    def __init__(self, workspace: str = "./projects", auto_save: bool = True):
+    def __init__(self, parent, workspace: str = "./projects", auto_save: bool = True):
       """
           Initialize project operations.            
       Args:
+          parent: Parent ProjectManager instance with global configuration
           workspace: Workspace directory (sub-global argument)
           auto_save: Auto-save changes (sub-global argument)
       """
+      self.parent = parent
       self.workspace = Path(workspace)
       self.auto_save = auto_save
 
@@ -131,13 +133,15 @@ class ProjectManager:
   class TaskManagement:
     """Task operations within projects."""
 
-    def __init__(self, default_priority: str = "medium", notify: bool = True):
+    def __init__(self, parent, default_priority: str = "medium", notify: bool = True):
       """
           Initialize task management.            
       Args:
+          parent: Parent ProjectManager instance with global configuration
           default_priority: Default priority for new tasks
           notify: Send notifications on changes
       """
+      self.parent = parent
       self.default_priority = default_priority
       self.notify = notify
 
@@ -174,6 +178,14 @@ class ProjectManager:
 
   class ReportGeneration:
     """Report generation without sub-global arguments."""
+
+    def __init__(self, parent):
+      """
+          Initialize report generation.
+      Args:
+          parent: Parent ProjectManager instance with global configuration
+      """
+      self.parent = parent
 
     def summary(self, format: str = "text", detailed: bool = False) -> None:
       """

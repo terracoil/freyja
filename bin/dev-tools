@@ -85,16 +85,16 @@ class FreyjaDevTools:
   class Setup:
     """Development environment and self-installation setup operations."""
 
-    def __init__(self, main):
+    def __init__(self, parent):
       """Initialize setup operations.
       
-      :param main: Main FreyjaDevTools instance
+      :param parent: Parent FreyjaDevTools instance
       """
-      self.main = main
+      self.parent = parent
 
     def env(self) -> None:
       """Set up the development environment with dependencies and pre-commit hooks."""
-      parent = self.main
+      parent = self.parent
       print(f"{parent.colors['blue']}🚀 Setting up development environment for freyja...{parent.colors['nc']}")
       
       # Install dependencies
@@ -124,7 +124,7 @@ class FreyjaDevTools:
       
       :param force: Force reinstallation even if version hasn't changed
       """
-      parent = self.main
+      parent = self.parent
       parent._print_info("🔧 Building and installing latest freyja version...")
       
       # First, build the package
@@ -167,19 +167,19 @@ class FreyjaDevTools:
   class Build:
     """Build, compilation, and publishing operations."""
 
-    def __init__(self, main, parallel: bool = True):
+    def __init__(self, parent, parallel: bool = True):
       """
       Initialize build operations.
       
-      :param main: Main FreyjaDevTools instance
+      :param parent: Parent FreyjaDevTools instance
       :param parallel: Enable parallel execution where possible
       """
-      self.main = main
+      self.parent = parent
       self.parallel = parallel
 
     def clean(self) -> None:
       """Clean build artifacts, cache files, and temporary files."""
-      parent = self.main
+      parent = self.parent
       parent._print_info("🧹 Cleaning build artifacts and cache files...")
       
       # Patterns to clean
@@ -224,7 +224,7 @@ class FreyjaDevTools:
       
       :param fix: Automatically fix issues where possible
       """
-      parent = self.main
+      parent = self.parent
       parent._print_info("🔍 Running code quality checks...")
       
       success = True
@@ -262,7 +262,7 @@ class FreyjaDevTools:
       
       :param clean_first: Clean build artifacts before building
       """
-      parent = self.main
+      parent = self.parent
       
       if clean_first:
         self.clean()
@@ -283,7 +283,7 @@ class FreyjaDevTools:
       
       :param test_pypi: Publish to test PyPI instead of production
       """
-      parent = self.main
+      parent = self.parent
       parent._print_info("📦 Building and publishing freyja to PyPI...")
       
       # Clean and build first
@@ -321,18 +321,154 @@ class FreyjaDevTools:
         parent._print_success("Published successfully to https://pypi.org/project/freyja/")
         parent._print_info("Install with: pip install freyja")
 
+    def tag_version(self, version: Optional[str] = None, message: Optional[str] = None, auto_increment: bool = True) -> None:
+      """
+      Create git tags for Freyja releases and update poetry version.
+      
+      :param version: Specific version to tag (e.g., "1.0.5"). If not provided, auto-increments patch version
+      :param message: Commit message (version will be appended). If not provided, uses default message
+      :param auto_increment: Whether to auto-increment from latest tag when version not provided (default: True)
+      """
+      import re
+      
+      parent = self.parent
+      parent._print_info("🏷️  Creating Freyja version tag and release...")
+      
+      # Validate we're in a git repository
+      try:
+        result = subprocess.run("git rev-parse --git-dir", shell=True, capture_output=True, text=True, check=True)
+      except subprocess.CalledProcessError:
+        parent._print_error("Not in a git repository")
+        return
+      
+      # Determine version to use first (we need it for commit message)
+      if version is None and auto_increment:
+        # Get latest tag
+        try:
+          result = subprocess.run("git describe --tags --abbrev=0", shell=True, capture_output=True, text=True, check=True)
+          latest_tag = result.stdout.strip()
+          parent._print_info(f"Latest tag: {latest_tag}")
+          
+          # Remove 'v' prefix if present and increment patch version
+          version_num = latest_tag.lstrip('v')
+          
+          # Validate and parse version
+          version_match = re.match(r'^(\d+)\.(\d+)\.(\d+)$', version_num)
+          if not version_match:
+            parent._print_error(f"Invalid version format: {version_num} (expected X.Y.Z)")
+            return
+          
+          major, minor, patch = map(int, version_match.groups())
+          patch += 1
+          version = f"{major}.{minor}.{patch}"
+          parent._print_info(f"Auto-incrementing to: {version}")
+          
+        except subprocess.CalledProcessError:
+          parent._print_error("No existing tags found. Please provide a version manually.")
+          return
+      
+      if version is None:
+        parent._print_error("No version provided and auto-increment disabled")
+        return
+      
+      # Remove 'v' prefix if user provided it
+      version = version.lstrip('v')
+      
+      # Validate version format
+      if not re.match(r'^\d+\.\d+\.\d+$', version):
+        parent._print_error(f"Invalid version format: {version} (expected X.Y.Z)")
+        return
+      
+      # Check if tag already exists
+      tag = f"v{version}"
+      try:
+        subprocess.run(f"git rev-parse {tag}", shell=True, capture_output=True, check=True)
+        parent._print_error(f"Tag '{tag}' already exists")
+        return
+      except subprocess.CalledProcessError:
+        # Tag doesn't exist, which is what we want
+        pass
+      
+      # Check for uncommitted changes and commit them
+      try:
+        result = subprocess.run("git diff-index --quiet HEAD --", shell=True, capture_output=True, check=False)
+        if result.returncode != 0:
+          parent._print_info("📝 Committing changes before creating tag...")
+          
+          # Prepare commit message
+          if message is None:
+            commit_message = f"Prepare release (v{version})"
+          else:
+            commit_message = f"{message} (v{version})"
+          
+          parent._print_info(f"Commit message: {commit_message}")
+          
+          # Commit all changes
+          if not parent._run_command(f'git commit -a -m "{commit_message}"', "Committing changes"):
+            parent._print_error("Failed to commit changes")
+            return
+          
+          parent._print_success("Changes committed successfully")
+        else:
+          parent._print_info("No uncommitted changes to commit")
+          
+      except subprocess.CalledProcessError:
+        parent._print_error("Failed to check git status")
+        return
+      
+      # Create the tag
+      tag_message = f"Version {version} of Freyja, the zero configuration CLI tool"
+      parent._print_info(f"Creating tag: {tag}")
+      parent._print_info(f"Tag message: {tag_message}")
+      
+      if not parent._run_command(f'git tag -a "{tag}" -m "{tag_message}"', f"Creating tag {tag}"):
+        parent._print_error("Failed to create tag")
+        return
+      
+      parent._print_success(f"Created tag {tag}")
+      
+      # Run poetry build
+      parent._print_info("🔨 Building package with updated version...")
+      self.compile(clean_first=True)
+      
+      # Update poetry lock and install
+      if not parent._run_command("poetry lock", "Updating poetry lock..."):
+        parent._print_error("Failed to update poetry lock")
+        return
+      
+      if not parent._run_command("poetry install", "Installing updated package..."):
+        parent._print_error("Failed to install updated package")
+        return
+      
+      # Show current version
+      parent._run_command("poetry version", "📋 Current Poetry version:")
+      
+      # Push commit and tag to remote
+      parent._print_info("🚀 Pushing commit and tag to remote...")
+      if not parent._run_command("git push --follow-tags", "Pushing to remote with tags"):
+        parent._print_error("Failed to push to remote. Tag and commit created locally.")
+        parent._print_info(f"To push manually, run: {parent.colors['blue']}git push --follow-tags{parent.colors['nc']}")
+        return
+      
+      # Success summary
+      parent._print_success("🎉 Release complete!")
+      parent._print_success(f"Tagged version: {tag}")
+      parent._print_success("Package built successfully")
+      parent._print_success("Pushed to remote repository")
+      parent._print_info(f"Check the release at: {parent.colors['blue']}https://github.com/terracoil/freyja/releases{parent.colors['nc']}")
+
 
   class Test:
     """Testing, diagnostics, and quality assurance operations."""
 
-    def __init__(self, main, coverage: bool = True):
+    def __init__(self, parent, coverage: bool = True):
       """
       Initialize test operations.
       
-      :param main: Main FreyjaDevTools instance
+      :param parent: Parent FreyjaDevTools instance
       :param coverage: Enable coverage reporting by default
       """
-      self.main = main
+      self.parent = parent
       self.coverage = coverage
 
     def run(self, pattern: str = "", parallel: bool = False, verbose_output: bool = False) -> None:
@@ -343,7 +479,7 @@ class FreyjaDevTools:
       :param parallel: Run tests in parallel (requires pytest-xdist)
       :param verbose_output: Enable verbose test output
       """
-      parent = self.main
+      parent = self.parent
       parent._print_info("🧪 Running tests with coverage...")
       
       # Build test command
@@ -376,7 +512,7 @@ class FreyjaDevTools:
       
       :param examples_only: Only test example completion, not full suite
       """
-      parent = self.main
+      parent = self.parent
       parent._print_info("🔧 Testing shell completion functionality...")
       
       # Set up environment
@@ -493,7 +629,7 @@ class FreyjaDevTools:
       :param include_env: Include environment variable analysis
       :param include_completion: Include completion system analysis
       """
-      parent = self.main
+      parent = self.parent
       parent._print_info("🔍 Running comprehensive diagnostic analysis...")
       
       if include_env:

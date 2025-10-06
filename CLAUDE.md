@@ -36,7 +36,7 @@ The library generates argument parsers and command-line interfaces with minimal 
 curl -sSL https://install.python-poetry.org | python3 -
 
 # Setup development environment
-./bin/setup-dev.sh
+./bin/dev-tools setup env
 
 # Or manually:
 poetry install --with dev
@@ -57,7 +57,7 @@ pip install git+https://github.com/terracoil/freyja.git@main
 ### Testing
 ```bash
 # Run all tests with coverage
-./bin/test.sh
+./bin/dev-tools test run
 # Or: poetry run pytest
 
 # Run specific test file
@@ -70,7 +70,7 @@ poetry run pytest -v --tb=short
 ### Code Quality
 ```bash
 # Run all linters and formatters
-./bin/lint.sh
+./bin/dev-tools build lint
 
 # Individual tools:
 poetry run ruff check .              # Fast linting
@@ -89,7 +89,7 @@ poetry run ruff check . --fix
 poetry build
 
 # Publish to PyPI (maintainers only)
-./bin/publish.sh
+./bin/dev-tools build publish
 # Or: poetry publish
 
 # Install development version
@@ -514,7 +514,7 @@ class GoodClass:
 
 ### Constructor Parameter Requirements
 
-**CRITICAL**: For class-based CLIs, all constructor parameters (both main class and inner class constructors) **MUST** have default values.
+**CRITICAL**: For class-based CLIs, all constructor parameters (both parent class and inner class constructors) **MUST** have default values.
 
 #### ✅ Correct Class Constructors
 
@@ -553,7 +553,7 @@ class BadClass:
 
 #### Why This Requirement Exists
 
-- **Global Arguments**: Main class constructor parameters become global CLI arguments
+- **Global Arguments**: Parent class constructor parameters become global CLI arguments
 - **Sub-Global Arguments**: Inner class constructor parameters become sub-global CLI arguments
 - **CLI Usability**: Users should be able to run commands without specifying every parameter
 - **Error Prevention**: Ensures CLI can instantiate classes during command execution
@@ -562,7 +562,7 @@ class BadClass:
 
 If constructor parameters lack defaults, you'll see errors like:
 ```
-ValueError: Constructor for main class 'MyClass' has parameters without default values: required_param. 
+ValueError: Constructor for parent class 'MyClass' has parameters without default values: required_param. 
 All constructor parameters must have default values to be used as CLI arguments.
 ```
 
@@ -754,7 +754,7 @@ usage: my_cli process --input-file INPUT_FILE [--output-dir OUTPUT_DIR] [--verbo
 ### 2. Flexible Argument Ordering Rule
 
 **RULE**: Command options MUST work in ANY order, regardless of whether they are:
-- Global arguments (from main class constructor)
+- Global arguments (from parent class constructor)
 - Sub-global arguments (from inner class constructors) 
 - Command-specific arguments (from method parameters)
 
@@ -803,8 +803,8 @@ def process(self, name, count=5, debug=False):
 
 ### 6. Constructor Default Values Rule
 
-**RULE**: ALL constructor parameters (main class and inner class) MUST have default values:
-- Main class constructor parameters → Global CLI arguments
+**RULE**: ALL constructor parameters (parent class and inner class) MUST have default values:
+- Parent class constructor parameters → Global CLI arguments
 - Inner class constructor parameters → Sub-global CLI arguments
 - No defaults = CLI generation failure
 

@@ -69,7 +69,7 @@ poetry run pytest --cov=src --cov-report=html
 
 ```bash
 # Run all checks
-./bin/lint.sh
+./bin/dev-tools build lint
 
 # Or individually:
 poetry run black src tests

@@ -235,6 +235,6 @@ class OutputFormatter:
         :param command_success: Whether the command succeeded
         :return: True if output should be displayed
         """
-        # In verbose mode, always show output
-        # In non-verbose mode, only show output on failure
-        return verbose or not command_success
+        # ALWAYS show command output - users expect to see the results of their commands
+        # This was the core issue: output was being hidden except in verbose mode or on failure
+        return True

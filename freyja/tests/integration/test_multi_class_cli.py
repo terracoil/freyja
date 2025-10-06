@@ -20,8 +20,8 @@ class MockDataProcessor:
     class FileOperations:
         """File operations for data processor."""
 
-        def __init__(self, main, work_dir: str = "./data"):
-            self.main = main
+        def __init__(self, parent, work_dir: str = "./data"):
+            self.parent = parent
             self.work_dir = work_dir
 
         def cleanup(self, pattern: str = "*") -> str:

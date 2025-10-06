@@ -198,8 +198,9 @@ class TestOutputFormatter:
         """Test output display decision in non-verbose mode."""
         formatter = OutputFormatter()
         
-        # Non-verbose mode only displays on failure
-        assert formatter.should_display_output(verbose=False, command_success=True) is False
+        # NEW BEHAVIOR: Always display output so users can see command results
+        # This fixes the regression where command output was being hidden
+        assert formatter.should_display_output(verbose=False, command_success=True) is True
         assert formatter.should_display_output(verbose=False, command_success=False) is True
 
     @patch('builtins.print')
