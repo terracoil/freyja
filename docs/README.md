@@ -7,6 +7,8 @@
 
 Welcome to the complete documentation for Freyja! Transform your Python classes into powerful command-line applications in minutes.
 
+**⚠️ Important:** All constructor parameters MUST have default values for CLI generation to work.
+
 ## Table of Contents
 * [🚀 Why Freyja?](#-why-freyja)
 * [⚡ Quick Start](#-quick-start)
@@ -54,7 +56,7 @@ process_data(args.input, args.output, args.verbose)
 
 ### After Freyja
 ```python
-from freyja import CLI
+from freyja import FreyjaCLI
 
 class DataProcessor:
     """Process data files with various options."""
@@ -68,8 +70,8 @@ class DataProcessor:
         pass
 
 if __name__ == '__main__':
-    cli = CLI(DataProcessor)
-    cli.display()  # That's it! ✨
+    cli = FreyjaCLI(DataProcessor)
+    cli.run()  # That's it! ✨
 ```
 
 ## ⚡ Quick Start
@@ -82,7 +84,7 @@ pip install freyja
 
 **2. Create a class with typed methods**
 ```python
-from freyja import CLI
+from freyja import FreyjaCLI
 
 class Greeter:
     """Simple greeting application."""
@@ -102,8 +104,8 @@ class Greeter:
 **3. Add the magic 3 lines**
 ```python
 if __name__ == '__main__':
-    cli = CLI(Greeter, title="My Greeter")
-    cli.display()  # Seriously, that's all! 🚀
+    cli = FreyjaCLI(Greeter, title="My Greeter")
+    cli.run()  # Seriously, that's all! 🚀
 ```
 
 **4. Use your new CLI!**
@@ -135,7 +137,7 @@ Simple and clean - each method becomes a command:
 
 ```python
 # calculator.py
-from freyja import CLI
+from freyja import FreyjaCLI
 
 
 class Calculator:
@@ -172,16 +174,17 @@ class Calculator:
 
 
 if __name__ == '__main__':
-    CLI.display()
+    cli = FreyjaCLI(Calculator, title="Advanced Calculator")
+    cli.run()
 ```
 
 ### Inner Classes Pattern
 
-Organize complex applications with flat double-dash commands:
+Organize complex applications with flat double-dash commands (e.g., `inner-class--method`):
 
 ```python
 # project_manager.py
-from freyja import CLI
+from freyja import FreyjaCLI
 from pathlib import Path
 
 
@@ -251,7 +254,8 @@ class ProjectManager:
 
 
 if __name__ == '__main__':
-    CLI.display()
+    cli = FreyjaCLI(ProjectManager, title="Project Management Suite")
+    cli.run()
 ```
 
 **Usage with powerful flat commands:**
@@ -289,7 +293,8 @@ Freyja supports two flexible class-based patterns:
 ## ✨ Key Features
 
 🚀 **Zero Configuration** - Works instantly with just type annotations  
-⚡ **Lightning Fast** - No dependencies, minimal overhead  
+⚡ **Lightning Fast** - No dependencies, minimal overhead
+⚠️ **Constructor Requirements** - All parameters must have defaults  
 🎯 **Type Safe** - Automatic validation from Python type hints  
 📚 **Auto Documentation** - Beautiful help from your docstrings  
 🎨 **Professional Themes** - Colorful output with NO_COLOR support  

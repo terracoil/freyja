@@ -186,22 +186,21 @@ class ExecutionSpinner:
                 sys.stdout.write("\r" + " " * line_length + "\r")
                 sys.stdout.flush()
                 
-                # Print final status if failed or verbose
-                if not success:
-                    status_char = "✗"
-                    final_status = f"{status_char} {self.status_line}"
-                    
-                    if self.color_formatter and hasattr(self.color_formatter, 'apply_style'):
-                        try:
-                            from ..theme.theme_style import ThemeStyle
-                            from ..theme.defaults import create_default_theme
-                            theme = create_default_theme()
-                            styled_status = self.color_formatter.apply_style(final_status, theme.command_output)
-                            print(styled_status)
-                        except Exception:
-                            print(final_status)
-                    else:
+                # Print final status with appropriate symbol
+                status_char = "✓" if success else "✗"
+                final_status = f"{status_char} {self.status_line}"
+                
+                if self.color_formatter and hasattr(self.color_formatter, 'apply_style'):
+                    try:
+                        from ..theme.theme_style import ThemeStyle
+                        from ..theme.defaults import create_default_theme
+                        theme = create_default_theme()
+                        styled_status = self.color_formatter.apply_style(final_status, theme.command_output)
+                        print(styled_status)
+                    except Exception:
                         print(final_status)
+                else:
+                    print(final_status)
     
     @contextmanager
     def execute(self, command_context: CommandContext):

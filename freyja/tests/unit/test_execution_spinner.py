@@ -248,6 +248,89 @@ class TestExecutionSpinner:
         assert mock_write.called
         assert mock_flush.called
 
+    @patch('builtins.print')
+    @patch('sys.stdout.write')
+    @patch('sys.stdout.flush')
+    def test_spinner_final_status_success(self, mock_flush, mock_write, mock_print):
+        """Test that spinner shows checkmark on successful completion."""
+        spinner = ExecutionSpinner(verbose=False)  # Non-verbose mode to trigger final status
+        context = CommandContext(command="test_command")
+        
+        # Mock the status line
+        spinner.status_line = "Executing test_command"
+        
+        # Stop with success
+        spinner.stop(success=True)
+        
+        # Should print final status with checkmark
+        mock_print.assert_called_once()
+        printed_message = mock_print.call_args[0][0]
+        assert "✓" in printed_message
+        assert "Executing test_command" in printed_message
+
+    @patch('builtins.print')
+    @patch('sys.stdout.write')
+    @patch('sys.stdout.flush')
+    def test_spinner_final_status_failure(self, mock_flush, mock_write, mock_print):
+        """Test that spinner shows X mark on failed completion."""
+        spinner = ExecutionSpinner(verbose=False)  # Non-verbose mode to trigger final status
+        context = CommandContext(command="test_command")
+        
+        # Mock the status line
+        spinner.status_line = "Executing test_command"
+        
+        # Stop with failure
+        spinner.stop(success=False)
+        
+        # Should print final status with X mark
+        mock_print.assert_called_once()
+        printed_message = mock_print.call_args[0][0]
+        assert "✗" in printed_message
+        assert "Executing test_command" in printed_message
+
+    @patch('builtins.print')
+    @patch('sys.stdout.write')
+    @patch('sys.stdout.flush')
+    def test_spinner_verbose_mode_no_final_status(self, mock_flush, mock_write, mock_print):
+        """Test that spinner doesn't show final status in verbose mode."""
+        spinner = ExecutionSpinner(verbose=True)  # Verbose mode
+        context = CommandContext(command="test_command")
+        
+        # Mock the status line
+        spinner.status_line = "Executing test_command"
+        
+        # Stop with success
+        spinner.stop(success=True)
+        
+        # Should not print any final status in verbose mode
+        mock_print.assert_not_called()
+
+    @patch('builtins.print')
+    @patch('sys.stdout.write')
+    @patch('sys.stdout.flush')
+    def test_spinner_final_status_with_color_formatter(self, mock_flush, mock_write, mock_print):
+        """Test that spinner applies color formatting to final status."""
+        # Create a mock color formatter
+        mock_color_formatter = Mock()
+        mock_color_formatter.apply_style.return_value = "STYLED: ✓ Executing test_command"
+        
+        spinner = ExecutionSpinner(color_formatter=mock_color_formatter, verbose=False)
+        context = CommandContext(command="test_command")
+        
+        # Mock the status line
+        spinner.status_line = "Executing test_command"
+        
+        # Stop with success
+        spinner.stop(success=True)
+        
+        # Should print styled final status
+        mock_print.assert_called_once()
+        printed_message = mock_print.call_args[0][0]
+        assert "STYLED: ✓ Executing test_command" == printed_message
+        
+        # Color formatter should have been called
+        mock_color_formatter.apply_style.assert_called_once()
+
     def test_spinner_with_color_formatting(self):
         """Test spinner uses color formatter when available."""
         color_formatter = ColorFormatter()

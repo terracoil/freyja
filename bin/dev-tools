@@ -321,55 +321,57 @@ class FreyjaDevTools:
         parent._print_success("Published successfully to https://pypi.org/project/freyja/")
         parent._print_info("Install with: pip install freyja")
 
-    def tag_version(self, version: Optional[str] = None, message: Optional[str] = None, auto_increment: bool = True) -> None:
+    def tag_version(self, version: Optional[str] = None, message: Optional[str] = None) -> None:
       """
       Create git tags for Freyja releases and update poetry version.
-      
-      :param version: Specific version to tag (e.g., "1.0.5"). If not provided, auto-increments patch version
+
+      :param version: Specific version to tag (e.g., "1.0.5"). If not provided, auto-increments patch version from latest tag
       :param message: Commit message (version will be appended). If not provided, uses default message
-      :param auto_increment: Whether to auto-increment from latest tag when version not provided (default: True)
       """
       import re
-      
+
       parent = self.parent
       parent._print_info("🏷️  Creating Freyja version tag and release...")
-      
+
       # Validate we're in a git repository
       try:
         result = subprocess.run("git rev-parse --git-dir", shell=True, capture_output=True, text=True, check=True)
       except subprocess.CalledProcessError:
         parent._print_error("Not in a git repository")
         return
-      
+
       # Determine version to use first (we need it for commit message)
-      if version is None and auto_increment:
-        # Get latest tag
+      if version is None:
+        # Auto-increment is the default when no version is provided
         try:
-          result = subprocess.run("git describe --tags --abbrev=0", shell=True, capture_output=True, text=True, check=True)
-          latest_tag = result.stdout.strip()
+          # Use git tag with sorting to get latest version tag reliably
+          result = subprocess.run("git tag --sort=-version:refname", shell=True, capture_output=True, text=True, check=True)
+          tags = result.stdout.strip().split('\n')
+
+          if not tags or not tags[0]:
+            parent._print_error("No existing tags found. Please provide a version manually.")
+            return
+
+          latest_tag = tags[0]
           parent._print_info(f"Latest tag: {latest_tag}")
-          
+
           # Remove 'v' prefix if present and increment patch version
           version_num = latest_tag.lstrip('v')
-          
+
           # Validate and parse version
           version_match = re.match(r'^(\d+)\.(\d+)\.(\d+)$', version_num)
           if not version_match:
             parent._print_error(f"Invalid version format: {version_num} (expected X.Y.Z)")
             return
-          
+
           major, minor, patch = map(int, version_match.groups())
           patch += 1
           version = f"{major}.{minor}.{patch}"
           parent._print_info(f"Auto-incrementing to: {version}")
-          
+
         except subprocess.CalledProcessError:
           parent._print_error("No existing tags found. Please provide a version manually.")
           return
-      
-      if version is None:
-        parent._print_error("No version provided and auto-increment disabled")
-        return
       
       # Remove 'v' prefix if user provided it
       version = version.lstrip('v')
@@ -397,7 +399,27 @@ class FreyjaDevTools:
           
           # Prepare commit message
           if message is None:
-            commit_message = f"Prepare release (v{version})"
+            # Generate commit message using Claude
+            parent._print_info("🤖 Generating commit message...")
+            try:
+              from subprocess import run, PIPE
+              claude_prompt = "Create commit message based on the uncommitted code, without mentioning the words 'claude', 'git', or 'phase'."
+              claude_result = run(
+                ["claude", claude_prompt],
+                capture_output=True,
+                text=True,
+                timeout=30
+              )
+              if claude_result.returncode == 0 and claude_result.stdout.strip():
+                generated_message = claude_result.stdout.strip().split('\n')[0]  # Take first line
+                commit_message = f"{generated_message} (v{version})"
+                parent._print_info(f"Generated message: {generated_message}")
+              else:
+                parent._print_info("Failed to generate message, using default")
+                commit_message = f"Prepare release (v{version})"
+            except (FileNotFoundError, subprocess.TimeoutExpired, Exception) as e:
+              parent._print_info(f"Claude not available ({e}), using default message")
+              commit_message = f"Prepare release (v{version})"
           else:
             commit_message = f"{message} (v{version})"
           
