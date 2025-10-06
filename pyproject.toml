@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "freyja"
-version = "1.0.15"  # Will use poetry-dynamic-versioning
+version = "1.0.22"  # Will use poetry-dynamic-versioning
 description = "Python Library that builds a complete CLI given one or more functions using introspection"
 authors = ["Steven Miers <steven.miers@gmail.com>"]
 readme = "README.md"
@@ -71,7 +71,7 @@ extend-exclude = '''
 '''
 
 [tool.ruff]
-target-version = "py313"
+target-version = "py312"
 line-length = 100
 
 [tool.ruff.lint]

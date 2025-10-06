@@ -5,6 +5,8 @@
 
 Transform your Python classes into powerful command-line applications in seconds! Freyja uses introspection and type annotations to automatically generate professional CLIs with zero configuration required.
 
+**⚠️ Important:** All constructor parameters MUST have default values for CLI generation to work. Parameters without defaults will cause CLI creation to fail.
+
 ## Table of Contents
 * [🚀 Why Freyja?](#-why-freyja)
 * [⚡ Quick Start](#-quick-start)
@@ -45,7 +47,7 @@ pip install freyja
 
 **Step 2:** Create a class with typed methods
 ```python
-from freyja import CLI
+from freyja import FreyjaCLI
 
 
 class Greeter:
@@ -67,8 +69,8 @@ class Greeter:
 **Step 3:** Add 3 lines of Freyja code
 ```python
 if __name__ == '__main__':
-    cli = CLI(Greeter, title="My CLI")
-    cli.display()
+    cli = FreyjaCLI(Greeter, title="My CLI")
+    cli.run()
 ```
 
 **Step 4:** Use your new CLI!
@@ -91,7 +93,7 @@ Simple and clean - each method becomes a command:
 
 ```python
 # calculator.py
-from freyja import CLI
+from freyja import FreyjaCLI
 
 
 class Calculator:
@@ -118,8 +120,8 @@ class Calculator:
 
 
 if __name__ == '__main__':
-    cli = CLI(Calculator, title="Advanced Calculator")
-    cli.display()
+    cli = FreyjaCLI(Calculator, title="Advanced Calculator")
+    cli.run()
 ```
 
 **Usage:**
@@ -131,11 +133,11 @@ python calculator.py --precision 4 add --a 3.14159 --b 2.71828 --store-result
 
 ### Inner Classes Pattern
 
-Organize complex applications with flat double-dash commands:
+Organize complex applications with flat double-dash commands (e.g., `inner-class--method`):
 
 ```python
 # project_manager.py
-from freyja import CLI
+from freyja import FreyjaCLI
 from pathlib import Path
 
 
@@ -188,22 +190,22 @@ class ProjectManager:
 
 
 if __name__ == '__main__':
-    cli = CLI(ProjectManager, title="Project Management Suite")
-    cli.display()
+    cli = FreyjaCLI(ProjectManager, title="Project Management Suite")
+    cli.run()
 ```
 
 **Usage:**
 ```bash
-# Global + Sub-global + Command arguments (hierarchical)
+# Global + Sub-global + Command arguments (flat double-dash notation)
 python project_manager.py --config-file prod.json --debug \
-  database migrate --connection-string postgres://prod --version 2.1.0 --dry-run
+  database--migrate --connection-string postgres://prod --version 2.1.0 --dry-run
 
 # Create new project with custom workspace
-python project_manager.py projects create --workspace /prod/projects --auto-save \
+python project_manager.py projects--create --workspace /prod/projects --auto-save \
   --name "web-app" --template "react" --description "Production web application"
 
 # Deploy with force flag
-python project_manager.py projects deploy --project-name web-app --environment production --force
+python project_manager.py projects--deploy --project-name web-app --environment production --force
 
 # Beautiful help shows all commands organized by group
 python project_manager.py --help

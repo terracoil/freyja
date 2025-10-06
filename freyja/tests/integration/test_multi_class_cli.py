@@ -96,12 +96,7 @@ class TestMultiClassHandler:
         ordered = handler.get_ordered_commands(class_order)
 
         # Should be: DataProcessor cmd_tree first (alphabetical), then FileManager cmd_tree (alphabetical)
-        expected = [
-            "analyze",
-            "process-data",
-            "cleanup",
-            "list-files"
-        ]
+        expected = ["analyze", "process-data", "cleanup", "list-files"]
         assert ordered == expected
 
     def test_validation_success(self):
@@ -132,7 +127,9 @@ class TestMultiClassCLI:
 
         assert cli.target_mode == TargetMode.CLASS
         assert cli.target_class == MockDataProcessor
-        assert cli.target_classes == [MockDataProcessor]  # Unified handling: always a list for classes
+        assert cli.target_classes == [
+            MockDataProcessor
+        ]  # Unified handling: always a list for classes
         assert "process-data" in cli.commands
 
     def test_multi_class_mode_detection(self):
@@ -162,16 +159,16 @@ class TestMultiClassCLI:
         # Non-primary class (MockDataProcessor) should be in a hierarchical group
         assert "mock-data-processor" in commands
         dp_group = commands["mock-data-processor"]
-        assert dp_group['type'] == 'group'
-        assert "process-data" in dp_group['cmd_tree']
+        assert dp_group["type"] == "group"
+        assert "process-data" in dp_group["cmd_tree"]
 
         # Primary class (MockReportGenerator) cmd_tree should be flat
         assert "generate-report" in commands
 
         # Commands should be properly structured
-        dp_cmd = dp_group['cmd_tree']["process-data"]
-        assert dp_cmd['type'] == 'command'
-        assert dp_cmd['original_name'] == 'process_data'
+        dp_cmd = dp_group["cmd_tree"]["process-data"]
+        assert dp_cmd["type"] == "command"
+        assert dp_cmd["original_name"] == "process_data"
 
     def test_multi_class_with_inner_classes(self):
         """Test multi-class FreyjaCLI with inner classes."""
@@ -186,8 +183,8 @@ class TestMultiClassCLI:
         # Inner class group should be present
         assert "file-operations" in commands
         inner_group = commands["file-operations"]
-        assert inner_group['type'] == 'group'
-        assert 'cleanup' in inner_group['cmd_tree']
+        assert inner_group["type"] == "group"
+        assert "cleanup" in inner_group["cmd_tree"]
 
     def test_multi_class_title_generation(self):
         """Test title generation for multi-class FreyjaCLI."""
@@ -209,13 +206,13 @@ class TestMultiClassCLI:
         # Non-primary class should be in hierarchical group
         assert "mock-data-processor" in commands
         dp_group = commands["mock-data-processor"]
-        assert "process-data" in dp_group['cmd_tree']  # From MockDataProcessor
+        assert "process-data" in dp_group["cmd_tree"]  # From MockDataProcessor
 
         # Primary class should be flat
         assert "generate-report" in commands  # From MockReportGenerator
 
         # Unified handling: target mode is always CLASS for classes
-        assert cli.target_mode.value == 'class'
+        assert cli.target_mode.value == "class"
 
         # Should be able to create parser successfully
         parser = cli.create_parser()
@@ -227,7 +224,9 @@ class TestMultiClassCLI:
 
         assert cli.target_mode == TargetMode.CLASS
         assert cli.target_class == MockDataProcessor
-        assert cli.target_classes == [MockDataProcessor]  # Unified handling: always a list for classes
+        assert cli.target_classes == [
+            MockDataProcessor
+        ]  # Unified handling: always a list for classes
 
     def test_empty_list_validation(self):
         """Test validation of empty class list."""
@@ -250,7 +249,7 @@ class TestCommandExecutorMultiClass:
         cli = FreyjaCLI([MockDataProcessor, MockReportGenerator], completion=False)
 
         # Should properly identify target mode and classes
-        assert cli.target_mode.value == 'class'
+        assert cli.target_mode.value == "class"
         assert cli.target_class == MockReportGenerator  # Last class is primary
         assert cli.target_classes == [MockDataProcessor, MockReportGenerator]
 
@@ -260,7 +259,7 @@ class TestCommandExecutorMultiClass:
         # Non-primary class should be in hierarchical group
         assert "mock-data-processor" in commands
         dp_group = commands["mock-data-processor"]
-        assert "process-data" in dp_group['cmd_tree']
+        assert "process-data" in dp_group["cmd_tree"]
 
         # Primary class should be flat
         assert "generate-report" in commands
@@ -270,7 +269,7 @@ class TestCommandExecutorMultiClass:
         cli = FreyjaCLI(MockDataProcessor, completion=False)
 
         # Should properly handle single class
-        assert cli.target_mode.value == 'class'
+        assert cli.target_mode.value == "class"
         assert cli.target_class == MockDataProcessor
         assert cli.target_classes == [MockDataProcessor]
 

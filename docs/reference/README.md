@@ -47,7 +47,7 @@ cli = CLI(
   no_color=False,
   completion=True
 )
-cli.display()
+cli.run()
 ```
 
 **Class-based CLI**
@@ -66,7 +66,7 @@ cli = CLI(
     }
   }
 )
-cli.display()
+cli.run()
 ```
 
 ### Common Parameters

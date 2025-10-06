@@ -62,7 +62,7 @@ def extract_archive(archive_path: str, destination: str = "./extracted",
 
 if __name__ == '__main__':
     cli = CLI(sys.modules[__name__], title="Archive Tools")  
-    cli.display()
+    cli.run()
 ```
 
 **Natural Usage:**

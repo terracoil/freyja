@@ -42,24 +42,25 @@ Choose class-based CLI when you need:
 ### 1. Import and Create CLI
 
 ```python
-from src import CLI
+from freyja import FreyjaCLI
 
 # At the end of your module
 if __name__ == '__main__':
-  cli = CLI.from_class(MyApplicationClass, theme_name="colorful")
-  cli.display()
+  cli = FreyjaCLI(MyApplicationClass, theme_name="colorful")
+  cli.run()
 ```
 
-### 2. Factory Method Signature
+### 2. FreyjaCLI Constructor Signature
 
 ```python
-CLI.from_class(
-    cls,                       # The class (not instance) to use
-    title: str = None,         # Freyja title (from class docstring if None)
-    function_opts: dict = None,# Per-method options (optional)
-    theme_name: str = 'universal', # Theme name
-    no_color: bool = False,    # Disable colors
-    completion: bool = True    # Enable shell completion
+FreyjaCLI(
+    target,                    # The class (not instance) to use
+    title: str = None,         # CLI title (from class docstring if None)
+    method_filter: callable = None, # Optional method filter
+    theme=None,               # Theme for colored output
+    alphabetize: bool = True, # Sort commands alphabetically
+    completion: bool = True,  # Enable shell completion
+    capture_output: bool = False # Enable output capture (opt-in)
 )
 ```
 
@@ -596,7 +597,7 @@ if __name__ == '__main__':
     function_opts=function_opts,
     theme_name="colorful"
   )
-  cli.display()
+  cli.run()
 ```
 
 ### Step 3: Usage Examples

@@ -47,7 +47,7 @@ class Greeter:
         pass
 
 cli = CLI(Greeter)
-cli.display()
+cli.run()
 ```
 
 ### What are the benefits of class-based CLIs?
@@ -277,7 +277,7 @@ if __name__ == '__main__':
     from src import CLI
 
     cli = CLI.from_module(sys.modules[__name__])
-    cli.display()
+    cli.run()
 ```
 
 ## Usage and Best Practices
@@ -556,7 +556,7 @@ if __name__ == '__main__':
         import user_functions  
         cli = CLI.from_module(user_functions, title="User Tools")
     
-    cli.display()
+    cli.run()
 ```
 
 ### How do I create plugin-like architectures?

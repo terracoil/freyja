@@ -134,7 +134,7 @@ Freyja transforms Python classes into powerful command-line interfaces. Perfect 
 Use direct methods for simple, flat command structures:
 
 ```python
-from src import CLI
+from freyja import FreyjaCLI
 
 
 class SimpleCalculator:
@@ -156,8 +156,8 @@ class SimpleCalculator:
 
 
 if __name__ == '__main__':
-  cli = CLI(SimpleCalculator, title="Simple Calculator")
-  cli.display()
+  cli = FreyjaCLI(SimpleCalculator, title="Simple Calculator")
+  cli.run()
 ```
 
 **Usage:**
@@ -171,7 +171,7 @@ python calculator.py multiply --a 4 --b 7
 Use inner classes for organized command structure with flat double-dash commands:
 
 ```python
-from src import CLI
+from freyja import FreyjaCLI
 from pathlib import Path
 
 
@@ -254,8 +254,8 @@ class ProjectManager:
 
 
 if __name__ == '__main__':
-  cli = CLI(ProjectManager, theme_name="colorful")
-  cli.display()
+  cli = FreyjaCLI(ProjectManager, theme_name="colorful")
+  cli.run()
 ```
 
 **Usage with Flat Double-Dash Commands:**
@@ -438,7 +438,7 @@ class DataExporter:
 
 ```python
 # Class-based with custom options
-cli = CLI(
+cli = FreyjaCLI(
     MyClass,
     title="Custom CLI Title",
     function_opts={
@@ -721,7 +721,7 @@ class MyClass:
 
 # Setup Freyja
 cli = FreyjaCLI(MyClass, title="My CLI")
-cli.display()
+cli.run()
 
 # Usage: my_cli process-file <input_file> [--output-dir OUTPUT_DIR] [--config CONFIG] [--debug]
 ```

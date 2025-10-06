@@ -152,7 +152,7 @@ def calculate_bmi(weight_kg: float, height_m: float) -> None:
 
 if __name__ == '__main__':
   cli = CLI.from_module(sys.modules[__name__], title="Health Calculator")
-  cli.display()
+  cli.run()
 ```
 
 Usage:
@@ -232,7 +232,7 @@ class ConfigManager:
 
 if __name__ == '__main__':
   cli = CLI.from_class(ConfigManager, theme_name="colorful")
-  cli.display()
+  cli.run()
 ```
 
 Usage:
@@ -319,7 +319,7 @@ def process_text_files(
 
 if __name__ == '__main__':
   cli = CLI.from_module(sys.modules[__name__], title="Text File Processor")
-  cli.display()
+  cli.run()
 ```
 
 ## Choosing Between Modes

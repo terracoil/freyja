@@ -22,6 +22,8 @@ That's it! No dependencies, works with Python 3.8+.
 
 Freyja automatically creates complete command-line interfaces from your Python classes. Just add type annotations to your methods, and you get a fully-featured CLI with argument parsing, help text, and type validation.
 
+**⚠️ Important:** All constructor parameters MUST have default values for CLI generation to work.
+
 **Class-based approach**: Transform your Python classes into powerful CLIs with hierarchical commands, global options, and professional help generation.
 
 ## Class-based Example
@@ -30,7 +32,7 @@ Perfect for stateful applications, configuration management, and complex workflo
 
 ```python
 # my_tool.py
-from freyja import CLI
+from freyja import FreyjaCLI
 from pathlib import Path
 
 
@@ -81,8 +83,8 @@ class DataProcessor:
 
 
 if __name__ == '__main__':
-    cli = CLI(DataProcessor, title="Data Processing Tool")
-    cli.display()
+    cli = FreyjaCLI(DataProcessor, title="Data Processing Tool")
+    cli.run()
 ```
 
 **Save and run:**
@@ -96,8 +98,8 @@ python my_tool.py process-file data.txt --output-format csv
 python my_tool.py --debug process-file data.txt --output-format xml
 # Global debug flag affects the processing
 
-python my_tool.py batch-operations process-directory ./data --pattern "*.json" --parallel
-# Hierarchical command: batch-operations -> process-directory
+python my_tool.py batch-operations--process-directory ./data --pattern "*.json" --parallel
+# Flat double-dash command: batch-operations--process-directory
 
 # ⚡ Flexible ordering examples:
 python my_tool.py --debug process-file data.txt --output-format csv
@@ -110,7 +112,7 @@ python my_tool.py process-file data.txt --debug --output-format csv
 
 ### ✨ Automatic CLI Generation
 - **Methods → Commands**: Each method becomes a CLI command
-- **Inner Classes → Command Groups**: Organize related commands hierarchically
+- **Inner Classes → Flat Commands**: Commands use double-dash notation (e.g., `batch-operations--process-directory`)
 - **Type Hints → Validation**: Automatic argument type checking and conversion
 
 ### 🎯 Professional Help Generation
@@ -130,9 +132,9 @@ Commands:
   batch-operations      Batch processing operations for multiple files
 ```
 
-### 🏗️ Hierarchical Command Structure
+### 🏗️ Flat Double-Dash Command Structure
 ```bash
-python my_tool.py batch-operations --help
+python my_tool.py batch-operations--help
 ```
 ```
 Batch processing operations for multiple files

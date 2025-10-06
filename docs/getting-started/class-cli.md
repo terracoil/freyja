@@ -52,7 +52,7 @@ class Calculator:
 
 if __name__ == '__main__':
   cli = CLI(Calculator, title="Calculator Freyja")
-  cli.display()
+  cli.run()
 ```
 
 ## Running Your CLI

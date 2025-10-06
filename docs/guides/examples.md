@@ -182,7 +182,7 @@ if __name__ == '__main__':
     title="FileTool - Advanced File Operations",
     theme_name="colorful"
   )
-  cli.display()
+  cli.run()
 ```
 
 ## Database Manager CLI
@@ -418,7 +418,7 @@ class DatabaseManager:
 
 if __name__ == '__main__':
   cli = CLI(DatabaseManager, theme_name="colorful")
-  cli.display()
+  cli.run()
 ```
 
 ## API Client Tool
@@ -671,7 +671,7 @@ class APIClient:
 
 if __name__ == '__main__':
   cli = CLI(APIClient, theme_name="colorful")
-  cli.display()
+  cli.run()
 ```
 
 ## Usage Examples

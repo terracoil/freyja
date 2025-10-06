@@ -57,7 +57,7 @@ def restore_database(backup_file: str, target_db: str,
 
 if __name__ == '__main__':
     cli = CLI(sys.modules[__name__], title="Database Tools")
-    cli.display()
+    cli.run()
 ```
 
 **Flexible Usage Examples:**

@@ -1,9 +1,11 @@
 """
-Freyja: Zero-configuration FreyjaCLI generator from classes/module introspection.
-Uses class/method/function introspection, typehints, and docstrings to build
-a fully functional FreyjaCLI.  Command groups can be made with inner-classes,
-effectively making subclasses.
+Freyja: Zero-configuration CLI generator from class introspection.
+Uses class/method introspection, type hints, and docstrings to build
+a fully functional CLI.  Command groups can be made with inner-classes,
+effectively organizing commands into logical groups.
 """
+
 from .freyja_cli import FreyjaCLI
 
-__all__ = [FreyjaCLI]
+__version__ = "1.0.15"
+__all__ = ["FreyjaCLI"]

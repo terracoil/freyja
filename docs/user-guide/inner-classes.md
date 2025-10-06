@@ -210,7 +210,7 @@ class ProjectManager:
 
 if __name__ == '__main__':
   cli = CLI(ProjectManager, theme_name="colorful")
-  cli.display()
+  cli.run()
 ```
 
 ## Usage Examples
