@@ -8,7 +8,9 @@ class ValidationService:
     """Centralized validation service for FreyjaCLI parameter and constructor validation."""
 
     @staticmethod
-    def validate_constructor_parameters(cls: type, context: str, allow_parameterless_only: bool = False) -> None:
+    def validate_constructor_parameters(
+        cls: type, context: str, allow_parameterless_only: bool = False
+    ) -> None:
         """Validate constructor compatibility for FreyjaCLI argument generation.
 
         FreyjaCLI must instantiate classes during command execution - constructor parameters become FreyjaCLI arguments.
@@ -25,7 +27,7 @@ class ValidationService:
 
             for param_name, param in sig.parameters.items():
                 # Skip self parameter and varargs
-                if param_name == 'self' or param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+                if param_name == "self" or param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
                     continue
 
                 # Check if parameter has no default value
@@ -33,20 +35,28 @@ class ValidationService:
                     params_without_defaults.append(param_name)
 
             if params_without_defaults:
-                param_list = ', '.join(params_without_defaults)
+                param_list = ", ".join(params_without_defaults)
                 class_name = cls.__name__
 
                 if allow_parameterless_only:
-                    error_msg = (f"Constructor for {context} '{class_name}' has parameters without default values: {param_list}. "
-                               "For classes using direct methods, the constructor must be parameterless or all parameters must have default values.")
+                    error_msg = (
+                        f"Constructor for {context} '{class_name}' has parameters without default values: {param_list}. "
+                        "For classes using direct methods, the constructor must be parameterless or all parameters must have default values."
+                    )
                 else:
-                    error_msg = (f"Constructor for {context} '{class_name}' has parameters without default values: {param_list}. "
-                               "All constructor parameters must have default values to be used as FreyjaCLI arguments.")
+                    error_msg = (
+                        f"Constructor for {context} '{class_name}' has parameters without default values: {param_list}. "
+                        "All constructor parameters must have default values to be used as FreyjaCLI arguments."
+                    )
                 raise ValueError(error_msg)
 
         except Exception as e:
             # Re-raise ValueError as-is, others as ValueError with context
-            error_to_raise = e if isinstance(e, ValueError) else ValueError(f"Error validating constructor for {context} '{cls.__name__}': {e}")
+            error_to_raise = (
+                e
+                if isinstance(e, ValueError)
+                else ValueError(f"Error validating constructor for {context} '{cls.__name__}': {e}")
+            )
             if not isinstance(e, ValueError):
                 error_to_raise.__cause__ = e
             raise error_to_raise
@@ -61,8 +71,10 @@ class ValidationService:
             params_without_defaults = []
 
             # First parameter should be 'self'
-            if not params or params[0][0] != 'self':
-                raise ValueError(f"Constructor for {context} '{cls.__name__}' is malformed (missing self parameter)")
+            if not params or params[0][0] != "self":
+                raise ValueError(
+                    f"Constructor for {context} '{cls.__name__}' is malformed (missing self parameter)"
+                )
 
             # Determine if this follows the new main pattern or old pattern
             if len(params) >= 2:
@@ -70,8 +82,10 @@ class ValidationService:
                 second_param_name, second_param = params[1]
 
                 # If second parameter has no default and no annotation, assume it's main
-                if (second_param.default == second_param.empty and
-                    second_param.annotation == second_param.empty):
+                if (
+                    second_param.default == second_param.empty
+                    and second_param.annotation == second_param.empty
+                ):
                     # New pattern: main parameter - check remaining params for defaults
                     for param_name, param in params[2:]:  # Skip 'self' and main
                         if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
@@ -90,15 +104,23 @@ class ValidationService:
                 pass
 
             if params_without_defaults:
-                param_list = ', '.join(params_without_defaults)
+                param_list = ", ".join(params_without_defaults)
                 class_name = cls.__name__
-                error_msg = (f"Constructor for {context} '{class_name}' has parameters without default values: {param_list}. "
-                           f"All constructor parameters must have default values to be used as FreyjaCLI arguments.")
+                error_msg = (
+                    f"Constructor for {context} '{class_name}' has parameters without default values: {param_list}. "
+                    f"All constructor parameters must have default values to be used as FreyjaCLI arguments."
+                )
                 raise ValueError(error_msg)
 
         except Exception as e:
             # Re-raise ValueError as-is, others as ValueError with context
-            error_to_raise = e if isinstance(e, ValueError) else ValueError(f"Error validating inner class constructor for {context} '{cls.__name__}': {e}")
+            error_to_raise = (
+                e
+                if isinstance(e, ValueError)
+                else ValueError(
+                    f"Error validating inner class constructor for {context} '{cls.__name__}': {e}"
+                )
+            )
             if not isinstance(e, ValueError):
                 error_to_raise.__cause__ = e
             raise error_to_raise
@@ -112,7 +134,7 @@ class ValidationService:
             # Check each parameter has compatible type annotation
             for param_name, param in sig.parameters.items():
                 # Skip self parameter and varargs
-                if param_name == 'self' or param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+                if param_name == "self" or param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
                     continue
 
                 # Function must have type annotations for FreyjaCLI generation
@@ -139,6 +161,8 @@ class ValidationService:
         # Validate each function
         for func_name, func in functions.items():
             if not ValidationService.validate_function_signature(func):
-                errors.append(f"Function '{func_name}' has invalid signature for FreyjaCLI generation")
+                errors.append(
+                    f"Function '{func_name}' has invalid signature for FreyjaCLI generation"
+                )
 
         return errors

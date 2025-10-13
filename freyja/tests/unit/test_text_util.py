@@ -126,19 +126,13 @@ class TestTextUtil:
 
         # Check formatting (should be indented)
         assert "    " in result  # Should have 4-space indentation
-        assert "\n" in result    # Should have newlines
+        assert "\n" in result  # Should have newlines
 
     def test_json_pretty_complex_structure(self):
         """Test json_pretty with complex nested structure."""
         data = {
-            "users": [
-                {"name": "Alice", "active": True},
-                {"name": "Bob", "active": False}
-            ],
-            "settings": {
-                "theme": "dark",
-                "count": 42
-            }
+            "users": [{"name": "Alice", "active": True}, {"name": "Bob", "active": False}],
+            "settings": {"theme": "dark", "count": 42},
         }
 
         result = TextUtil.json_pretty(data)
@@ -157,6 +151,7 @@ class TestTextUtil:
 
     def test_json_pretty_custom_object(self):
         """Test json_pretty with custom objects (uses DataStructUtil)."""
+
         class Person:
             def __init__(self, name, age):
                 self.name = name
@@ -183,8 +178,8 @@ class TestTextUtil:
         result = TextUtil.json_pretty(data)
 
         # Keys should be sorted alphabetically in output
-        lines = result.split('\n')
-        key_lines = [line for line in lines if '"' in line and ':' in line]
+        lines = result.split("\n")
+        key_lines = [line for line in lines if '"' in line and ":" in line]
 
         # Extract keys and verify order
         keys = []
@@ -316,6 +311,7 @@ class TestTextUtil:
 
     def test_json_pretty_integration_with_data_struct_util(self):
         """Test json_pretty integration with complex objects."""
+
         class NestedClass:
             def __init__(self):
                 self.public = "visible"

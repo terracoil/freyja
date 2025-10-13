@@ -4,6 +4,7 @@ Comprehensive integration tests for the completion system.
 These tests verify that completion and normal execution are completely isolated
 and that completion never interferes with normal command execution.
 """
+
 import inspect
 import os
 import subprocess
@@ -29,13 +30,13 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         """Set up test environment."""
         # Clean environment of any completion variables
         completion_vars = [
-            '_FREYJA_COMPLETE',
-            '_FREYJA_COMPLETE_ZSH',
-            '_FREYJA_COMPLETE_BASH',
-            '_FREYJA_COMPLETE_FISH',
-            '_FREYJA_COMPLETE_POWERSHELL',
-            'COMP_WORDS_STR',
-            'COMP_CWORD_NUM'
+            "_FREYJA_COMPLETE",
+            "_FREYJA_COMPLETE_ZSH",
+            "_FREYJA_COMPLETE_BASH",
+            "_FREYJA_COMPLETE_FISH",
+            "_FREYJA_COMPLETE_POWERSHELL",
+            "COMP_WORDS_STR",
+            "COMP_CWORD_NUM",
         ]
 
         for var in completion_vars:
@@ -46,13 +47,13 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         """Clean up after tests."""
         # Ensure no completion variables remain
         completion_vars = [
-            '_FREYJA_COMPLETE',
-            '_FREYJA_COMPLETE_ZSH',
-            '_FREYJA_COMPLETE_BASH',
-            '_FREYJA_COMPLETE_FISH',
-            '_FREYJA_COMPLETE_POWERSHELL',
-            'COMP_WORDS_STR',
-            'COMP_CWORD_NUM'
+            "_FREYJA_COMPLETE",
+            "_FREYJA_COMPLETE_ZSH",
+            "_FREYJA_COMPLETE_BASH",
+            "_FREYJA_COMPLETE_FISH",
+            "_FREYJA_COMPLETE_POWERSHELL",
+            "COMP_WORDS_STR",
+            "COMP_CWORD_NUM",
         ]
 
         for var in completion_vars:
@@ -61,6 +62,7 @@ class TestCompletionSystemIntegration(unittest.TestCase):
 
     def create_test_cli(self):
         """Create a test CLI instance."""
+
         class TestCommands:
             def __init__(self):
                 pass
@@ -83,8 +85,8 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         self.assertFalse(cli._is_completion_request())
 
         # Test that we can create and use the CLI normally
-        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-            with patch('sys.argv', ['test', '--help']):
+        with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+            with patch("sys.argv", ["test", "--help"]):
                 try:
                     cli.run()
                 except SystemExit as e:
@@ -102,16 +104,16 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         self.assertFalse(cli._is_completion_request())
 
         # Should detect with _FREYJA_COMPLETE
-        with patch.dict(os.environ, {'_FREYJA_COMPLETE': 'zsh'}):
+        with patch.dict(os.environ, {"_FREYJA_COMPLETE": "zsh"}):
             self.assertTrue(cli._is_completion_request())
 
         # Should detect with shell-specific variables
-        for shell_var in ['_FREYJA_COMPLETE_ZSH', '_FREYJA_COMPLETE_BASH', '_FREYJA_COMPLETE_FISH']:
-            with patch.dict(os.environ, {shell_var: '1'}):
+        for shell_var in ["_FREYJA_COMPLETE_ZSH", "_FREYJA_COMPLETE_BASH", "_FREYJA_COMPLETE_FISH"]:
+            with patch.dict(os.environ, {shell_var: "1"}):
                 self.assertTrue(cli._is_completion_request())
 
         # Should detect with --_complete flag
-        with patch.object(sys, 'argv', ['test', '--_complete']):
+        with patch.object(sys, "argv", ["test", "--_complete"]):
             self.assertTrue(cli._is_completion_request())
 
     def test_completion_isolation(self):
@@ -119,13 +121,12 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         cli = self.create_test_cli()
 
         # Mock sys.exit to prevent actual exit during testing
-        with patch('sys.exit') as mock_exit:
-            with patch.dict(os.environ, {
-                '_FREYJA_COMPLETE': 'zsh',
-                'COMP_WORDS_STR': 'test hel',
-                'COMP_CWORD_NUM': '2'
-            }):
-                with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+        with patch("sys.exit") as mock_exit:
+            with patch.dict(
+                os.environ,
+                {"_FREYJA_COMPLETE": "zsh", "COMP_WORDS_STR": "test hel", "COMP_CWORD_NUM": "2"},
+            ):
+                with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
                     # This should trigger completion mode
                     cli.run()
 
@@ -142,18 +143,18 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         # Create a proper CommandInfo object
         test_function = lambda: "test output"
         command_info = CommandInfo(
-            name='test',
-            original_name='test',
+            name="test",
+            original_name="test",
             function=test_function,
-            signature=inspect.signature(test_function)
+            signature=inspect.signature(test_function),
         )
-        tree.add_command('test', command_info)
+        tree.add_command("test", command_info)
 
         coordinator = ExecutionCoordinator(None, {})
         coordinator.command_tree = tree
 
         # Should raise error if completion environment detected in normal execution
-        with patch.dict(os.environ, {'_FREYJA_COMPLETE': 'zsh'}):
+        with patch.dict(os.environ, {"_FREYJA_COMPLETE": "zsh"}):
             with self.assertRaises(RuntimeError) as context:
                 coordinator.parse_and_execute(MagicMock(), [])
 
@@ -161,7 +162,7 @@ class TestCompletionSystemIntegration(unittest.TestCase):
 
         # Should raise error if --_complete flag present in normal execution
         with self.assertRaises(RuntimeError) as context:
-            coordinator.parse_and_execute(MagicMock(), ['--_complete'])
+            coordinator.parse_and_execute(MagicMock(), ["--_complete"])
 
         self.assertIn("Completion request reached normal execution", str(context.exception))
 
@@ -173,19 +174,17 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         self.assertFalse(cli._is_completion_request())
 
         # Step 2: Simulate completion execution
-        with patch('sys.exit'):  # Prevent actual exit
-            with patch.dict(os.environ, {
-                '_FREYJA_COMPLETE': 'zsh',
-                'COMP_WORDS_STR': 'test hel',
-                'COMP_CWORD_NUM': '2'
-            }):
-                with patch('sys.stdout', new_callable=StringIO):
+        with patch("sys.exit"):  # Prevent actual exit
+            with patch.dict(
+                os.environ,
+                {"_FREYJA_COMPLETE": "zsh", "COMP_WORDS_STR": "test hel", "COMP_CWORD_NUM": "2"},
+            ):
+                with patch("sys.stdout", new_callable=StringIO):
                     cli.run()
 
         # Step 3: Normal execution should still work after completion
         # (environment variables should be scoped to the with block)
         self.assertFalse(cli._is_completion_request())
-
 
     def test_integration_with_examples(self):
         """Integration test with actual example files."""
@@ -199,10 +198,10 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         if cls_example.exists():
             result = subprocess.run(
                 [sys.executable, str(cls_example)],
-                env={'PYTHONPATH': str(examples_dir.parent)},
+                env={"PYTHONPATH": str(examples_dir.parent)},
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
 
             # Should show usage, not completion output
@@ -214,10 +213,10 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         if mod_example.exists():
             result = subprocess.run(
                 [sys.executable, str(mod_example)],
-                env={'PYTHONPATH': str(examples_dir.parent)},
+                env={"PYTHONPATH": str(examples_dir.parent)},
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
 
             # Should show usage
@@ -234,25 +233,25 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         # Step 1: Normal execution
         result1 = subprocess.run(
             [sys.executable, str(cls_example)],
-            env={'PYTHONPATH': str(examples_dir.parent)},
+            env={"PYTHONPATH": str(examples_dir.parent)},
             capture_output=True,
             text=True,
-            timeout=5
+            timeout=5,
         )
         self.assertIn("usage:", result1.stdout.lower())
 
         # Step 2: Completion execution
         result2 = subprocess.run(
-            [sys.executable, str(cls_example), '--_complete'],
+            [sys.executable, str(cls_example), "--_complete"],
             env={
-                'PYTHONPATH': str(examples_dir.parent),
-                '_FREYJA_COMPLETE': 'zsh',
-                'COMP_WORDS_STR': 'cls_example fo',
-                'COMP_CWORD_NUM': '2'
+                "PYTHONPATH": str(examples_dir.parent),
+                "_FREYJA_COMPLETE": "zsh",
+                "COMP_WORDS_STR": "cls_example fo",
+                "COMP_CWORD_NUM": "2",
             },
             capture_output=True,
             text=True,
-            timeout=5
+            timeout=5,
         )
         # Completion should generate some output (exact output depends on implementation)
         self.assertIsNotNone(result2.stdout)
@@ -260,10 +259,10 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         # Step 3: Normal execution again (should work normally)
         result3 = subprocess.run(
             [sys.executable, str(cls_example)],
-            env={'PYTHONPATH': str(examples_dir.parent)},
+            env={"PYTHONPATH": str(examples_dir.parent)},
             capture_output=True,
             text=True,
-            timeout=5
+            timeout=5,
         )
         self.assertIn("usage:", result3.stdout.lower())
         self.assertNotEqual(result3.stdout.strip(), "completion")
@@ -272,12 +271,12 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         """Test different completion shell types don't interfere."""
         cli = self.create_test_cli()
 
-        shell_types = ['zsh', 'bash', 'fish', 'powershell']
+        shell_types = ["zsh", "bash", "fish", "powershell"]
 
         for shell_type in shell_types:
             with self.subTest(shell=shell_type):
-                with patch('sys.exit'):
-                    with patch.dict(os.environ, {f'_FREYJA_COMPLETE_{shell_type.upper()}': '1'}):
+                with patch("sys.exit"):
+                    with patch.dict(os.environ, {f"_FREYJA_COMPLETE_{shell_type.upper()}": "1"}):
                         self.assertTrue(cli._is_completion_request())
 
     def test_no_state_persistence_between_instances(self):
@@ -285,9 +284,9 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         # Create first CLI and simulate completion
         cli1 = self.create_test_cli()
 
-        with patch('sys.exit'):
-            with patch.dict(os.environ, {'_FREYJA_COMPLETE': 'zsh'}):
-                with patch('sys.stdout', new_callable=StringIO):
+        with patch("sys.exit"):
+            with patch.dict(os.environ, {"_FREYJA_COMPLETE": "zsh"}):
+                with patch("sys.stdout", new_callable=StringIO):
                     cli1.run()
 
         # Create second CLI - should not be affected by first CLI's completion state
@@ -295,8 +294,8 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         self.assertFalse(cli2._is_completion_request())
 
         # Both should work independently
-        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-            with patch('sys.argv', ['test', '--help']):
+        with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+            with patch("sys.argv", ["test", "--help"]):
                 try:
                     cli2.run()
                 except SystemExit:
@@ -306,5 +305,5 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         self.assertIn("Test CLI", output)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

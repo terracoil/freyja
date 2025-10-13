@@ -98,13 +98,8 @@ class TestDataStructUtil:
     def test_nested_dicts(self):
         """Test handling of nested dictionary structures."""
         nested = {
-            "level1": {
-                "level2": {
-                    "level3": "deep_value"
-                },
-                "list": [1, 2, 3]
-            },
-            "simple": "value"
+            "level1": {"level2": {"level3": "deep_value"}, "list": [1, 2, 3]},
+            "simple": "value",
         }
         assert DataStructUtil.simplify(nested) == nested
 
@@ -144,6 +139,7 @@ class TestDataStructUtil:
 
     def test_object_with_dict(self):
         """Test objects with __dict__ attribute."""
+
         class SimpleClass:
             def __init__(self):
                 self.public_attr = "visible"
@@ -161,6 +157,7 @@ class TestDataStructUtil:
 
     def test_object_with_slots(self):
         """Test objects with __slots__ attribute."""
+
         class SlottedClass:
             __slots__ = ["public_slot", "_private_slot", "value"]
 
@@ -180,6 +177,7 @@ class TestDataStructUtil:
 
     def test_object_with_to_dict(self):
         """Test objects with to_dict() method."""
+
         class CustomClass:
             def __init__(self):
                 self.attr1 = "value1"
@@ -196,6 +194,7 @@ class TestDataStructUtil:
 
     def test_object_fallback_string(self):
         """Test objects that fall back to string representation."""
+
         # Object with __dict__ but empty (most classes have __dict__)
         class MinimalClass:
             pass
@@ -209,6 +208,7 @@ class TestDataStructUtil:
         # Test with object that truly has no __dict__ or __slots__
         # Use a built-in type that doesn't have __dict__
         import datetime
+
         obj = datetime.time(12, 30)  # time objects don't have __dict__ or __slots__
         result = DataStructUtil.simplify(obj)
 
@@ -218,6 +218,7 @@ class TestDataStructUtil:
 
     def test_object_str_exception(self):
         """Test objects that raise exception during str() conversion."""
+
         # For objects with __dict__ (even empty), they return empty dict
         class ProblematicClass:
             def __str__(self):
@@ -238,6 +239,7 @@ class TestDataStructUtil:
             class BadStr:
                 def __str__(self):
                     raise ValueError("String conversion failed")
+
             return BadStr()
 
         # Create nested structure that will hit max_depth and try to convert to string
@@ -255,6 +257,7 @@ class TestDataStructUtil:
         # At some point, the BadStr object should be converted to safe string
         # Navigate to find the stringified bad object
         found_safe_string = False
+
         def find_safe_string(obj):
             if isinstance(obj, str) and "BadStr" in obj:
                 return True
@@ -269,6 +272,7 @@ class TestDataStructUtil:
 
     def test_complex_nested_structure(self):
         """Test complex nested structure with mixed types."""
+
         class Person:
             def __init__(self, name, age):
                 self.name = name
@@ -276,21 +280,13 @@ class TestDataStructUtil:
                 self._id = "private"
 
         complex_data = {
-            "users": [
-                Person("Alice", 30),
-                Person("Bob", 25)
-            ],
+            "users": [Person("Alice", 30), Person("Bob", 25)],
             "settings": {
                 "theme": "dark",
                 "features": ["feature1", "feature2"],
-                "metadata": {
-                    "version": 1.0,
-                    "enabled": True
-                }
+                "metadata": {"version": 1.0, "enabled": True},
             },
-            "mixed_list": [
-                1, "string", {"nested": "dict"}, [1, 2, 3]
-            ]
+            "mixed_list": [1, "string", {"nested": "dict"}, [1, 2, 3]],
         }
 
         result = DataStructUtil.simplify(complex_data)
@@ -350,7 +346,7 @@ class TestDataStructUtil:
             "tuple": (4, 5, 6),
             "set": {7, 8, 9},
             "frozenset": frozenset([10, 11, 12]),
-            "dict": {"inner": "value"}
+            "dict": {"inner": "value"},
         }
 
         result = DataStructUtil.simplify(mixed)
@@ -368,8 +364,8 @@ class TestDataStructUtil:
             "items": [{"id": i, "value": f"item_{i}"} for i in range(100)],
             "metadata": {
                 "count": 100,
-                "categories": {f"cat_{i}": list(range(10)) for i in range(10)}
-            }
+                "categories": {f"cat_{i}": list(range(10)) for i in range(10)},
+            },
         }
 
         # Should complete without issues
@@ -383,6 +379,7 @@ class TestDataStructUtil:
 
     def test_edge_case_empty_slots(self):
         """Test object with empty slots."""
+
         class EmptySlots:
             __slots__ = []
 
@@ -397,7 +394,7 @@ class TestDataStructUtil:
         data_with_nones = {
             "list_with_none": [1, None, 3],
             "dict_with_none": {"key": None, "other": "value"},
-            "none_key": None
+            "none_key": None,
         }
 
         result = DataStructUtil.simplify(data_with_nones)
@@ -412,7 +409,7 @@ class TestDataStructUtil:
         data_with_bytes = {
             "bytes_list": [b"test", b"bytes"],
             "bytes_value": b"single_bytes",
-            "mixed": ["string", b"bytes", 42]
+            "mixed": ["string", b"bytes", 42],
         }
 
         result = DataStructUtil.simplify(data_with_bytes)
