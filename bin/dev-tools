@@ -446,7 +446,7 @@ class FreyjaDevTools:
         parent._clean()
       self.compile()
 
-      if not parent._run_command("poetry lock --no-update", "Updating poetry.lock"):
+      if not parent._run_command("poetry lock", "Updating poetry.lock"):
         parent._print_error("Failed to update poetry.lock")
         return
 
