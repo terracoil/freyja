@@ -10,9 +10,6 @@ from typing import Union
 
 
 class AnsiString:
-    # Regex pattern to match ANSI escape sequences
-    ANSI_ESCAPE_PATTERN = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
-
     """String wrapper that implements proper alignment with ANSI escape codes.
 
   This class wraps a string containing ANSI escape codes and provides
@@ -24,6 +21,9 @@ class AnsiString:
       >>> f"{AnsiString(colored_text):>10}"  # Right-align in 10 characters
       '   \\033[31mRed Text\\033[0m'  # Only 'Red Text' counted for alignment
   """
+
+    # Regex pattern to match ANSI escape sequences
+    ANSI_ESCAPE_PATTERN = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
     def __init__(self, text: str):
         """Initialize with text that may contain ANSI escape codes.

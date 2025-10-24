@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 Primitive = bool | int | float | str | bytes | None
 SimpleType = dict | list | Primitive
 Simple = dict[str, SimpleType] | list[SimpleType] | SimpleType
@@ -9,7 +11,7 @@ class DataStructUtil:
     """Utility methods for collections (list, dict, set, etc)"""
 
     @classmethod
-    def simplify(cls, obj: any, max_depth: int = 10) -> Simple:
+    def simplify(cls, obj: Any, max_depth: int = 10) -> Simple:
         """
         Recursively convert any class or collection to a "simple" representation.
 
@@ -21,7 +23,7 @@ class DataStructUtil:
         """
 
         # Inner methods:
-        def safe_str(o: any) -> str:
+        def safe_str(o: Any) -> str:
             try:
                 result = str(o)
             except Exception:
@@ -29,7 +31,7 @@ class DataStructUtil:
 
             return result
 
-        def to_prim(o: any, depth: int, seen: set) -> Simple:
+        def to_prim(o: Any, depth: int, seen: set) -> Simple:
             saw: set = seen.union({id(o)})
 
             if depth >= max_depth:
@@ -44,7 +46,7 @@ class DataStructUtil:
             elif isinstance(o, dict):
                 # Handle dict-like objects:
                 result = {str(k): to_prim(v, depth + 1, saw) for k, v in o.items()}
-            elif isinstance(o, (list, tuple, set, frozenset)):
+            elif isinstance(o, list | tuple | set | frozenset):
                 # Handle list-like objects:
                 result = [to_prim(item, depth + 1, saw) for item in o]
             elif hasattr(o, "to_dict") and callable(o.to_dict):

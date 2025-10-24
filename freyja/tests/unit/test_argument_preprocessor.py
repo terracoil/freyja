@@ -42,6 +42,7 @@ class TestArgumentPreprocessor:
 
         # Mock inner class with constructor
         class MockInnerClass:
+            """Mock inner class for hierarchical testing."""
             def __init__(self, database_url: str = "sqlite:///test.db", timeout: int = 30):
                 self.database_url = database_url
                 self.timeout = timeout
@@ -72,6 +73,7 @@ class TestArgumentPreprocessor:
         """Create target class with constructor parameters."""
 
         class TestClass:
+            """Test class with constructor parameters."""
             def __init__(self, config_file: str = "config.json", debug: bool = False):
                 self.config_file = config_file
                 self.debug = debug
@@ -288,7 +290,7 @@ class TestArgumentPreprocessor:
     def test_reorder_arguments_hierarchical_command(
         self, hierarchical_command_tree, target_class_with_params
     ):
-        """Test argument reordering for hierarchical commands places sub-global options correctly."""
+        """Test arg reordering for hierarchical cmds places sub-global options correctly."""
         preprocessor = ArgumentPreprocessor(hierarchical_command_tree, target_class_with_params)
 
         categorized = {
@@ -303,7 +305,9 @@ class TestArgumentPreprocessor:
 
         # Check order for hierarchical commands:
         # global -> group -> sub-global -> subcommand -> command
-        # Expected: ['--config-file', 'config.json', 'data-ops', '--database-url', 'sqlite://test.db', 'process', '--option', 'value']
+        # Expected order for hierarchical commands
+        # ['--config-file', 'config.json', 'data-ops', '--database-url',
+        #  'sqlite://test.db', 'process', '--option', 'value']
 
         config_idx = reordered.index("--config-file")
         group_idx = reordered.index("data-ops")
@@ -391,7 +395,9 @@ class TestPositionalParameterExtraction:
         """Test extraction skips 'self' parameter for methods."""
 
         class TestClass:
+            """Test class for positional parameter extraction."""
             def test_method(self, required_param: str, optional_param: str = "default"):
+                """Test method with required and optional parameters."""
                 return f"{required_param} {optional_param}"
 
         tree = CommandTree()
@@ -419,7 +425,9 @@ class TestPositionalParameterExtraction:
         """Test identification with self parameter."""
 
         class TestClass:
+            """Test class for first non-default param identification."""
             def test_method(self, first_required: str, optional: str = "default"):
+                """Test method with first required parameter."""
                 return f"{first_required} {optional}"
 
         tree = CommandTree()

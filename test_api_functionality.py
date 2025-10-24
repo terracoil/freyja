@@ -34,8 +34,8 @@ def test_api_methods():
     # Test 3: Stream-specific configuration
     cli = FreyjaCLI(TestClass, capture_output=True, capture_stderr=True)
     assert cli.output_capture is not None
-    assert cli.output_capture.capture_stdout == True  # default
-    assert cli.output_capture.capture_stderr == True  # explicitly set
+    assert cli.output_capture.capture_stdout is True  # default
+    assert cli.output_capture.capture_stderr is True  # explicitly set
     print("✅ Stream-specific configuration works")
 
     # Test 4: Dynamic enable/disable

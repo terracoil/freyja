@@ -64,6 +64,7 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         """Create a test CLI instance."""
 
         class TestCommands:
+            """Test helper class for CLI commands."""
             def __init__(self):
                 pass
 
@@ -126,7 +127,7 @@ class TestCompletionSystemIntegration(unittest.TestCase):
                 os.environ,
                 {"_FREYJA_COMPLETE": "zsh", "COMP_WORDS_STR": "test hel", "COMP_CWORD_NUM": "2"},
             ):
-                with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+                with patch("sys.stdout", new_callable=StringIO):
                     # This should trigger completion mode
                     cli.run()
 
@@ -141,7 +142,9 @@ class TestCompletionSystemIntegration(unittest.TestCase):
         tree = CommandTree()
 
         # Create a proper CommandInfo object
-        test_function = lambda: "test output"
+        def test_function():
+            return "test output"
+
         command_info = CommandInfo(
             name="test",
             original_name="test",

@@ -5,7 +5,7 @@ Extracted from FreyjaCLI class to reduce its size and improve separation of conc
 """
 
 import os
-from typing import *
+from typing import Any
 
 from freyja.utils.output_capture import OutputCapture, OutputCaptureConfig
 
@@ -18,8 +18,8 @@ class ExecutionCoordinator:
     def __init__(
         self,
         target_mode: TargetMode,
-        executors: Dict[str, Any],
-        output_capture_config: Optional[OutputCaptureConfig] = None,
+        executors: dict[str, Any],
+        output_capture_config: OutputCaptureConfig | None = None,
     ):
         """Initialize execution coordinator."""
         self.target_mode = target_mode
@@ -29,7 +29,7 @@ class ExecutionCoordinator:
 
         # Initialize output capture configuration
         self.output_capture_config = output_capture_config or OutputCaptureConfig()
-        self.output_capture: Optional[OutputCapture] = None
+        self.output_capture: OutputCapture | None = None
 
         # Initialize output capture if enabled
         if self.output_capture_config.enabled:
@@ -76,7 +76,7 @@ class ExecutionCoordinator:
         if config.enabled:
             self._initialize_output_capture()
 
-    def parse_and_execute(self, parser, args: Optional[List[str]]) -> Any:
+    def parse_and_execute(self, parser, args: list[str] | None) -> Any:
         """
         Parse arguments and execute command.
 
@@ -159,10 +159,10 @@ class ExecutionCoordinator:
 
         except Exception as e:
             # Handle execution errors - for argparse-like errors, raise SystemExit
-            if isinstance(e, (ValueError, KeyError)) and "parsed" not in locals():
+            if isinstance(e, ValueError | KeyError) and "parsed" not in locals():
                 # Parsing errors should raise SystemExit like argparse does
                 print(f"Error: {e}")
-                raise SystemExit(2)
+                raise SystemExit(2) from e
             else:
                 # Other execution errors
                 result = self._handle_execution_error(parsed if "parsed" in locals() else None, e)
@@ -242,7 +242,7 @@ class ExecutionCoordinator:
 
         return executor.execute_command(parsed=parsed, target_mode=TargetMode.CLASS)
 
-    def _find_source_class_for_function(self, function_name: str) -> Optional[Type]:
+    def _find_source_class_for_function(self, function_name: str) -> type | None:
         """Find the source class for a given function name."""
         if self.command_tree:
             return self.command_tree.find_source_class(function_name)
@@ -261,7 +261,7 @@ class ExecutionCoordinator:
 
         return 1
 
-    def _should_show_subgroup_help(self, parser, args: List[str]) -> bool:
+    def _should_show_subgroup_help(self, parser, args: list[str]) -> bool:
         """Check if args represent a hierarchical command that needs subgroup help."""
         # Don't interfere with explicit help requests
         if "--help" in args or "-h" in args:
@@ -286,7 +286,7 @@ class ExecutionCoordinator:
                 # Other SystemExit codes, let them propagate
                 raise
 
-    def _is_hierarchical_path(self, parser, args: List[str]) -> bool:
+    def _is_hierarchical_path(self, parser, args: list[str]) -> bool:
         """Check if args represent a valid hierarchical path to a subgroup."""
         if not args:
             return False
@@ -325,7 +325,7 @@ class ExecutionCoordinator:
                 return True
         return False
 
-    def _show_subgroup_help(self, parser, args: List[str]) -> int:
+    def _show_subgroup_help(self, parser, args: list[str]) -> int:
         """Show help for a specific subgroup by invoking subparser help."""
         # Navigate to the subparser and show its help
         current_parser = parser
@@ -439,11 +439,11 @@ class ExecutionCoordinator:
             print(f"Completion generation error: {e}", file=sys.stderr)
             return 1
 
-    def _is_help_request(self, args: List[str]) -> bool:
+    def _is_help_request(self, args: list[str]) -> bool:
         """Check if the arguments represent a help request."""
         return "--help" in args or "-h" in args
 
-    def _get_target_class_for_preprocessing(self) -> Optional[Type]:
+    def _get_target_class_for_preprocessing(self) -> type | None:
         """Get the target class for option discovery from executors."""
         # If we have a primary executor, get its target class
         if "primary" in self.executors:
@@ -463,6 +463,6 @@ class ExecutionCoordinator:
         return None
 
     @staticmethod
-    def check_no_color_flag(args: List[str]) -> bool:
+    def check_no_color_flag(args: list[str]) -> bool:
         """Check if --no-color flag is present in arguments."""
         return "--no-color" in args or "-n" in args

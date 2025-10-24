@@ -13,11 +13,11 @@ class ValidationService:
     ) -> None:
         """Validate constructor compatibility for FreyjaCLI argument generation.
 
-        FreyjaCLI must instantiate classes during command execution - constructor parameters become FreyjaCLI arguments.
+        Constructor parameters become FreyjaCLI arguments during command execution.
 
         :param cls: The class to validate
-        :param context: Context string for error messages (e.g., "main class", "inner class 'UserOps'")
-        :param allow_parameterless_only: If True, allows only parameterless constructors (for direct method pattern)
+        :param context: Context string for error messages
+        :param allow_parameterless_only: Only allows parameterless constructors
         :raises ValueError: If constructor has parameters without defaults
         """
         try:
@@ -40,13 +40,15 @@ class ValidationService:
 
                 if allow_parameterless_only:
                     error_msg = (
-                        f"Constructor for {context} '{class_name}' has parameters without default values: {param_list}. "
-                        "For classes using direct methods, the constructor must be parameterless or all parameters must have default values."
+                        f"Constructor for {context} '{class_name}' has parameters without "
+                        f"default values: {param_list}. For classes using direct methods, "
+                        "constructor must be parameterless or all params must have defaults."
                     )
                 else:
                     error_msg = (
-                        f"Constructor for {context} '{class_name}' has parameters without default values: {param_list}. "
-                        "All constructor parameters must have default values to be used as FreyjaCLI arguments."
+                        f"Constructor for {context} '{class_name}' has parameters without "
+                        f"default values: {param_list}. All constructor parameters must have "
+                        "default values to be used as FreyjaCLI arguments."
                     )
                 raise ValueError(error_msg)
 
@@ -59,11 +61,11 @@ class ValidationService:
             )
             if not isinstance(e, ValueError):
                 error_to_raise.__cause__ = e
-            raise error_to_raise
+            raise error_to_raise from e
 
     @staticmethod
     def validate_inner_class_constructor_parameters(cls: type, context: str) -> None:
-        """Inner classes need main instance injection while supporting optional sub-global arguments."""
+        """Validate inner class constructors for main instance injection."""
         try:
             init_method = cls.__init__
             sig = inspect.signature(init_method)
@@ -73,7 +75,7 @@ class ValidationService:
             # First parameter should be 'self'
             if not params or params[0][0] != "self":
                 raise ValueError(
-                    f"Constructor for {context} '{cls.__name__}' is malformed (missing self parameter)"
+                    f"Constructor for {context} '{cls.__name__}' malformed (no self param)"
                 )
 
             # Determine if this follows the new main pattern or old pattern
@@ -107,8 +109,9 @@ class ValidationService:
                 param_list = ", ".join(params_without_defaults)
                 class_name = cls.__name__
                 error_msg = (
-                    f"Constructor for {context} '{class_name}' has parameters without default values: {param_list}. "
-                    f"All constructor parameters must have default values to be used as FreyjaCLI arguments."
+                    f"Constructor for {context} '{class_name}' has parameters without "
+                    f"default values: {param_list}. All constructor parameters must have "
+                    "default values to be used as FreyjaCLI arguments."
                 )
                 raise ValueError(error_msg)
 
@@ -117,17 +120,15 @@ class ValidationService:
             error_to_raise = (
                 e
                 if isinstance(e, ValueError)
-                else ValueError(
-                    f"Error validating inner class constructor for {context} '{cls.__name__}': {e}"
-                )
+                else ValueError(f"Error validating inner class constructor for {context}: {e}")
             )
             if not isinstance(e, ValueError):
                 error_to_raise.__cause__ = e
-            raise error_to_raise
+            raise error_to_raise from e
 
     @staticmethod
     def validate_function_signature(func: Any) -> bool:
-        """Type annotations enable automatic FreyjaCLI argument type mapping without manual configuration."""
+        """Validate that functions have type annotations for argument generation."""
         try:
             sig = inspect.signature(func)
 
@@ -148,7 +149,7 @@ class ValidationService:
 
     @staticmethod
     def get_validation_errors(cls: type, functions: dict[str, Any]) -> list[str]:
-        """Early validation prevents runtime failures during FreyjaCLI generation and command execution."""
+        """Get validation errors for FreyjaCLI generation."""
         errors = []
 
         # Validate class constructor if provided

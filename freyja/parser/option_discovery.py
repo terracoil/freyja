@@ -25,7 +25,7 @@ class OptionDiscovery:
 
     def discover_subglobal_options(self) -> dict[str, set[str]]:
         """Discover sub-global options from inner class constructors."""
-        subglobal_options = {}
+        subglobal_options: dict[str, set[str]] = {}
 
         if not hasattr(self.command_tree, "groups") or not self.command_tree.groups:
             return subglobal_options
@@ -124,7 +124,7 @@ class OptionDiscovery:
 
         try:
             sig = inspect.signature(target_class.__init__)
-            for param_name, param in sig.parameters.items():
+            for param_name, _param in sig.parameters.items():
                 if param_name == "self":
                     continue
                 flag_name = TextUtil.kebab_case(param_name)
@@ -143,7 +143,7 @@ class OptionDiscovery:
             sig = inspect.signature(inner_class.__init__)
             params = list(sig.parameters.items())
             # Skip self (index 0) and main (index 1), start from index 2
-            for param_name, param in params[2:]:
+            for param_name, _param in params[2:]:
                 flag_name = TextUtil.kebab_case(param_name)
                 options.add(f"--{flag_name}")
         except (ValueError, TypeError):
@@ -154,14 +154,14 @@ class OptionDiscovery:
 
     def _analyze_function_params(self, function: Any) -> set[str]:
         """Analyze function parameters to extract command option names."""
-        options = set()
+        options: set[str] = set()
 
         if not function:
             return options
 
         try:
             sig = inspect.signature(function)
-            for param_name, param in sig.parameters.items():
+            for param_name, _param in sig.parameters.items():
                 if param_name == "self":
                     continue
                 flag_name = TextUtil.kebab_case(param_name)

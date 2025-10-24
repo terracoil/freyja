@@ -22,7 +22,7 @@ def test_capture_execution():
     cli = FreyjaCLI(TestClass, capture_output=True)
 
     # Execute a command - this should capture the output
-    result = cli.run(["say-hello", "--name", "Freyja"])
+    cli.run(["say-hello", "--name", "Freyja"])
 
     # Get captured output
     captured = cli.get_captured_output()
@@ -40,7 +40,7 @@ def test_no_capture_execution():
     cli = FreyjaCLI(TestClass, capture_output=False)
 
     # Execute a command - this should NOT capture output
-    result = cli.run(["say-hello", "--name", "Test"])
+    cli.run(["say-hello", "--name", "Test"])
 
     # Should be no captured output
     captured = cli.get_captured_output()
@@ -58,7 +58,7 @@ def test_context_manager_capture():
 
     # Use context manager for temporary capture
     with cli.capture_output():
-        result = cli.run(["say-hello", "--name", "Context"])
+        cli.run(["say-hello", "--name", "Context"])
         captured = cli.get_captured_output()
         assert captured is not None
         assert "Hello, Context!" in captured

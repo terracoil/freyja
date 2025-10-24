@@ -1,6 +1,7 @@
 # Command discovery functionality extracted from FreyjaCLI class.
 import inspect
-from typing import *
+from collections.abc import Callable
+from typing import Any
 
 from freyja.cli import SystemClassBuilder, TargetMode
 from freyja.parser import DocStringParser
@@ -24,7 +25,7 @@ class CommandDiscovery:
     def __init__(
         self,
         target: TargetType,
-        method_filter: Optional[Callable[[type, str, Any], bool]] = None,
+        method_filter: Callable[[type, str, Any], bool] | None = None,
         completion: bool = True,
         theme_tuner: bool = False,
     ):
@@ -42,7 +43,7 @@ class CommandDiscovery:
 
         self.target_classes: list[type] = []
         self.mode: TargetMode = TargetMode.CLASS
-        self.primary_class: Optional[type] = None
+        self.primary_class: type | None = None
 
         # Determine target mode with unified class handling
         if isinstance(target, list):
@@ -128,12 +129,12 @@ class CommandDiscovery:
         """Discover methods from classes (single or multiple) and add to command tree.
 
         For single class: methods get no namespace prefix (global namespace).
-        For multiple classes: last class gets global namespace, others get kebab-cased class name prefixes.
+        Multi-class: last gets global namespace, others get kebab-case prefixes.
         """
         if self.completion or self.theme_tuner:
-            System = SystemClassBuilder.build(self.completion, self.theme_tuner)
+            system = SystemClassBuilder.build(self.completion, self.theme_tuner)
             self.target_classes.insert(
-                0, System
+                0, system
             )  # SystemClassBuilder.build(self.completion, self.theme_tuner))
 
         # Separate last class (global) from others (namespaced)
@@ -147,7 +148,7 @@ class CommandDiscovery:
         # Discover cmd_tree for primary class (no namespace)
         self._discover_from_class(self.primary_class, command_tree, is_namespaced=False)
 
-    def _discover_inner_classes(self, target_class: Type) -> Dict[str, Type]:
+    def _discover_inner_classes(self, target_class: type) -> dict[str, type]:
         """Discover inner classes that should be treated as command groups."""
         inner_classes = {}
 
@@ -192,7 +193,7 @@ class CommandDiscovery:
     def _discover_methods_from_inner_classes(
         self,
         target_cls: type,
-        inner_classes: Dict[str, Type],
+        inner_classes: dict[str, type],
         command_tree,
         is_namespaced: bool = False,
     ) -> None:
@@ -283,8 +284,6 @@ class CommandDiscovery:
     def _get_group_description(self, inner_class: type, group_name: str) -> str:
         """Get description for command group from inner class docstring."""
         if inner_class and inner_class.__doc__:
-            from freyja.parser import DocStringParser
-
             description, _ = DocStringParser.parse_docstring(inner_class.__doc__)
             return description
 
@@ -302,6 +301,7 @@ class CommandDiscovery:
         return f"{class_name.title().replace('-', ' ')} cmd_tree and utilities"
 
     def is_system(self, cls: type) -> bool:
+        """Check if class is a System command class."""
         return cls.__name__ == "System"
 
     def _default_method_filter(self, target_class: type, name: str, obj: Any) -> bool:

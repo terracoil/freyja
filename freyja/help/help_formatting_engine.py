@@ -6,7 +6,6 @@ Eliminates duplication across formatter methods while maintaining consistent ali
 
 import argparse
 import textwrap
-from typing import *
 
 
 class HelpFormattingEngine:
@@ -27,7 +26,7 @@ class HelpFormattingEngine:
         name_style: str,
         desc_style: str,
         add_colon: bool = True,
-    ) -> List[str]:
+    ) -> list[str]:
         """Format command with description using unified alignment strategy."""
         lines = []
 
@@ -64,7 +63,7 @@ class HelpFormattingEngine:
         style_name: str,
         style_description: str,
         add_colon: bool = True,
-    ) -> List[str]:
+    ) -> list[str]:
         """Format name and description with consistent column alignment."""
         lines = []
 
@@ -87,7 +86,9 @@ class HelpFormattingEngine:
         desc_lines = wrapped_desc.split("\n")
 
         # Style description lines
-        styled_desc_lines = [self._apply_style(line.strip(), desc_style) for line in desc_lines]
+        styled_desc_lines = [
+            self._apply_style(line.strip(), style_description) for line in desc_lines
+        ]
 
         # Check if description fits on first line
         first_desc_styled = styled_desc_lines[0] if styled_desc_lines else ""
@@ -113,11 +114,11 @@ class HelpFormattingEngine:
 
     def format_argument_list(
         self,
-        required_args: List[str],
-        optional_args: List[str],
+        required_args: list[str],
+        optional_args: list[str],
         base_indent: int,
         option_column: int,
-    ) -> List[str]:
+    ) -> list[str]:
         """Format argument lists with consistent alignment and styling."""
         lines = []
 
@@ -169,8 +170,8 @@ class HelpFormattingEngine:
         return lines
 
     def calculate_column_widths(
-        self, items: List[Tuple[str, str]], base_indent: int, max_name_width: int = 30
-    ) -> Tuple[int, int]:
+        self, items: list[tuple[str, str]], base_indent: int, max_name_width: int = 30
+    ) -> tuple[int, int]:
         """Calculate optimal column widths for name and description alignment."""
         max_name_len = 0
 
@@ -186,8 +187,8 @@ class HelpFormattingEngine:
         return max_name_len, desc_column
 
     def wrap_text(
-        self, text: str, width: int, indent: int = 0, subsequent_indent: Optional[int] = None
-    ) -> List[str]:
+        self, text: str, width: int, indent: int = 0, subsequent_indent: int | None = None
+    ) -> list[str]:
         """Wrap text with proper indentation and width constraints."""
         if subsequent_indent is None:
             subsequent_indent = indent
@@ -211,20 +212,20 @@ class HelpFormattingEngine:
 
         return text
 
-    def _get_argument_description(self, arg: str) -> Optional[str]:
+    def _get_argument_description(self, arg: str) -> str | None:
         """Get description for argument from parser metadata."""
         # This would be populated by the formatter with actual argument metadata
         # For now, return None as this is handled by the existing formatter logic
         return None
 
-    def format_section_header(self, title: str, base_indent: int = 0) -> List[str]:
+    def format_section_header(self, title: str, base_indent: int = 0) -> list[str]:
         """Format section headers with consistent styling."""
         styled_title = self._apply_style(title, "subtitle")
         return [" " * base_indent + styled_title + ":"]
 
     def format_usage_line(
-        self, prog: str, usage_parts: List[str], max_width: int = None
-    ) -> List[str]:
+        self, prog: str, usage_parts: list[str], max_width: int = None
+    ) -> list[str]:
         """Format usage line with proper wrapping."""
         if max_width is None:
             max_width = self.console_width
@@ -241,7 +242,7 @@ class HelpFormattingEngine:
 
     def format_command_group_header(
         self, group_name: str, description: str, base_indent: int = 0
-    ) -> List[str]:
+    ) -> list[str]:
         """Format command group headers with description."""
         lines = []
 

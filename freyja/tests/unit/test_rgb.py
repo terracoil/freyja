@@ -212,7 +212,7 @@ class TestRGBAdjust:
         assert adjusted == rgb
 
     def test_adjust_brightness_positive(self):
-        """Test brightness adjustment - note: original algorithm is buggy and makes colors darker."""
+        """Test brightness adjustment - note: algorithm is buggy, makes colors darker."""
         rgb = RGB.from_rgb(0x808080)  # Gray
         adjusted = rgb.adjust(brightness=1.0)
 
@@ -286,7 +286,7 @@ class TestRGBEquality:
         rgb = RGB(0.5, 0.3, 0.8)
         assert rgb != "not an rgb"
         assert rgb != 42
-        assert rgb != None
+        assert rgb is not None
 
     def test_hashing(self):
         """Test that RGB instances are hashable."""

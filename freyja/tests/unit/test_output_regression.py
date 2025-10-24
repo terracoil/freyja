@@ -18,6 +18,7 @@ class TestOutputRegression:
         """
 
         class SimpleClass:
+            """Test helper class for simple CLI operations."""
             def __init__(self, config: str = "default.json"):
                 self.config = config
 
@@ -51,10 +52,12 @@ class TestOutputRegression:
         """
 
         class DataProcessor:
+            """Test helper class for data processing operations."""
             def __init__(self, config: str = "default.json"):
                 self.config = config
 
             class FileOps:
+                """Inner class for file operations."""
                 def __init__(self, parent, workspace: str = "./data"):
                     self.parent = parent
                     self.workspace = workspace
@@ -86,6 +89,7 @@ class TestOutputRegression:
         """
 
         class TestClass:
+            """Test helper class for testing warnings."""
             def __init__(self, config: str = "default.json"):
                 self.config = config
 
@@ -117,6 +121,7 @@ class TestOutputRegression:
         """
 
         class VerboseClass:
+            """Test helper class for verbose output testing."""
             def __init__(self, verbose: bool = False):
                 self.verbose = verbose
 
@@ -164,6 +169,7 @@ class TestOutputRegression:
         """
 
         class MixedOutputClass:
+            """Test helper class for mixed output testing."""
             def __init__(self, config: str = "test.conf"):
                 self.config = config
 
@@ -202,6 +208,7 @@ class TestOutputRegression:
         """
 
         class TimingClass:
+            """Test helper class for output timing tests."""
             def __init__(self, delay: bool = False):
                 self.delay = delay
 

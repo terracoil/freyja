@@ -412,7 +412,7 @@ class FreyjaDevTools:
         if not message:
           try:
             claude_result = subprocess.run(
-              ["claude", "Create commit message based on the uncommitted code, without mentioning the words 'claude', 'git', or 'phase'."],
+              ["claude", "Analyze the uncommitted changes and create a concise, specific commit message (1-2 sentences max) that describes WHAT changed and WHY. Focus on user-visible changes, bug fixes, or new features. Do NOT use generic phrases like 'based on the changes' or 'here's an appropriate commit message'. Start directly with the action (e.g., 'Fix', 'Add', 'Update', 'Refactor'). Do not mention 'claude', 'git', or 'phase'."],
               capture_output=True, text=True, timeout=30
             )
             generated_message = claude_result.stdout.strip().split('\n')[0] if claude_result.returncode == 0 else ""

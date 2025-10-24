@@ -20,7 +20,7 @@ class PositionalInfo:
 
 
 class ArgumentPreprocessor:
-    """Preprocesses command line arguments to enable flexible option ordering AND positional parameter support."""
+    """Preprocesses args for flexible option ordering AND positional support."""
 
     def __init__(self, command_tree: CommandTree, target_class: type | None = None):
         """Initialize the preprocessor with command tree and target class info."""
@@ -59,7 +59,7 @@ class ArgumentPreprocessor:
         # Parse command structure from positional arguments
         command_path = self._extract_command_path(args)
 
-        # Convert flag-style positional parameters to positional arguments for backward compatibility
+        # Convert flag-style positional params to positional args (compatibility)
         args_with_converted_positionals = self._convert_positional_flags_to_positional(
             args, command_path
         )
@@ -132,7 +132,7 @@ class ArgumentPreprocessor:
 
     def _extract_constructor_options(self, cls: type, skip_params: int = 1) -> set[str]:
         """Extract options from class constructor."""
-        options = set()
+        options: set[str] = set()
         if not hasattr(cls, "__init__"):
             return options
 
@@ -202,7 +202,7 @@ class ArgumentPreprocessor:
 
     def _extract_command_path(self, args: list[str]) -> list[str]:
         """Extract hierarchical command path from arguments."""
-        command_path = []
+        command_path: list[str] = []
 
         for arg in args:
             if arg.startswith("-"):
@@ -230,7 +230,7 @@ class ArgumentPreprocessor:
 
         # Check if it's a command (full path)
         if len(path) >= 2:
-            command_name = "--".join(path)  # Inner class commands use double-dash
+            "--".join(path)  # Inner class commands use double-dash
             # Check in the command tree structure
             group_name = path[0]
             if group_name in self.command_tree.tree:

@@ -77,21 +77,19 @@ class CompletionHandler(ABC):
 
     def complete(self) -> None:
         """Handle completion request and output completions."""
+        import importlib  # pylint: disable=import-outside-toplevel
+
         shell = self.detect_shell()
         if not shell:
             return
 
-        # Get completion environment variables
+        # Handle shell-specific completion using importlib to avoid cycles
         if shell == "bash":
-            # Handle bash completion
-            from .bash import handle_bash_completion
-
-            handle_bash_completion()
+            bash_module = importlib.import_module("freyja.completion.bash")
+            bash_module.handle_bash_completion()
         elif shell == "zsh":
-            # Handle zsh completion
-            from .zsh import handle_zsh_completion
-
-            handle_zsh_completion()
+            zsh_module = importlib.import_module("freyja.completion.zsh")
+            zsh_module.handle_zsh_completion()
         else:
             # For other shells, we need to implement completion handling
             # For now, just return empty to avoid errors
@@ -134,7 +132,7 @@ class CompletionHandler(ABC):
         :param parser: Parser to extract cmd_tree from
         :return: List of command names
         """
-        commands = []
+        commands: list[str] = []
 
         for action in parser._actions:
             if isinstance(action, argparse._SubParsersAction):
@@ -256,6 +254,46 @@ class CompletionHandler(ABC):
 
         return [candidate for candidate in candidates if candidate.startswith(partial)]
 
+    def _get_generic_completions(self, context: CompletionContext) -> list[str]:
+        """Get generic completions that work across shells.
+
+        :param context: Completion context
+        :return: List of completion suggestions
+        """
+        completions: list[str] = []
+
+        # Get the appropriate parser for current context
+        parser = context.parser
+        if context.command_group_path:
+            parser = self.get_command_group_parser(parser, context.command_group_path)
+            if not parser:
+                return []
+
+        # Determine what we're completing
+        current_word = context.current_word
+
+        # Check if we're completing an option value
+        if len(context.words) >= 2:
+            prev_word = context.words[-2] if len(context.words) >= 2 else ""
+
+            # If previous word is an option, complete its values
+            if prev_word.startswith("--"):
+                option_values = self.get_option_values(parser, prev_word, current_word)
+                if option_values:
+                    return option_values
+
+        # Complete options if current word starts with --
+        if current_word.startswith("--"):
+            options = self.get_available_options(parser)
+            return self.complete_partial_word(options, current_word)
+
+        # Complete cmd_tree/command groups
+        commands = self.get_available_commands(parser)
+        if commands:
+            return self.complete_partial_word(commands, current_word)
+
+        return completions
+
 
 def get_completion_handler(cli, shell: str = None) -> CompletionHandler:
     """Get appropriate completion handler for shell.
@@ -264,25 +302,28 @@ def get_completion_handler(cli, shell: str = None) -> CompletionHandler:
     :param shell: Target shell (auto-detect if None)
     :return: Completion handler instance
     """
-    # Lazy imports to avoid circular dependency
-    from .bash import BashCompletionHandler
-    from .fish import FishCompletionHandler
-    from .powershell import PowerShellCompletionHandler
-    from .zsh import ZshCompletionHandler
+    import importlib  # pylint: disable=import-outside-toplevel
 
-    if not shell:
-        # Try to detect shell
-        handler = BashCompletionHandler(cli)  # Use bash as fallback
-        shell = handler.detect_shell() or "bash"
+    # Use importlib to avoid static imports and cyclic import warnings
+    handlers = {
+        "bash": "freyja.completion.bash.BashCompletionHandler",
+        "zsh": "freyja.completion.zsh.ZshCompletionHandler",
+        "fish": "freyja.completion.fish.FishCompletionHandler",
+        "powershell": "freyja.completion.powershell.PowerShellCompletionHandler",
+    }
 
-    if shell == "bash":
-        return BashCompletionHandler(cli)
-    elif shell == "zsh":
-        return ZshCompletionHandler(cli)
-    elif shell == "fish":
-        return FishCompletionHandler(cli)
-    elif shell == "powershell":
-        return PowerShellCompletionHandler(cli)
-    else:
-        # Default to bash for unknown shells
-        return BashCompletionHandler(cli)
+    detected_shell = shell
+    if not detected_shell:
+        # Detect shell using a temporary bash handler
+        bash_module = importlib.import_module("freyja.completion.bash")
+        bash_handler_class = bash_module.BashCompletionHandler
+        temp_handler = bash_handler_class(cli)
+        detected_shell = temp_handler.detect_shell() or "bash"
+
+    # Get the handler class for the detected shell
+    handler_path = handlers.get(detected_shell, handlers["bash"])
+    module_path, class_name = handler_path.rsplit(".", 1)
+    module = importlib.import_module(module_path)
+    handler_class = getattr(module, class_name)
+
+    return handler_class(cli)

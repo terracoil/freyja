@@ -33,7 +33,7 @@ class ColorFormatter:
 
             kernel32 = ctypes.windll.kernel32
             kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
-        except Exception:
+        except Exception:  # noqa: S110 # intentional silent fail for Windows compatibility
             # Fail silently on older Windows versions or permission issues
             pass
 

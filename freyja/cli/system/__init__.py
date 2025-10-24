@@ -3,8 +3,11 @@ from .tune_theme import TuneTheme
 
 
 class SystemClassBuilder:
+    """Dynamically builds System class with selected system command components."""
+
     @staticmethod
     def build(completion: bool = True, theme_tuner: bool = False) -> type:
+        """Build System class with specified command components enabled."""
         system_class_dict: dict = {}
 
         if completion:

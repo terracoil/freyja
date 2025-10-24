@@ -191,13 +191,17 @@ class RGB:
     def hsl(self, adjust_pct: float) -> RGB:
         """HSL method: Adjust lightness while preserving hue and saturation."""
         r, g, b = self.to_ints()
-        h, s, l = self._rgb_to_hsl(r, g, b)
+        h, s, lightness = self._rgb_to_hsl(r, g, b)
 
         # Adjust lightness
-        l = l + (1.0 - l) * adjust_pct if adjust_pct >= 0 else l * (1 + adjust_pct)
-        l = max(0.0, min(1.0, l))  # Clamp to valid range
+        lightness = (
+            lightness + (1.0 - lightness) * adjust_pct
+            if adjust_pct >= 0
+            else lightness * (1 + adjust_pct)
+        )
+        lightness = max(0.0, min(1.0, lightness))  # Clamp to valid range
 
-        r_new, g_new, b_new = self._hsl_to_rgb(h, s, l)
+        r_new, g_new, b_new = self._hsl_to_rgb(h, s, lightness)
         return RGB.from_ints(r_new, g_new, b_new)
 
     def multiplicative(self, adjust_pct: float) -> RGB:
@@ -265,13 +269,13 @@ class RGB:
         diff = max_val - min_val
 
         # Lightness
-        l = (max_val + min_val) / 2.0
+        lightness = (max_val + min_val) / 2.0
 
         if diff == 0:
             h = s = 0  # Achromatic
         else:
             # Saturation
-            s = diff / (2 - max_val - min_val) if l > 0.5 else diff / (max_val + min_val)
+            s = diff / (2 - max_val - min_val) if lightness > 0.5 else diff / (max_val + min_val)
 
             # Hue
             if max_val == r_norm:
@@ -282,10 +286,10 @@ class RGB:
                 h = (r_norm - g_norm) / diff + 4
             h /= 6
 
-        return h, s, l
+        return h, s, lightness
 
     @staticmethod
-    def _hsl_to_rgb(h: float, s: float, l: float) -> tuple[int, int, int]:
+    def _hsl_to_rgb(h: float, s: float, lightness: float) -> tuple[int, int, int]:
         """Convert HSL to RGB color space."""
 
         def hue_to_rgb(p: float, q: float, t: float) -> float:
@@ -306,10 +310,10 @@ class RGB:
             return result
 
         if s == 0:
-            r = g = b = l  # Achromatic
+            r = g = b = lightness  # Achromatic
         else:
-            q = l * (1 + s) if l < 0.5 else l + s - l * s
-            p = 2 * l - q
+            q = lightness * (1 + s) if lightness < 0.5 else lightness + s - lightness * s
+            p = 2 * lightness - q
             r = hue_to_rgb(p, q, h + 1 / 3)
             g = hue_to_rgb(p, q, h)
             b = hue_to_rgb(p, q, h - 1 / 3)

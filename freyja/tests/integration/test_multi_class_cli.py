@@ -32,7 +32,7 @@ class MockDataProcessor:
 class MockFileManager:
     """Mock file manager for testing."""
 
-    def __init__(self, base_path: str = "/tmp"):
+    def __init__(self, base_path: str = "/tmp"):  # noqa: S108 # acceptable in tests
         self.base_path = base_path
 
     def list_files(self, directory: str = ".") -> str:
@@ -52,7 +52,7 @@ class MockReportGenerator:
 
     def generate_report(self, report_type: str = "summary") -> str:
         """Generate a report."""
-        return f"Generated {report_type} report in {output_dir}"
+        return f"Generated {report_type} report in {self.output_dir}"
 
 
 class TestMultiClassHandler:
@@ -95,7 +95,7 @@ class TestMultiClassHandler:
         class_order = [MockDataProcessor, MockFileManager]
         ordered = handler.get_ordered_commands(class_order)
 
-        # Should be: DataProcessor cmd_tree first (alphabetical), then FileManager cmd_tree (alphabetical)
+        # Should be: DataProcessor cmds first (alpha), then FileManager cmds (alpha)
         expected = ["analyze", "process-data", "cleanup", "list-files"]
         assert ordered == expected
 

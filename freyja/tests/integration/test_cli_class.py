@@ -121,7 +121,7 @@ class TestClassBasedCLI:
         assert "method-without-docstring" in cli.commands
 
         # Should not include private methods or special methods
-        command_names = list(cli.commands.keys())
+        list(cli.commands.keys())
 
         # Check that cmd_tree have proper structure
         for command_name, command_info in cli.commands.items():
@@ -171,7 +171,7 @@ class TestClassBasedCLI:
                 "--choice",
                 "OPTION_B",
                 "--file-path",
-                "/tmp/test.txt",
+                "/tmp/test.txt",  # noqa: S108 # acceptable in tests
             ]
         )
 
@@ -180,7 +180,7 @@ class TestClassBasedCLI:
         assert result["active"] is True
         assert result["choice"] == SampleEnum.OPTION_B
         assert isinstance(result["file_path"], Path)
-        assert str(result["file_path"]) == "/tmp/test.txt"
+        assert str(result["file_path"]) == "/tmp/test.txt"  # noqa: S108 # acceptable in tests
 
     def test_hierarchical_methods(self):
         """Test that dunder notation is converted to flat command for class methods."""
@@ -302,7 +302,9 @@ class TestEdgeCases:
         """Test FreyjaCLI creation from class with no public methods."""
 
         class EmptyClass:
+            """Test helper class with no public methods."""
             def __init__(self):
+                """Initialize class."""
                 pass
 
         cli = FreyjaCLI(EmptyClass)
@@ -314,13 +316,17 @@ class TestEdgeCases:
         """Test class with only private methods."""
 
         class PrivateMethodsClass:
+            """Test helper class with only private methods."""
             def __init__(self):
+                """Initialize class."""
                 pass
 
             def _private_method(self):
+                """Private method."""
                 return "private"
 
             def __special_method__(self):
+                """Special method."""
                 return "special"
 
         cli = FreyjaCLI(PrivateMethodsClass)
@@ -332,14 +338,18 @@ class TestEdgeCases:
         """Test that properties are not included as methods."""
 
         class ClassWithProperty:
+            """Test helper class with properties."""
             def __init__(self):
+                """Initialize class."""
                 self._value = 42
 
             @property
             def value(self):
+                """Property getter."""
                 return self._value
 
             def method(self):
+                """Test method."""
                 return "method"
 
         cli = FreyjaCLI(ClassWithProperty)
@@ -410,14 +420,19 @@ class TestConstructorParameterValidation:
 
         # Create a class with bad inner class
         class ClassWithBadInner:
+            """Test class with bad inner class."""
             def __init__(self, config: str = "test.json"):
+                """Initialize class."""
                 pass
 
             class BadInner:
+                """Inner class with required parameters."""
                 def __init__(self, required: str):  # No default!
+                    """Initialize inner class."""
                     pass
 
                 def method(self):
+                    """Test method."""
                     pass
 
         # Should fail because inner class constructor has required parameter
@@ -431,14 +446,19 @@ class TestConstructorParameterValidation:
 
         # Create a class with bad main constructor
         class ClassWithBadMain:
+            """Test class with required parameters."""
             def __init__(self, required: str):  # No default!
+                """Initialize class."""
                 pass
 
             class GoodInner:
+                """Inner class with good parameters."""
                 def __init__(self, config: str = "test.json"):
+                    """Initialize inner class."""
                     pass
 
                 def method(self):
+                    """Test method."""
                     pass
 
         # Should fail because main class constructor has required parameter

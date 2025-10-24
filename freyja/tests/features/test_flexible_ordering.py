@@ -59,7 +59,10 @@ class SampleClassWithInnerClassOrdering:
             :param limit: Result limit
             :param order_by: Order by field
             """
-            return f"Query {table_name}: limit={limit}, order={order_by}, pool={self.pool_size}, conn={self.connection_string}"
+            return (
+                f"Query {table_name}: limit={limit}, order={order_by}, "
+                f"pool={self.pool_size}, conn={self.connection_string}"
+            )
 
         def migrate_schema(self, version: str = "latest"):
             """Migrate database schema.

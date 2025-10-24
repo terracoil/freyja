@@ -37,10 +37,11 @@ _{func_name}_completion()
     local prog="${{COMP_WORDS[0]}}"
     local prog_basename="$(basename "$prog")"
 
-    # Get completions from the program with inline environment variables to prevent shell persistence
+    # Get completions with inline env vars to prevent shell persistence
     local completions
     # Check if this looks like a Python script
-    if [[ "$prog" == *.py ]] || [[ ! -x "$prog" ]] || [[ -f "$prog" && "$(head -n1 "$prog" 2>/dev/null)" == *"python"* ]]; then
+    if [[ "$prog" == *.py ]] || [[ ! -x "$prog" ]] || \\
+       [[ -f "$prog" && "$(head -n1 "$prog" 2>/dev/null)" == *"python"* ]]; then
         # For Python scripts, use python interpreter
         completions=$(
             _FREYJA_COMPLETE=bash \\
@@ -69,7 +70,7 @@ _{func_name}_completion()
 complete -F _{func_name}_completion {prog_basename}
 
 # Register completion for path-based invocations
-# This handles cases like: examples/{prog_basename}, ./bin/{prog_basename}, /usr/local/bin/{prog_basename}
+# Handles: examples/{prog_basename}, ./bin/{prog_basename}, etc.
 complete -F _{func_name}_completion "./{prog_basename}"
 complete -F _{func_name}_completion "*/{prog_basename}"'''
 
@@ -94,42 +95,6 @@ complete -F _{func_name}_completion "*/{prog_basename}"'''
         installer = CompletionInstaller(self, prog_name)
         return installer.install("bash")
 
-    def _get_generic_completions(self, context: CompletionContext) -> list[str]:
-        """Get generic completions that work across shells."""
-        completions = []
-
-        # Get the appropriate parser for current context
-        parser = context.parser
-        if context.command_group_path:
-            parser = self.get_command_group_parser(parser, context.command_group_path)
-            if not parser:
-                return []
-
-        # Determine what we're completing
-        current_word = context.current_word
-
-        # Check if we're completing an option value
-        if len(context.words) >= 2:
-            prev_word = context.words[-2] if len(context.words) >= 2 else ""
-
-            # If previous word is an option, complete its values
-            if prev_word.startswith("--"):
-                option_values = self.get_option_values(parser, prev_word, current_word)
-                if option_values:
-                    return option_values
-
-        # Complete options if current word starts with --
-        if current_word.startswith("--"):
-            options = self.get_available_options(parser)
-            return self.complete_partial_word(options, current_word)
-
-        # Complete cmd_tree/command groups
-        commands = self.get_available_commands(parser)
-        if commands:
-            return self.complete_partial_word(commands, current_word)
-
-        return completions
-
 
 def handle_bash_completion() -> None:
     """Handle bash completion request from environment variables."""
@@ -146,8 +111,6 @@ def handle_bash_completion() -> None:
     words = words_str.split()
     if not words or cword_num >= len(words):
         return
-
-    current_word = words[cword_num] if cword_num < len(words) else ""
 
     # Extract command group path (everything between program name and current word)
     command_group_path = []

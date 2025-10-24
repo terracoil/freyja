@@ -6,6 +6,7 @@ import re
 import textwrap
 
 from .help_formatting_engine import HelpFormattingEngine
+from freyja.theme import ColorFormatter
 
 
 class FormatPatterns:
@@ -61,8 +62,6 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         self._theme = theme
         self._color_formatter = None
         if theme:
-            from freyja.theme import ColorFormatter
-
             self._color_formatter = ColorFormatter()
 
         self._alphabetize = alphabetize
@@ -203,7 +202,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     def _calculate_option_width(self, action):
         """Calculate width for a single option."""
-        opt_name = action.option_strings[-1]
+        action.option_strings[-1]
         opt_display = self._build_option_display(action, action.option_strings)
         return len(opt_display) + self._arg_indent
 
@@ -242,7 +241,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
         all_commands = self._collect_all_commands(action)
 
-        grouped = itertools.groupby(all_commands, key=lambda c: c[-1])
+        itertools.groupby(all_commands, key=lambda c: c[-1])
 
         # Sort system cmd_tree first, then alphabetize the rest
         if self._alphabetize:
@@ -250,7 +249,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
                 key=lambda x: (not x[3], x[0])
             )  # x[3] is is_system, x[0] is command name
 
-        for choice, subparser, command_type, is_system in all_commands:
+        for choice, subparser, _command_type, _is_system in all_commands:
             command_section = self._format_single_command(
                 choice, subparser, self._cmd_indent, unified_cmd_desc_column
             )
@@ -314,8 +313,6 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         footnote_text = "* - required"
 
         if self._theme:
-            from freyja.theme import ColorFormatter
-
             color_formatter = ColorFormatter()
             styled_footnote = color_formatter.apply_style(
                 footnote_text, self._theme.required_asterisk

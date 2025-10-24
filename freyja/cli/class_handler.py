@@ -44,7 +44,7 @@ class ClassHandler:
 
         :return: List of (command_name, [conflicting_classes]) tuples
         """
-        return [(cmd, classes) for cmd, classes in self.collision_tracker.items()]
+        return list(self.collision_tracker.items())
 
     def has_collisions(self) -> bool:
         """

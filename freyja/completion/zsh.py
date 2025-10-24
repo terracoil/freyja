@@ -74,7 +74,7 @@ _{func_name}() {{
 compdef _{func_name} {prog_basename}
 
 # Register completion for path-based invocations using pattern matching
-# This handles cases like: examples/{prog_basename}, ./bin/{prog_basename}, /usr/local/bin/{prog_basename}
+# Handles: examples/{prog_basename}, ./bin/{prog_basename}, etc.
 compdef _{func_name} "*/{prog_basename}"
 
 # Register completion for nested path invocations
@@ -92,11 +92,7 @@ compdef _{func_name} "**/{prog_basename}"'''
 
     def get_completions(self, context: CompletionContext) -> list[str]:
         """Get zsh-specific completions."""
-        # Reuse bash completion logic for now
-        from .bash import BashCompletionHandler
-
-        bash_handler = BashCompletionHandler(self.cli)
-        return bash_handler._get_generic_completions(context)
+        return self._get_generic_completions(context)
 
     def install_completion(self, prog_name: str) -> bool:
         """Install zsh completion."""

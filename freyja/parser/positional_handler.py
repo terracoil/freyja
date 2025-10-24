@@ -80,7 +80,8 @@ class PositionalHandler:
                 return True, None
             return (
                 False,
-                f"Expected boolean value (true/false, 1/0, yes/no) for {param_name}, got: {param_value}",
+                f"Expected boolean (true/false, 1/0, yes/no) "
+                f"for {param_name}, got: {param_value}",
             )
 
         # For other types, just accept the string - argparse will handle conversion

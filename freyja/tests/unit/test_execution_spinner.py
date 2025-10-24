@@ -31,7 +31,7 @@ class TestCommandContext:
             command="completion",
             subcommand="install",
             global_args={"config": "test.json"},
-            group_args={"workspace": "/tmp"},
+            group_args={"workspace": "/tmp"},  # noqa: S108 # acceptable in tests
             command_args={"shell": "bash"},
             positional_args=["arg1", "arg2"],
         )
@@ -40,7 +40,7 @@ class TestCommandContext:
         assert context.command == "completion"
         assert context.subcommand == "install"
         assert context.global_args == {"config": "test.json"}
-        assert context.group_args == {"workspace": "/tmp"}
+        assert context.group_args == {"workspace": "/tmp"}  # noqa: S108 # acceptable in tests
         assert context.command_args == {"shell": "bash"}
         assert context.positional_args == ["arg1", "arg2"]
 
@@ -110,7 +110,7 @@ class TestExecutionSpinner:
         context = CommandContext(
             command="test_command",
             global_args={"config": "test.json"},
-            group_args={"workspace": "/tmp"},
+            group_args={"workspace": "/tmp"},  # noqa: S108 # acceptable in tests
             command_args={"format": "json"},
             positional_args=["input.txt"],
         )
@@ -128,7 +128,7 @@ class TestExecutionSpinner:
         context = CommandContext(
             command="test_command",
             global_args={"config": "test.json"},
-            group_args={"workspace": "/tmp"},
+            group_args={"workspace": "/tmp"},  # noqa: S108 # acceptable in tests
             command_args={"format": "json"},
             positional_args=["input.txt", "output.txt"],
         )
@@ -249,7 +249,7 @@ class TestExecutionSpinner:
     def test_spinner_final_status_success(self, mock_flush, mock_write, mock_print):
         """Test that spinner shows checkmark on successful completion."""
         spinner = ExecutionSpinner(verbose=False)  # Non-verbose mode to trigger final status
-        context = CommandContext(command="test_command")
+        CommandContext(command="test_command")
 
         # Mock the status line
         spinner.status_line = "Executing test_command"
@@ -269,7 +269,7 @@ class TestExecutionSpinner:
     def test_spinner_final_status_failure(self, mock_flush, mock_write, mock_print):
         """Test that spinner shows X mark on failed completion."""
         spinner = ExecutionSpinner(verbose=False)  # Non-verbose mode to trigger final status
-        context = CommandContext(command="test_command")
+        CommandContext(command="test_command")
 
         # Mock the status line
         spinner.status_line = "Executing test_command"
@@ -289,7 +289,7 @@ class TestExecutionSpinner:
     def test_spinner_verbose_mode_no_final_status(self, mock_flush, mock_write, mock_print):
         """Test that spinner doesn't show final status in verbose mode."""
         spinner = ExecutionSpinner(verbose=True)  # Verbose mode
-        context = CommandContext(command="test_command")
+        CommandContext(command="test_command")
 
         # Mock the status line
         spinner.status_line = "Executing test_command"
@@ -310,7 +310,7 @@ class TestExecutionSpinner:
         mock_color_formatter.apply_style.return_value = "STYLED: ✓ Executing test_command"
 
         spinner = ExecutionSpinner(color_formatter=mock_color_formatter, verbose=False)
-        context = CommandContext(command="test_command")
+        CommandContext(command="test_command")
 
         # Mock the status line
         spinner.status_line = "Executing test_command"
@@ -331,7 +331,7 @@ class TestExecutionSpinner:
         color_formatter = ColorFormatter()
 
         spinner = ExecutionSpinner(color_formatter, verbose=False)
-        context = CommandContext(command="test_command")
+        CommandContext(command="test_command")
 
         # Test that the color formatter is stored
         assert spinner.color_formatter is color_formatter

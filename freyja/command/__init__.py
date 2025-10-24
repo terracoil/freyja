@@ -5,4 +5,4 @@ from .command_executor import CommandExecutor
 from .command_info import CommandInfo
 from .command_tree import CommandTree
 
-__all__ = [CommandInfo, CommandDiscovery, CommandExecutor, CommandTree]
+__all__ = ["CommandInfo", "CommandDiscovery", "CommandExecutor", "CommandTree"]

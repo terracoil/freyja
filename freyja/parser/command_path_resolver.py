@@ -33,8 +33,8 @@ class CommandPathResolver:
                 remaining_args=[],
             )
 
-        path_elements = []
-        remaining_args = []
+        path_elements: list[str] = []
+        remaining_args: list[str] = []
         found_command = False
 
         for i, arg in enumerate(args):
@@ -246,7 +246,7 @@ class CommandPathResolver:
 
     def find_longest_valid_path(self, args: list[str]) -> list[str]:
         """Find the longest valid command path from arguments."""
-        longest_path = []
+        longest_path: list[str] = []
 
         for i in range(1, min(len(args) + 1, 3)):  # Max depth of 2 (group + command)
             test_path = []

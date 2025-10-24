@@ -1,0 +1,34 @@
+exclude = [".bzr", ".direnv", ".eggs", ".git", ".git-rewrite", ".hg", ".ipynb_checkpoints", ".mypy_cache", ".nox", ".pants.d", ".pyenv", ".pytest_cache", ".pytype", ".ruff_cache", ".svn", ".tox", ".venv", ".vscode", "__pypackages__", "_build", "buck-out", "build", "dist", "node_modules", "site-packages", "venv"]
+include = ["pyproject.toml", "modgud/**/*.py", "tests/**/*.py"]
+indent-width = 2
+line-length = 100
+src = ["modgud", "tests"]
+target-version = "py313"
+
+[lint]
+# Extend the default linting rules
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$" # Allow unused variables when underscore-prefixed.
+fixable = ["ALL"] # Allow fix for all enabled rules (when `--fix`) is provided.
+exclude = ["*.ipynb"]
+ignore = [
+    "D211",  # "No blank lines allowed before class docstring" - conflicts with D203
+    "D400",  # "First line should end with a period" - enforces ending punctuation in first line
+]
+# Core errors, logical issues, import sorting, bug detection, and docstrings
+select = [
+    "B",   # flake8-bugbear - likely bugs and design problems
+    "D",   # pydocstyle - docstring conventions (PEP 257)
+    "E4",  # Import-related errors (pycodestyle)
+    "E7",  # Statement-related errors (pycodestyle)
+    "E9",  # Runtime errors (pycodestyle)
+    "F",   # Pyflakes - logical errors like unused imports, undefined names
+    "I",   # isort - import sorting and organization
+]
+
+[format]
+# Format docstrings to have a consistent code block
+docstring-code-format = true
+indent-style = "space"
+line-ending = "lf"
+quote-style = "single"
+skip-magic-trailing-comma = false

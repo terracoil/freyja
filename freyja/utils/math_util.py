@@ -1,9 +1,8 @@
-from typing import Union
-
-
 class MathUtil:
+    """Mathematical utility functions for clamping, min/max, and percentage calculations."""
+
     EPSILON: float = 1e-6
-    Numeric = Union[int, float]
+    Numeric = int | float
 
     @classmethod
     def clamp(cls, value: float, min_val: float, max_val: float) -> float:
@@ -22,6 +21,7 @@ class MathUtil:
 
     @classmethod
     def minmax_range(cls, args: [Numeric], negative_lower: bool = False) -> tuple[Numeric, Numeric]:
+        """Return min and max of arguments with optional negative lower bound."""
         lower, upper = cls.minmax(*args)
 
         return cls.safe_negative(lower, negative_lower), upper
@@ -51,6 +51,7 @@ class MathUtil:
 
     @classmethod
     def percent(cls, val: int | float, max_val: int | float) -> float:
+        """Calculate percentage of val relative to max_val."""
         if max_val < cls.EPSILON:
             raise ValueError("max_val is too small")
         return val / float(max_val)

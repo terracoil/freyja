@@ -26,7 +26,7 @@ complete -f -c {prog_name} -a '(__{prog_name}_complete)'
 
 # Add option completions
 complete -c {prog_name} -l help -d "Show help message"
-complete -c {prog_name} -l verbose -d "Enable verbose output"  
+complete -c {prog_name} -l verbose -d "Enable verbose output"
 complete -c {prog_name} -l no-color -d "Disable colored output"
 complete -c {prog_name} -l install-completion -d "Install shell completion"
 """
@@ -34,11 +34,7 @@ complete -c {prog_name} -l install-completion -d "Install shell completion"
 
     def get_completions(self, context: CompletionContext) -> list[str]:
         """Get fish-specific completions."""
-        # Reuse bash completion logic for now
-        from .bash import BashCompletionHandler
-
-        bash_handler = BashCompletionHandler(self.cli)
-        return bash_handler._get_generic_completions(context)
+        return self._get_generic_completions(context)
 
     def install_completion(self, prog_name: str) -> bool:
         """Install fish completion."""

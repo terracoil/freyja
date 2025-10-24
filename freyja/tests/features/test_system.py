@@ -167,10 +167,10 @@ class TestSystemCompletion:
 
     def test_completion_explicit_shell(self):
         """Test Completion class with explicitly specified shell."""
-        completion = System().Completion(shell="bash")
+        completion = System().Completion(shell="bash")  # noqa: S604 # not subprocess, class param
         assert completion.shell == "bash"
 
-        completion = System().Completion(shell="zsh")
+        completion = System().Completion(shell="zsh")  # noqa: S604 # not subprocess, class param
         assert completion.shell == "zsh"
 
     def test_is_completion_request_false(self):
@@ -235,7 +235,7 @@ class TestSystemCLIGeneration:
     def test_system_cli_generation(self):
         """Test System class generates FreyjaCLI correctly."""
         cli = FreyjaCLI(System)
-        parser = cli.create_parser()
+        cli.create_parser()
 
         # Should have System class as target
         assert cli.target_class == System

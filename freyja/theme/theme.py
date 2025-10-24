@@ -12,16 +12,16 @@ class Theme:
     Complete color theme configuration for FreyjaCLI output with dynamic adjustment capabilities.
     Defines styling for all major UI elements in the help output with optional color adjustment.
 
-    Uses hierarchical CommandStyleSection structure internally, with backward compatibility properties
-    for existing flat attribute access patterns.
+    Uses hierarchical CommandStyleSection structure internally, with backward compatibility
+    properties for existing flat attribute access patterns.
     """
 
     def __init__(
         self,
         # Hierarchical sections (new structure)
-        topLevelCommandSection: CommandStyleSection | None = None,
-        commandGroupSection: CommandStyleSection | None = None,
-        groupedCommandSection: CommandStyleSection | None = None,
+        top_level_command_section: CommandStyleSection | None = None,
+        command_group_section: CommandStyleSection | None = None,
+        grouped_command_section: CommandStyleSection | None = None,
         # Non-sectioned attributes
         title: ThemeStyle | None = None,
         subtitle: ThemeStyle | None = None,
@@ -53,24 +53,24 @@ class Theme:
 
         # Handle both hierarchical and flat initialization patterns
         if (
-            topLevelCommandSection is not None
-            or commandGroupSection is not None
-            or groupedCommandSection is not None
+            top_level_command_section is not None
+            or command_group_section is not None
+            or grouped_command_section is not None
         ):
             # New hierarchical initialization
-            self.topLevelCommandSection = topLevelCommandSection or CommandStyleSection(
+            self.topLevelCommandSection = top_level_command_section or CommandStyleSection(
                 command_name=ThemeStyle(),
                 command_description=ThemeStyle(),
                 option_name=ThemeStyle(),
                 option_description=ThemeStyle(),
             )
-            self.commandGroupSection = commandGroupSection or CommandStyleSection(
+            self.commandGroupSection = command_group_section or CommandStyleSection(
                 command_name=ThemeStyle(),
                 command_description=ThemeStyle(),
                 option_name=ThemeStyle(),
                 option_description=ThemeStyle(),
             )
-            self.groupedCommandSection = groupedCommandSection or CommandStyleSection(
+            self.groupedCommandSection = grouped_command_section or CommandStyleSection(
                 command_name=ThemeStyle(),
                 command_description=ThemeStyle(),
                 option_name=ThemeStyle(),
@@ -273,9 +273,9 @@ class Theme:
 
             # Create new theme using hierarchical constructor
             new_theme = Theme(
-                topLevelCommandSection=adjusted_top_level,
-                commandGroupSection=adjusted_command_group,
-                groupedCommandSection=adjusted_grouped_command,
+                top_level_command_section=adjusted_top_level,
+                command_group_section=adjusted_command_group,
+                grouped_command_section=adjusted_grouped_command,
                 title=self.get_adjusted_style(self.title),
                 subtitle=self.get_adjusted_style(self.subtitle),
                 required_asterisk=self.get_adjusted_style(self.required_asterisk),
@@ -316,7 +316,7 @@ class Theme:
 
 
 def create_default_theme() -> Theme:
-    """Create a default color theme using universal colors for optimal cross-platform compatibility."""
+    """Create a default theme using universal colors for cross-platform compatibility."""
     # Create hierarchical sections
     top_level_section = CommandStyleSection(
         command_name=ThemeStyle(bold=True),
@@ -345,9 +345,9 @@ def create_default_theme() -> Theme:
     )
 
     return Theme(
-        topLevelCommandSection=top_level_section,
-        commandGroupSection=command_group_section,
-        groupedCommandSection=grouped_command_section,
+        top_level_command_section=top_level_section,
+        command_group_section=command_group_section,
+        grouped_command_section=grouped_command_section,
         title=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.TEAL.value), bold=True),
         subtitle=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.TEAL.value), italic=True),
         required_asterisk=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.GOLD.value)),
@@ -380,9 +380,9 @@ def create_default_theme_colorful() -> Theme:
     )
 
     return Theme(
-        topLevelCommandSection=top_level_section,
-        commandGroupSection=command_group_section,
-        groupedCommandSection=grouped_command_section,
+        top_level_command_section=top_level_section,
+        command_group_section=command_group_section,
+        grouped_command_section=grouped_command_section,
         title=ThemeStyle(
             fg=RGB.from_rgb(Fore.MAGENTA.value),
             bg=RGB.from_rgb(Back.LIGHTWHITE_EX.value),
@@ -418,9 +418,9 @@ def create_no_color_theme() -> Theme:
     )
 
     return Theme(
-        topLevelCommandSection=top_level_section,
-        commandGroupSection=command_group_section,
-        groupedCommandSection=grouped_command_section,
+        top_level_command_section=top_level_section,
+        command_group_section=command_group_section,
+        grouped_command_section=grouped_command_section,
         title=ThemeStyle(),
         subtitle=ThemeStyle(),
         required_asterisk=ThemeStyle(),

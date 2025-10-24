@@ -176,7 +176,7 @@ class CommandTree:
             return self.tree[name]
 
         # Try hierarchical lookup (group command)
-        for group_name, group_info in self.tree.items():
+        for _, group_info in self.tree.items():
             if group_info.get("type") == "group" and "cmd_tree" in group_info:
                 if name in group_info["cmd_tree"]:
                     return group_info["cmd_tree"][name]

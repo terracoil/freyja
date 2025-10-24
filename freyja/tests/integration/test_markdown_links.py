@@ -19,7 +19,7 @@ class TestMarkdownLinks:
     @pytest.fixture
     def markdown_files(self, project_root: Path) -> list[Path]:
         """Get all markdown files in the project."""
-        markdown_files = []
+        markdown_files: list[Path] = []
 
         # Add root markdown files
         for pattern in ["*.md"]:
@@ -106,10 +106,10 @@ class TestMarkdownLinks:
 
         try:
             # Create request with User-Agent header to avoid blocking
-            req = urllib.request.Request(url, method="HEAD")
+            req = urllib.request.Request(url, method="HEAD")  # noqa: S310 # testing URLs
             req.add_header("User-Agent", "Mozilla/5.0 (compatible; Freyja-LinkChecker/1.0)")
 
-            with urllib.request.urlopen(req, timeout=10) as response:
+            with urllib.request.urlopen(req, timeout=10) as response:  # noqa: S310 # testing URLs
                 # Accept any 2xx or 3xx status code
                 return 200 <= response.status < 400, ""
 
@@ -117,11 +117,13 @@ class TestMarkdownLinks:
             # Some servers return 405 for HEAD requests, try GET with range
             if e.code == 405:
                 try:
-                    req = urllib.request.Request(url)
+                    req = urllib.request.Request(url)  # noqa: S310 # testing URLs
                     req.add_header("User-Agent", "Mozilla/5.0 (compatible; Freyja-LinkChecker/1.0)")
                     req.add_header("Range", "bytes=0-1023")  # Only get first 1KB
 
-                    with urllib.request.urlopen(req, timeout=10) as response:
+                    with urllib.request.urlopen(  # noqa: S310 # testing URLs
+                        req, timeout=10
+                    ) as response:
                         return 200 <= response.status < 400, ""
                 except Exception as inner_e:
                     return False, f"HTTP {e.code}: {e.reason} (fallback failed: {inner_e})"
@@ -176,7 +178,7 @@ class TestMarkdownLinks:
 
             # Check if it's within the project (but allow docs navigation)
             try:
-                rel_path = resolved_path.relative_to(project_root)
+                resolved_path.relative_to(project_root)
                 # Allow paths within the project structure
                 return True, ""
             except ValueError:
@@ -231,7 +233,10 @@ class TestMarkdownLinks:
         if failed_links:
             error_msg = "Invalid relative links found:\n"
             for link in failed_links:
-                error_msg += f"  {link['file']}:{link['line']} - {link['url']} ({link['type']}) - {link['error']}\n"
+                error_msg += (
+                    f"  {link['file']}:{link['line']} - {link['url']} "
+                    f"({link['type']}) - {link['error']}\n"
+                )
 
             pytest.fail(error_msg)
 
@@ -273,13 +278,16 @@ class TestMarkdownLinks:
         if failed_links:
             error_msg = "Inaccessible external links found:\n"
             for link in failed_links:
-                error_msg += f"  {link['file']}:{link['line']} - {link['url']} ({link['type']}) - {link['error']}\n"
+                error_msg += (
+                    f"  {link['file']}:{link['line']} - {link['url']} "
+                    f"({link['type']}) - {link['error']}\n"
+                )
 
             # Make this a warning instead of failure for external links
             # since external services may be temporarily unavailable
             import warnings
 
-            warnings.warn(f"External link validation issues:\n{error_msg}")
+            warnings.warn(f"External link validation issues:\n{error_msg}", stacklevel=2)
 
     def test_no_broken_internal_references(self, markdown_files: list[Path]) -> None:
         """Test that internal markdown references (anchors) are valid."""
@@ -298,7 +306,7 @@ class TestMarkdownLinks:
             # Find all internal references (links with #)
             internal_links = re.findall(r"\[([^\]]*)\]\(([^)]*#[^)]+)\)", content)
 
-            for link_text, full_url in internal_links:
+            for _link_text, full_url in internal_links:
                 if "#" in full_url:
                     url_part, anchor = full_url.split("#", 1)
 

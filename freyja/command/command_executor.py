@@ -6,6 +6,7 @@ by creating appropriate instances and invoking methods with parsed arguments.
 
 import inspect
 import sys
+import traceback
 from typing import Any
 
 from ..utils.output_capture import OutputCapture, OutputFormatter
@@ -64,7 +65,7 @@ class CommandExecutor:
         global_args = {}
         group_args = {}
         command_args = {}
-        positional_args = []
+        positional_args: list[str] = []
 
         for attr_name in dir(parsed):
             if attr_name.startswith("_"):
@@ -189,7 +190,7 @@ class CommandExecutor:
                 inner_kwargs[param_name] = value
 
         try:
-            # Special handling for System commands - they need CLI instance, not parent class instance
+            # System commands need CLI instance, not parent class instance
             if self._is_system_inner_class(inner_class):
                 # For System inner classes, pass CLI instance if available
                 cli_instance = getattr(parsed, "_cli_instance", None)
@@ -302,8 +303,6 @@ class CommandExecutor:
 
     def _handle_execution_error(self, parsed, error: Exception) -> int:
         """Handle execution errors with appropriate logging and return codes."""
-        import traceback
-
         function_name = getattr(parsed, "_function_name", "unknown")
         print(f"Error executing {function_name}: {error}", file=sys.stderr)
 

@@ -30,7 +30,7 @@ Register-ArgumentCompleter -Native -CommandName {prog_name} -ScriptBlock {{
     }} finally {{
         # Clean up environment
         $env:_FREYJA_COMPLETE = $null
-        $env:COMP_WORDS_STR = $null  
+        $env:COMP_WORDS_STR = $null
         $env:COMP_CWORD_NUM = $null
     }}
 }}
@@ -39,11 +39,7 @@ Register-ArgumentCompleter -Native -CommandName {prog_name} -ScriptBlock {{
 
     def get_completions(self, context: CompletionContext) -> list[str]:
         """Get PowerShell-specific completions."""
-        # Reuse bash completion logic for now
-        from .bash import BashCompletionHandler
-
-        bash_handler = BashCompletionHandler(self.cli)
-        return bash_handler._get_generic_completions(context)
+        return self._get_generic_completions(context)
 
     def install_completion(self, prog_name: str) -> bool:
         """Install PowerShell completion."""

@@ -16,7 +16,7 @@ class ArgumentParser:
     def get_arg_type_config(annotation: type) -> dict[str, Any]:
         """Configure argparse arguments based on Python type annotations.
 
-        Enables FreyjaCLI generation from function signatures by mapping Python types to argparse behavior.
+        Maps Python types from function signatures to argparse behavior.
         """
         # Handle Optional[Type] -> get the actual type
         # Handle both typing.Union and types.UnionType (Python 3.10+)
@@ -38,11 +38,12 @@ class ArgumentParser:
             def enum_converter(x):
                 try:
                     return annotation[x.split(".")[-1]]
-                except KeyError:
+                except KeyError as e:
                     # Let argparse handle the invalid choice error
                     raise ValueError(
-                        f"invalid choice: '{x}' (choose from {', '.join(e.name for e in annotation)})"
-                    )
+                        f"invalid choice: '{x}' "
+                        f"(choose from {', '.join(e.name for e in annotation)})"
+                    ) from e
 
             return {
                 "type": enum_converter,
@@ -162,7 +163,7 @@ class ArgumentParser:
             is_positional = first_positional_param and name == first_positional_param.name
 
             if is_positional:
-                # Add as positional argument (ArgumentPreprocessor handles flag->positional conversion)
+                # Add as positional (ArgumentPreprocessor handles conversion)
                 arg_config: dict[str, Any] = {"help": param_help.get(name, f"{name} parameter")}
 
                 # Handle type annotations
@@ -178,7 +179,7 @@ class ArgumentParser:
                     positional_name = name.upper()
                     arg_config["metavar"] = positional_name
 
-                # Positional arguments are required by default, but check if this has a default anyway
+                # Positional args are required by default unless they have defaults
                 if param.default == param.empty:
                     # Positional and required
                     parser.add_argument(name, **arg_config)

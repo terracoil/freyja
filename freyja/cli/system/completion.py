@@ -9,7 +9,7 @@ class Completion:
         """Initialize completion manager.
 
         :param shell: Shell type (auto-detect if None)
-        :param cli_instance: FreyjaCLI instance for completion functionality (set by FreyjaCLI class)
+        :param cli_instance: FreyjaCLI instance for completion (set by FreyjaCLI class)
         """
         # Auto-detect shell if not specified
         if shell is None:
@@ -34,7 +34,7 @@ class Completion:
 
         :param shell: Shell type (bash/zsh/fish) or auto-detect
         :param force: Force overwrite existing completion
-        :param patterns: Additional command patterns (comma-separated, e.g., "bin/dev-tools,./dev-tools")
+        :param patterns: Additional command patterns (comma-separated)
         :return: True if installation successful
         """
         target_shell = shell or self.shell
@@ -74,7 +74,7 @@ class Completion:
         """Show shell completion script.
 
         :param shell: Shell type (bash/zsh/fish)
-        :param patterns: Additional command patterns (comma-separated, e.g., "bin/dev-tools,./dev-tools")
+        :param patterns: Additional command patterns (comma-separated)
         """
         target_shell = shell or self.shell
 

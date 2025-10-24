@@ -153,6 +153,7 @@ class TestTextUtil:
         """Test json_pretty with custom objects (uses DataStructUtil)."""
 
         class Person:
+            """Test helper class for custom object JSON serialization."""
             def __init__(self, name, age):
                 self.name = name
                 self.age = age
@@ -313,6 +314,7 @@ class TestTextUtil:
         """Test json_pretty integration with complex objects."""
 
         class NestedClass:
+            """Test helper class with nested structures."""
             def __init__(self):
                 self.public = "visible"
                 self._private = "hidden"

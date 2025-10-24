@@ -14,6 +14,8 @@ class ParamDoc:
 
 
 class DocStringParser:
+    """Parser for extracting parameter documentation from function docstrings."""
+
     @classmethod
     def parse_docstring(cls, docstring: str) -> tuple[str, dict[str, ParamDoc]]:
         """Extract main description and parameter docs from docstring.

@@ -75,7 +75,10 @@ class IntegrationClassSimple:
         :param priority: Processing priority
         :param urgent: Mark as urgent
         """
-        result = f"Processing item {item_id} (priority: {priority}, config: {self.config_file}, log: {self.log_level})"
+        result = (
+            f"Processing item {item_id} (priority: {priority}, "
+            f"config: {self.config_file}, log: {self.log_level})"
+        )
         if urgent:
             result += " [URGENT]"
         return result
@@ -115,7 +118,10 @@ class IntegrationClassHierarchical:
             :param chunk_size: Processing chunk size
             """
             parallel_info = "parallel" if self.parallel else "sequential"
-            return f"Transforming dataset '{dataset_name}' -> {output_format} (chunks: {chunk_size}, mode: {parallel_info}, workspace: {self.workspace})"
+            return (
+                f"Transforming dataset '{dataset_name}' -> {output_format} "
+                f"(chunks: {chunk_size}, mode: {parallel_info}, workspace: {self.workspace})"
+            )
 
         def validate_schema(self, schema_file: str, strict: bool = True):
             """Validate schema with positional parameter.
@@ -129,7 +135,11 @@ class IntegrationClassHierarchical:
     class FileOperations:
         """File operations with different sub-global settings."""
 
-        def __init__(self, temp_dir: str = "/tmp", compression: bool = False):
+        def __init__(
+            self,
+            temp_dir: str = "/tmp",  # noqa: S108 # acceptable in tests
+            compression: bool = False,
+        ):
             """Initialize file operations."""
             self.temp_dir = temp_dir
             self.compression = compression
@@ -145,7 +155,10 @@ class IntegrationClassHierarchical:
             """
             compression_info = "with compression" if self.compression else "without compression"
             headers_info = "preserving headers" if preserve_headers else "no headers"
-            return f"Merging {input_pattern} -> {output_filename} ({headers_info}, {compression_info}, temp: {self.temp_dir})"
+            return (
+                f"Merging {input_pattern} -> {output_filename} "
+                f"({headers_info}, {compression_info}, temp: {self.temp_dir})"
+            )
 
 
 class TestClassBasedIntegration:

@@ -16,6 +16,7 @@ class TestSpinnerIntegration:
         """Test simple command execution shows spinner."""
 
         class SimpleClass:
+            """Test helper class for simple CLI operations."""
             def __init__(self, config: str = "default.json"):
                 self.config = config
 
@@ -35,10 +36,12 @@ class TestSpinnerIntegration:
         """Test hierarchical command execution with spinner."""
 
         class DataProcessor:
+            """Test helper class for data processing operations."""
             def __init__(self, config: str = "default.json"):
                 self.config = config
 
             class FileOps:
+                """Inner class for file operations."""
                 def __init__(self, parent, workspace: str = "./data"):
                     self.parent = parent
                     self.workspace = workspace
@@ -58,6 +61,7 @@ class TestSpinnerIntegration:
         """Test command that uses augment_status functionality."""
 
         class TestClass:
+            """Test helper class for status updates."""
             def __init__(self, config: str = "default.json"):
                 self.config = config
 
@@ -84,6 +88,7 @@ class TestSpinnerIntegration:
         """Test command execution with verbose output capture."""
 
         class TestClass:
+            """Test helper class for verbose output testing."""
             def __init__(self, verbose: bool = False):
                 self.verbose = verbose
 
@@ -108,6 +113,7 @@ class TestSpinnerIntegration:
         """Test command that produces stderr output."""
 
         class TestClass:
+            """Test helper class for stderr output testing."""
             def __init__(self, config: str = "default.json"):
                 self.config = config
 
@@ -128,6 +134,7 @@ class TestSpinnerIntegration:
         """Test command context is extracted correctly for simple commands."""
 
         class TestClass:
+            """Test helper class for command context extraction."""
             def __init__(self, global_param: str = "global_value", debug: bool = False):
                 self.global_param = global_param
                 self.debug = debug
@@ -162,11 +169,13 @@ class TestSpinnerIntegration:
         """Test command context extraction for hierarchical commands."""
 
         class DataProcessor:
+            """Test helper class for hierarchical command context extraction."""
             def __init__(self, config: str = "default.json", verbose: bool = False):
                 self.config = config
                 self.verbose = verbose
 
             class Operations:
+                """Inner class for operations."""
                 def __init__(self, parent, workspace: str = "./data", backup: bool = True):
                     self.parent = parent
                     self.workspace = workspace
@@ -189,7 +198,7 @@ class TestSpinnerIntegration:
                 "--verbose",
                 "operations",
                 "--workspace",
-                "/tmp/data",
+                "/tmp/data",  # noqa: S108 # acceptable in tests
                 "--backup",
                 "process-file",
                 "data.csv",
@@ -205,6 +214,7 @@ class TestSpinnerIntegration:
         """Test spinner works with theme system."""
 
         class TestClass:
+            """Test helper class for theme integration."""
             def __init__(self, config: str = "default.json"):
                 self.config = config
 
@@ -228,6 +238,7 @@ class TestSpinnerIntegration:
         """Test spinner handles command execution errors gracefully."""
 
         class TestClass:
+            """Test helper class for exception handling."""
             def __init__(self, config: str = "default.json"):
                 self.config = config
 
@@ -247,13 +258,16 @@ class TestSpinnerIntegration:
         """Test multiple command executions work independently."""
 
         class TestClass:
+            """Test helper class for multiple command executions."""
             def __init__(self, config: str = "default.json"):
                 self.config = config
 
             def method_one(self, name: str) -> str:
+                """First test method."""
                 return f"Method one: {name}"
 
             def method_two(self, name: str) -> str:
+                """Second test method."""
                 return f"Method two: {name}"
 
         cli = FreyjaCLI(TestClass, title="Test CLI")
@@ -273,10 +287,12 @@ class TestSpinnerIntegration:
         """Test spinner respects --no-color flag."""
 
         class TestClass:
+            """Test helper class for no-color flag testing."""
             def __init__(self, config: str = "default.json"):
                 self.config = config
 
             def test_method(self, name: str) -> str:
+                """Test method."""
                 return f"Processed {name}"
 
         cli = FreyjaCLI(TestClass, title="Test CLI")
@@ -290,10 +306,12 @@ class TestSpinnerIntegration:
         """Test that completion mode doesn't trigger spinner."""
 
         class TestClass:
+            """Test helper class for completion mode testing."""
             def __init__(self, config: str = "default.json"):
                 self.config = config
 
             def test_method(self, name: str) -> str:
+                """Test method."""
                 return f"Processed {name}"
 
         cli = FreyjaCLI(TestClass, title="Test CLI")
@@ -312,10 +330,12 @@ class TestSpinnerIntegration:
         """Test that sub-global arguments work correctly with spinner."""
 
         class ProjectManager:
+            """Test helper class for sub-global arguments integration."""
             def __init__(self, config: str = "config.json"):
                 self.config = config
 
             class FileOps:
+                """Inner class for file operations."""
                 def __init__(self, parent, workspace: str = "./files", backup: bool = False):
                     self.parent = parent
                     self.workspace = workspace
@@ -340,7 +360,7 @@ class TestSpinnerIntegration:
                 "prod.json",
                 "file-ops",
                 "--workspace",
-                "/tmp/files",
+                "/tmp/files",  # noqa: S108 # acceptable in tests
                 "--backup",
                 "process",
                 "data.txt",

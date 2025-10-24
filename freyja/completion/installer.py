@@ -16,14 +16,14 @@ class CompletionInstaller:
         """Initialize installer with handler and program name.
 
         :param handler: Completion handler for specific shell
-        :param prog_name: Name of the program to install completion for (will be normalized to basename)
+        :param prog_name: Program name for completion (normalized to basename)
         :param command_patterns: Additional command patterns to register completion for
         """
         from pathlib import Path
 
         self.handler = handler
         # Normalize program name to basename to handle path-based invocations
-        # This ensures examples/cls_example becomes cls_example for consistent completion registration
+        # Ensures examples/cls_example → cls_example for consistent registration
         self.prog_name = Path(prog_name).name
         self.command_patterns = command_patterns or []
         self.shell = handler.detect_shell()
@@ -105,7 +105,7 @@ class CompletionInstaller:
                 dir_path.mkdir(parents=True, exist_ok=True)
                 completion_dir = dir_path
                 break
-            except:
+            except (OSError, PermissionError):
                 continue
 
         if not completion_dir:
@@ -135,7 +135,7 @@ class CompletionInstaller:
                 try:
                     zcompdump_file.unlink()
                     print(f"Cleared completion cache: {zcompdump_file}")
-                except:
+                except (OSError, PermissionError):
                     pass  # Ignore if we can't remove it
 
         # Check if completion directory is in fpath and auto-configure if needed
@@ -143,10 +143,12 @@ class CompletionInstaller:
 
         needs_fpath_config = True
         try:
-            result = subprocess.run(["zsh", "-c", "echo $fpath"], capture_output=True, text=True)
+            result = subprocess.run(
+                ["/bin/zsh", "-c", "echo $fpath"], capture_output=True, text=True
+            )
             if completion_dir.as_posix() in result.stdout:
                 needs_fpath_config = False
-        except:
+        except (subprocess.SubprocessError, OSError):
             pass  # Assume we need to configure fpath
 
         if needs_fpath_config:
@@ -176,9 +178,7 @@ class CompletionInstaller:
                     "Restart your shell or run: source ~/.zshrc && autoload -U compinit && compinit"
                 )
             except Exception:
-                print(
-                    "\nCould not automatically configure fpath. Please add this line to your ~/.zshrc:"
-                )
+                print("\nCould not configure fpath. Add this line to your ~/.zshrc:")
                 print(f"{fpath_line}")
                 print("Then run: autoload -U compinit && compinit")
         else:

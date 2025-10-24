@@ -200,7 +200,10 @@ class TestHierarchicalHelpFormatter:
         formatter = HierarchicalHelpFormatter(prog="test_cli")
         formatter._console_width = 40  # Force small width for testing
 
-        long_description = "This is a very long description that should definitely wrap to multiple lines when displayed in the help text."
+        long_description = (
+            "This is a very long description that should definitely wrap "
+            "to multiple lines when displayed in the help text."
+        )
 
         lines = formatter._format_inline_description(
             name="cmd",
@@ -447,7 +450,10 @@ class TestHierarchicalFormatterEdgeCases:
         formatter._console_width = 40  # Small console for testing
 
         long_name = "very-long-command-name-that-exceeds-normal-length"
-        long_description = "This is a very long description that should wrap properly even with long command names."
+        long_description = (
+            "This is a very long description that should wrap properly "
+            "even with long command names."
+        )
 
         lines = formatter._format_inline_description(
             name=long_name,

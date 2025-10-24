@@ -193,19 +193,22 @@ class TuneTheme:
 
         # Simple preview with real-time color updates
         print("📋 FreyjaCLI Preview:")
-        print(
-            f"  {current_formatter.apply_style('hello', theme.command_name)}: {current_formatter.apply_style('Greet the user', theme.command_description)}"
-        )
-        print(
-            f"  {current_formatter.apply_style('--name NAME', theme.option_name)}: {current_formatter.apply_style('Specify name', theme.option_description)}"
-        )
-        print(
-            f"  {current_formatter.apply_style('--email EMAIL', theme.option_name)} {current_formatter.apply_style('*', theme.required_asterisk)}: {current_formatter.apply_style('Required email', theme.option_description)}"
-        )
+        cmd_hello = current_formatter.apply_style("hello", theme.command_name)
+        cmd_desc = current_formatter.apply_style("Greet the user", theme.command_description)
+        print(f"  {cmd_hello}: {cmd_desc}")
+
+        opt_name = current_formatter.apply_style("--name NAME", theme.option_name)
+        opt_desc = current_formatter.apply_style("Specify name", theme.option_description)
+        print(f"  {opt_name}: {opt_desc}")
+
+        opt_email = current_formatter.apply_style("--email EMAIL", theme.option_name)
+        req_star = current_formatter.apply_style("*", theme.required_asterisk)
+        email_desc = current_formatter.apply_style("Required email", theme.option_description)
+        print(f"  {opt_email} {req_star}: {email_desc}")
         print()
 
     def display_rgb_values(self):
-        """Display RGB values for theme incorporation with names colored in their RGB values on different backgrounds."""
+        """Display RGB values for theme incorporation with colored names on backgrounds."""
         theme = self.get_current_theme()  # Get the current adjusted theme
 
         print("\n" + "=" * min(self.console_width, 60))
@@ -264,7 +267,7 @@ class TuneTheme:
         # Collect theme code components
         theme_code_lines = []
 
-        for name, color_code, description in color_map:
+        for name, color_code, _ in color_map:
             if isinstance(color_code, RGB):
                 # Check if this component has been modified
                 is_modified = name in self.individual_color_overrides
@@ -296,7 +299,7 @@ class TuneTheme:
                     underline=current_theme_style.underline,
                 )
 
-                # Apply styles (first name is unstyled, only white/black background versions are styled)
+                # Apply styles (only white/black background versions are styled)
                 colored_name_white = self.formatter.apply_style(name, white_bg_style)
                 colored_name_black = self.formatter.apply_style(name, black_bg_style)
 
@@ -333,20 +336,19 @@ class TuneTheme:
                     if original_style.fg and isinstance(original_style.fg, RGB):
                         orig_r, orig_g, orig_b = original_style.fg.to_ints()
                         orig_hex = original_style.fg.to_hex()
-                        print(
-                            f"    Original: rgb({orig_r:3}, {orig_g:3}, {orig_b:3})  # {orig_hex}"
-                        )
+                        orig_rgb = f"rgb({orig_r:3}, {orig_g:3}, {orig_b:3})"
+                        print(f"    Original: {orig_rgb}  # {orig_hex}")
 
-                # Calculate alignment width based on longest component name for clean f-string alignment
+                # Calculate alignment width for clean f-string alignment
                 max_component_name_length = max(
                     len(comp_name) for comp_name, _ in self.theme_components
                 )
                 white_field_width = max_component_name_length + 2  # +2 for spacing buffer
 
                 # Use AnsiString for proper f-string alignment with ANSI escape codes
-                print(
-                    f"    On white: {AnsiString(colored_name_white):<{white_field_width}}On black: {AnsiString(colored_name_black)}"
-                )
+                white_str = f"{AnsiString(colored_name_white):<{white_field_width}}"
+                black_str = AnsiString(colored_name_black)
+                print(f"    On white: {white_str}On black: {black_str}")
                 print()
 
                 # Build theme code line for this color
@@ -595,7 +597,6 @@ class TuneTheme:
         print("=" * 40)
 
         # Display current strategy
-        current_index = strategies.index(self.adjust_strategy)
         print(f"Current strategy: {self.adjust_strategy.name}")
         print()
 

@@ -3,15 +3,16 @@ from __future__ import annotations
 
 import os
 import sys
+from collections.abc import Callable, Sequence
 from contextlib import contextmanager
-from typing import *
+from typing import Any
 
 from freyja.cli import ClassHandler, ExecutionCoordinator
 from freyja.command import CommandDiscovery, CommandExecutor
 from freyja.parser import CommandParser
-from freyja.utils.output_capture import OutputCaptureConfig
+from freyja.utils.output_capture import OutputCapture, OutputCaptureConfig
 
-Target = Union[Type[Any], Sequence[Type[Any]]]
+Target = type[Any] | Sequence[type[Any]]
 
 
 class FreyjaCLI:
@@ -22,8 +23,8 @@ class FreyjaCLI:
     def __init__(
         self,
         target: Target,
-        title: Optional[str] = None,
-        method_filter: Optional[callable] = None,
+        title: str | None = None,
+        method_filter: Callable | None = None,
         theme=None,
         alphabetize: bool = True,
         completion: bool = True,
@@ -33,7 +34,7 @@ class FreyjaCLI:
         capture_stdout: bool = True,
         capture_stderr: bool = False,
         capture_stdin: bool = False,
-        output_capture_config: Optional[Dict[str, Any]] = None,
+        output_capture_config: dict[str, Any] | None = None,
     ):
         """
         Initialize FreyjaCLI with target and configuration.
@@ -112,7 +113,7 @@ class FreyjaCLI:
         # Essential compatibility properties only
         # Note: target_module removed - class-based CLI only
 
-    def run(self, args: List[str] = None) -> Any:
+    def run(self, args: list[str] = None) -> Any:
         """
         Parse arguments and execute the appropriate command.
 
@@ -138,11 +139,11 @@ class FreyjaCLI:
 
     # Output Capture Public API
     @property
-    def output_capture(self) -> Optional[OutputCapture]:
+    def output_capture(self) -> OutputCapture | None:
         """Access the OutputCapture instance if enabled."""
         return self.execution_coordinator.output_capture
 
-    def get_captured_output(self, stream: str = "stdout") -> Optional[str]:
+    def get_captured_output(self, stream: str = "stdout") -> str | None:
         """Get captured output if capture is enabled.
 
         :param stream: Stream name ('stdout', 'stderr', 'stdin')
@@ -152,7 +153,7 @@ class FreyjaCLI:
             return self.output_capture.get_output(stream)
         return None
 
-    def get_all_captured_output(self) -> Dict[str, Optional[str]]:
+    def get_all_captured_output(self) -> dict[str, str | None]:
         """Get all captured output if capture is enabled.
 
         :return: Dictionary with captured content for each stream

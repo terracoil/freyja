@@ -141,6 +141,7 @@ class TestDataStructUtil:
         """Test objects with __dict__ attribute."""
 
         class SimpleClass:
+            """Test helper class with mixed attributes."""
             def __init__(self):
                 self.public_attr = "visible"
                 self._private_attr = "hidden"
@@ -159,6 +160,7 @@ class TestDataStructUtil:
         """Test objects with __slots__ attribute."""
 
         class SlottedClass:
+            """Test helper class using __slots__."""
             __slots__ = ["public_slot", "_private_slot", "value"]
 
             def __init__(self):
@@ -179,11 +181,13 @@ class TestDataStructUtil:
         """Test objects with to_dict() method."""
 
         class CustomClass:
+            """Test helper class with to_dict() method."""
             def __init__(self):
                 self.attr1 = "value1"
                 self.attr2 = "value2"
 
             def to_dict(self):
+                """Convert to dictionary representation."""
                 return {"custom_key": "custom_value", "attr1": self.attr1}
 
         obj = CustomClass()
@@ -197,6 +201,7 @@ class TestDataStructUtil:
 
         # Object with __dict__ but empty (most classes have __dict__)
         class MinimalClass:
+            """Test helper class with no attributes."""
             pass
 
         obj = MinimalClass()
@@ -221,6 +226,7 @@ class TestDataStructUtil:
 
         # For objects with __dict__ (even empty), they return empty dict
         class ProblematicClass:
+            """Test helper class with problematic __str__ method."""
             def __str__(self):
                 raise ValueError("Cannot convert to string")
 
@@ -237,6 +243,7 @@ class TestDataStructUtil:
         # We'll test this by using the max_depth limit to force string conversion
         def create_bad_str_obj():
             class BadStr:
+                """Test helper class that fails string conversion."""
                 def __str__(self):
                     raise ValueError("String conversion failed")
 
@@ -244,7 +251,7 @@ class TestDataStructUtil:
 
         # Create nested structure that will hit max_depth and try to convert to string
         deep_obj = create_bad_str_obj()
-        for i in range(15):  # Create deeper than max_depth (10)
+        for _i in range(15):  # Create deeper than max_depth (10)
             deep_obj = {"level": deep_obj}
 
         result = DataStructUtil.simplify(deep_obj)
@@ -256,7 +263,6 @@ class TestDataStructUtil:
 
         # At some point, the BadStr object should be converted to safe string
         # Navigate to find the stringified bad object
-        found_safe_string = False
 
         def find_safe_string(obj):
             if isinstance(obj, str) and "BadStr" in obj:
@@ -274,6 +280,7 @@ class TestDataStructUtil:
         """Test complex nested structure with mixed types."""
 
         class Person:
+            """Test helper class representing a person."""
             def __init__(self, name, age):
                 self.name = name
                 self.age = age
@@ -311,7 +318,7 @@ class TestDataStructUtil:
         """Test very deep nesting beyond max depth."""
         # Create structure deeper than default max_depth (10)
         current = "final_value"
-        for i in range(15):
+        for _i in range(15):
             current = {"level": current}
 
         result = DataStructUtil.simplify(current)
@@ -381,6 +388,7 @@ class TestDataStructUtil:
         """Test object with empty slots."""
 
         class EmptySlots:
+            """Test helper class with empty slots."""
             __slots__ = []
 
         obj = EmptySlots()

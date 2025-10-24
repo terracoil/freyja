@@ -256,7 +256,7 @@ class TestAnsiStringComparison:
         """Test inequality with non-string types."""
         ansi_str = AnsiString("test")
         assert ansi_str != 123
-        assert ansi_str != None
+        assert ansi_str is not None
         assert ansi_str != []
 
     def test_hashable(self):

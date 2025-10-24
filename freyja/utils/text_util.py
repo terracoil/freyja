@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 from functools import lru_cache
+from typing import Any
 
 from .data_struct_util import DataStructUtil
 
@@ -16,7 +17,7 @@ class TextUtil:
     _conversion_cache: dict[str, str] = {}
 
     @classmethod
-    def json_pretty(cls, obj: any) -> str:
+    def json_pretty(cls, obj: Any) -> str:
         """Format any object or collection as a pretty JSON string"""
         return json.dumps(DataStructUtil.simplify(obj), indent=4, sort_keys=True)
 

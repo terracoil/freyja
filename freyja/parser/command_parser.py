@@ -1,6 +1,6 @@
 # Command parsing functionality extracted from FreyjaCLI class.
 import argparse
-from typing import *
+from typing import Any
 
 from freyja.help.help_formatter import HierarchicalHelpFormatter
 
@@ -36,9 +36,9 @@ class CommandParser:
 
     def create_parser(
         self,
-        command_tree: Dict[str, Any],
+        command_tree: dict[str, Any],
         target_mode: str,
-        target_class: Optional[Type] = None,
+        target_class: type | None = None,
         no_color: bool = False,
     ) -> argparse.ArgumentParser:
         """
@@ -91,8 +91,8 @@ class CommandParser:
         self,
         parser: argparse.ArgumentParser,
         target_mode: str,
-        target_class: Optional[Type],
-        command_tree: Dict[str, Any],
+        target_class: type | None,
+        command_tree: dict[str, Any],
     ):
         """Add global arguments to the parser."""
         # Note: verbose flag removed - was only for module-based CLIs
@@ -112,7 +112,7 @@ class CommandParser:
         ):
             ArgumentParser.add_global_class_args(parser, target_class)
 
-    def _add_commands_from_tree(self, subparsers, command_tree: Dict[str, Any], theme):
+    def _add_commands_from_tree(self, subparsers, command_tree: dict[str, Any], theme):
         """Add cmd_tree to parser from pre-built command tree."""
         for command_name, command_info in command_tree.items():
             if command_info["type"] == "command":
@@ -123,7 +123,7 @@ class CommandParser:
                 self._add_command_group_from_tree(subparsers, command_name, command_info, theme)
 
     def _add_flat_command_from_tree(
-        self, subparsers, command_name: str, command_info: Dict[str, Any], theme
+        self, subparsers, command_name: str, command_info: dict[str, Any], theme
     ):
         """Add a flat command from command tree."""
         desc, _ = DocStringParser.extract_function_help(command_info["function"])
@@ -158,7 +158,7 @@ class CommandParser:
         sub.set_defaults(**defaults)
 
     def _add_command_group_from_tree(
-        self, subparsers, group_name: str, group_info: Dict[str, Any], theme
+        self, subparsers, group_name: str, group_info: dict[str, Any], theme
     ):
         """Add a command group from command tree."""
         group_help = group_info.get(

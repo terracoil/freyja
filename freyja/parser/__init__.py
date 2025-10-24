@@ -3,7 +3,7 @@ from .command_parser import CommandParser
 from .docstring_parser import DocStringParser
 
 __all__ = [
-    ArgumentParser,
-    CommandParser,
-    DocStringParser,
+    "ArgumentParser",
+    "CommandParser",
+    "DocStringParser",
 ]
