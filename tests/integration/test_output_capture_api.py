@@ -4,7 +4,7 @@
 from freyja import FreyjaCLI
 
 
-class TestClass:
+class SampleClassForTesting:
     """Test class for API testing."""
 
     def __init__(self, verbose: bool = False):
@@ -20,26 +20,26 @@ def test_api_methods():
     print("Testing public API methods...")
 
     # Test 1: Default state (disabled)
-    cli = FreyjaCLI(TestClass)
+    cli = FreyjaCLI(SampleClassForTesting)
     assert cli.output_capture is None
     assert cli.get_captured_output() is None
     assert cli.get_all_captured_output() == {"stdout": None, "stderr": None, "stdin": None}
     print("✅ Default disabled state works")
 
     # Test 2: Opt-in enabled
-    cli = FreyjaCLI(TestClass, capture_output=True)
+    cli = FreyjaCLI(SampleClassForTesting, capture_output=True)
     assert cli.output_capture is not None
     print("✅ Opt-in enabled works")
 
     # Test 3: Stream-specific configuration
-    cli = FreyjaCLI(TestClass, capture_output=True, capture_stderr=True)
+    cli = FreyjaCLI(SampleClassForTesting, capture_output=True, capture_stderr=True)
     assert cli.output_capture is not None
     assert cli.output_capture.capture_stdout is True  # default
     assert cli.output_capture.capture_stderr is True  # explicitly set
     print("✅ Stream-specific configuration works")
 
     # Test 4: Dynamic enable/disable
-    cli = FreyjaCLI(TestClass)
+    cli = FreyjaCLI(SampleClassForTesting)
     assert cli.output_capture is None
 
     cli.enable_output_capture()
@@ -50,7 +50,7 @@ def test_api_methods():
     print("✅ Dynamic enable/disable works")
 
     # Test 5: Manual capture and access
-    cli = FreyjaCLI(TestClass, capture_output=True)
+    cli = FreyjaCLI(SampleClassForTesting, capture_output=True)
 
     # Manually capture some output
     with cli.output_capture.capture_output():
@@ -68,7 +68,7 @@ def test_api_methods():
     print("✅ Clear functionality works")
 
     # Test 7: Context manager
-    cli = FreyjaCLI(TestClass)
+    cli = FreyjaCLI(SampleClassForTesting)
     assert cli.output_capture is None
 
     with cli.capture_output():
@@ -93,7 +93,7 @@ def test_configuration_options():
 
     # Test buffer size and encoding
     cli = FreyjaCLI(
-        TestClass,
+        SampleClassForTesting,
         capture_output=True,
         output_capture_config={"buffer_size": 2048, "encoding": "utf-8"},
     )
