@@ -18,6 +18,9 @@ from freyja import FreyjaCLI
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+# Configure cache directories to use tmp/
+os.environ.setdefault('RUFF_CACHE_DIR', str(project_root / 'tmp' / '.ruff_cache'))
+
 # Detect project name from git repository
 def get_project_name() -> str:
   """Get project name from git repository or fallback."""

@@ -4,7 +4,7 @@
 from freyja import FreyjaCLI
 
 
-class TestClass:
+class SampleCaptureClass:
     """Simple test class for output capture testing."""
 
     def __init__(self, verbose: bool = False):
@@ -19,7 +19,7 @@ class TestClass:
 
 def test_disabled_by_default():
     """Test that output capture is disabled by default."""
-    cli = FreyjaCLI(TestClass)
+    cli = FreyjaCLI(SampleCaptureClass)
 
     # Should be disabled by default
     assert cli.output_capture is None
@@ -29,7 +29,7 @@ def test_disabled_by_default():
 
 def test_opt_in_enabled():
     """Test explicit opt-in functionality."""
-    cli = FreyjaCLI(TestClass, capture_output=True)
+    cli = FreyjaCLI(SampleCaptureClass, capture_output=True)
 
     # Should be enabled when explicitly requested
     assert cli.output_capture is not None
@@ -38,7 +38,7 @@ def test_opt_in_enabled():
 
 def test_dynamic_control():
     """Test dynamic enable/disable functionality."""
-    cli = FreyjaCLI(TestClass)
+    cli = FreyjaCLI(SampleCaptureClass)
 
     # Start disabled
     assert cli.output_capture is None
@@ -56,7 +56,7 @@ def test_dynamic_control():
 
 def test_context_manager():
     """Test context manager functionality."""
-    cli = FreyjaCLI(TestClass)
+    cli = FreyjaCLI(SampleCaptureClass)
 
     # Should start disabled
     assert cli.output_capture is None

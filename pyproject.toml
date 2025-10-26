@@ -1,14 +1,17 @@
 [project]
 name = "freyja"
-version = "1.1.0"  # Will use poetry-dynamic-versioning
-description = "Python Library that builds a complete CLI given one or more functions using introspection"
 authors = [{name = "steven.miers@gmail.com"}]
-readme = "README.md"
-license = "MIT"
-repository = "https://github.com/terracoil/freyja"
-homepage = "https://pypi.org/project/freyja/"
-documentation = "https://github.com/terracoil/freyja/tree/main/docs"
+description = "Python Library that builds a complete CLI given one or more functions using introspection"
 keywords = ["cli", "auto", "introspection", "argparse", "command-line"]
+license = "MIT"
+version = "1.1.0" # Uses poetry-dynamic-versioning
+
+[project.urls]
+Homepage = "https://github.com/terracoil/modgud"
+Repository = "https://github.com/terracoil/modgud"
+Documentation = "https://github.com/terracoil/modgud/tree/main/docs"
+
+[tool.poetry]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
@@ -20,11 +23,9 @@ classifiers = [
     "Topic :: System :: Systems Administration",
     "Topic :: Utilities",
 ]
+include = ["LICENSE", "README.md", "freyja/py.typed"]
 packages = [{include = "freyja"}]
-include = [
-    "LICENSE",
-    "README.md",
-]
+readme = "README.md"
 
 requires-python = ">=3.6"
 
@@ -59,6 +60,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.mypy]
 python_version = "3.13"
+cache_dir = "tmp/.mypy_cache"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false  # Start lenient, can be tightened later
@@ -70,8 +72,9 @@ exclude = [
 
 [tool.pytest.ini_options]
 minversion = "8.0"
+cache_dir = "tmp/.pytest_cache"
 addopts = "-ra -q --strict-markers --cov=freyja --cov-report=term-missing --cov-report=html:reports/coverage --cov-report=xml:reports/coverage/converage.xml"
-testpaths = ["freyja/tests"]
+testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]

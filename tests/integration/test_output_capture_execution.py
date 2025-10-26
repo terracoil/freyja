@@ -4,7 +4,7 @@
 from freyja import FreyjaCLI
 
 
-class TestClass:
+class SampleOutputClass:
     """Test class with methods that produce output."""
 
     def __init__(self, verbose: bool = False):
@@ -19,7 +19,7 @@ class TestClass:
 
 def test_capture_execution():
     """Test capturing output during command execution."""
-    cli = FreyjaCLI(TestClass, capture_output=True)
+    cli = FreyjaCLI(SampleOutputClass, capture_output=True)
 
     # Execute a command - this should capture the output
     cli.run(["say-hello", "--name", "Freyja"])
@@ -37,7 +37,7 @@ def test_capture_execution():
 
 def test_no_capture_execution():
     """Test that no capture happens when disabled."""
-    cli = FreyjaCLI(TestClass, capture_output=False)
+    cli = FreyjaCLI(SampleOutputClass, capture_output=False)
 
     # Execute a command - this should NOT capture output
     cli.run(["say-hello", "--name", "Test"])
@@ -51,7 +51,7 @@ def test_no_capture_execution():
 
 def test_context_manager_capture():
     """Test context manager capture with execution."""
-    cli = FreyjaCLI(TestClass)
+    cli = FreyjaCLI(SampleOutputClass)
 
     # Start with no capture
     assert cli.get_captured_output() is None
