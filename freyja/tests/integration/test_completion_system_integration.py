@@ -18,8 +18,8 @@ from unittest.mock import MagicMock, patch
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from freyja.cli.execution_coordinator import ExecutionCoordinator
-from freyja.command.command_info import CommandInfo
-from freyja.command.command_tree import CommandTree
+from freyja.shared.command_info import CommandInfo
+from freyja.shared.command_tree import CommandTree
 from freyja.freyja_cli import FreyjaCLI
 
 

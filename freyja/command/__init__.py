@@ -1,8 +1,10 @@
-"""Command processing package - handles FreyjaCLI command parsing, discovery, and execution."""
+"""Command discovery and execution components."""
 
-from .command_discovery import CommandDiscovery
-from .command_executor import CommandExecutor
-from .command_info import CommandInfo
-from .command_tree import CommandTree
+from freyja.command.command_discovery import CommandDiscovery
+from freyja.command.command_executor import CommandExecutor
 
-__all__ = ["CommandInfo", "CommandDiscovery", "CommandExecutor", "CommandTree"]
+# Re-export from shared for backward compatibility
+from freyja.shared.command_info import CommandInfo
+from freyja.shared.command_tree import CommandTree
+
+__all__ = ['CommandDiscovery', 'CommandExecutor', 'CommandTree', 'CommandInfo']

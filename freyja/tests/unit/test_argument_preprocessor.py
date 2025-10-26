@@ -5,8 +5,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from freyja.command.command_info import CommandInfo
-from freyja.command.command_tree import CommandTree
+from freyja.shared.command_info import CommandInfo
+from freyja.shared.command_tree import CommandTree
 from freyja.parser.argument_preprocessor import ArgumentPreprocessor, PositionalInfo
 
 

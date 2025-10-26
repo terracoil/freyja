@@ -3,7 +3,7 @@
 # Freyja ⚡
 **No-dependency, zero-configuration CLI tool to build command-line interfaces purely from your code.**
 
-## CHECK OUT https://pypi.org/project/artifex/
+## CHECK OUT https://pypi.org/project/freyja/
 
 Transform your Python classes into powerful command-line applications in seconds! Freyja uses introspection and type annotations to automatically generate professional CLIs with zero configuration required.
 

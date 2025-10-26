@@ -6,9 +6,9 @@ from typing import Any
 from freyja.cli import SystemClassBuilder, TargetMode
 from freyja.parser import DocStringParser
 from freyja.utils import TextUtil
+from freyja.shared.command_info import CommandInfo
+from freyja.shared.command_tree import CommandTree
 
-from .command_info import CommandInfo
-from .command_tree import CommandTree
 from .validation import ValidationService
 
 TargetType = type | list[type]

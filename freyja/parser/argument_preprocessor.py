@@ -4,7 +4,7 @@ import inspect
 from dataclasses import dataclass
 from typing import Any
 
-from freyja.command.command_tree import CommandTree
+from freyja.shared.command_tree import CommandTree
 from freyja.parser.docstring_parser import DocStringParser
 from freyja.utils.text_util import TextUtil
 
