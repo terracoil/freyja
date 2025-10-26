@@ -336,6 +336,78 @@ class TestArgumentPreprocessor:
         assert preprocessed[1] == "--database-url"
         assert preprocessed[3] == "process"
 
+    def test_double_dash_separator_handling(self, simple_command_tree):
+        """Test handling of -- separator for end of options."""
+        preprocessor = ArgumentPreprocessor(simple_command_tree)
+
+        args = ["test-command", "--", "--not-an-option"]
+        processed = preprocessor.preprocess_args(args)
+
+        # Should preserve -- separator
+        assert "--" in processed
+        assert "--not-an-option" in processed
+
+    def test_quoted_arguments_with_spaces(self, simple_command_tree):
+        """Test handling of quoted strings with spaces."""
+        preprocessor = ArgumentPreprocessor(simple_command_tree)
+
+        # Simulating quoted argument (shell would pass as single arg)
+        args = ["test-command", "--message", "hello world", "--name", "John Doe"]
+        processed = preprocessor.preprocess_args(args)
+
+        # Should preserve quoted arguments as-is
+        assert "hello world" in processed
+        assert "John Doe" in processed
+
+    def test_unicode_and_special_characters(self, simple_command_tree):
+        """Test handling of Unicode and special characters in arguments."""
+        preprocessor = ArgumentPreprocessor(simple_command_tree)
+
+        args = ["test-command", "--text", "Hello 世界", "--emoji", "🚀✨"]
+        processed = preprocessor.preprocess_args(args)
+
+        # Should preserve Unicode characters
+        assert "Hello 世界" in processed
+        assert "🚀✨" in processed
+
+    def test_duplicate_argument_handling(self, simple_command_tree, target_class_with_params):
+        """Test handling of duplicate arguments (last one wins)."""
+        preprocessor = ArgumentPreprocessor(simple_command_tree, target_class_with_params)
+
+        args = [
+            "test-command",
+            "--config-file", "first.json",
+            "--config-file", "second.json"
+        ]
+        processed = preprocessor.preprocess_args(args)
+
+        # Both should be present (argparse handles duplicate precedence)
+        assert processed.count("--config-file") == 2
+        assert "first.json" in processed
+        assert "second.json" in processed
+
+    def test_empty_args_list_handling(self, simple_command_tree):
+        """Test handling of empty argument list."""
+        preprocessor = ArgumentPreprocessor(simple_command_tree)
+
+        args = []
+        processed = preprocessor.preprocess_args(args)
+
+        # Should return empty list or minimal structure
+        assert isinstance(processed, list)
+
+    def test_args_with_equals_sign_format(self, simple_command_tree, target_class_with_params):
+        """Test handling of --flag=value format."""
+        preprocessor = ArgumentPreprocessor(simple_command_tree, target_class_with_params)
+
+        args = ["test-command", "--config-file=test.json", "--debug"]
+        processed = preprocessor.preprocess_args(args)
+
+        # Should preserve --flag=value format
+        assert "--config-file=test.json" in processed or (
+            "--config-file" in processed and "test.json" in processed
+        )
+
 
 class TestPositionalInfo:
     """Test PositionalInfo dataclass."""

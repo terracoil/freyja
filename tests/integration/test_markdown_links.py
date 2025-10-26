@@ -14,7 +14,7 @@ class TestMarkdownLinks:
     @pytest.fixture
     def project_root(self) -> Path:
         """Get the project root directory."""
-        return Path(__file__).parents[3]
+        return Path(__file__).parents[2]
 
     @pytest.fixture
     def markdown_files(self, project_root: Path) -> list[Path]:
