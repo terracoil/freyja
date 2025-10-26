@@ -1,8 +1,8 @@
-[tool.poetry]
+[project]
 name = "freyja"
 version = "1.0.23"  # Will use poetry-dynamic-versioning
 description = "Python Library that builds a complete CLI given one or more functions using introspection"
-authors = ["Steven Miers <steven.miers@gmail.com>"]
+authors = [{name = "steven.miers@gmail.com"}]
 readme = "README.md"
 license = "MIT"
 repository = "https://github.com/terracoil/freyja"
@@ -26,6 +26,8 @@ include = [
     "README.md",
 ]
 
+requires-python = ">=3.6"
+
 [tool.poetry.dependencies]
 python = "^3.13.7"
 # No runtime dependencies - the library uses only stdlib
@@ -41,7 +43,6 @@ test = [
 ]
 dev = [
     { include-group = "test" },
-    "freyja (>=1.0.22,<2.0.0)",
     "mypy[reports] (>=1.18.2,<2.0.0)",
     "pre-commit (>=4.3.0,<5.0.0)",
     "poetry-dynamic-versioning (>=1.9.1,<2.0.0)"
