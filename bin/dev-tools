@@ -449,9 +449,12 @@ class FreyjaDevTools:
         final_version: Optional[str] = version
 
         if version is None and auto_increment:
-          # Get latest tag and auto-increment
-          result = parent._run_command(['git', 'describe', '--tags', '--abbrev=0'], capture_output=True)
-          if isinstance(result, subprocess.CompletedProcess) and result.returncode == 0:
+          # Get latest tag and auto-increment (use for-each-ref for reliability)
+          result = parent._run_command(
+            ['git', 'for-each-ref', '--sort=-version:refname', '--format=%(refname:short)', 'refs/tags', '--count=1'],
+            capture_output=True
+          )
+          if isinstance(result, subprocess.CompletedProcess) and result.returncode == 0 and result.stdout.strip():
             latest_tag = result.stdout.strip()
             parent._print(f"Latest tag: {latest_tag}", 'info')
 
@@ -564,7 +567,7 @@ class FreyjaDevTools:
                         parent._print("🚀 Pushing commit and tag to remote...", 'info')
                         push_success = parent._run_command(['git', 'push'], "Pushing commit to remote")
                         if push_success:
-                          push_success = parent._run_command(['git', 'push', '--tags'], "Pushing tags to remote")
+                          push_success = parent._run_command(['git', 'push', 'origin', tag], f"Pushing tag {tag} to remote")
                         if push_success:
                           # Success summary
                           parent._print("🎉 Version updated, tagged, and pushed successfully!", 'success')
