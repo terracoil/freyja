@@ -310,3 +310,65 @@ class TestOutputFormatter:
 
             # Should still work even with custom style
             mock_print.assert_called_once()
+
+    def test_get_output_method(self):
+        """Test get_output method for specific streams."""
+        capture = OutputCapture(capture_stdout=True, capture_stderr=True)
+        capture.start()
+        print("stdout text")
+        print("stderr text", file=sys.stderr)
+        capture.stop()
+
+        assert "stdout text" in capture.get_output("stdout")
+        assert "stderr text" in capture.get_output("stderr")
+        assert capture.get_output("stdin") is None  # Not captured
+
+    def test_get_all_output_method(self):
+        """Test get_all_output method."""
+        capture = OutputCapture(capture_stdout=True, capture_stderr=True, capture_stdin=True)
+        capture.start()
+        print("stdout text")
+        print("stderr text", file=sys.stderr)
+        capture.stop()
+
+        all_output = capture.get_all_output()
+        assert "stdout" in all_output
+        assert "stderr" in all_output
+        assert "stdin" in all_output
+        assert "stdout text" in all_output["stdout"]
+        assert "stderr text" in all_output["stderr"]
+
+    def test_output_capture_stdin(self):
+        """Test capturing stdin."""
+        capture = OutputCapture(capture_stdin=True)
+        original_stdin = sys.stdin
+
+        capture.start()
+        assert sys.stdin == capture.stdin_buffer
+        capture.stop()
+        assert sys.stdin == original_stdin
+
+    def test_output_capture_config_from_kwargs(self):
+        """Test OutputCaptureConfig.from_kwargs method."""
+        from freyja.utils.output_capture import OutputCaptureConfig
+
+        # Test with basic kwargs
+        config = OutputCaptureConfig.from_kwargs(
+            capture_output=True,
+            capture_stdout=False,
+            capture_stderr=True,
+        )
+        assert config.enabled is True
+        assert config.capture_stdout is False
+        assert config.capture_stderr is True
+
+        # Test with output_capture_config dict
+        config = OutputCaptureConfig.from_kwargs(
+            capture_output=True,
+            output_capture_config={
+                "buffer_size": 2048,
+                "encoding": "ascii",
+            },
+        )
+        assert config.buffer_size == 2048
+        assert config.encoding == "ascii"

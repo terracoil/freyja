@@ -425,3 +425,85 @@ class TestDataStructUtil:
         assert result["bytes_list"] == [b"test", b"bytes"]
         assert result["bytes_value"] == b"single_bytes"
         assert result["mixed"] == ["string", b"bytes", 42]
+
+    def test_safe_str_exception_direct(self):
+        """Test safe_str exception handling directly with object that fails str()."""
+
+        class BadStrObject:
+            """Object that raises exception in __str__."""
+            def __str__(self):
+                raise RuntimeError("Cannot stringify this object")
+
+        # Create object and simplify it
+        bad_obj = BadStrObject()
+        result = DataStructUtil.simplify(bad_obj)
+
+        # Should handle the exception and return empty dict (has __dict__)
+        assert result == {}
+
+        # Test with object at max depth to trigger str() conversion
+        deep = {"l1": {"l2": {"l3": bad_obj}}}
+        result = DataStructUtil.simplify(deep, max_depth=3)
+
+        # At depth 3, bad_obj should trigger safe_str fallback
+        assert "<BadStrObject object>" in str(result["l1"]["l2"]["l3"])
+
+    def test_slots_with_missing_attributes(self):
+        """Test object with slots where some attributes are not set."""
+
+        class PartialSlots:
+            """Object with slots where not all are initialized."""
+            __slots__ = ['attr1', 'attr2', 'attr3']
+
+            def __init__(self):
+                self.attr1 = "value1"
+                # attr2 is intentionally not set
+                # attr3 is intentionally not set
+
+        obj = PartialSlots()
+        result = DataStructUtil.simplify(obj)
+
+        # Should only include set attributes
+        assert result == {"attr1": "value1"}
+
+    def test_object_without_dict_or_slots_at_max_depth(self):
+        """Test object without __dict__ or __slots__ when at max depth."""
+        import datetime
+
+        # datetime.time has neither __dict__ nor __slots__
+        time_obj = datetime.time(14, 30, 45)
+
+        # Put at exactly max_depth to force string conversion
+        nested = {"l1": {"l2": time_obj}}
+        result = DataStructUtil.simplify(nested, max_depth=2)
+
+        # At depth 2, time_obj should be converted to string
+        assert "14:30:45" in str(result["l1"]["l2"])
+
+    def test_object_with_str_that_fails(self):
+        """Test object where str() raises exception at non-max depth."""
+
+        class FailStr:
+            """Object with failing __str__ that has no __dict__ or __slots__."""
+            __slots__ = []  # Empty slots, so no attributes
+
+            def __str__(self):
+                raise ValueError("Cannot stringify")
+
+        obj = FailStr()
+        result = DataStructUtil.simplify(obj)
+
+        # Should return empty dict (has __slots__, even if empty)
+        assert result == {}
+
+    def test_object_fallback_to_string_no_dict_no_slots(self):
+        """Test object that truly has no __dict__ or __slots__ and converts to string."""
+        # Use a built-in type that has neither __dict__ nor __slots__
+        import re
+
+        pattern = re.compile(r'\d+')
+        result = DataStructUtil.simplify(pattern)
+
+        # Should be converted to string representation
+        assert isinstance(result, str)
+        assert r'\d+' in result or 'Pattern' in result or 'compile' in result

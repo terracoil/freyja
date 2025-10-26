@@ -23,11 +23,15 @@ classifiers = [
     "Topic :: System :: Systems Administration",
     "Topic :: Utilities",
 ]
-include = ["LICENSE", "README.md", "freyja/py.typed"]
+include = [
+    "LICENSE",
+    "README.md",
+    "freyja/py.typed",
+    "freyja/utils/modgud/**/*.py",
+    "freyja/utils/modgud/modgud/py.typed"
+]
 packages = [{include = "freyja"}]
 readme = "README.md"
-
-requires-python = ">=3.6"
 
 [tool.poetry.dependencies]
 python = "^3.13.7"
