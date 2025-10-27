@@ -56,6 +56,53 @@ class FreyjaDevTools:
       'nc': '\033[0m'  # No Color
     }
 
+  def _format_command(self, command: Union[str, List[str]], shell: bool) -> Union[str, List[str]]:
+    """Convert string command to list format if needed."""
+    # Convert string to list if shell=False for safety
+    if isinstance(command, str) and not shell:
+      return shlex.split(command)
+    return command
+
+  def _display_command(self, command: Union[str, List[str]], cwd: Optional[str] = None) -> None:
+    """Display command in verbose/dry-run mode."""
+    cmd_display = command if isinstance(command, str) else ' '.join(shlex.quote(arg) for arg in command)
+    if self.verbose or self.dry_run:
+      print(f"Command: {cmd_display}")
+
+    if self.dry_run:
+      print("(DRY RUN - command not executed)")
+
+  def _execute_subprocess(self, command: Union[str, List[str]], **kwargs) -> subprocess.CompletedProcess:
+    """Execute subprocess with configured parameters."""
+    return subprocess.run(command, cwd=self.project_root, **kwargs)
+
+  def _handle_subprocess_error(self, e: Exception, command: Union[str, List[str]],
+                               capture_output: bool, check: bool) -> Union[bool, subprocess.CompletedProcess]:
+    """Unified error handling for subprocess failures."""
+    if isinstance(e, subprocess.CalledProcessError):
+      if not capture_output:
+        self._print(f"Command failed with exit code {e.returncode}", 'error')
+      if check:
+        raise
+      return e if capture_output else False
+    elif isinstance(e, subprocess.TimeoutExpired):
+      if not capture_output:
+        self._print(f"Command timed out after {e.timeout} seconds", 'error')
+      if check:
+        raise
+      return subprocess.CompletedProcess(command, -1, '', 'Timeout') if capture_output else False
+    elif isinstance(e, FileNotFoundError):
+      cmd_name = command[0] if isinstance(command, list) and command else str(command).split()[0]
+      if not capture_output:
+        self._print(f"Command '{cmd_name}' not found - is it installed and in PATH?", 'error')
+      return subprocess.CompletedProcess(command, -1, '', f"Command not found: {cmd_name}") if capture_output else False
+    elif isinstance(e, OSError):
+      if not capture_output:
+        self._print(f"OS error running command: {e}", 'error')
+      return subprocess.CompletedProcess(command, -1, '', str(e)) if capture_output else False
+    else:
+      raise  # Re-raise unexpected exceptions
+
   def _run_command(
     self,
     command: Union[str, List[str]],
@@ -71,52 +118,33 @@ class FreyjaDevTools:
     if description:
       print(f"{self.colors['blue']}{description}{self.colors['nc']}")
 
-    # Convert string to list if shell=False for safety
-    if isinstance(command, str) and not shell:
-      command = shlex.split(command)
+    # Format command
+    command = self._format_command(command, shell)
 
     # Display command for verbose/dry-run
-    cmd_display = command if isinstance(command, str) else ' '.join(shlex.quote(arg) for arg in command)
-    if self.verbose or self.dry_run:
-      print(f"Command: {cmd_display}")
+    self._display_command(command)
+
+    # Track result value for single return point
+    result_value = None
 
     if self.dry_run:
-      print("(DRY RUN - command not executed)")
-      # Return mock result for dry-run
-      return subprocess.CompletedProcess(command, 0, '', '') if capture_output else True
+      # Set mock result for dry-run
+      result_value = subprocess.CompletedProcess(command, 0, '', '') if capture_output else True
+    else:
+      try:
+        result = self._execute_subprocess(
+          command,
+          shell=shell,
+          check=check,
+          capture_output=capture_output,
+          text=capture_output,  # Use text mode when capturing
+          timeout=timeout
+        )
+        result_value = result if capture_output else (result.returncode == 0)
+      except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError, OSError) as e:
+        result_value = self._handle_subprocess_error(e, command, capture_output, check)
 
-    try:
-      result = subprocess.run(
-        command,
-        shell=shell,
-        check=check,
-        capture_output=capture_output,
-        text=capture_output,  # Use text mode when capturing
-        cwd=self.project_root,
-        timeout=timeout
-      )
-      return result if capture_output else (result.returncode == 0)
-    except subprocess.CalledProcessError as e:
-      if not capture_output:
-        self._print(f"Command failed with exit code {e.returncode}", 'error')
-      if check:
-        raise
-      return e if capture_output else False
-    except subprocess.TimeoutExpired as e:
-      if not capture_output:
-        self._print(f"Command timed out after {timeout} seconds", 'error')
-      if check:
-        raise
-      return subprocess.CompletedProcess(command, -1, '', 'Timeout') if capture_output else False
-    except FileNotFoundError:
-      cmd_name = command[0] if isinstance(command, list) and command else str(command).split()[0]
-      if not capture_output:
-        self._print(f"Command '{cmd_name}' not found - is it installed and in PATH?", 'error')
-      return subprocess.CompletedProcess(command, -1, '', f"Command not found: {cmd_name}") if capture_output else False
-    except OSError as e:
-      if not capture_output:
-        self._print(f"OS error running command: {e}", 'error')
-      return subprocess.CompletedProcess(command, -1, '', str(e)) if capture_output else False
+    return result_value
 
   def _print(self, message: str, msg_type: str = 'info') -> None:
     """Print formatted message based on type."""
@@ -150,12 +178,13 @@ class FreyjaDevTools:
           parent._print("Development environment setup complete!", 'success')
           print()
           print("Available commands:")
-          print("  python bin/dev-tools build compile     # Compile/build package")
-          print("  python bin/dev-tools build lint        # Run linters")
-          print("  python bin/dev-tools test run          # Run tests")
-          print("  python bin/dev-tools build autocommit  # Commit changes with Claude-generated message")
-          print("  python bin/dev-tools build tag-version    # Create git tag for HEAD commit")
-          print("  python bin/dev-tools build publish     # Publish to PyPI")
+          print("  python bin/devtools build compile      # Compile/build package")
+          print("  python bin/devtools build lint         # Run linters (ruff + mypy)")
+          print("  python bin/devtools build lint --fix   # Auto-fix linting issues")
+          print("  python bin/devtools test run           # Run tests with coverage")
+          print("  python bin/devtools build autocommit   # Commit changes with Claude-generated message")
+          print("  python bin/devtools build tag-version  # Create git tag for HEAD commit")
+          print("  python bin/devtools build publish      # Publish to PyPI")
         else:
           parent._print("Failed to install pre-commit hooks", 'error')
       else:
@@ -214,6 +243,31 @@ class FreyjaDevTools:
       self.parent: 'FreyjaDevTools' = parent
       self.parallel: bool = parallel
 
+    def _remove_path(self, path_obj: Path) -> bool:
+      """Remove a single file or directory with error handling."""
+      parent = self.parent
+      path_str = str(path_obj)
+
+      try:
+        if path_obj.is_dir():
+          if not parent.dry_run:
+            shutil.rmtree(path_obj)
+          if parent.verbose or parent.dry_run:
+            print(f"Removed directory: {path_str}")
+        elif path_obj.is_file():
+          if not parent.dry_run:
+            path_obj.unlink()
+          if parent.verbose or parent.dry_run:
+            print(f"Removed file: {path_str}")
+        return True
+      except PermissionError:
+        parent._print(f"Permission denied removing {path_str} - try running with elevated permissions", 'error')
+      except OSError as e:
+        parent._print(f"OS error removing {path_str}: {e}", 'error')
+      except (IOError, shutil.Error) as e:
+        parent._print(f"Failed to remove {path_str}: {e}", 'error')
+      return False
+
     def clean(self) -> None:
       """Clean build artifacts, cache files, and temporary files."""
       parent = self.parent
@@ -230,29 +284,11 @@ class FreyjaDevTools:
         "*.egg-info"
       ]
 
-      removed_count: int = 0
-      for pattern in patterns_to_remove:
-        for path in glob.glob(pattern, recursive=True):
-          path_obj = Path(path)
-          try:
-            if path_obj.is_dir():
-              if not parent.dry_run:
-                shutil.rmtree(path_obj)
-              if parent.verbose or parent.dry_run:
-                print(f"Removed directory: {path}")
-              removed_count += 1
-            elif path_obj.is_file():
-              if not parent.dry_run:
-                path_obj.unlink()
-              if parent.verbose or parent.dry_run:
-                print(f"Removed file: {path}")
-              removed_count += 1
-          except PermissionError:
-            parent._print(f"Permission denied removing {path} - try running with elevated permissions", 'error')
-          except OSError as e:
-            parent._print(f"OS error removing {path}: {e}", 'error')
-          except (IOError, shutil.Error) as e:
-            parent._print(f"Failed to remove {path}: {e}", 'error')
+      removed_count = sum(
+        1 for pattern in patterns_to_remove
+        for path in glob.glob(pattern, recursive=True)
+        if self._remove_path(Path(path))
+      )
 
       if removed_count > 0:
         parent._print(f"Cleaned {removed_count} items", 'success')
@@ -267,33 +303,35 @@ class FreyjaDevTools:
 
       success: bool = True
 
-      # Run Ruff
+      # Run Ruff linting
       ruff_cmd = "poetry run ruff check ."
       if fix:
         ruff_cmd += " --fix"
-      if not parent._run_command(ruff_cmd, "📝 Running Ruff..."):
+      if not parent._run_command(ruff_cmd, "📝 Running Ruff linting..."):
         success = False
 
-      # Run Black
-      black_cmd = "poetry run black ."
+      # Run Ruff formatting
+      ruff_format_cmd = "poetry run ruff format ."
       if not fix:
-        black_cmd += " --check"
-      if not parent._run_command(black_cmd, "⚫ Running Black..."):
+        ruff_format_cmd += " --check"
+      if not parent._run_command(ruff_format_cmd, "🎨 Running Ruff formatting..."):
         success = False
 
-      # Run MyPy
-      if not parent._run_command(f"poetry run mypy {parent.project_name} --ignore-missing-imports", "🔧 Running MyPy..."):
-        success = False
-
-      # Run Pylint
-      if not parent._run_command(f"poetry run pylint {parent.project_name}", "🐍 Running Pylint..."):
+      # Run MyPy with strict type checking
+      mypy_cmd = f"poetry run mypy {parent.project_name}"
+      # Generate reports if directories exist
+      reports_dir = parent.project_root / "reports" / "mypy"
+      if reports_dir.exists():
+        mypy_cmd += f" --html-report {reports_dir} --linecount-report {reports_dir} --linecoverage-report {reports_dir}"
+      if not parent._run_command(mypy_cmd, "🔧 Running MyPy type checking..."):
         success = False
 
       if success:
         parent._print("All code quality checks passed!", 'success')
+        sys.exit(0)
       else:
         parent._print("Some code quality checks failed!", 'error')
-      return
+        sys.exit(1)
 
     def compile(self, clean_first: bool = True) -> None:
       """Build the package with Poetry, optionally cleaning artifacts first."""
@@ -355,6 +393,23 @@ class FreyjaDevTools:
         parent._print(f"Please set {token_var} environment variable with your PyPI token", 'error')
       return
 
+    def _extract_commit_message(self, raw_output: str) -> Optional[str]:
+      """Extract commit message from Claude response."""
+      # Check for conventional commit format
+      commit_pattern = re.compile(r'^(feat|fix|refactor|docs|style|test|chore|perf|ci|build|revert)(?:\([^)]+\))?:\s+.+', re.MULTILINE)
+      match = commit_pattern.search(raw_output)
+      if match:
+        # Found a valid commit message - extract from that point
+        start_pos = match.start()
+        return raw_output[start_pos:].strip()
+
+      # Fallback: remove code blocks if present
+      code_block_match = re.search(r'```(?:text|markdown|git)?\s*\n(.*?)\n```', raw_output, re.DOTALL)
+      if code_block_match:
+        return code_block_match.group(1).strip()
+
+      return None
+
     def autocommit(self) -> None:
       """Commit all uncommitted files using Claude to generate an informative commit message."""
       parent = self.parent
@@ -371,48 +426,22 @@ class FreyjaDevTools:
 
       # Use Claude to generate commit message
       parent._print("🤖 Generating commit message with Claude...", 'info')
-      commit_message: Optional[str] = None
       result = parent._run_command(
-        ['claude', '-p', 'Review the git changes and generate ONLY a clean git commit message. Return the commit message as plain text with no markdown formatting, no code blocks, no preamble, and no explanatory text. The message should follow conventional commit format with a clear subject line and detailed body. Do not mention Claude, AI, or co-authorship.'],
+        ['claude', '-p', 'You are a git commit message generator. Output ONLY the commit message, nothing else.\n\nRules:\n- NO preamble like "Here\'s the message" or "Based on the changes"\n- NO markdown code blocks\n- NO explanations before or after\n- NO mentions of AI, Claude, or automated generation\n- First line: short summary (50-72 chars) following conventional commits format (type: description)\n- Blank line\n- Body: detailed explanation of WHAT changed and WHY\n\nYour response must START with the commit type (feat:/fix:/refactor:/etc). Example:\n\nfeat: add user authentication\n\nImplemented JWT-based authentication with refresh tokens.\nAdded middleware for protected routes.\n\nNow analyze the git changes and output ONLY the commit message:'],
         capture_output=True
       )
+
+      commit_message = None
       if isinstance(result, subprocess.CompletedProcess) and result.returncode == 0:
-        raw_output = result.stdout.strip()
-
-        # Extract commit message from code blocks if present
-        code_block_match = re.search(r'```(?:text|markdown|git)?\s*\n(.*?)\n```', raw_output, re.DOTALL)
-        if code_block_match:
-          commit_message = code_block_match.group(1).strip()
-        else:
-          # Try to find the actual commit message by skipping explanatory text
-          lines = raw_output.split('\n')
-          # Skip lines that look like explanations
-          filtered_lines = []
-          skip_patterns = [
-            r'^(I need to|Here\'s|This|The changes|Let me)',
-            r'^\*\*',  # Markdown headers
-            r'^-',     # Bullet points at start
-          ]
-
-          capturing = False
-          for line in lines:
-            # Start capturing after we see a clear commit subject line
-            if not capturing and line and not any(re.match(p, line, re.IGNORECASE) for p in skip_patterns):
-              capturing = True
-
-            if capturing:
-              filtered_lines.append(line)
-
-          commit_message = '\n'.join(filtered_lines).strip()
-
-        if commit_message:
-          parent._print(f"Commit message:\n{commit_message}", 'info')
-        else:
+        commit_message = self._extract_commit_message(result.stdout.strip())
+        if not commit_message:
           parent._print("Failed to extract valid commit message from Claude response", 'error')
           return
       else:
         parent._print("Failed to generate commit message with Claude", 'error')
         return
+
+      parent._print(f"Commit message:\n{commit_message}", 'info')
 
       if commit_message:
         # Add all files
@@ -436,6 +465,87 @@ class FreyjaDevTools:
           parent._print("Failed to stage files", 'error')
       return
 
+    def _validate_version_format(self, version: str) -> bool:
+      """Validate version format (X.Y.Z)."""
+      return bool(re.match(r'^\d+\.\d+\.\d+$', version))
+
+    def _get_current_version(self) -> Optional[str]:
+      """Get the current latest tag version."""
+      parent = self.parent
+      result = parent._run_command(
+        ['git', 'for-each-ref', '--sort=-version:refname', '--format=%(refname:short)', 'refs/tags', '--count=1'],
+        capture_output=True
+      )
+      if isinstance(result, subprocess.CompletedProcess) and result.returncode == 0 and result.stdout.strip():
+        return result.stdout.strip()
+      return None
+
+    def _increment_version(self, current: str, bump_type: str = 'patch') -> Optional[str]:
+      """Increment version number."""
+      version_num = current.lstrip('v')
+      version_match = re.match(r'^(\d+)\.(\d+)\.(\d+)$', version_num)
+      if version_match:
+        major, minor, patch = map(int, version_match.groups())
+        if bump_type == 'major':
+          return f"{major + 1}.0.0"
+        elif bump_type == 'minor':
+          return f"{major}.{minor + 1}.0"
+        else:  # patch
+          return f"{major}.{minor}.{patch + 1}"
+      return None
+
+    def _update_pyproject_version(self, version: str) -> bool:
+      """Update version in pyproject.toml."""
+      parent = self.parent
+      pyproject_path = parent.project_root / "pyproject.toml"
+
+      try:
+        with open(pyproject_path, 'r') as f:
+          content = f.read()
+
+        # Update version line
+        updated_content = re.sub(
+          r'^version = "[^"]+"',
+          f'version = "{version}"',
+          content,
+          count=1,
+          flags=re.MULTILINE
+        )
+
+        with open(pyproject_path, 'w') as f:
+          f.write(updated_content)
+
+        parent._print(f"Updated pyproject.toml version to {version}", 'success')
+        return True
+      except FileNotFoundError:
+        parent._print(f"pyproject.toml not found at {pyproject_path}", 'error')
+      except PermissionError:
+        parent._print(f"Permission denied writing to pyproject.toml - check file permissions", 'error')
+      except IOError as e:
+        parent._print(f"IO error updating pyproject.toml: {e}", 'error')
+      except re.error as e:
+        parent._print(f"Regex error updating version in pyproject.toml: {e}", 'error')
+
+      return False
+
+    def _create_git_tag(self, version: str, message: str) -> bool:
+      """Create and push git tag."""
+      parent = self.parent
+      tag = f"v{version}"
+
+      result = parent._run_command(
+        ['git', 'tag', '-a', tag, '-m', message, 'HEAD'],
+        capture_output=True
+      )
+
+      if isinstance(result, subprocess.CompletedProcess) and result.returncode == 0:
+        parent._print(f"Created tag {tag} on HEAD", 'success')
+        return True
+
+      error_msg = result.stderr if hasattr(result, 'stderr') and result.stderr else "Unknown error"
+      parent._print(f"Failed to create tag: {error_msg}", 'error')
+      return False
+
     def tag_version(self, version: Optional[str] = None, auto_increment: bool = True) -> None:
       """Create git tag with Claude-generated message, auto-incrementing version if needed."""
       parent = self.parent
@@ -443,149 +553,93 @@ class FreyjaDevTools:
 
       # Validate we're in a git repository
       result = parent._run_command(['git', 'rev-parse', '--git-dir'], capture_output=True)
-      in_git_repo = isinstance(result, subprocess.CompletedProcess) and result.returncode == 0
-      if not in_git_repo:
+      if not (isinstance(result, subprocess.CompletedProcess) and result.returncode == 0):
         parent._print("Not in a git repository", 'error')
+        return
 
-      if in_git_repo:
-        # Determine version to use
-        final_version: Optional[str] = version
+      # Determine version to use
+      final_version = version
 
-        if version is None and auto_increment:
-          # Get latest tag and auto-increment (use for-each-ref for reliability)
-          result = parent._run_command(
-            ['git', 'for-each-ref', '--sort=-version:refname', '--format=%(refname:short)', 'refs/tags', '--count=1'],
-            capture_output=True
-          )
-          if isinstance(result, subprocess.CompletedProcess) and result.returncode == 0 and result.stdout.strip():
-            latest_tag = result.stdout.strip()
-            parent._print(f"Latest tag: {latest_tag}", 'info')
-
-            # Remove 'v' prefix if present and increment patch version
-            version_num = latest_tag.lstrip('v')
-
-            # Validate and parse version
-            version_match = re.match(r'^(\d+)\.(\d+)\.(\d+)$', version_num)
-            if version_match:
-              major, minor, patch = map(int, version_match.groups())
-              patch += 1
-              final_version = f"{major}.{minor}.{patch}"
-              parent._print(f"Auto-incrementing to: {final_version}", 'info')
-            else:
-              parent._print(f"Invalid version format: {version_num} (expected X.Y.Z)", 'error')
-              final_version = None
+      if version is None and auto_increment:
+        latest_tag = self._get_current_version()
+        if latest_tag:
+          parent._print(f"Latest tag: {latest_tag}", 'info')
+          final_version = self._increment_version(latest_tag)
+          if final_version:
+            parent._print(f"Auto-incrementing to: {final_version}", 'info')
           else:
-            parent._print("No existing tags found. Please provide a version manually.", 'error')
-            final_version = None
-
-        if final_version is None:
-          parent._print("No version provided and auto-increment disabled", 'error')
+            parent._print(f"Invalid version format: {latest_tag} (expected X.Y.Z)", 'error')
         else:
-          # Remove 'v' prefix if user provided it
-          final_version = final_version.lstrip('v')
+          parent._print("No existing tags found. Please provide a version manually.", 'error')
 
-          # Validate version format
-          if re.match(r'^\d+\.\d+\.\d+$', final_version):
-            # Check if tag already exists
-            tag: str = f"v{final_version}"
-            result = parent._run_command(['git', 'rev-parse', tag], capture_output=True)
-            tag_exists = isinstance(result, subprocess.CompletedProcess) and result.returncode == 0
-            if tag_exists:
-              parent._print(f"Tag '{tag}' already exists", 'error')
+      if final_version is None:
+        parent._print("No version provided and auto-increment disabled", 'error')
+        return
 
-            if not tag_exists:
-              # Update version in pyproject.toml
-              parent._print(f"📝 Updating version in pyproject.toml to {final_version}...", 'info')
-              pyproject_path = parent.project_root / "pyproject.toml"
+      # Clean and validate version
+      final_version = final_version.lstrip('v')
 
-              update_success: bool = False
-              try:
-                with open(pyproject_path, 'r') as f:
-                  content = f.read()
+      if not self._validate_version_format(final_version):
+        parent._print(f"Invalid version format: {final_version} (expected X.Y.Z)", 'error')
+        return
 
-                # Update version line
-                updated_content = re.sub(
-                  r'^version = "[^"]+"',
-                  f'version = "{final_version}"',
-                  content,
-                  count=1,
-                  flags=re.MULTILINE
-                )
+      # Check if tag already exists
+      tag = f"v{final_version}"
+      result = parent._run_command(['git', 'rev-parse', tag], capture_output=True)
+      if isinstance(result, subprocess.CompletedProcess) and result.returncode == 0:
+        parent._print(f"Tag '{tag}' already exists", 'error')
+        return
 
-                with open(pyproject_path, 'w') as f:
-                  f.write(updated_content)
+      # Update version in pyproject.toml
+      parent._print(f"📝 Updating version in pyproject.toml to {final_version}...", 'info')
+      if not self._update_pyproject_version(final_version):
+        return
 
-                parent._print(f"Updated pyproject.toml version to {final_version}", 'success')
-                update_success = True
-              except FileNotFoundError:
-                parent._print(f"pyproject.toml not found at {pyproject_path}", 'error')
-              except PermissionError:
-                parent._print(f"Permission denied writing to pyproject.toml - check file permissions", 'error')
-              except IOError as e:
-                parent._print(f"IO error updating pyproject.toml: {e}", 'error')
-              except re.error as e:
-                parent._print(f"Regex error updating version in pyproject.toml: {e}", 'error')
+      # Commit the version change
+      parent._print("💾 Committing version update...", 'info')
+      if not parent._run_command(['git', 'add', 'pyproject.toml'], "Staging pyproject.toml"):
+        parent._print("Failed to stage pyproject.toml", 'error')
+        return
 
-              if update_success:
-                # Commit the version change
-                parent._print("💾 Committing version update...", 'info')
-                commit_success = parent._run_command(['git', 'add', 'pyproject.toml'], "Staging pyproject.toml")
+      commit_msg = f"Bump version to {final_version}"
+      if not parent._run_command(['git', 'commit', '-m', commit_msg], f"Committing version bump"):
+        parent._print("Failed to commit version change", 'error')
+        return
 
-                if commit_success:
-                  commit_msg = f"Bump version to {final_version}"
-                  commit_success = parent._run_command(['git', 'commit', '-m', commit_msg], f"Committing version bump")
+      # Generate tag message with Claude
+      parent._print("🤖 Generating tag message with Claude...", 'info')
+      result = parent._run_command(
+        ['claude', '-p', 'Create a very short message to be used on a new tag basing it on the most recent commit (HEAD). Return a single string representing the tag description with no preamble, summary, or afterthoughts. Dont mention phases or claude AT ALL'],
+        capture_output=True
+      )
 
-                  if commit_success:
-                    # Use Claude to generate tag message
-                    parent._print("🤖 Generating tag message with Claude...", 'info')
-                    tag_message: Optional[str] = None
-                    result = parent._run_command(
-                      ['claude', '-p', 'Create a very short message to be used on a new tag basing it on the most recent commit (HEAD). Return a single string representing the tag description with no preamble, summary, or afterthoughts. Dont mention phases or claude AT ALL'],
-                      capture_output=True
-                    )
-                    if isinstance(result, subprocess.CompletedProcess) and result.returncode == 0:
-                      tag_message = result.stdout.strip()
-                      parent._print(f"Tag message: {tag_message}", 'info')
-                    else:
-                      parent._print("Failed to generate tag message with Claude", 'error')
+      tag_message = None
+      if isinstance(result, subprocess.CompletedProcess) and result.returncode == 0:
+        tag_message = result.stdout.strip()
+        parent._print(f"Tag message: {tag_message}", 'info')
+      else:
+        parent._print("Failed to generate tag message with Claude", 'error')
+        return
 
-                    if tag_message:
-                      # Create the tag on HEAD
-                      parent._print(f"Creating tag: {tag}", 'info')
+      # Create the tag
+      parent._print(f"Creating tag: {tag}", 'info')
+      if not self._create_git_tag(final_version, tag_message):
+        return
 
-                      # Create the tag
-                      result = parent._run_command(
-                        ['git', 'tag', '-a', tag, '-m', tag_message, 'HEAD'],
-                        capture_output=True
-                      )
-                      tag_created = isinstance(result, subprocess.CompletedProcess) and result.returncode == 0
-                      if tag_created:
-                        parent._print(f"Created tag {tag} on HEAD", 'success')
-                      else:
-                        error_msg = result.stderr if hasattr(result, 'stderr') and result.stderr else "Unknown error"
-                        parent._print(f"Failed to create tag: {error_msg}", 'error')
+      # Push commit and tag to remote
+      parent._print("🚀 Pushing commit and tag to remote...", 'info')
+      push_success = parent._run_command(['git', 'push'], "Pushing commit to remote")
+      if push_success:
+        push_success = parent._run_command(['git', 'push', 'origin', tag], f"Pushing tag {tag} to remote")
 
-                      if tag_created:
-                        # Push commit and tag to remote
-                        parent._print("🚀 Pushing commit and tag to remote...", 'info')
-                        push_success = parent._run_command(['git', 'push'], "Pushing commit to remote")
-                        if push_success:
-                          push_success = parent._run_command(['git', 'push', 'origin', tag], f"Pushing tag {tag} to remote")
-                        if push_success:
-                          # Success summary
-                          parent._print("🎉 Version updated, tagged, and pushed successfully!", 'success')
-                          parent._print(f"Version: {final_version}", 'success')
-                          parent._print(f"Tag: {tag}", 'success')
-                          parent._print("Pushed to remote repository", 'success')
-                        else:
-                          parent._print("Failed to push to remote. Commit and tag created locally.", 'error')
-                          parent._print(f"To push manually, run: {parent.colors['blue']}git push && git push --tags{parent.colors['nc']}", 'info')
-                  else:
-                    parent._print("Failed to commit version change", 'error')
-                else:
-                  parent._print("Failed to stage pyproject.toml", 'error')
-          else:
-            parent._print(f"Invalid version format: {final_version} (expected X.Y.Z)", 'error')
+      if push_success:
+        parent._print("🎉 Version updated, tagged, and pushed successfully!", 'success')
+        parent._print(f"Version: {final_version}", 'success')
+        parent._print(f"Tag: {tag}", 'success')
+        parent._print("Pushed to remote repository", 'success')
+      else:
+        parent._print("Failed to push to remote. Commit and tag created locally.", 'error')
+        parent._print(f"To push manually, run: {parent.colors['blue']}git push && git push --tags{parent.colors['nc']}", 'info')
       return
 
 

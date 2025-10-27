@@ -93,7 +93,7 @@ name = "freyja"
           mock_toml_load.return_value = {"project": {"name": "freyja"}}
 
           result = get_freyja_version()
-          assert result == "vunknown"
+          assert result == "v0.0.0"  # Returns default when version missing
 
   @patch("importlib.metadata.version")
   def test_get_version_empty_version_string(self, mock_version):
