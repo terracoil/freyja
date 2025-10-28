@@ -143,31 +143,31 @@ class ExecutionCoordinator:
 
         # Check if this is a hierarchical command that needs subgroup help
         if actual_args and self._should_show_subgroup_help(parser, actual_args):
-            return self._show_subgroup_help(parser, actual_args)
+            result = self._show_subgroup_help(parser, actual_args)
+        else:
+            try:
+                parsed = parser.parse_args(actual_args)
 
-        try:
-            parsed = parser.parse_args(actual_args)
+                if not hasattr(parsed, "_cli_function"):
+                    # No command specified, show help
+                    result = self._handle_no_command(parser, parsed)
+                else:
+                    # Execute command
+                    result = self._execute_command(parsed)
 
-            if not hasattr(parsed, "_cli_function"):
-                # No command specified, show help
-                result = self._handle_no_command(parser, parsed)
-            else:
-                # Execute command
-                result = self._execute_command(parsed)
+            except SystemExit:
+                # Let argparse handle its own exits (help, errors, etc.)
+                raise
 
-        except SystemExit:
-            # Let argparse handle its own exits (help, errors, etc.)
-            raise
-
-        except Exception as e:
-            # Handle execution errors - for argparse-like errors, raise SystemExit
-            if isinstance(e, ValueError | KeyError) and "parsed" not in locals():
-                # Parsing errors should raise SystemExit like argparse does
-                print(f"Error: {e}")
-                raise SystemExit(2) from e
-            else:
-                # Other execution errors
-                result = self._handle_execution_error(parsed if "parsed" in locals() else None, e)
+            except Exception as e:
+                # Handle execution errors - for argparse-like errors, raise SystemExit
+                if isinstance(e, ValueError | KeyError) and "parsed" not in locals():
+                    # Parsing errors should raise SystemExit like argparse does
+                    print(f"Error: {e}")
+                    raise SystemExit(2) from e
+                else:
+                    # Other execution errors
+                    result = self._handle_execution_error(parsed if "parsed" in locals() else None, e)
 
         return result
 
@@ -196,15 +196,17 @@ class ExecutionCoordinator:
         # Execute with conditional output capture
         if self.output_capture:
             with self.output_capture.capture_output():
-                return self._execute_internal(parsed, verbose)
+                result = self._execute_internal(parsed, verbose)
         else:
-            return self._execute_internal(parsed, verbose)
+            result = self._execute_internal(parsed, verbose)
+
+        return result
 
     def _execute_internal(self, parsed, verbose: bool) -> Any:
         """Internal method to execute command (used by both capture and non-capture paths)."""
         # Check if we have multiple classes (multiple executors)
         if len(self.executors) > 1 and "primary" not in self.executors:
-            return self._execute_multi_class_command(parsed, verbose)
+            result = self._execute_multi_class_command(parsed, verbose)
         else:
             # Single class execution
             executor = self.executors.get("primary")
@@ -214,7 +216,9 @@ class ExecutionCoordinator:
             # Update executor verbose setting
             executor.verbose = verbose
 
-            return executor.execute_command(parsed=parsed, target_mode=self.target_mode)
+            result = executor.execute_command(parsed=parsed, target_mode=self.target_mode)
+
+        return result
 
     def _inject_cli_instance(self, parsed) -> None:
         """Inject CLI instance into parsed arguments for system commands."""
@@ -246,47 +250,55 @@ class ExecutionCoordinator:
 
     def _find_source_class_for_function(self, function_name: str) -> type | None:
         """Find the source class for a given function name."""
+        result = None
         if self.command_tree:
-            return self.command_tree.find_source_class(function_name)
-        return None
+            result = self.command_tree.find_source_class(function_name)
+        return result
 
     def _handle_execution_error(self, parsed, error: Exception) -> int:
         """Handle command execution errors."""
         if isinstance(error, KeyboardInterrupt):
             print("\nOperation cancelled by user")
-            return 130  # Standard exit code for SIGINT
+            result = 130  # Standard exit code for SIGINT
+        else:
+            print(f"Error executing command: {error}")
 
-        print(f"Error executing command: {error}")
+            if parsed and hasattr(parsed, "_function_name"):
+                print(f"Function: {parsed._function_name}")
 
-        if parsed and hasattr(parsed, "_function_name"):
-            print(f"Function: {parsed._function_name}")
+            result = 1
 
-        return 1
+        return result
 
     def _should_show_subgroup_help(self, parser, args: list[str]) -> bool:
         """Check if args represent a hierarchical command that needs subgroup help."""
+        result = False
+
         # Don't interfere with explicit help requests
         if "--help" in args or "-h" in args:
-            return False
+            result = False
+        else:
+            # Check if we have a hierarchical path that exists but needs a final command
+            try:
+                parsed = parser.parse_args(args)
+                # Check if parsing succeeded but we landed on a subgroup that has subcommands
+                # but no final command was chosen (no _cli_function attribute)
+                if not hasattr(parsed, "_cli_function"):
+                    result = self._is_hierarchical_path(parser, args)
+                else:
+                    result = False  # Has _cli_function, so it's a complete command
+            except SystemExit as e:
+                # Help-related SystemExits (exit code 0) should check hierarchical path
+                if e.code == 0:
+                    result = self._is_hierarchical_path(parser, args)
+                # SystemExit(2) likely means unprocessed arguments - not a help request
+                elif e.code == 2:
+                    result = False
+                else:
+                    # Other SystemExit codes, let them propagate
+                    raise
 
-        # Check if we have a hierarchical path that exists but needs a final command
-        try:
-            parsed = parser.parse_args(args)
-            # Check if parsing succeeded but we landed on a subgroup that has subcommands
-            # but no final command was chosen (no _cli_function attribute)
-            if not hasattr(parsed, "_cli_function"):
-                return self._is_hierarchical_path(parser, args)
-            return False  # Has _cli_function, so it's a complete command
-        except SystemExit as e:
-            # Help-related SystemExits (exit code 0) should check hierarchical path
-            if e.code == 0:
-                return self._is_hierarchical_path(parser, args)
-            # SystemExit(2) likely means unprocessed arguments - not a help request
-            elif e.code == 2:
-                return False
-            else:
-                # Other SystemExit codes, let them propagate
-                raise
+        return result
 
     def _is_hierarchical_path(self, parser, args: list[str]) -> bool:
         """Check if args represent a valid hierarchical path to a subgroup."""

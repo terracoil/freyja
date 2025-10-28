@@ -183,7 +183,7 @@ class FreyjaDevTools:
           print("  python bin/devtools build lint --fix   # Auto-fix linting issues")
           print("  python bin/devtools test run           # Run tests with coverage")
           print("  python bin/devtools build autocommit   # Commit changes with Claude-generated message")
-          print("  python bin/devtools build tag-version  # Create git tag for HEAD commit")
+          print("  python bin/devtools build autotag      # Create git tag for HEAD commit")
           print("  python bin/devtools build publish      # Publish to PyPI")
         else:
           parent._print("Failed to install pre-commit hooks", 'error')
@@ -494,6 +494,21 @@ class FreyjaDevTools:
           return f"{major}.{minor}.{patch + 1}"
       return None
 
+    def _get_committed_version(self) -> Optional[str]:
+      """Get the version from the currently committed pyproject.toml."""
+      parent = self.parent
+      result = parent._run_command(
+        ['git', 'show', 'HEAD:pyproject.toml'],
+        capture_output=True
+      )
+
+      if isinstance(result, subprocess.CompletedProcess) and result.returncode == 0:
+        content = result.stdout
+        match = re.search(r'^version = "([^"]+)"', content, re.MULTILINE)
+        if match:
+          return match.group(1)
+      return None
+
     def _update_pyproject_version(self, version: str) -> bool:
       """Update version in pyproject.toml."""
       parent = self.parent
@@ -546,7 +561,7 @@ class FreyjaDevTools:
       parent._print(f"Failed to create tag: {error_msg}", 'error')
       return False
 
-    def tag_version(self, version: Optional[str] = None, auto_increment: bool = True) -> None:
+    def autotag(self, version: Optional[str] = None, auto_increment: bool = True) -> None:
       """Create git tag with Claude-generated message, auto-incrementing version if needed."""
       parent = self.parent
       parent._print(f"🏷️  Creating {parent.project_name} version tag...", 'info')
@@ -590,21 +605,28 @@ class FreyjaDevTools:
         parent._print(f"Tag '{tag}' already exists", 'error')
         return
 
-      # Update version in pyproject.toml
-      parent._print(f"📝 Updating version in pyproject.toml to {final_version}...", 'info')
-      if not self._update_pyproject_version(final_version):
-        return
+      # Check if the version in the committed state is already at the target
+      committed_version = self._get_committed_version()
+      version_already_committed = committed_version == final_version
 
-      # Commit the version change
-      parent._print("💾 Committing version update...", 'info')
-      if not parent._run_command(['git', 'add', 'pyproject.toml'], "Staging pyproject.toml"):
-        parent._print("Failed to stage pyproject.toml", 'error')
-        return
+      if version_already_committed:
+        parent._print(f"Version in HEAD is already {final_version}, skipping commit step", 'info')
+      else:
+        # Update version in pyproject.toml
+        parent._print(f"📝 Updating version in pyproject.toml to {final_version}...", 'info')
+        if not self._update_pyproject_version(final_version):
+          return
 
-      commit_msg = f"Bump version to {final_version}"
-      if not parent._run_command(['git', 'commit', '-m', commit_msg], f"Committing version bump"):
-        parent._print("Failed to commit version change", 'error')
-        return
+        # Commit the version change
+        parent._print("💾 Committing version update...", 'info')
+        if not parent._run_command(['git', 'add', 'pyproject.toml'], "Staging pyproject.toml"):
+          parent._print("Failed to stage pyproject.toml", 'error')
+          return
+
+        commit_msg = f"Bump version to {final_version}"
+        if not parent._run_command(['git', 'commit', '-m', commit_msg], f"Committing version bump"):
+          parent._print("Failed to commit version change", 'error')
+          return
 
       # Generate tag message with Claude
       parent._print("🤖 Generating tag message with Claude...", 'info')
