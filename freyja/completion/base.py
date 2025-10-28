@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from freyja.utils.modgud.modgud.guarded_expression import guarded_expression
+from freyja.utils.guards import guarded_expression
 
 if TYPE_CHECKING:
     from freyja import FreyjaCLI

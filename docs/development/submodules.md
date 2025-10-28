@@ -31,9 +31,9 @@
 
 ## 🔍 Overview
 
-> **📦 Standalone modgud**: While Freyja includes modgud as a git submodule, you can also use modgud independently in your own projects. Install from PyPI: `pip install modgud`. Visit [modgud on PyPI](https://pypi.org/project/modgud/) for more information.
+> **📦 Standalone modgud v2.1.1**: While Freyja includes modgud v2.1.1 as a git submodule, you can also use modgud independently in your own projects. Install from PyPI: `pip install modgud`. Visit [modgud on PyPI](https://pypi.org/project/modgud/) for more information.
 
-The `modgud` library is included as a git submodule at:
+The `modgud` library (v2.1.1) is included as a git submodule at:
 ```
 freyja/utils/modgud/
 ```
@@ -71,7 +71,7 @@ Check if submodules are properly initialized:
 git submodule status
 
 # Expected output:
-# <commit-hash> freyja/utils/modgud (v1.0.1)
+# <commit-hash> freyja/utils/modgud (v2.1.1)
 ```
 
 If the line starts with `-` (dash), the submodule is not initialized:
@@ -80,7 +80,7 @@ If the line starts with `-` (dash), the submodule is not initialized:
 -<commit-hash> freyja/utils/modgud
 
 # Initialized (good):
- <commit-hash> freyja/utils/modgud (v1.0.1)
+ <commit-hash> freyja/utils/modgud (v2.1.1)
 ```
 
 ## ⚙️ Common Operations
@@ -96,15 +96,15 @@ cd freyja/utils/modgud
 # Fetch latest changes
 git fetch
 
-# Checkout desired version (e.g., v1.0.1 tag)
-git checkout v1.0.1
+# Checkout desired version (e.g., v2.1.1 tag)
+git checkout v2.1.1
 
 # Return to Freyja root
 cd ../../..
 
 # Commit the submodule update
 git add freyja/utils/modgud
-git commit -m "Update modgud to v1.0.1"
+git commit -m "Update modgud to v2.1.1"
 ```
 
 ### Update All Submodules
@@ -310,8 +310,8 @@ git submodule status
 
 # Update modgud to specific version
 cd freyja/utils/modgud
-git checkout v1.0.1
+git checkout v2.1.1
 cd ../../..
 git add freyja/utils/modgud
-git commit -m "Update modgud to v1.0.1"
+git commit -m "Update modgud to v2.1.1"
 ```

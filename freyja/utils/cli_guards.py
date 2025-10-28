@@ -2,21 +2,22 @@
 
 These guards are specific to Freyja's CLI functionality and are registered
 as custom guards using modgud's guard registration system.
+
+Updated for modgud v2.1.1 - uses public extract_param utility.
 """
 
 import re
 from typing import Any, Callable, Union
 
 from freyja.utils.guards import register_guard
-from freyja.utils.modgud.modgud.guarded_expression.common_guards import CommonGuards
-from freyja.utils.modgud.modgud.guarded_expression.types import GuardFunction
+from freyja.utils.modgud.modgud import CommonGuards
 
 
 class CLIGuards:
   """Freyja-specific guard validators for CLI operations."""
 
   @staticmethod
-  def valid_command_name(param_name: str = 'command', position: int = 0) -> GuardFunction:
+  def valid_command_name(param_name: str = 'command', position: int = 0) -> Callable:
     """Guard ensuring parameter is a valid CLI command name.
 
     Valid command names:
@@ -31,7 +32,7 @@ class CLIGuards:
     """
 
     def check_command_name(*args: Any, **kwargs: Any) -> Union[bool, str]:
-      value = CommonGuards._extract_param(param_name, position, args, kwargs, default=None)
+      value = CommonGuards.extract_param(param_name, position, args, kwargs, default=None)
 
       if value is None:
         return f'{param_name} is required'
@@ -54,7 +55,7 @@ class CLIGuards:
     return check_command_name
 
   @staticmethod
-  def valid_theme_name(param_name: str = 'theme', position: int = 0) -> GuardFunction:
+  def valid_theme_name(param_name: str = 'theme', position: int = 0) -> Callable:
     """Guard ensuring parameter is a valid Freyja theme name.
 
     Valid themes: 'colorful', 'universal'
@@ -66,7 +67,7 @@ class CLIGuards:
     """
 
     def check_theme_name(*args: Any, **kwargs: Any) -> Union[bool, str]:
-      value = CommonGuards._extract_param(param_name, position, args, kwargs, default=None)
+      value = CommonGuards.extract_param(param_name, position, args, kwargs, default=None)
 
       if value is None:
         return f'{param_name} is required'
@@ -82,7 +83,7 @@ class CLIGuards:
     return check_theme_name
 
   @staticmethod
-  def valid_shell_type(param_name: str = 'shell', position: int = 0) -> GuardFunction:
+  def valid_shell_type(param_name: str = 'shell', position: int = 0) -> Callable:
     """Guard ensuring parameter is a valid shell type for completion.
 
     Valid shells: 'bash', 'zsh', 'fish'
@@ -94,7 +95,7 @@ class CLIGuards:
     """
 
     def check_shell_type(*args: Any, **kwargs: Any) -> Union[bool, str]:
-      value = CommonGuards._extract_param(param_name, position, args, kwargs, default=None)
+      value = CommonGuards.extract_param(param_name, position, args, kwargs, default=None)
 
       if value is None:
         return f'{param_name} is required'

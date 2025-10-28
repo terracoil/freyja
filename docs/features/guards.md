@@ -34,7 +34,7 @@
 
 Guards are decorators that validate function parameters before execution. They replace repetitive validation boilerplate with concise, reusable validation logic.
 
-> **📦 Powered by modgud**: Guard functionality is provided by [modgud](https://pypi.org/project/modgud/), included as a Git submodule in Freyja. For standalone usage outside of Freyja, install: `pip install modgud`
+> **📦 Powered by modgud v2.1.1**: Guard functionality is provided by [modgud](https://pypi.org/project/modgud/), included as a Git submodule in Freyja. Modgud v2.1.1 uses Clean Architecture with strict layer separation and exports public `extract_param` utility. For standalone usage outside of Freyja, install: `pip install modgud`
 
 ### Benefits
 
@@ -232,13 +232,13 @@ Guards integrate seamlessly with Freyja's single return point rule:
 You can register custom Freyja-specific guards:
 
 ```python
+from typing import Callable
 from freyja.utils.guards import register_guard
-from freyja.utils.modgud.modgud.guarded_expression.common_guards import CommonGuards
-from freyja.utils.modgud.modgud.guarded_expression.types import GuardFunction
+from freyja.utils.modgud.modgud import CommonGuards
 
-def my_custom_guard(param_name: str = 'value', position: int = 0) -> GuardFunction:
+def my_custom_guard(param_name: str = 'value', position: int = 0) -> Callable:
   def check(*args, **kwargs):
-    value = CommonGuards._extract_param(param_name, position, args, kwargs, default=None)
+    value = CommonGuards.extract_param(param_name, position, args, kwargs, default=None)
     if value is None:
       return f'{param_name} is required'
     if not some_validation(value):

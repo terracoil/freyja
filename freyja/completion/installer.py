@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from .base import CompletionHandler
-from freyja.utils.modgud.modgud.guarded_expression import guarded_expression
+from freyja.utils.guards import guarded_expression
 
 
 class CompletionInstaller:
