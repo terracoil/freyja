@@ -3,6 +3,7 @@
 import inspect
 from typing import Any
 
+from freyja.utils.guards import guarded, not_none, not_empty
 from freyja.utils.text_util import TextUtil
 
 from .argument_preprocessor import PositionalInfo
@@ -11,10 +12,12 @@ from .argument_preprocessor import PositionalInfo
 class PositionalHandler:
     """Handles positional parameter detection, validation, and conversion."""
 
+    @guarded(not_none("positional_info", 1), implicit_return=False)
     def __init__(self, positional_info: dict[str, PositionalInfo]):
         """Initialize positional handler with discovered positional parameters."""
         self.positional_info = positional_info
 
+    @guarded(not_none("args", 1), not_none("command_path", 2), implicit_return=False)
     def identify_positional_value(
         self, args: list[str], command_path: list[str]
     ) -> tuple[str, str] | None:
@@ -47,11 +50,18 @@ class PositionalHandler:
 
         return None
 
+    @guarded(not_empty("param_name", 1), not_none("param_value", 2), implicit_return=False)
     def convert_positional_to_flag(self, param_name: str, param_value: str) -> list[str]:
         """Convert positional parameter to flag format."""
         flag_name = TextUtil.kebab_case(param_name)
         return [f"--{flag_name}", param_value]
 
+    @guarded(
+      not_empty("param_name", 1),
+      not_none("param_value", 2),
+      not_none("param_type", 3),
+      implicit_return=False
+    )
     def validate_positional_value(
         self, param_name: str, param_value: str, param_type: type
     ) -> tuple[bool, str | None]:
@@ -87,6 +97,7 @@ class PositionalHandler:
         # For other types, just accept the string - argparse will handle conversion
         return True, None
 
+    @guarded(not_empty("command_name", 1), implicit_return=False)
     def generate_positional_usage(self, command_name: str) -> str:
         """Generate usage text showing positional parameter."""
         if command_name not in self.positional_info:

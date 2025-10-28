@@ -5,19 +5,19 @@
 
 ## Overview
 
-The inner classes pattern in freyja provides a way to organize related commands while maintaining a flat command structure. Commands from inner classes are accessed using double-dash notation (e.g., `outer-class--inner-method`).
+The inner classes pattern in Freyja provides a way to organize related commands using hierarchical command structure. Commands from inner classes are accessed using space-separated syntax (e.g., `group command`).
 
 ## Key Concepts
 
-### Flat Command Structure
-All commands remain flat - there are no hierarchical command groups. Inner class methods become commands with double-dash notation:
+### Hierarchical Command Structure
+Commands are organized hierarchically - inner classes become command groups. Inner class methods become subcommands:
 
 ```bash
-# All command tree are at the same level
-python freyja_cli.py --help                                    # Show all command tree
-python freyja_cli.py project-operations--create --name "app"  # Inner class method
-python freyja_cli.py task-management--add --title "Task"      # Another inner class method
-python freyja_cli.py generate-report --format json             # Main class method
+# Hierarchical command structure
+python freyja_cli.py --help                                    # Show all commands
+python freyja_cli.py project-operations create --name "app"   # Inner class method
+python freyja_cli.py task-management add --title "Task"       # Another inner class method
+python freyja_cli.py generate-report --format json            # Main class method
 ```
 
 ### Global and Sub-Global Arguments
@@ -217,35 +217,35 @@ if __name__ == '__main__':
 
 ### Basic Usage
 ```bash
-# Show all available command tree (flat structure)
+# Show all available commands (hierarchical structure)
 python project_mgr.py --help
 
 # Main class method
 python project_mgr.py status
 
-# Inner class methods with double-dash notation
-python project_mgr.py project-operations--create --name "web-app"
-python project_mgr.py task-management--add --title "Setup CI/CD" --project "web-app"
-python project_mgr.py report-generation--summary --format json --detailed
+# Inner class methods with hierarchical structure
+python project_mgr.py project-operations create --name "web-app"
+python project_mgr.py task-management add --title "Setup CI/CD" --project "web-app"
+python project_mgr.py report-generation summary --format json --detailed
 ```
 
 ### With Global Arguments
 ```bash
-# Global arguments apply to all command tree
+# Global arguments apply to all commands
 python project_mgr.py --config-file prod.json --debug status
-python project_mgr.py --debug project-operations--list-projects
+python project_mgr.py --debug project-operations list-projects
 ```
 
 ### With Sub-Global Arguments
 ```bash
 # Sub-global arguments for specific inner class
-python project_mgr.py project-operations--create \
+python project_mgr.py project-operations create \
     --workspace /prod/projects \
     --auto-save \
     --name "api-service" \
     --template "microservice"
 
-python project_mgr.py task-management--add \
+python project_mgr.py task-management add \
     --default-priority high \
     --no-notify \
     --title "Security audit" \
@@ -258,7 +258,7 @@ python project_mgr.py task-management--add \
 python project_mgr.py \
     --config-file production.json \
     --debug \
-    project-operations--create \
+    project-operations create \
     --workspace /var/projects \
     --no-auto-save \
     --name "data-pipeline" \
@@ -301,7 +301,7 @@ def project__create(name: str) -> None:
 # Usage: python freyja_cli.py project create --name "app"
 ```
 
-Class-based CLIs use inner classes with double-dash notation:
+Class-based CLIs use inner classes with hierarchical structure:
 ```python
 # Inner class method
 class CLI:
@@ -309,14 +309,14 @@ class CLI:
         def create(self, name: str) -> None:
             pass
 
-# Usage: python freyja_cli.py project--create --name "app"
+# Usage: python freyja_cli.py project create --name "app"
 ```
 
 ## Limitations
 
 - Only one level of inner classes is supported
 - Inner classes cannot have their own inner classes
-- All commands remain flat (no true command groups)
+- Commands are organized hierarchically
 - Constructor parameters must have defaults
 
 ## See Also

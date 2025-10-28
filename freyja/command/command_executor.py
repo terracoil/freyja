@@ -9,6 +9,7 @@ import sys
 import traceback
 from typing import Any
 
+from ..utils.guards import guarded, not_none
 from ..utils.output_capture import OutputCapture, OutputFormatter
 from ..utils.spinner import CommandContext, ExecutionSpinner
 
@@ -38,178 +39,135 @@ class CommandExecutor:
         self.output_capture = OutputCapture() if enable_output_capture else None
         self.output_formatter = OutputFormatter(color_formatter) if enable_output_capture else None
 
+    @guarded(not_none("parsed"))
     def _build_command_context(self, parsed) -> CommandContext:
-        """Build command context from parsed arguments for spinner display.
-
-        :param parsed: Parsed arguments object
-        :return: CommandContext for spinner display
-        """
+        """Build command context from parsed arguments for spinner display."""
         context = CommandContext()
 
-        # Extract command information
+        # Extract command path information
         if hasattr(parsed, "_command_path"):
-            # Hierarchical command
-            command_path = parsed._command_path
-            if len(command_path) >= 2:
-                context.namespace = command_path[0]
-                context.command = command_path[1]
-                if len(command_path) > 2:
-                    context.subcommand = command_path[2]
-            elif len(command_path) == 1:
-                context.command = command_path[0]
+          command_path = parsed._command_path
+          if len(command_path) >= 2:
+            context.namespace, context.command = command_path[0], command_path[1]
+            context.subcommand = command_path[2] if len(command_path) > 2 else None
+          elif len(command_path) == 1:
+            context.command = command_path[0]
         elif hasattr(parsed, "_function_name"):
-            # Direct method command
-            context.command = parsed._function_name
+          context.command = parsed._function_name
 
-        # Extract arguments by type
-        global_args = {}
-        group_args = {}
-        command_args = {}
-        positional_args: list[str] = []
-
+        # Categorize arguments by prefix
+        global_args, group_args, command_args = {}, {}, {}
         for attr_name in dir(parsed):
-            if attr_name.startswith("_"):
-                continue
+          if attr_name.startswith("_"):
+            continue
+          value = getattr(parsed, attr_name)
+          if value is None:
+            continue
 
-            value = getattr(parsed, attr_name)
-            if value is None:
-                continue
-
-            # Categorize arguments
-            if attr_name.startswith("_global_"):
-                param_name = attr_name[8:]  # Remove '_global_' prefix
-                global_args[param_name] = value
-            elif attr_name.startswith("_subglobal_"):
-                param_name = attr_name.split("_", 2)[-1]  # Get parameter name after prefix
-                group_args[param_name] = value
-            else:
-                # Check if this might be a positional argument or regular command argument
-                # For now, treat non-prefixed as command arguments
-                command_args[attr_name] = value
+          if attr_name.startswith("_global_"):
+            global_args[attr_name[8:]] = value
+          elif attr_name.startswith("_subglobal_"):
+            group_args[attr_name.split("_", 2)[-1]] = value
+          else:
+            command_args[attr_name] = value
 
         context.global_args = global_args
         context.group_args = group_args
         context.command_args = command_args
-        context.positional_args = positional_args  # TODO: Extract positional args properly
+        context.positional_args = []
 
-        return context
+        context
 
+    @guarded(
+      not_none("parsed"),
+      lambda self, parsed: hasattr(parsed, "_cli_function") or "Missing _cli_function in parsed args",
+      lambda self, parsed: hasattr(parsed, "_function_name") or "Missing _function_name in parsed args",
+      lambda self, parsed: hasattr(parsed, "_command_path") or "Missing _command_path in parsed args",
+      implicit_return=False
+    )
     def _execute_inner_class_command(self, parsed) -> Any:
-        """Execute command using inner class pattern.
-
-        Creates parent class instance, inner class instance, then invokes method.
-        """
-        method = parsed._cli_function
-        original_name = parsed._function_name
-        command_path = parsed._command_path
-
-        # Extract inner class information from the method object
-        # The method qualname can be:
-        # - "OuterClass.InnerClass.method_name" (normal case, 3 parts)
-        # - "InnerClass.method_name" (System class case, 2 parts)
-        qualname_parts = method.__qualname__.split(".")
+        """Execute command using inner class pattern (parent + inner class + method)."""
+        qualname_parts = parsed._cli_function.__qualname__.split(".")
         if len(qualname_parts) < 2:
-            raise RuntimeError(
-                f"Invalid method qualname for inner class method: {method.__qualname__}"
-            )
+          raise RuntimeError(
+            f"Invalid method qualname for inner class method: {parsed._cli_function.__qualname__}"
+          )
 
-        # For both cases, the inner class name is the second-to-last part
-        inner_class_name = qualname_parts[-2]  # Get the inner class name
-
-        # Find the actual inner class object from the parent target class
+        inner_class_name = qualname_parts[-2]
         if not hasattr(self.target_class, inner_class_name):
-            raise RuntimeError(
-                f"Inner class {inner_class_name} not found in {self.target_class.__name__}"
-            )
+          raise RuntimeError(
+            f"Inner class {inner_class_name} not found in {self.target_class.__name__}"
+          )
 
         inner_class_obj = getattr(self.target_class, inner_class_name)
-
-        # 1. Create parent class instance with global arguments
         parent = self._create_parent(parsed)
+        inner_instance = self._create_inner_instance(inner_class_obj, parsed._command_path, parsed, parent)
 
-        # 2. Create inner class instance with sub-global arguments
-        inner_instance = self._create_inner_instance(inner_class_obj, command_path, parsed, parent)
+        return self._execute_method(inner_instance, parsed._function_name, parsed)
 
-        # 3. Execute method with command arguments
-        return self._execute_method(inner_instance, original_name, parsed)
-
+    @guarded(not_none("parsed"), implicit_return=False)
     def _execute_direct_method_command(self, parsed) -> Any:
-        """Execute command using direct method from class.
-
-        Creates class instance with global arguments, then invokes method.
-        """
-        method = parsed._cli_function
-
-        # Create class instance with global arguments
+        """Execute command using direct method from class."""
         class_instance = self._create_parent(parsed)
+        return self._execute_method(class_instance, parsed._cli_function.__name__, parsed)
 
-        # Execute method with arguments
-        return self._execute_method(class_instance, method.__name__, parsed)
-
+    @guarded(not_none("parsed"), implicit_return=False)
     def _create_parent(self, parsed) -> Any:
         """Create parent class instance with global arguments."""
-        parent_kwargs = {}
         parent_sig = inspect.signature(self.target_class.__init__)
-
-        for param_name, param in parent_sig.parameters.items():
-            if param_name == "self":
-                continue
-            if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
-                continue
-
-            # Look for global argument
-            global_attr = f"_global_{param_name}"
-            if hasattr(parsed, global_attr):
-                value = getattr(parsed, global_attr)
-                parent_kwargs[param_name] = value
+        parent_kwargs = {
+          param_name: getattr(parsed, f"_global_{param_name}")
+          for param_name, param in parent_sig.parameters.items()
+          if param_name != "self"
+          and param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD)
+          and hasattr(parsed, f"_global_{param_name}")
+        }
 
         try:
-            return self.target_class(**parent_kwargs)
+          return self.target_class(**parent_kwargs)
         except TypeError as e:
-            raise RuntimeError(
-                f"Cannot instantiate {self.target_class.__name__} with global args: {e}"
-            ) from e
+          raise RuntimeError(
+            f"Cannot instantiate {self.target_class.__name__} with global args: {e}"
+          ) from e
 
+    @guarded(
+      not_none("inner_class"),
+      not_none("command_name"),
+      not_none("parsed"),
+      not_none("parent"),
+      implicit_return=False
+    )
     def _create_inner_instance(
-        self, inner_class: type, command_name: str, parsed, parent: Any
+      self, inner_class: type, command_name: str, parsed, parent: Any
     ) -> Any:
         """Create inner class instance with sub-global arguments."""
-        inner_kwargs = {}
         inner_sig = inspect.signature(inner_class.__init__)
-
-        for param_name, param in inner_sig.parameters.items():
-            if param_name == "self":
-                continue
-            if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
-                continue
-
-            # Look for sub-global argument
-            subglobal_attr = f"_subglobal_{command_name}_{param_name}"
-            if hasattr(parsed, subglobal_attr):
-                value = getattr(parsed, subglobal_attr)
-                inner_kwargs[param_name] = value
+        inner_kwargs = {
+          param_name: getattr(parsed, f"_subglobal_{command_name}_{param_name}")
+          for param_name, param in inner_sig.parameters.items()
+          if param_name != "self"
+          and param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD)
+          and hasattr(parsed, f"_subglobal_{command_name}_{param_name}")
+        }
 
         try:
-            # System commands need CLI instance, not parent class instance
-            if self._is_system_inner_class(inner_class):
-                # For System inner classes, pass CLI instance if available
-                cli_instance = getattr(parsed, "_cli_instance", None)
-                if "cli_instance" in inner_sig.parameters:
-                    inner_kwargs["cli_instance"] = cli_instance
-                return inner_class(**inner_kwargs)
-            else:
-                # Regular inner class - pass parent class instance as first argument
-                return inner_class(parent, **inner_kwargs)
+          if self._is_system_inner_class(inner_class):
+            cli_instance = getattr(parsed, "_cli_instance", None)
+            if "cli_instance" in inner_sig.parameters:
+              inner_kwargs["cli_instance"] = cli_instance
+            return inner_class(**inner_kwargs)
+          else:
+            return inner_class(parent, **inner_kwargs)
         except TypeError as e:
-            raise RuntimeError(
-                f"Cannot instantiate {inner_class.__name__} with sub-global args: {e}"
-            ) from e
+          raise RuntimeError(
+            f"Cannot instantiate {inner_class.__name__} with sub-global args: {e}"
+          ) from e
 
+    @guarded(not_none("inner_class"))
     def _is_system_inner_class(self, inner_class: type) -> bool:
-        """Check if this is a System inner class."""
-        # Check if the module path indicates this is a system command
+        """Check if this is a System inner class (from freyja.cli.system)."""
         module_name = getattr(inner_class, "__module__", "")
-        return "freyja.cli.system" in module_name
+        "freyja.cli.system" in module_name
 
     def _execute_method(self, instance: Any, method_name: str, parsed) -> Any:
         """Execute method on instance with parsed arguments."""
@@ -228,24 +186,17 @@ class CommandExecutor:
         method_kwargs = self._extract_method_arguments(bound_method, parsed)
         return bound_method(**method_kwargs)
 
+    @guarded(not_none("method_or_function"), not_none("parsed"))
     def _extract_method_arguments(self, method_or_function: Any, parsed) -> dict[str, Any]:
         """Extract method/function arguments from parsed FreyjaCLI arguments."""
         sig = inspect.signature(method_or_function)
-        kwargs = {}
-
-        for param_name, param in sig.parameters.items():
-            if param_name == "self":
-                continue
-            if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
-                continue
-
-            # Look for method argument (no prefix, just the parameter name)
-            attr_name = param_name.replace("-", "_")
-            if hasattr(parsed, attr_name):
-                value = getattr(parsed, attr_name)
-                kwargs[param_name] = value
-
-        return kwargs
+        {
+          param_name: getattr(parsed, param_name.replace("-", "_"))
+          for param_name, param in sig.parameters.items()
+          if param_name != "self"
+          and param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD)
+          and hasattr(parsed, param_name.replace("-", "_"))
+        }
 
     def execute_command(self, parsed, target_mode) -> Any:
         """Main command execution dispatcher with spinner and output capture."""
@@ -301,12 +252,11 @@ class CommandExecutor:
 
         return result
 
+    @guarded(not_none("parsed"), not_none("error"))
     def _handle_execution_error(self, parsed, error: Exception) -> int:
         """Handle execution errors with appropriate logging and return codes."""
         function_name = getattr(parsed, "_function_name", "unknown")
         print(f"Error executing {function_name}: {error}", file=sys.stderr)
-
         if getattr(parsed, "verbose", False):
-            traceback.print_exc()
-
-        return 1
+          traceback.print_exc()
+        1

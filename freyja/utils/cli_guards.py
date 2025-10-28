@@ -5,10 +5,11 @@ as custom guards using modgud's guard registration system.
 """
 
 import re
-from typing import Any, Union
+from typing import Any, Callable, Union
 
-from freyja.utils.guards import Guards, register_guard
-from freyja.utils.modgud.modgud.shared.types import GuardFunction
+from freyja.utils.guards import register_guard
+from freyja.utils.modgud.modgud.guarded_expression.common_guards import CommonGuards
+from freyja.utils.modgud.modgud.guarded_expression.types import GuardFunction
 
 
 class CLIGuards:
@@ -30,7 +31,7 @@ class CLIGuards:
     """
 
     def check_command_name(*args: Any, **kwargs: Any) -> Union[bool, str]:
-      value = Guards._extract_param(param_name, position, args, kwargs, default=None)
+      value = CommonGuards._extract_param(param_name, position, args, kwargs, default=None)
 
       if value is None:
         return f'{param_name} is required'
@@ -65,7 +66,7 @@ class CLIGuards:
     """
 
     def check_theme_name(*args: Any, **kwargs: Any) -> Union[bool, str]:
-      value = Guards._extract_param(param_name, position, args, kwargs, default=None)
+      value = CommonGuards._extract_param(param_name, position, args, kwargs, default=None)
 
       if value is None:
         return f'{param_name} is required'
@@ -93,7 +94,7 @@ class CLIGuards:
     """
 
     def check_shell_type(*args: Any, **kwargs: Any) -> Union[bool, str]:
-      value = Guards._extract_param(param_name, position, args, kwargs, default=None)
+      value = CommonGuards._extract_param(param_name, position, args, kwargs, default=None)
 
       if value is None:
         return f'{param_name} is required'

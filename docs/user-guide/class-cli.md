@@ -200,10 +200,10 @@ project-mgr --debug --workspace /projects create-project "web-app" --template "r
 project-mgr create-project "web-app" --workspace /projects --template "react" --debug --private
 
 # Hierarchical with sub-global + flexible ordering
-project-mgr --debug database--migrate-schema "001_init.sql" --connection-timeout 60 --dry-run --backup-first
+project-mgr --debug database migrate-schema "001_init.sql" --connection-timeout 60 --dry-run --backup-first
 
 # All mixed up - still works perfectly
-project-mgr database--migrate-schema --backup-first --debug "001_init.sql" --connection-timeout 60 --dry-run
+project-mgr database migrate-schema --backup-first --debug "001_init.sql" --connection-timeout 60 --dry-run
 ```
 
 ### 📍 Positional Parameters in Class Methods

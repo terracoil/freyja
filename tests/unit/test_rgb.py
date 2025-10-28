@@ -29,24 +29,24 @@ class TestRGBConstructor:
 
     def test_invalid_values_below_range(self):
         """Test validation for values below 0.0."""
-        with pytest.raises(ValueError, match="Red component must be between 0.0 and 1.0"):
+        with pytest.raises(ValueError, match="r must be between 0.0 and 1.0"):
             RGB(-0.1, 0.5, 0.5)
 
-        with pytest.raises(ValueError, match="Green component must be between 0.0 and 1.0"):
+        with pytest.raises(ValueError, match="g must be between 0.0 and 1.0"):
             RGB(0.5, -0.1, 0.5)
 
-        with pytest.raises(ValueError, match="Blue component must be between 0.0 and 1.0"):
+        with pytest.raises(ValueError, match="b must be between 0.0 and 1.0"):
             RGB(0.5, 0.5, -0.1)
 
     def test_invalid_values_above_range(self):
         """Test validation for values above 1.0."""
-        with pytest.raises(ValueError, match="Red component must be between 0.0 and 1.0"):
+        with pytest.raises(ValueError, match="r must be between 0.0 and 1.0"):
             RGB(1.1, 0.5, 0.5)
 
-        with pytest.raises(ValueError, match="Green component must be between 0.0 and 1.0"):
+        with pytest.raises(ValueError, match="g must be between 0.0 and 1.0"):
             RGB(0.5, 1.1, 0.5)
 
-        with pytest.raises(ValueError, match="Blue component must be between 0.0 and 1.0"):
+        with pytest.raises(ValueError, match="b must be between 0.0 and 1.0"):
             RGB(0.5, 0.5, 1.1)
 
     def test_immutability(self):
@@ -86,13 +86,13 @@ class TestRGBFactoryMethods:
 
     def test_from_ints_invalid(self):
         """Test from_ints with invalid values."""
-        with pytest.raises(ValueError, match="Red component must be between 0 and 255"):
+        with pytest.raises(ValueError, match="r must be between 0 and 255"):
             RGB.from_ints(-1, 128, 128)
 
-        with pytest.raises(ValueError, match="Green component must be between 0 and 255"):
+        with pytest.raises(ValueError, match="g must be between 0 and 255"):
             RGB.from_ints(128, 256, 128)
 
-        with pytest.raises(ValueError, match="Blue component must be between 0 and 255"):
+        with pytest.raises(ValueError, match="b must be between 0 and 255"):
             RGB.from_ints(128, 128, -5)
 
     def test_from_rgb_valid(self):
@@ -133,10 +133,10 @@ class TestRGBFactoryMethods:
 
     def test_from_rgb_invalid(self):
         """Test from_rgb with invalid values."""
-        with pytest.raises(ValueError, match="RGB value must be between 0 and 0xFFFFFF"):
+        with pytest.raises(ValueError, match="rgb must be between 0 and 16777215"):
             RGB.from_rgb(-1)
 
-        with pytest.raises(ValueError, match="RGB value must be between 0 and 0xFFFFFF"):
+        with pytest.raises(ValueError, match="rgb must be between 0 and 16777215"):
             RGB.from_rgb(0x1000000)  # Too large
 
     def test_from_rgb_to_hex_roundtrip(self):
@@ -243,20 +243,20 @@ class TestRGBAdjust:
         """Test brightness adjustment with invalid values."""
         rgb = RGB.from_rgb(0xFF5733)
 
-        with pytest.raises(ValueError, match="Brightness must be between -5.0 and 5.0"):
+        with pytest.raises(ValueError, match="brightness must be between -5.0 and 5.0"):
             rgb.adjust(brightness=6.0)
 
-        with pytest.raises(ValueError, match="Brightness must be between -5.0 and 5.0"):
+        with pytest.raises(ValueError, match="brightness must be between -5.0 and 5.0"):
             rgb.adjust(brightness=-6.0)
 
     def test_adjust_saturation_invalid(self):
         """Test saturation adjustment with invalid values."""
         rgb = RGB.from_rgb(0xFF5733)
 
-        with pytest.raises(ValueError, match="Saturation must be between -5.0 and 5.0"):
+        with pytest.raises(ValueError, match="saturation must be between -5.0 and 5.0"):
             rgb.adjust(saturation=6.0)
 
-        with pytest.raises(ValueError, match="Saturation must be between -5.0 and 5.0"):
+        with pytest.raises(ValueError, match="saturation must be between -5.0 and 5.0"):
             rgb.adjust(saturation=-6.0)
 
     def test_adjust_returns_new_instance(self):

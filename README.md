@@ -128,14 +128,14 @@ if __name__ == '__main__':
 
 **Usage:**
 ```bash
-python calculator.py --precision 4 add --a 3.14159 --b 2.71828 --store-result
+python calculator.py --precision 4 add 3.14159 --b 2.71828 --store-result
 # Output: 3.14159 + 2.71828 = 5.8599
 #         Result stored in memory: 5.8599
 ```
 
 ### Inner Classes Pattern
 
-Organize complex applications with flat double-dash commands (e.g., `inner-class--method`):
+Organize complex applications with hierarchical command structure (e.g., `group subgroup command`):
 
 ```python
 # project_manager.py
@@ -198,16 +198,16 @@ if __name__ == '__main__':
 
 **Usage:**
 ```bash
-# Global + Sub-global + Command arguments (flat double-dash notation)
+# Global + Sub-global + Command arguments (hierarchical structure)
 python project_manager.py --config-file prod.json --debug \
-  database--migrate --connection-string postgres://prod --version 2.1.0 --dry-run
+  database migrate --timeout 60 --version 2.1.0 --dry-run
 
 # Create new project with custom workspace
-python project_manager.py projects--create --workspace /prod/projects --auto-save \
+python project_manager.py projects create --workspace /prod/projects --auto-save \
   --name "web-app" --template "react" --description "Production web application"
 
 # Deploy with force flag
-python project_manager.py projects--deploy --project-name web-app --environment production --force
+python project_manager.py projects deploy --project-name web-app --environment production --force
 
 # Beautiful help shows all commands organized by group
 python project_manager.py --help
@@ -215,14 +215,15 @@ python project_manager.py --help
 
 ## ✨ Key Features
 
-🚀 **Zero Configuration** - Works out of the box with just type annotations  
-⚡ **Lightning Fast** - No runtime dependencies, minimal overhead  
-🎯 **Type Safe** - Automatic validation from your type hints  
-📚 **Auto Documentation** - Help text generated from your docstrings  
-🎨 **Beautiful Output** - Professional themes and formatting  
-🔧 **Flexible Architecture** - Direct methods or inner class patterns  
-📦 **No Dependencies** - Uses only Python standard library  
-🌈 **Shell Completion** - Bash, Zsh, Fish, and PowerShell support  
+🚀 **Zero Configuration** - Works out of the box with just type annotations
+⚡ **Lightning Fast** - No runtime dependencies, minimal overhead
+🎯 **Type Safe** - Automatic validation from your type hints
+🛡️ **Guard Clauses** - Built-in parameter validation with declarative guards
+📚 **Auto Documentation** - Help text generated from your docstrings
+🎨 **Beautiful Output** - Professional themes and formatting
+🔧 **Flexible Architecture** - Direct methods or inner class patterns
+📦 **No Dependencies** - Uses only Python standard library
+🌈 **Shell Completion** - Bash, Zsh, Fish, and PowerShell support
 ✅ **Production Ready** - Battle-tested in enterprise applications  
 
 ## 📚 Documentation
@@ -231,8 +232,9 @@ python project_manager.py --help
 
 ### Quick Links
 * **[🚀 Getting Started](docs/getting-started/README.md)** - Installation and first steps
-* **[👤 User Guide](docs/user-guide/README.md)** - Comprehensive guides for class-based CLI patterns  
+* **[👤 User Guide](docs/user-guide/README.md)** - Comprehensive guides for class-based CLI patterns
 * **[⚙️ Features](docs/features/README.md)** - Type annotations, themes, completion, and more
+* **[🛡️ Guard Clauses](docs/features/guards.md)** - Parameter validation with declarative guards
 * **[📋 Examples & Best Practices](docs/guides/README.md)** - Real-world examples and patterns
 * **[❓ FAQ](docs/faq.md)** - Frequently asked questions
 * **[🔧 API Reference](docs/reference/README.md)** - Complete API documentation

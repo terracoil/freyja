@@ -6,25 +6,46 @@ namespace. This prevents conflicts if the user has both freyja and modgud instal
 The vendored modgud is located at freyja/utils/modgud and is a git submodule.
 """
 
-# Import from vendored modgud submodule (note the extra 'modgud' in the path)
+# Import from vendored modgud submodule
 from freyja.utils.modgud.modgud import (
-  CommonGuards,
-  GuardClauseError,
-  get_guard,
+  # Main decorator
   guarded_expression,
+  # Common guard validators (can import directly or via CommonGuards)
+  not_empty,
+  not_none,
+  positive,
+  in_range,
+  type_check,
+  matches_pattern,
+  valid_file_path,
+  valid_url,
+  valid_enum,
+  # Guard registry functions
+  register_guard,
+  get_guard,
   has_custom_guard,
   list_custom_guards,
   list_guard_namespaces,
-  register_guard,
   unregister_guard,
+  get_registry,
+  # Errors
+  GuardClauseError,
 )
 
-# Re-export with Freyja-specific aliases
+# Re-export with Freyja-specific naming
 __all__ = [
   # Main decorator
   'guarded',
-  # Common guards
-  'Guards',
+  # Direct guard imports (preferred style per modgud v1.0+)
+  'not_empty',
+  'not_none',
+  'positive',
+  'in_range',
+  'type_check',
+  'matches_pattern',
+  'valid_file_path',
+  'valid_url',
+  'valid_enum',
   # Custom guard registration
   'register_guard',
   'get_guard',
@@ -32,10 +53,10 @@ __all__ = [
   'list_custom_guards',
   'list_guard_namespaces',
   'unregister_guard',
+  'get_registry',
   # Errors
   'GuardClauseError',
 ]
 
-# Aliases for Freyja usage
-guarded = guarded_expression  # Shorter, more Freyja-like name
-Guards = CommonGuards  # Shorter name for guard factories
+# Alias for Freyja usage - shorter, more concise name
+guarded = guarded_expression

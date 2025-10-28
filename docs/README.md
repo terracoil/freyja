@@ -3,37 +3,51 @@
 # 📚 Freyja Documentation Hub
 **No-dependency, zero-configuration CLI tool to build command-line interfaces purely from your code.**
 
-[← Back to Main README](../README.md) | [⚙️ Development Guide](../CLAUDE.md)
+## 📍 Navigation
+**You are here**: Documentation Hub (Root)
+
+**Parents**:
+- [🏠 Main README](../README.md) - Project overview and quick start
+- [🔧 Development Guide (CLAUDE.md)](../CLAUDE.md) - Contributing and development setup
+
+**Children**:
+
+### 📚 Core Documentation
+* **[🏁 Getting Started](getting-started/README.md)** - Installation, quick start, and first steps with Freyja
+* **[👤 User Guide](user-guide/README.md)** - Comprehensive guides for class-based CLI patterns
+* **[✨ Features](features/README.md)** - Type annotations, shell completion, error handling, and advanced features
+* **[🎓 Advanced Topics](advanced/README.md)** - Complex patterns, performance optimization, and advanced usage
+* **[📖 API Reference](reference/README.md)** - Complete API documentation and technical specifications
+
+### 🔬 Understanding Freyja
+* **[⚙️ How It Works](how-it-works.md)** - Deep dive into Freyja's internal architecture and transformation pipeline
+* **[📘 API Documentation](api-docs.md)** - Complete FreyjaCLI API reference and architecture components
+* **[🏗️ Architecture](architecture/README.md)** - Visual architecture diagrams and design documentation
+
+### 🛠️ Resources & Support
+* **[💡 Guides](guides/README.md)** - Best practices, real-world examples, and troubleshooting
+* **[❓ FAQ](faq.md)** - Frequently asked questions and common solutions
+* **[🤝 Development](development/README.md)** - Contributing guidelines and development setup
+
+---
 
 Welcome to the complete documentation for Freyja! Transform your Python classes into powerful command-line applications in minutes.
 
 **⚠️ Important:** All constructor parameters MUST have default values for CLI generation to work.
 
-## Table of Contents
-* [🚀 Why Freyja?](#-why-freyja)
-* [⚡ Quick Start](#-quick-start)
+## 📑 Table of Contents
+* [🌟 Why Freyja?](#-why-freyja)
+* [🏁 Quick Start](#-quick-start)
 * [🏗️ Class-based CLI](#️-class-based-cli)
   * [Direct Methods Pattern](#direct-methods-pattern)
   * [Inner Classes Pattern](#inner-classes-pattern)
-* [✨ Key Features](#-key-features)
+* [🔑 Key Features](#-key-features)
 * [🎯 Getting Started](#-getting-started)
 * [📖 Next Steps](#-next-steps)
 
-# Children
+---
 
-### 📚 Core Documentation
-* **[🚀 Getting Started](getting-started/README.md)** - Installation, quick start, and first steps with Freyja
-* **[👤 User Guide](user-guide/README.md)** - Comprehensive guides for class-based CLI patterns
-* **[⚙️ Features](features/README.md)** - Type annotations, shell completion, error handling, and advanced features
-* **[🔧 Advanced Topics](advanced/README.md)** - Complex patterns, performance optimization, and advanced usage
-* **[📖 API Reference](reference/README.md)** - Complete API documentation and technical specifications
-
-### 🛠️ Resources & Support
-* **[📋 Guides](guides/README.md)** - Best practices, real-world examples, and troubleshooting
-* **[❓ FAQ](faq.md)** - Frequently asked questions and common solutions
-* **[🤝 Development](development/README.md)** - Contributing guidelines and development setup
-
-## 🚀 Why Freyja?
+## 🌟 Why Freyja?
 
 **Build professional CLIs in under 5 minutes!** No configuration files, no learning curve, no dependencies. Just add type annotations to your existing Python code and Freyja automatically generates a complete command-line interface.
 
@@ -74,7 +88,7 @@ if __name__ == '__main__':
     cli.run()  # That's it! ✨
 ```
 
-## ⚡ Quick Start
+## 🏁 Quick Start
 
 **1. Install Freyja**
 ```bash
@@ -180,7 +194,7 @@ if __name__ == '__main__':
 
 ### Inner Classes Pattern
 
-Organize complex applications with flat double-dash commands (e.g., `inner-class--method`):
+Organize complex applications with hierarchical command structure (e.g., `group subgroup command`):
 
 ```python
 # project_manager.py
@@ -258,27 +272,27 @@ if __name__ == '__main__':
     cli.run()
 ```
 
-**Usage with powerful flat commands:**
+**Usage with hierarchical commands:**
 ```bash
-# Traditional Global + Sub-global + Command arguments
+# Global + Sub-global + Command arguments
 python project_manager.py --config-file prod.json --environment production \
-  database--migrate --connection-timeout 60 --pool-size 20 \
+  database migrate --connection-timeout 60 --pool-size 20 \
   --target-version 2.1.0 --dry-run
 
 # 🔥 NEW: Positional parameters (target_version, environment, etc. become positional)
-python project_manager.py database--migrate latest --connection-timeout 60 --dry-run
-python project_manager.py deploy--deploy staging --version 2.1.0 --force
+python project_manager.py database migrate latest --connection-timeout 60 --dry-run
+python project_manager.py deploy deploy staging --version 2.1.0 --force
 
 # 🔥 NEW: Flexible argument ordering - mix global, sub-global, and command args!
-python project_manager.py database--migrate --dry-run --config-file prod.json latest --connection-timeout 60 --environment production
+python project_manager.py database migrate --dry-run --config-file prod.json latest --connection-timeout 60 --environment production
 
 # Complex operations with natural ordering
-python project_manager.py --environment production deploy--build production --clean --build-timeout 600 --parallel-jobs 8 --skip-tests
-python project_manager.py deploy--rollback --environment staging --steps 2 --confirm
+python project_manager.py --environment production deploy build production --clean --build-timeout 600 --parallel-jobs 8 --skip-tests
+python project_manager.py deploy rollback --environment staging --steps 2 --confirm
 
-# Amazing help shows all organized commands
+# Help shows all organized commands hierarchically
 python project_manager.py --help
-python project_manager.py database--help
+python project_manager.py database --help
 ```
 
 ## 🏗️ Class Patterns
@@ -288,12 +302,12 @@ Freyja supports two flexible class-based patterns:
 | Pattern | Best For | Structure | Organization |
 |---------|----------|-----------|---------------|
 | **Direct Methods** | Simple applications | Methods → Commands | Class methods |
-| **Inner Classes** | Complex applications | Inner classes → Command groups | Hierarchical with flat execution |
+| **Inner Classes** | Complex applications | Inner classes → Command groups | Hierarchical organization |
 
-## ✨ Key Features
+## 🔑 Key Features
 
-🚀 **Zero Configuration** - Works instantly with just type annotations  
-⚡ **Lightning Fast** - No dependencies, minimal overhead
+🏁 **Zero Configuration** - Works instantly with just type annotations
+💨 **Lightning Fast** - No dependencies, minimal overhead
 ⚠️ **Constructor Requirements** - All parameters must have defaults  
 🎯 **Type Safe** - Automatic validation from Python type hints  
 📚 **Auto Documentation** - Beautiful help from your docstrings  

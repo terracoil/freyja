@@ -98,8 +98,8 @@ python my_tool.py process-file data.txt --output-format csv
 python my_tool.py --debug process-file data.txt --output-format xml
 # Global debug flag affects the processing
 
-python my_tool.py batch-operations--process-directory ./data --pattern "*.json" --parallel
-# Flat double-dash command: batch-operations--process-directory
+python my_tool.py batch-operations process-directory ./data --pattern "*.json" --parallel
+# Hierarchical command: batch-operations process-directory
 
 # ⚡ Flexible ordering examples:
 python my_tool.py --debug process-file data.txt --output-format csv
@@ -112,7 +112,7 @@ python my_tool.py process-file data.txt --debug --output-format csv
 
 ### ✨ Automatic CLI Generation
 - **Methods → Commands**: Each method becomes a CLI command
-- **Inner Classes → Flat Commands**: Commands use double-dash notation (e.g., `batch-operations--process-directory`)
+- **Inner Classes → Hierarchical Commands**: Commands use space-separated hierarchical structure (e.g., `batch-operations process-directory`)
 - **Type Hints → Validation**: Automatic argument type checking and conversion
 
 ### 🎯 Professional Help Generation

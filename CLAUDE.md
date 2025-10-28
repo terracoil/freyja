@@ -21,10 +21,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an active Python library (`freyja`) that automatically builds complete CLI applications from Python class methods using introspection and type annotations. The library creates CLI from class methods with organizational patterns:
 
-- **Direct Methods**: Simple flat commands from class methods  
-- **Inner Classes**: Flat commands with double-dash notation (e.g., `data-operations--process-single`) supporting global and sub-global arguments
+- **Direct Methods**: Simple commands from class methods
+- **Inner Classes**: Hierarchical command groups (e.g., `database migrate`, `projects create`) supporting global and sub-global arguments
 
-**IMPORTANT**: Inner class methods create flat commands with double-dash notation (e.g., `data-operations--process-single`) supporting global and sub-global arguments.
+**IMPORTANT**: Inner class methods create hierarchical command structures using space-separated syntax (e.g., `database migrate`, `projects create`) supporting global and sub-global arguments.
 
 The library generates argument parsers and command-line interfaces with minimal configuration by analyzing class method signatures. Published on PyPI at https://pypi.org/project/freyja/
 
@@ -166,9 +166,9 @@ python calculator.py add --a 5 --b 3
 python calculator.py multiply --a 4 --b 7
 ```
 
-#### **🆕 Inner Class Pattern (Flat with Double-Dash Notation)**
+#### **🆕 Inner Class Pattern (Hierarchical Structure)**
 
-Use inner classes for organized command structure with flat double-dash commands:
+Use inner classes for organized hierarchical command structure:
 
 ```python
 from freyja import FreyjaCLI
@@ -177,9 +177,9 @@ from pathlib import Path
 
 class ProjectManager:
   """
-  Project Management Freyja with flat double-dash command tree.
-  
-  Manage projects with organized flat command tree and global/sub-global arguments.
+  Project Management CLI with hierarchical command structure.
+
+  Manage projects with organized hierarchical commands and global/sub-global arguments.
   """
 
   def __init__(self, config_file: str = "config.json", debug: bool = False):
@@ -258,23 +258,23 @@ if __name__ == '__main__':
   cli.run()
 ```
 
-**Usage with Flat Double-Dash Commands:**
+**Usage with Hierarchical Commands:**
 ```bash
-# Global + Sub-global + Command arguments (all flat command tree)
+# Global + Sub-global + Command arguments (hierarchical structure)
 python project_mgr.py --config-file prod.json --debug \
-  project-operations--create --workspace /prod/projects --auto-save \
+  project-operations create --workspace /prod/projects --auto-save \
   --name "web-app" --description "Production web app"
 
-# Commands without sub-global arguments  
-python project_mgr.py report-generation--summary --detailed
+# Commands without sub-global arguments
+python project_mgr.py report-generation summary --detailed
 
-# All command tree are flat with double-dash notation
-python project_mgr.py project-operations--create --name "my-project"
-python project_mgr.py task-management--add --title "New task" --priority "high"
-python project_mgr.py report-generation--export --format "json"
+# All commands use hierarchical space-separated syntax
+python project_mgr.py project-operations create --name "my-project"
+python project_mgr.py task-management add --title "New task" --priority "high"
+python project_mgr.py report-generation export --format "json"
 
-# Help shows all flat command tree
-python project_mgr.py --help  # Shows all available flat command tree
+# Help shows all commands hierarchically organized
+python project_mgr.py --help  # Shows all available commands
 ```
 
 ### Common Patterns by Use Case
@@ -282,7 +282,7 @@ python project_mgr.py --help  # Shows all available flat command tree
 #### 1. Configuration Management (Inner Class Pattern)
 ```python
 class ConfigManager:
-    """Application configuration Freyja with hierarchical organization using flat command tree."""
+    """Application configuration CLI with hierarchical command organization."""
     
     def __init__(self, config_file: str = "app.config"):
         """Initialize with global configuration file."""
@@ -695,9 +695,9 @@ Always verify that:
 - **PositionalHandler**: Manages positional arguments (first non-default parameter)
 - **OptionDiscovery**: Converts method parameters to CLI arguments with kebab-case
 
-**Dual Command Structure**:
-- **Single Class**: Flat commands with double-dash notation (`inner-class--method`)
-- **Multi-Class**: True hierarchical structure for non-primary classes
+**Hierarchical Command Structure**:
+- **Single Class**: Hierarchical commands (`inner-class method`)
+- **Multi-Class**: Hierarchical structure for all classes
 
 **Type-Driven Generation**: 
 - Method annotations become argument types and validation
@@ -780,12 +780,12 @@ my_cli --sub-global arg --global-arg value command --method-arg value
 
 ### 4. Command Structure Rule
 
-**RULE**: The last class in a multi-class CLI should not be namespaced (i.e., they are in the global namespace".  
+**RULE**: The last class in a multi-class CLI should not be namespaced (i.e., they are in the global namespace).
 - Direct class methods → with no inner classes (`my_cli method_name`)
 - Inner class methods → (`my_cli inner-class method-name`)
 
-**Other classes not in in the global namespace:
-- Multi-class: `my_cli system completion install` (true hierarchy)
+**Other classes not in the global namespace:**
+- Multi-class: `my_cli system completion install` (hierarchical structure)
 
 ### 5. Type Annotation Requirement Rule
 
@@ -839,7 +839,7 @@ class MyClass:
 
 **RULE**: Command resolution follows strict precedence:
 1. Direct methods of primary class
-2. Inner class methods of primary class (with double-dash)
+2. Inner class methods of primary class (hierarchical)
 3. Hierarchical commands from non-primary classes
 4. System commands (appear first in help)
 
@@ -851,25 +851,34 @@ class MyClass:
 - Type annotations for argument type validation
 - Default values for optional arguments
 
-### 12. No Dunder Command Structure Rule
+### 12. Hierarchical Commands Only Rule
 
-**RULE**: Freyja MUST NOT use dunder (double underscore) syntax for command structuring, either internally or externally:
+**RULE**: Freyja MUST ONLY use hierarchical command structures with space separators. Flat double-dash commands (`--`) and dunder (`__`) syntax are FORBIDDEN:
 
-```python
-# ❌ NEVER USE - Dunder command syntax forbidden
+```bash
+# ❌ NEVER USE - Flat double-dash commands FORBIDDEN
+my_cli database--migrate            # FORBIDDEN
+my_cli data-ops--process            # FORBIDDEN
 my_cli system__completion__install  # FORBIDDEN
-my_cli data__ops__process           # FORBIDDEN
 
-# ✅ CORRECT - Use appropriate structure based on context
-my_cli system completion install    # Multi-class hierarchical
-my_cli data-ops--process           # Single-class flat double-dash
+# ✅ CORRECT - ONLY hierarchical commands with spaces
+my_cli database migrate             # Correct
+my_cli system completion install    # Correct
+my_cli projects create              # Correct
 ```
 
+**Rationale**:
+- Clean, intuitive command structure
+- Consistent with industry-standard CLIs (git, docker, kubectl)
+- Better discoverability and help navigation
+- Eliminates confusion about command syntax
+
 **Implications**:
-- No `__` in command names, paths, or internal representations
-- No dunder-based command discovery or resolution
-- No dunder syntax in help output or usage strings
-- Command separators are either spaces (hierarchy) or double-dash (flat)
+- No `--` (double-dash) in command names or paths
+- No `__` (dunder) in command names, paths, or internal representations
+- All commands use space-separated hierarchical structure
+- Inner classes become command groups, their methods become subcommands
+- Help output shows proper hierarchical nesting with indentation
 
 ### 13. Error Prevention Rules
 
@@ -887,15 +896,15 @@ When implementing or modifying Freyja code, ALWAYS verify:
 1. **Positional Arguments**: First non-default parameter shows as `<param>` in usage
 2. **Argument Order**: All argument combinations work in any order
 3. **Class-Only**: No module/function CLI generation code paths exist
-4. **Flat Structure**: Single-class inner methods use double-dash notation
+4. **Hierarchical Structure**: All commands use space-separated hierarchical syntax
 5. **Type Safety**: All method parameters have type annotations
 6. **Constructor Defaults**: All constructor parameters have defaults
 7. **Private Exclusion**: Underscore methods are ignored
 8. **Kebab-Case**: Parameter names convert to kebab-case arguments
-9. **Namespacing**: Multi-class scenarios use true hierarchy for non-primary classes
+9. **Namespacing**: Multi-class scenarios use hierarchy for non-primary classes
 10. **Resolution**: Command resolution follows defined precedence
 11. **Auto-Generation**: Parsers generated from method introspection
-12. **No Dunders**: No `__` syntax in command structures, internally or externally
+12. **No Double-Dash/Dunders**: No `--` or `__` in command structures
 13. **Error Handling**: Invalid patterns cause immediate failures
 
 **BREAKING ANY OF THESE RULES CONSTITUTES A REGRESSION AND MUST BE PREVENTED.**

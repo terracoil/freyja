@@ -126,13 +126,13 @@ class ProjectManager:
 **Complex Flexible Ordering:**
 ```bash
 # Global + Sub-global + Command - any order!
-my_cli --debug project-ops--create --name "web-app" --workspace /projects --auto-save --description "Web application"
+my_cli --debug project-ops create --name "web-app" --workspace /projects --auto-save --description "Web application"
 
 # Rearranged - same result
-my_cli project-ops--create --workspace /projects --debug --name "web-app" --description "Web application" --auto-save
+my_cli project-ops create --workspace /projects --debug --name "web-app" --description "Web application" --auto-save
 
 # With positional parameter
-my_cli --debug project-ops--create "web-app" --workspace /projects --auto-save
+my_cli --debug project-ops create "web-app" --workspace /projects --auto-save
 ```
 
 ## Advanced Scenarios

@@ -65,9 +65,9 @@ Suggestion: Use explicit format: 'my-cli complex-command file1.txt --output-dir 
 
 #### Hierarchical Command Argument Conflicts
 ```bash
-$ my-cli --debug project-ops--create --workspace /proj my-project --debug
+$ my-cli --debug project-ops create --workspace /proj my-project --debug
 Error: Global argument '--debug' specified multiple times
-Suggestion: Specify global arguments only once: 'my-cli --debug project-ops--create --workspace /proj my-project'
+Suggestion: Specify global arguments only once: 'my-cli --debug project-ops create --workspace /proj my-project'
 ```
 
 ## Handling Errors in Your Code

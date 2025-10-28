@@ -149,18 +149,20 @@ class FreyjaCLI:
         :param stream: Stream name ('stdout', 'stderr', 'stdin')
         :return: Captured content or None if capture disabled
         """
+        result = None
         if self.output_capture:
-            return self.output_capture.get_output(stream)
-        return None
+            result = self.output_capture.get_output(stream)
+        return result
 
     def get_all_captured_output(self) -> dict[str, str | None]:
         """Get all captured output if capture is enabled.
 
         :return: Dictionary with captured content for each stream
         """
+        result = {"stdout": None, "stderr": None, "stdin": None}
         if self.output_capture:
-            return self.output_capture.get_all_output()
-        return {"stdout": None, "stderr": None, "stdin": None}
+            result = self.output_capture.get_all_output()
+        return result
 
     def clear_captured_output(self) -> None:
         """Clear captured output buffer."""
@@ -222,9 +224,10 @@ class FreyjaCLI:
 
             color_formatter = ColorFormatter()
 
+        # Determine executors based on class count
         if self.discovery.target_classes and len(self.discovery.target_classes) > 1:
             # Multiple classes: create executor for each class
-            return {
+            executors = {
                 target_class: CommandExecutor(
                     target_class=target_class,
                     color_formatter=color_formatter,
@@ -232,15 +235,17 @@ class FreyjaCLI:
                 )
                 for target_class in self.discovery.target_classes
             }
+        else:
+            # Single class: create single primary executor
+            executors = {
+                "primary": CommandExecutor(
+                    target_class=self.discovery.primary_class,
+                    color_formatter=color_formatter,
+                    verbose=False,  # Will be updated during execution
+                )
+            }
 
-        # Single class: create single primary executor
-        return {
-            "primary": CommandExecutor(
-                target_class=self.discovery.primary_class,
-                color_formatter=color_formatter,
-                verbose=False,  # Will be updated during execution
-            )
-        }
+        return executors
 
     def _is_completion_request(self) -> bool:
         """
@@ -249,27 +254,27 @@ class FreyjaCLI:
         Uses multiple indicators to ensure we only enter completion mode
         when explicitly requested by shell completion systems.
         """
+        result = False
+
         # Check for main completion environment variable
         if os.getenv("_FREYJA_COMPLETE") is not None:
-            return True
+            result = True
+        else:
+            # Check for shell-specific completion variables
+            completion_vars = [
+                "_FREYJA_COMPLETE_ZSH",
+                "_FREYJA_COMPLETE_BASH",
+                "_FREYJA_COMPLETE_FISH",
+                "_FREYJA_COMPLETE_POWERSHELL",
+            ]
 
-        # Check for shell-specific completion variables
-        completion_vars = [
-            "_FREYJA_COMPLETE_ZSH",
-            "_FREYJA_COMPLETE_BASH",
-            "_FREYJA_COMPLETE_FISH",
-            "_FREYJA_COMPLETE_POWERSHELL",
-        ]
+            if any(os.getenv(var) is not None for var in completion_vars):
+                result = True
+            elif "--_complete" in sys.argv:
+                # Check for --_complete flag (legacy support)
+                result = True
 
-        for var in completion_vars:
-            if os.getenv(var) is not None:
-                return True
-
-        # Check for --_complete flag (legacy support)
-        if "--_complete" in sys.argv:
-            return True
-
-        return False
+        return result
 
     def _handle_completion(self):
         """

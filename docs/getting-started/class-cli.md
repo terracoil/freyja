@@ -106,7 +106,7 @@ class StatefulApp:
 
 ## Inner Classes Pattern
 
-For better organization, use inner classes (creates flat commands with double-dash notation):
+For better organization, use inner classes (creates hierarchical command structure):
 
 ```python
 class ProjectManager:
@@ -130,8 +130,8 @@ class ProjectManager:
             print(f"Committing with message: {message}")
 
 # Usage:
-# python project_mgr.py file-operations--create --name "README.md"
-# python project_mgr.py git-operations--commit --message "Initial commit"
+# python project_mgr.py file-operations create --name "README.md"
+# python project_mgr.py git-operations commit --message "Initial commit"
 ```
 
 ## Next Steps

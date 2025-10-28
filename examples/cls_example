@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from freyja import FreyjaCLI
+from freyja.utils.guards import guarded, not_none, in_range, not_empty
 
 class ProcessingMode(enum.Enum):
   """Processing modes for data operations."""
@@ -199,6 +200,55 @@ class DataProcessor:
 
       print("✓ Settings displayed")
       return {"detailed": detailed}
+
+  class ValidationExamples:
+    """Examples demonstrating guard clause usage for parameter validation."""
+
+    def __init__(self, parent):
+      """Initialize validation examples.
+
+      :param parent: Parent DataProcessor instance with global configuration
+      """
+      self.parent = parent
+
+    @guarded(not_none("data", 1), not_empty("data", 1), implicit_return=False)
+    def validate_input(self, data: str, strict: bool = False) -> bool:
+      """Validate input data with guard clauses.
+
+      This method demonstrates using @guarded with not_none and not_empty guards.
+      The guards ensure data is provided and not empty before the method executes.
+
+      :param data: Input data to validate (must not be None or empty)
+      :param strict: Apply strict validation rules
+      :return: True if validation passes
+      """
+      validation_mode = "strict" if strict else "standard"
+      print(f"✓ Input data validated ({validation_mode} mode): {len(data)} characters")
+      return True
+
+    @guarded(
+      in_range(1, 100, "batch_size", 1),
+      in_range(0, 10, "priority", 2),
+      implicit_return=False
+    )
+    def configure_batch(self, batch_size: int, priority: int, auto_start: bool = False) -> dict:
+      """Configure batch processing with validated parameters.
+
+      This method demonstrates using @guarded with in_range guards for numeric validation.
+      The guards ensure batch_size is 1-100 and priority is 0-10.
+
+      :param batch_size: Number of items per batch (must be 1-100)
+      :param priority: Processing priority level (must be 0-10)
+      :param auto_start: Automatically start processing after configuration
+      :return: Configuration dictionary
+      """
+      config = {
+        "batch_size": batch_size,
+        "priority": priority,
+        "auto_start": auto_start
+      }
+      print(f"✓ Batch configured: size={batch_size}, priority={priority}, auto_start={auto_start}")
+      return config
 
   class Statistics:
     """Processing statistics and reporting."""

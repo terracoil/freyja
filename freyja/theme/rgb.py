@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from enum import Enum
 
+from freyja.utils.guards import guarded, in_range
 from freyja.utils.math_util import MathUtil
 
 
@@ -22,21 +23,15 @@ class AdjustStrategy(Enum):
 class RGB:
     """Immutable RGB color representation with values in range 0.0-1.0."""
 
+    @guarded(
+      in_range(0.0, 1.0, "r", 1),
+      in_range(0.0, 1.0, "g", 2),
+      in_range(0.0, 1.0, "b", 3),
+      on_error=ValueError,
+      implicit_return=False
+    )
     def __init__(self, r: float, g: float, b: float):
-        """Initialize RGB with float values 0.0-1.0.
-
-        :param r: Red component (0.0-1.0)
-        :param g: Green component (0.0-1.0)
-        :param b: Blue component (0.0-1.0)
-        :raises ValueError: If any value is outside 0.0-1.0 range
-        """
-        if not (0.0 <= r <= 1.0):
-            raise ValueError(f"Red component must be between 0.0 and 1.0, got {r}")
-        if not (0.0 <= g <= 1.0):
-            raise ValueError(f"Green component must be between 0.0 and 1.0, got {g}")
-        if not (0.0 <= b <= 1.0):
-            raise ValueError(f"Blue component must be between 0.0 and 1.0, got {b}")
-
+        """Initialize RGB with float values (0.0-1.0 range enforced by guards)."""
         self._r = r
         self._g = g
         self._b = b
@@ -57,41 +52,26 @@ class RGB:
         return self._b
 
     @classmethod
+    @guarded(
+      in_range(0, 255, "r", 1),
+      in_range(0, 255, "g", 2),
+      in_range(0, 255, "b", 3),
+      on_error=ValueError,
+      implicit_return=False
+    )
     def from_ints(cls, r: int, g: int, b: int) -> RGB:
-        """Create RGB from integer values 0-255.
-
-        :param r: Red component (0-255)
-        :param g: Green component (0-255)
-        :param b: Blue component (0-255)
-        :return: RGB instance
-        :raises ValueError: If any value is outside 0-255 range
-        """
-        if not (0 <= r <= 255):
-            raise ValueError(f"Red component must be between 0 and 255, got {r}")
-        if not (0 <= g <= 255):
-            raise ValueError(f"Green component must be between 0 and 255, got {g}")
-        if not (0 <= b <= 255):
-            raise ValueError(f"Blue component must be between 0 and 255, got {b}")
-
+        """Create RGB from integer values (0-255 range enforced by guards)."""
         return cls(r / 255.0, g / 255.0, b / 255.0)
 
     @classmethod
+    @guarded(
+      in_range(0, 0xFFFFFF, "rgb", 1),
+      on_error=ValueError,
+      implicit_return=False
+    )
     def from_rgb(cls, rgb: int) -> RGB:
-        """Create RGB from hex integer (0x000000 to 0xFFFFFF).
-
-        :param rgb: RGB value as integer (0x000000 to 0xFFFFFF)
-        :return: RGB instance
-        :raises ValueError: If value is outside valid range
-        """
-        if not (0 <= rgb <= 0xFFFFFF):
-            raise ValueError(f"RGB value must be between 0 and 0xFFFFFF, got {rgb:06X}")
-
-        # Extract RGB components from hex number
-        r = (rgb >> 16) & 0xFF
-        g = (rgb >> 8) & 0xFF
-        b = rgb & 0xFF
-
-        return cls.from_ints(r, g, b)
+        """Create RGB from hex integer (0x000000-0xFFFFFF range enforced by guard)."""
+        return cls.from_ints((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF)
 
     def to_hex(self) -> str:
         """Convert to hex string format '#RRGGBB'.
@@ -146,23 +126,16 @@ class RGB:
             case _:
                 return self
 
+    @guarded(
+      in_range(-5.0, 5.0, "brightness", 1),
+      in_range(-5.0, 5.0, "saturation", 2),
+      on_error=ValueError,
+      implicit_return=False
+    )
     def linear_blend(self, brightness: float = 0.0, saturation: float = 0.0) -> RGB:
-        """Adjust color brightness and/or saturation, returning new RGB instance.
-
-        :param brightness: Brightness adjustment (-5.0 to 5.0)
-        :param saturation: Saturation adjustment (-5.0 to 5.0)
-        :param strategy: Adjustment strategy
-        :return: New RGB instance with adjustments applied
-        :raises ValueError: If adjustment values are out of range
-        """
-        if not (-5.0 <= brightness <= 5.0):
-            raise ValueError(f"Brightness must be between -5.0 and 5.0, got {brightness}")
-        if not (-5.0 <= saturation <= 5.0):
-            raise ValueError(f"Saturation must be between -5.0 and 5.0, got {saturation}")
-
-        # Apply adjustments only if needed
+        """Adjust color brightness and/or saturation (ranges enforced by guards)."""
         if brightness == 0.0 and saturation == 0.0:
-            return self
+          return self
 
         # Convert to integer for adjustment algorithm (matches existing behavior)
         r, g, b = self.to_ints()

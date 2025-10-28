@@ -6,6 +6,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from freyja.utils.modgud.modgud.guarded_expression import guarded_expression
+
 if TYPE_CHECKING:
     from freyja import FreyjaCLI
 
@@ -80,20 +82,19 @@ class CompletionHandler(ABC):
         import importlib  # pylint: disable=import-outside-toplevel
 
         shell = self.detect_shell()
-        if not shell:
-            return
 
-        # Handle shell-specific completion using importlib to avoid cycles
-        if shell == "bash":
-            bash_module = importlib.import_module("freyja.completion.bash")
-            bash_module.handle_bash_completion()
-        elif shell == "zsh":
-            zsh_module = importlib.import_module("freyja.completion.zsh")
-            zsh_module.handle_zsh_completion()
-        else:
-            # For other shells, we need to implement completion handling
-            # For now, just return empty to avoid errors
-            pass
+        if shell:
+            # Handle shell-specific completion using importlib to avoid cycles
+            if shell == "bash":
+                bash_module = importlib.import_module("freyja.completion.bash")
+                bash_module.handle_bash_completion()
+            elif shell == "zsh":
+                zsh_module = importlib.import_module("freyja.completion.zsh")
+                zsh_module.handle_zsh_completion()
+            else:
+                # For other shells, we need to implement completion handling
+                # For now, just pass to avoid errors
+                pass
 
     def get_command_group_parser(
         self, parser: argparse.ArgumentParser, command_group_path: list[str]
@@ -205,42 +206,43 @@ class CompletionHandler(ABC):
         import glob
         import os
 
+        result = []
+
         if not partial:
             # No partial path, return current directory contents
             try:
-                return sorted([f for f in os.listdir(".") if not f.startswith(".")])[
+                result = sorted([f for f in os.listdir(".") if not f.startswith(".")])[
                     :10
                 ]  # Limit results
             except (OSError, PermissionError):
-                return []
-
-        # Expand partial path with glob
-        try:
-            # Handle different path patterns
-            if partial.endswith("/") or partial.endswith(os.sep):
-                # Complete directory contents
-                pattern = partial + "*"
-            else:
-                # Complete partial filename/dirname
-                pattern = partial + "*"
-
-            matches = glob.glob(pattern)
-
-            # Limit and sort results
-            matches = sorted(matches)[:10]
-
-            # Add trailing slash for directories
-            result = []
-            for match in matches:
-                if os.path.isdir(match):
-                    result.append(match + os.sep)
+                result = []
+        else:
+            # Expand partial path with glob
+            try:
+                # Handle different path patterns
+                if partial.endswith("/") or partial.endswith(os.sep):
+                    # Complete directory contents
+                    pattern = partial + "*"
                 else:
-                    result.append(match)
+                    # Complete partial filename/dirname
+                    pattern = partial + "*"
 
-            return result
+                matches = glob.glob(pattern)
 
-        except (OSError, PermissionError):
-            return []
+                # Limit and sort results
+                matches = sorted(matches)[:10]
+
+                # Add trailing slash for directories
+                for match in matches:
+                    if os.path.isdir(match):
+                        result.append(match + os.sep)
+                    else:
+                        result.append(match)
+
+            except (OSError, PermissionError):
+                result = []
+
+        return result
 
     def complete_partial_word(self, candidates: list[str], partial: str) -> list[str]:
         """Filter candidates based on partial word match.
@@ -266,31 +268,32 @@ class CompletionHandler(ABC):
         parser = context.parser
         if context.command_group_path:
             parser = self.get_command_group_parser(parser, context.command_group_path)
-            if not parser:
-                return []
 
-        # Determine what we're completing
-        current_word = context.current_word
+        # Only proceed if we have a valid parser
+        if parser:
+            # Determine what we're completing
+            current_word = context.current_word
 
-        # Check if we're completing an option value
-        if len(context.words) >= 2:
-            prev_word = context.words[-2] if len(context.words) >= 2 else ""
+            # Check if we're completing an option value
+            if len(context.words) >= 2:
+                prev_word = context.words[-2]
 
-            # If previous word is an option, complete its values
-            if prev_word.startswith("--"):
-                option_values = self.get_option_values(parser, prev_word, current_word)
-                if option_values:
-                    return option_values
+                # If previous word is an option, complete its values
+                if prev_word.startswith("--"):
+                    option_values = self.get_option_values(parser, prev_word, current_word)
+                    if option_values:
+                        completions = option_values
 
-        # Complete options if current word starts with --
-        if current_word.startswith("--"):
-            options = self.get_available_options(parser)
-            return self.complete_partial_word(options, current_word)
+            # Complete options if current word starts with -- and no completions found yet
+            if not completions and current_word.startswith("--"):
+                options = self.get_available_options(parser)
+                completions = self.complete_partial_word(options, current_word)
 
-        # Complete cmd_tree/command groups
-        commands = self.get_available_commands(parser)
-        if commands:
-            return self.complete_partial_word(commands, current_word)
+            # Complete cmd_tree/command groups if no completions found yet
+            if not completions:
+                commands = self.get_available_commands(parser)
+                if commands:
+                    completions = self.complete_partial_word(commands, current_word)
 
         return completions
 

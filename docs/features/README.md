@@ -1,29 +1,39 @@
 ![Freyja Action](https://github.com/terracoil/freyja/raw/main/docs/freyja-action.png)
 
-# ⚙️ Features
+# ✨ Features
 
-[↑ Documentation Hub](../README.md)
+## 📍 Navigation
+**You are here**: Features Overview
 
-Discover the powerful features that make Freyja a complete CLI solution. From automatic type validation to beautiful error messages, every feature is designed to accelerate your development while creating professional command-line tools.
+**Parents**:
+- [🏠 Main README](../../README.md) - Project overview and quick start
+- [📚 Documentation Hub](../README.md) - Complete documentation index
 
-## Table of Contents
-* [🎯 Core Features](#-core-features)
-* [🔥 New Features](#-new-features)
-* [✨ Feature Highlights](#-feature-highlights)
-* [🔧 Developer Experience](#-developer-experience)
-* [🚀 Next Steps](#-next-steps)
-
-# Children
+**Children**:
 
 ### 🎯 Essential Features
 * **[🏷️ Type Annotations](type-annotations.md)** - Complete guide to supported types including basic types, collections, enums, and custom converters
 * **[🌈 Shell Completion](shell-completion.md)** - Enable tab completion for Bash, Zsh, Fish, and PowerShell with zero configuration
-* **[❌ Error Handling](error-handling.md)** - Robust error management with user-friendly messages and proper exit codes
+* **[🛡️ Guard Clauses](guards.md)** - Parameter validation with declarative guards
+* **[⚠️ Error Handling](error-handling.md)** - Robust error management with user-friendly messages and proper exit codes
 * **[📝 Output Capture](output-capture.md)** - Capture and control command output programmatically for testing and monitoring
 
 ### 🔥 New Features
-* **[🎯 Flexible Argument Ordering](flexible-ordering.md)** - Mix options and arguments in any order for natural command flow
+* **[🔀 Flexible Argument Ordering](flexible-ordering.md)** - Mix options and arguments in any order for natural command flow
 * **[📍 Positional Parameters](positional-parameters.md)** - Automatic positional detection creates intuitive command interfaces
+
+---
+
+Discover the powerful features that make Freyja a complete CLI solution. From automatic type validation to beautiful error messages, every feature is designed to accelerate your development while creating professional command-line tools.
+
+## 📑 Table of Contents
+* [🎯 Core Features](#-core-features)
+* [🔥 New Features](#-new-features)
+* [💎 Feature Highlights](#-feature-highlights)
+* [🔧 Developer Experience](#-developer-experience)
+* [📖 Next Steps](#-next-steps)
+
+---
 
 ## 🎯 Core Features
 
@@ -126,9 +136,9 @@ db-tool backup-database production_db --output-dir /secure/backups --compress
 db-tool backup-database --database-name production_db --compress
 ```
 
-## ✨ Feature Highlights
+## 💎 Feature Highlights
 
-### 🚀 Zero-Configuration Magic
+### 🏁 Zero-Configuration Magic
 ```python
 from freyja import CLI
 from enum import Enum
@@ -219,7 +229,7 @@ Perfect compatibility with your favorite tools:
 - **🔍 Observable** - Built-in logging and diagnostic capabilities
 - **🔒 Secure** - Safe handling of user input and file operations
 
-## 🚀 Next Steps
+## 📖 Next Steps
 
 ### 📚 Master the Features
 Choose the features most important for your use case:
@@ -247,4 +257,4 @@ Once you've mastered the basics:
 
 ---
 
-**Ready to unlock Freyja's full potential?** Start with the feature that matters most to your project! 🚀
+**Ready to unlock Freyja's full potential?** Start with the feature that matters most to your project! 🌟

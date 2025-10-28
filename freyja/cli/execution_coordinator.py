@@ -7,6 +7,7 @@ Extracted from FreyjaCLI class to reduce its size and improve separation of conc
 import os
 from typing import Any
 
+from freyja.utils.guards import guarded, not_none
 from freyja.utils.output_capture import OutputCapture, OutputCaptureConfig
 
 from .enums import TargetMode
@@ -15,6 +16,7 @@ from .enums import TargetMode
 class ExecutionCoordinator:
     """Coordinates FreyjaCLI argument parsing and command execution."""
 
+    @guarded(not_none("target_mode"), not_none("executors"), implicit_return=False)
     def __init__(
         self,
         target_mode: TargetMode,

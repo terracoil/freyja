@@ -211,9 +211,9 @@ class Calculator:
 # python calc.py multiply --a 5 --b 6
 ```
 
-### Inner Classes (Flat Double-Dash)
+### Inner Classes (Hierarchical Structure)
 
-Inner classes create flat commands with double-dash notation:
+Inner classes create hierarchical command structure:
 
 ```python
 class ProjectManager:
@@ -225,8 +225,8 @@ class ProjectManager:
             print(f"Backing up to {output}")
 
 # CLI Usage:
-# python pm.py database--migrate --version 2.0
-# python pm.py database--backup --output backup.sql
+# python pm.py database migrate --version 2.0
+# python pm.py database backup --output backup.sql
 ```
 
 ### Multi-level Arguments

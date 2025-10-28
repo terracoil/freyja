@@ -170,13 +170,13 @@ class ProjectManager:
 **Complex Hierarchical Commands:**
 ```bash
 # Global + Sub-global + Positional + Optional
-project-mgr --workspace /projects --verbose repository--clone-repo https://github.com/terracoil/freyja.git --directory-name my-project --shallow --remote-url upstream
+project-mgr --workspace /projects --verbose repository clone-repo https://github.com/terracoil/freyja.git --directory-name my-project --shallow --remote-url upstream
 
 # Natural commit commands
-project-mgr repository--push-changes "Add new feature" --force
+project-mgr repository push-changes "Add new feature" --force
 
 # Database migrations with positional file
-project-mgr database--migrate-schema 001_initial.sql --dry-run --connection-timeout 60
+project-mgr database migrate-schema 001_initial.sql --dry-run --connection-timeout 60
 ```
 
 ## Advanced Positional Patterns

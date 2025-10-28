@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from typing import Any
 
+from freyja.utils.guards import guarded, not_none
+
 
 @dataclass
 class CommandPath:
@@ -18,10 +20,12 @@ class CommandPath:
 class CommandPathResolver:
     """Resolves hierarchical command paths from argument lists."""
 
+    @guarded(not_none("command_tree", 1), implicit_return=False)
     def __init__(self, command_tree):
         """Initialize command path resolver."""
         self.command_tree = command_tree
 
+    @guarded(not_none("args", 1), implicit_return=False)
     def resolve_path(self, args: list[str]) -> CommandPath:
         """Resolve command path and categorize remaining arguments."""
         if not args:
@@ -76,6 +80,7 @@ class CommandPathResolver:
             remaining_args=remaining_args,
         )
 
+    @guarded(not_none("path", 1), implicit_return=False)
     def validate_path(self, path: list[str]) -> bool:
         """Validate that a command path exists in the tree."""
         return self._is_valid_path(path)

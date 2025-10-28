@@ -1,19 +1,50 @@
 ![Freyja Action](https://github.com/terracoil/freyja/raw/main/docs/freyja-action.png)
-# Development
+# 🔧 Development
 
-[↑ Documentation Hub](../README.md)
+## 📍 Navigation
+**You are here**: Development Overview
 
-Documentation for contributors and developers working on freyja.
+**Parents**:
+- [🏠 Main README](../../README.md) - Project overview and quick start
+- [📚 Documentation Hub](../README.md) - Complete documentation index
 
-## For Contributors
+**Children**:
+- **[🤝 Contributing](contributing.md)** - How to contribute to Freyja
+- **[📦 Git Submodules](submodules.md)** - Git submodule workflow for modgud
+
+**Related**:
+- **[🏗️ Architecture (CLAUDE.md)](../../CLAUDE.md)** - Codebase structure and design
+- **[🧪 Testing (CLAUDE.md)](../../CLAUDE.md)** - Testing guidelines and strategies
+
+---
+
+Documentation for contributors and developers working on Freyja.
+
+## 📑 Table of Contents
+* [🤝 For Contributors](#-for-contributors)
+* [🏁 Quick Start for Contributors](#-quick-start-for-contributors)
+* [📋 Development Guidelines](#-development-guidelines)
+* [💡 Getting Help](#-getting-help)
+* [📖 Next Steps](#-next-steps)
+
+---
+
+## 🤝 For Contributors
 
 ### 🤝 [Contributing](contributing.md)
-How to contribute to freyja.
+How to contribute to Freyja.
 - Setting up development environment
 - Code style guidelines
 - Submitting pull requests
 - Issue reporting guidelines
 - Community standards
+
+### 📦 [Git Submodules](submodules.md)
+Working with the vendored modgud library.
+- Initial setup and verification
+- Updating submodules
+- Troubleshooting
+- CI/CD integration
 
 ### 🏗️ Architecture
 Understanding the codebase structure - see [CLAUDE.md](../../CLAUDE.md).
@@ -39,7 +70,7 @@ How releases are managed.
 - Documentation updates
 - Announcement process
 
-## Quick Start for Contributors
+## 🏁 Quick Start for Contributors
 
 ### Development Setup
 ```bash
@@ -111,7 +142,7 @@ poetry build
 poetry install
 ```
 
-## Development Guidelines
+## 📋 Development Guidelines
 
 ### Code Style
 - Follow PEP 8 with Black formatting
@@ -131,7 +162,7 @@ poetry install
 - Test edge cases and errors
 - Use fixtures for common setups
 
-## Getting Help
+## 💡 Getting Help
 
 ### For Contributors
 - Open an [Issue](https://github.com/terracoil/freyja/issues) for questions
@@ -143,13 +174,14 @@ poetry install
 - **Steven** - Project Lead
 - **Contributors** - See [contributors on GitHub](https://github.com/terracoil/freyja/graphs/contributors)
 
-## Next Steps
+## 📖 Next Steps
 
 - Read [Contributing Guidelines](contributing.md)
+- Review [Git Submodules](submodules.md) workflow
 - Understand the Architecture (see [CLAUDE.md](../../CLAUDE.md))
 - Set up Testing (see [CLAUDE.md](../../CLAUDE.md))
 - Learn the Release Process (see [CLAUDE.md](../../CLAUDE.md))
 
 ---
 
-**Ready to contribute?** Check out [good first issues](https://github.com/terracoil/freyja/labels/good%20first%20issue)
+**Ready to contribute?** Check out [good first issues](https://github.com/terracoil/freyja/labels/good%20first%20issue) 🌟

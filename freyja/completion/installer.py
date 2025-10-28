@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 from .base import CompletionHandler
+from freyja.utils.modgud.modgud.guarded_expression import guarded_expression
 
 
 class CompletionInstaller:
@@ -28,30 +29,29 @@ class CompletionInstaller:
         self.command_patterns = command_patterns or []
         self.shell = handler.detect_shell()
 
-    def install(self, shell: str | None = None, force: bool = False) -> bool:
+    # Supported shell installers mapping
+    _SHELL_INSTALLERS = {
+        "bash": "_install_bash_completion",
+        "zsh": "_install_zsh_completion",
+        "fish": "_install_fish_completion",
+        "powershell": "_install_powershell_completion",
+    }
+
+    @guarded_expression(
+        lambda self, shell, force: bool(shell or self.shell) or "Could not detect shell. Please specify shell manually.",
+        lambda self, shell, force: (shell or self.shell) in CompletionInstaller._SHELL_INSTALLERS or f"Unsupported shell: {shell or self.shell}"
+    )
+    def install(self, shell: str | None = None, force: bool = False):
         """Install completion for specified or detected shell.
 
         :param shell: Target shell (auto-detect if None)
         :param force: Force overwrite existing completion
-        :return: True if installation successful
+        :return: Result of installation (implicit return from guarded_expression)
         """
         target_shell = shell or self.shell
-
-        if not target_shell:
-            print("Could not detect shell. Please specify shell manually.", file=sys.stderr)
-            return False
-
-        if target_shell == "bash":
-            return self._install_bash_completion(force)
-        elif target_shell == "zsh":
-            return self._install_zsh_completion(force)
-        elif target_shell == "fish":
-            return self._install_fish_completion(force)
-        elif target_shell == "powershell":
-            return self._install_powershell_completion(force)
-        else:
-            print(f"Unsupported shell: {target_shell}", file=sys.stderr)
-            return False
+        installer_method_name = self._SHELL_INSTALLERS[target_shell]
+        installer_method = getattr(self, installer_method_name)
+        installer_method(force)
 
     def _install_bash_completion(self, force: bool) -> bool:
         """Install bash completion."""

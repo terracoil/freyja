@@ -20,7 +20,7 @@ Master the art of building CLIs with Freyja! This comprehensive guide covers eve
 
 ### 🏗️ Class-based CLI Patterns
 * **[🏗️ Class CLI Guide](class-cli.md)** - Comprehensive guide to method-based CLIs with state management and design patterns
-* **[🏢 Inner Classes Pattern](inner-classes.md)** - Advanced pattern using inner classes for organized flat command structures (double-dash notation)
+* **[🏢 Inner Classes Pattern](inner-classes.md)** - Advanced pattern using inner classes for organized hierarchical command structures
 
 ## 🎯 Core Concepts
 
@@ -37,8 +37,8 @@ Build stateful, object-oriented command-line applications:
 ### 🏢 Inner Classes Power Pattern
 **[Inner Classes Guide →](inner-classes.md)**
 
-Organize complex applications with flat double-dash commands:
-- **Double-dash Commands** - `database--migrate`, `deploy--build` command patterns
+Organize complex applications with hierarchical commands:
+- **Hierarchical Commands** - `database migrate`, `deploy build` command patterns
 - **Multi-level Arguments** - Global, sub-global, and command-specific parameters
 - **Organization Strategies** - Structure large applications with clear command groups
 - **Real-world Examples** - Database tools, deployment systems, and more
@@ -135,7 +135,7 @@ from pathlib import Path
 
 
 class ProjectManager:
-    """Advanced project management CLI with flat double-dash commands."""
+    """Advanced project management CLI with hierarchical commands."""
 
     def __init__(self, config_file: str = "project.json", debug: bool = False):
         """Initialize project manager with global settings.
@@ -216,29 +216,29 @@ if __name__ == '__main__':
     cli.run()
 ```
 
-**Usage with flat double-dash commands:**
+**Usage with hierarchical commands:**
 ```bash
 # Global + Sub-global + Command arguments
 python project_manager.py --config-file prod.json --debug \
-    projects--create --workspace /prod/projects --auto-save \
+    projects create --workspace /prod/projects --auto-save \
     --name "web-app" --template "react" --description "Production web app"
 
 python project_manager.py --config-file prod.json \
-    projects--deploy --project-name "web-app" --environment "production" --force
+    projects deploy --project-name "web-app" --environment "production" --force
 
-python project_manager.py database--migrate --version 2.1.0 --dry-run
+python project_manager.py database migrate --version 2.1.0 --dry-run
 
-python project_manager.py database--backup --output-path /backups/prod.sql --compress
+python project_manager.py database backup --output-path /backups/prod.sql --compress
 
 # Each command maintains the global state set by constructor
-python project_manager.py --help  # Shows all available commands with flat structure
+python project_manager.py --help  # Shows all available commands hierarchically
 ```
 
 ## 🚀 Next Steps
 
 ### 📚 Deep Dive into Your Chosen Pattern
 - **[Class CLI →](class-cli.md)** - Master object-oriented CLIs
-- **[Inner Classes →](inner-classes.md)** - Advanced flat double-dash command organization
+- **[Inner Classes →](inner-classes.md)** - Advanced hierarchical command organization
 - **[Pattern Selection →](class-cli.md)** - Choose between direct methods and inner classes
 
 ### 🔧 Enhance Your CLIs

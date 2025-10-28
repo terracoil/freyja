@@ -3,11 +3,14 @@
 import inspect
 from typing import Any
 
+from freyja.utils.guards import guarded, not_none, type_check
+
 
 class ValidationService:
     """Centralized validation service for FreyjaCLI parameter and constructor validation."""
 
     @staticmethod
+    @guarded(not_none("cls", 0), not_none("context", 1), implicit_return=False)
     def validate_constructor_parameters(
         cls: type, context: str, allow_parameterless_only: bool = False
     ) -> None:
@@ -64,6 +67,7 @@ class ValidationService:
             raise error_to_raise from e
 
     @staticmethod
+    @guarded(not_none("cls", 0), not_none("context", 1), implicit_return=False)
     def validate_inner_class_constructor_parameters(cls: type, context: str) -> None:
         """Validate inner class constructors for main instance injection."""
         try:
@@ -127,8 +131,10 @@ class ValidationService:
             raise error_to_raise from e
 
     @staticmethod
+    @guarded(not_none("func", 0), implicit_return=False)
     def validate_function_signature(func: Any) -> bool:
         """Validate that functions have type annotations for argument generation."""
+        result = True
         try:
             sig = inspect.signature(func)
 
@@ -140,14 +146,16 @@ class ValidationService:
 
                 # Function must have type annotations for FreyjaCLI generation
                 if param.annotation == param.empty:
-                    return False
-
-            return True
+                    result = False
+                    break
 
         except (ValueError, TypeError):
-            return False
+            result = False
+
+        return result
 
     @staticmethod
+    @guarded(not_none("functions", 1), implicit_return=False)
     def get_validation_errors(cls: type, functions: dict[str, Any]) -> list[str]:
         """Get validation errors for FreyjaCLI generation."""
         errors = []
