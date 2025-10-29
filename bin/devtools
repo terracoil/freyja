@@ -303,18 +303,18 @@ class FreyjaDevTools:
 
       success: bool = True
 
-      # Run Ruff linting
-      ruff_cmd = "poetry run ruff check ."
-      if fix:
-        ruff_cmd += " --fix"
-      if not parent._run_command(ruff_cmd, "📝 Running Ruff linting..."):
-        success = False
-
-      # Run Ruff formatting
+      # Run Ruff formatting first (establishes base code style)
       ruff_format_cmd = "poetry run ruff format ."
       if not fix:
         ruff_format_cmd += " --check"
       if not parent._run_command(ruff_format_cmd, "🎨 Running Ruff formatting..."):
+        success = False
+
+      # Run Ruff linting second (checks logical issues on formatted code)
+      ruff_cmd = "poetry run ruff check ."
+      if fix:
+        ruff_cmd += " --fix"
+      if not parent._run_command(ruff_cmd, "📝 Running Ruff linting..."):
         success = False
 
       # Run MyPy with strict type checking

@@ -87,7 +87,32 @@ If the line starts with `-` (dash), the submodule is not initialized:
 
 ### Update Submodule to Latest Version
 
-To update modgud to the latest version on its main branch:
+Use the `bin/update-modgud` script to update the submodule and clean development files:
+
+```bash
+# Update to latest version on master branch and clean
+bin/update-modgud
+
+# Update to specific tag
+bin/update-modgud --tag v2.1.1
+
+# Update to specific branch
+bin/update-modgud --branch develop
+
+# Preview what would happen without making changes
+bin/update-modgud --dry-run
+
+# Update without cleaning (keep development files)
+bin/update-modgud --no-clean
+```
+
+**What it does:**
+1. Fetches latest changes from the modgud repository
+2. Checks out the specified branch or tag (default: master)
+3. Updates the parent repository's submodule reference
+4. Removes development files (tests, docs, build configs, etc.) unless `--no-clean` is specified
+
+**Manual alternative:**
 
 ```bash
 # Navigate to submodule directory
@@ -102,10 +127,29 @@ git checkout v2.1.1
 # Return to Freyja root
 cd ../../..
 
-# Commit the submodule update
+# Update parent repo reference and commit
 git add freyja/utils/modgud
 git commit -m "Update modgud to v2.1.1"
+
+# Clean development cruft (IMPORTANT for publishing)
+bin/update-modgud --no-clean  # Skip update, just clean
 ```
+
+### Development Files Cleaned
+
+The update script automatically removes development files that aren't needed for runtime:
+
+**Removed:**
+- Development directories: tests, docs, bin, tmp, dist, build
+- Configuration files: *.toml, *.md, .gitignore, etc.
+- Cache directories: .venv, .pytest_cache, .mypy_cache, __pycache__
+
+**Preserved:**
+- The `modgud/` package directory (essential)
+- LICENSE file
+- Git submodule metadata (.git)
+
+**When to clean:** After every `git checkout` or `git pull` in the submodule. The `bin/update-modgud` script does this automatically.
 
 ### Update All Submodules
 
@@ -308,10 +352,15 @@ git submodule update --init --recursive
 # Check submodule status
 git submodule status
 
-# Update modgud to specific version
-cd freyja/utils/modgud
-git checkout v2.1.1
-cd ../../..
-git add freyja/utils/modgud
-git commit -m "Update modgud to v2.1.1"
+# Update modgud to latest and clean
+bin/update-modgud
+
+# Update to specific version
+bin/update-modgud --tag v2.1.1
+
+# Preview changes without applying
+bin/update-modgud --dry-run
+
+# Update without cleaning
+bin/update-modgud --no-clean
 ```

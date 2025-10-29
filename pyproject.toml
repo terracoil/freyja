@@ -30,6 +30,24 @@ include = [
     "freyja/utils/modgud/**/*.py",
     "freyja/utils/modgud/modgud/py.typed"
 ]
+exclude = [
+    "freyja/utils/modgud/.venv",
+    "freyja/utils/modgud/dist",
+    "freyja/utils/modgud/build",
+    "freyja/utils/modgud/.git",
+    "freyja/utils/modgud/.gitignore",
+    "freyja/utils/modgud/tests",
+    "freyja/utils/modgud/docs",
+    "freyja/utils/modgud/bin",
+    "freyja/utils/modgud/tmp",
+    "freyja/utils/modgud/*.toml",
+    "freyja/utils/modgud/*.md",
+    "freyja/utils/modgud/LICENSE",
+    "**/__pycache__",
+    "**/*.pyc",
+    "**/.pytest_cache",
+    "**/.mypy_cache"
+]
 packages = [{include = "freyja"}]
 readme = "README.md"
 
