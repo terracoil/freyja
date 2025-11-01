@@ -4,7 +4,7 @@ authors = [{name = "steven.miers@gmail.com"}]
 description = "Python Library that builds a complete CLI given one or more functions using introspection"
 keywords = ["cli", "auto", "introspection", "argparse", "command-line"]
 license = "MIT"
-version = "1.1.6" # Uses poetry-dynamic-versioning
+version = "1.1.7" # Uses poetry-dynamic-versioning
 
 [project.urls]
 Homepage = "https://github.com/terracoil/modgud"
