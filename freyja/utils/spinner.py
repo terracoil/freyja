@@ -36,7 +36,7 @@ class ExecutionSpinner:
         self.spinner_chars = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
         self.current = 0
         self.running = False
-        self.thread = None
+        self.thread: threading.Thread | None = None
         self.command_context: CommandContext | None = None
         self.status_line = ""
         self._lock = threading.Lock()

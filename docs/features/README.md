@@ -14,7 +14,6 @@
 ### 🎯 Essential Features
 * **[🏷️ Type Annotations](type-annotations.md)** - Complete guide to supported types including basic types, collections, enums, and custom converters
 * **[🌈 Shell Completion](shell-completion.md)** - Enable tab completion for Bash, Zsh, Fish, and PowerShell with zero configuration
-* **[🛡️ Guard Clauses](guards.md)** - Parameter validation with declarative guards
 * **[⚠️ Error Handling](error-handling.md)** - Robust error management with user-friendly messages and proper exit codes
 * **[📝 Output Capture](output-capture.md)** - Capture and control command output programmatically for testing and monitoring
 

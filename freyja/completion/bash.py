@@ -9,7 +9,7 @@ from .base import CompletionContext, CompletionHandler
 class BashCompletionHandler(CompletionHandler):
     """Bash-specific completion handler."""
 
-    def generate_script(self, prog_name: str, command_patterns: list[str] = None) -> str:
+    def generate_script(self, prog_name: str, command_patterns: list[str] | None = None) -> str:
         """Generate bash completion script with pattern-based registration for path invocations.
 
         :param prog_name: Base program name

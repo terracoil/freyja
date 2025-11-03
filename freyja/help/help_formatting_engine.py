@@ -224,7 +224,7 @@ class HelpFormattingEngine:
         return [" " * base_indent + styled_title + ":"]
 
     def format_usage_line(
-        self, prog: str, usage_parts: list[str], max_width: int = None
+        self, prog: str, usage_parts: list[str], max_width: int | None = None
     ) -> list[str]:
         """Format usage line with proper wrapping."""
         if max_width is None:

@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 
 from .base import CompletionHandler
-from freyja.utils.guards import guarded_expression
 
 
 class CompletionInstaller:
@@ -37,21 +36,25 @@ class CompletionInstaller:
         "powershell": "_install_powershell_completion",
     }
 
-    @guarded_expression(
-        lambda self, shell, force: bool(shell or self.shell) or "Could not detect shell. Please specify shell manually.",
-        lambda self, shell, force: (shell or self.shell) in CompletionInstaller._SHELL_INSTALLERS or f"Unsupported shell: {shell or self.shell}"
-    )
-    def install(self, shell: str | None = None, force: bool = False):
+    def install(self, shell: str | None = None, force: bool = False) -> bool:
         """Install completion for specified or detected shell.
 
         :param shell: Target shell (auto-detect if None)
         :param force: Force overwrite existing completion
-        :return: Result of installation (implicit return from guarded_expression)
+        :return: True if installation successful
         """
+        # Guard: Ensure shell is detected
         target_shell = shell or self.shell
+        if not target_shell:
+            raise ValueError("Could not detect shell. Please specify shell manually.")
+        
+        # Guard: Ensure shell is supported
+        if target_shell not in self._SHELL_INSTALLERS:
+            raise ValueError(f"Unsupported shell: {target_shell}")
+        
         installer_method_name = self._SHELL_INSTALLERS[target_shell]
         installer_method = getattr(self, installer_method_name)
-        installer_method(force)
+        return installer_method(force)
 
     def _install_bash_completion(self, force: bool) -> bool:
         """Install bash completion."""
@@ -119,7 +122,13 @@ class CompletionInstaller:
             return False
 
         # Generate and write completion script with command patterns
-        script = self.handler.generate_script(self.prog_name, self.command_patterns)
+        # Check if handler supports command_patterns parameter
+        import inspect
+        sig = inspect.signature(self.handler.generate_script)
+        if len(sig.parameters) > 1:  # Has command_patterns parameter
+            script = self.handler.generate_script(self.prog_name, self.command_patterns)
+        else:  # Only supports prog_name
+            script = self.handler.generate_script(self.prog_name)
         completion_file.write_text(script)
 
         print(f"Zsh completion installed to {completion_file}")

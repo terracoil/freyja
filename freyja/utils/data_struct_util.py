@@ -45,13 +45,19 @@ class DataStructUtil:
                 result = f"<circular reference: {type(o).__name__}>"
             elif isinstance(o, dict):
                 # Handle dict-like objects:
-                result = {str(k): to_prim(v, depth + 1, saw) for k, v in o.items()}
+                result = {
+                    str(int(k)) if isinstance(k, bool) else str(k): to_prim(v, depth + 1, saw) 
+                    for k, v in o.items()
+                }
             elif isinstance(o, list | tuple | set | frozenset):
                 # Handle list-like objects:
                 result = [to_prim(item, depth + 1, saw) for item in o]
             elif hasattr(o, "to_dict") and callable(o.to_dict):
                 # Handle Special case for when object has a "to_dict" method:
-                result = {str(k): to_prim(v, depth + 1, saw) for k, v in o.to_dict().items()}
+                result = {
+                    str(int(k)) if isinstance(k, bool) else str(k): to_prim(v, depth + 1, saw) 
+                    for k, v in o.to_dict().items()
+                }
             elif hasattr(o, "__dict__") or hasattr(o, "__slots__"):
                 # Handle objects with __dict__ or __slots__
                 items = (
@@ -64,7 +70,8 @@ class DataStructUtil:
 
                 # Filter out private attributes and convert to dict:
                 result = {
-                    str(k): to_prim(v, depth + 1, saw) for k, v in items if not k.startswith("_")
+                    str(int(k)) if isinstance(k, bool) else str(k): to_prim(v, depth + 1, saw) 
+                    for k, v in items if not k.startswith("_")
                 }
             else:
                 # Fallback for other types (convert to string representation)

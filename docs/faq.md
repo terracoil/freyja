@@ -636,4 +636,4 @@ def process_large_dataset(
 ---
 
 **Navigation**: [← Help Hub](README.md) | [Troubleshooting →](guides/troubleshooting.md)  
-**Examples**: [Class Example](../examples/cls_example)
+**Examples**: [Class Example](../freyja/examples/cls_example)

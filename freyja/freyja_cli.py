@@ -113,7 +113,7 @@ class FreyjaCLI:
         # Essential compatibility properties only
         # Note: target_module removed - class-based CLI only
 
-    def run(self, args: list[str] = None) -> Any:
+    def run(self, args: list[str] | None = None) -> Any:
         """
         Parse arguments and execute the appropriate command.
 

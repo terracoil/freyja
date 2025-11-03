@@ -9,7 +9,6 @@ import sys
 import traceback
 from typing import Any
 
-from ..utils.guards import guarded, not_none
 from ..utils.output_capture import OutputCapture, OutputFormatter
 from ..utils.spinner import CommandContext, ExecutionSpinner
 
@@ -39,9 +38,11 @@ class CommandExecutor:
         self.output_capture = OutputCapture() if enable_output_capture else None
         self.output_formatter = OutputFormatter(color_formatter) if enable_output_capture else None
 
-    @guarded(not_none("parsed"))
     def _build_command_context(self, parsed) -> CommandContext:
         """Build command context from parsed arguments for spinner display."""
+        # Guard: Ensure parsed is not None
+        if parsed is None:
+            raise ValueError("parsed cannot be None")
         context = CommandContext()
 
         # Extract command path information
@@ -76,17 +77,25 @@ class CommandExecutor:
         context.command_args = command_args
         context.positional_args = []
 
-        context
+        return context
 
-    @guarded(
-      not_none("parsed"),
-      lambda self, parsed: hasattr(parsed, "_cli_function") or "Missing _cli_function in parsed args",
-      lambda self, parsed: hasattr(parsed, "_function_name") or "Missing _function_name in parsed args",
-      lambda self, parsed: hasattr(parsed, "_command_path") or "Missing _command_path in parsed args",
-      implicit_return=False
-    )
     def _execute_inner_class_command(self, parsed) -> Any:
         """Execute command using inner class pattern (parent + inner class + method)."""
+        # Guard: Ensure parsed is not None
+        if parsed is None:
+            raise ValueError("parsed cannot be None")
+        
+        # Guard: Ensure _cli_function exists
+        if not hasattr(parsed, "_cli_function"):
+            raise ValueError("Missing _cli_function in parsed args")
+        
+        # Guard: Ensure _function_name exists
+        if not hasattr(parsed, "_function_name"):
+            raise ValueError("Missing _function_name in parsed args")
+        
+        # Guard: Ensure _command_path exists
+        if not hasattr(parsed, "_command_path"):
+            raise ValueError("Missing _command_path in parsed args")
         qualname_parts = parsed._cli_function.__qualname__.split(".")
         if len(qualname_parts) < 2:
           raise RuntimeError(
@@ -94,9 +103,10 @@ class CommandExecutor:
           )
 
         inner_class_name = qualname_parts[-2]
-        if not hasattr(self.target_class, inner_class_name):
+        if self.target_class is None or not hasattr(self.target_class, inner_class_name):
+          class_name = self.target_class.__name__ if self.target_class else "None"
           raise RuntimeError(
-            f"Inner class {inner_class_name} not found in {self.target_class.__name__}"
+            f"Inner class {inner_class_name} not found in {class_name}"
           )
 
         inner_class_obj = getattr(self.target_class, inner_class_name)
@@ -105,15 +115,19 @@ class CommandExecutor:
 
         return self._execute_method(inner_instance, parsed._function_name, parsed)
 
-    @guarded(not_none("parsed"), implicit_return=False)
     def _execute_direct_method_command(self, parsed) -> Any:
         """Execute command using direct method from class."""
+        # Guard: Ensure parsed is not None
+        if parsed is None:
+            raise ValueError("parsed cannot be None")
         class_instance = self._create_parent(parsed)
         return self._execute_method(class_instance, parsed._cli_function.__name__, parsed)
 
-    @guarded(not_none("parsed"), implicit_return=False)
     def _create_parent(self, parsed) -> Any:
         """Create parent class instance with global arguments."""
+        # Guard: Ensure parsed is not None
+        if parsed is None:
+            raise ValueError("parsed cannot be None")
         parent_sig = inspect.signature(self.target_class.__init__)
         parent_kwargs = {
           param_name: getattr(parsed, f"_global_{param_name}")
@@ -123,24 +137,36 @@ class CommandExecutor:
           and hasattr(parsed, f"_global_{param_name}")
         }
 
+        if self.target_class is None:
+          raise RuntimeError("Cannot create parent instance: target_class is None")
+        
         try:
           return self.target_class(**parent_kwargs)
         except TypeError as e:
+          class_name = self.target_class.__name__ if self.target_class else "None"
           raise RuntimeError(
-            f"Cannot instantiate {self.target_class.__name__} with global args: {e}"
+            f"Cannot instantiate {class_name} with global args: {e}"
           ) from e
 
-    @guarded(
-      not_none("inner_class"),
-      not_none("command_name"),
-      not_none("parsed"),
-      not_none("parent"),
-      implicit_return=False
-    )
     def _create_inner_instance(
       self, inner_class: type, command_name: str, parsed, parent: Any
     ) -> Any:
         """Create inner class instance with sub-global arguments."""
+        # Guard: Ensure inner_class is not None
+        if inner_class is None:
+            raise ValueError("inner_class cannot be None")
+        
+        # Guard: Ensure command_name is not None
+        if command_name is None:
+            raise ValueError("command_name cannot be None")
+        
+        # Guard: Ensure parsed is not None
+        if parsed is None:
+            raise ValueError("parsed cannot be None")
+        
+        # Guard: Ensure parent is not None
+        if parent is None:
+            raise ValueError("parent cannot be None")
         inner_sig = inspect.signature(inner_class.__init__)
         inner_kwargs = {
           param_name: getattr(parsed, f"_subglobal_{command_name}_{param_name}")
@@ -163,11 +189,14 @@ class CommandExecutor:
             f"Cannot instantiate {inner_class.__name__} with sub-global args: {e}"
           ) from e
 
-    @guarded(not_none("inner_class"))
     def _is_system_inner_class(self, inner_class: type) -> bool:
         """Check if this is a System inner class (from freyja.cli.system)."""
+        # Guard: Ensure inner_class is not None
+        if inner_class is None:
+            raise ValueError("inner_class cannot be None")
+        
         module_name = getattr(inner_class, "__module__", "")
-        "freyja.cli.system" in module_name
+        return "freyja.cli.system" in module_name
 
     def _execute_method(self, instance: Any, method_name: str, parsed) -> Any:
         """Execute method on instance with parsed arguments."""
@@ -186,11 +215,18 @@ class CommandExecutor:
         method_kwargs = self._extract_method_arguments(bound_method, parsed)
         return bound_method(**method_kwargs)
 
-    @guarded(not_none("method_or_function"), not_none("parsed"))
     def _extract_method_arguments(self, method_or_function: Any, parsed) -> dict[str, Any]:
         """Extract method/function arguments from parsed FreyjaCLI arguments."""
+        # Guard: Ensure method_or_function is not None
+        if method_or_function is None:
+            raise ValueError("method_or_function cannot be None")
+        
+        # Guard: Ensure parsed is not None
+        if parsed is None:
+            raise ValueError("parsed cannot be None")
+        
         sig = inspect.signature(method_or_function)
-        {
+        return {
           param_name: getattr(parsed, param_name.replace("-", "_"))
           for param_name, param in sig.parameters.items()
           if param_name != "self"
@@ -236,7 +272,7 @@ class CommandExecutor:
                     stdout_content, stderr_content = self.output_capture.stop()
 
                 # Display output conditionally
-                if self.output_formatter.should_display_output(self.verbose, success):
+                if self.output_formatter and self.output_formatter.should_display_output(self.verbose, success):
                     self.output_formatter.format_output(
                         command_name, stdout_content, stderr_content
                     )
@@ -252,11 +288,18 @@ class CommandExecutor:
 
         return result
 
-    @guarded(not_none("parsed"), not_none("error"))
     def _handle_execution_error(self, parsed, error: Exception) -> int:
         """Handle execution errors with appropriate logging and return codes."""
+        # Guard: Ensure parsed is not None
+        if parsed is None:
+            raise ValueError("parsed cannot be None")
+        
+        # Guard: Ensure error is not None
+        if error is None:
+            raise ValueError("error cannot be None")
+        
         function_name = getattr(parsed, "_function_name", "unknown")
         print(f"Error executing {function_name}: {error}", file=sys.stderr)
         if getattr(parsed, "verbose", False):
           traceback.print_exc()
-        1
+        return 1

@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from typing import Any
 
-from freyja.utils.guards import guarded, not_none
 
 
 @dataclass
@@ -20,14 +19,19 @@ class CommandPath:
 class CommandPathResolver:
     """Resolves hierarchical command paths from argument lists."""
 
-    @guarded(not_none("command_tree", 1), implicit_return=False)
     def __init__(self, command_tree):
         """Initialize command path resolver."""
+        # Guard: Ensure command_tree is not None
+        if command_tree is None:
+            raise ValueError("command_tree cannot be None")
+        
         self.command_tree = command_tree
 
-    @guarded(not_none("args", 1), implicit_return=False)
     def resolve_path(self, args: list[str]) -> CommandPath:
         """Resolve command path and categorize remaining arguments."""
+        # Guard: Ensure args is not None
+        if args is None:
+            raise ValueError("args cannot be None")
         if not args:
             return CommandPath(
                 path_elements=[],
@@ -80,12 +84,14 @@ class CommandPathResolver:
             remaining_args=remaining_args,
         )
 
-    @guarded(not_none("path", 1), implicit_return=False)
     def validate_path(self, path: list[str]) -> bool:
         """Validate that a command path exists in the tree."""
+        # Guard: Ensure path is not None
+        if path is None:
+            raise ValueError("path cannot be None")
         return self._is_valid_path(path)
 
-    def get_available_commands(self, path: list[str] = None) -> list[str]:
+    def get_available_commands(self, path: list[str] | None = None) -> list[str]:
         """Get available commands/groups at a given path level."""
         if not path:
             # Root level - return all flat commands and groups

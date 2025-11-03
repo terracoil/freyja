@@ -184,4 +184,4 @@ Commands:
 
 **Ready for more?** [📖 Learn the fundamentals →](basic-usage.md) or [🏗️ dive into class patterns →](../user-guide/class-cli.md)
 
-**Examples**: [Class Example](../../examples/cls_example)
+**Examples**: [Class Example](../../freyja/examples/cls_example)

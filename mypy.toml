@@ -1,0 +1,127 @@
+# MyPy Configuration for Freyja
+# Modern type hinting enforcement for Python 3.13
+# Extracted from pyproject.toml for better maintainability
+
+[tool.mypy]
+# Python version and cache settings
+python_version = "3.13"
+cache_dir = "tmp/.mypy_cache"
+
+# Paths and exclusions
+exclude = [
+    "build/",
+    "dist/",
+    "tests/test_fixtures.py",  # Exclude test fixtures from type checking
+]
+
+# === STRICT MODE CONFIGURATION ===
+# Enable all strict checks (equivalent to --strict flag)
+strict = true
+
+# Type checking strictness
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+
+# Return type enforcement
+warn_return_any = true
+warn_no_return = true
+
+# Import and unused code warnings
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+
+# Equality and string operations
+strict_equality = true
+strict_concatenate = true
+
+# === MODERN TYPE HINTING ENFORCEMENT ===
+# These settings encourage Python 3.9+ native type syntax
+
+# Strict import discovery to catch typing imports
+ignore_missing_imports = false
+follow_imports = "normal"
+follow_imports_for_stubs = true
+
+# Enable namespace packages for better module resolution
+namespace_packages = true
+explicit_package_bases = true
+
+# Strict generic variance checking (encourages proper generic usage)
+enable_error_code = [
+    "name-defined",
+    "name-match",
+    "syntax",
+    "arg-type",
+    "assignment",
+    "return-value",
+    "union-attr",
+    "operator",
+    "index",
+    "type-abstract",
+    "valid-type",
+    "var-annotated",
+    "override",
+    "return",
+    "misc",
+    "import",
+]
+
+# === PERFORMANCE AND CACHING ===
+incremental = true
+cache_fine_grained = true
+
+# === ERROR PRESENTATION ===
+show_error_context = true
+show_column_numbers = true
+show_error_codes = true
+pretty = true
+color_output = true
+error_summary = true
+show_absolute_path = false
+
+# === REPORTING CONFIGURATION ===
+# Comprehensive reports for CI/CD and development
+linecount_report = "reports/mypy"
+linecoverage_report = "reports/mypy"
+lineprecision_report = "reports/mypy"
+html_report = "reports/mypy/html"
+txt_report = "reports/mypy/txt"
+xml_report = "reports/mypy/xml"
+cobertura_xml_report = "reports/mypy"
+
+# === MODULE-SPECIFIC OVERRIDES ===
+
+# Test files - slightly less strict for practicality
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_decorators = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+# Still enforce modern type syntax in tests
+disallow_any_generics = true
+
+# === MODERN TYPING BEST PRACTICES NOTES ===
+# This configuration enforces:
+# 1. Strict type checking across the codebase
+# 2. Proper generic usage (no bare generics)
+# 3. Complete function signatures
+# 4. Return type annotations
+# 5. Modern import practices
+#
+# To enforce modern syntax patterns in your code:
+# - Use `dict[str, int]` instead of `Dict[str, int]`
+# - Use `list[int]` instead of `List[int]`  
+# - Use `int | None` instead of `Optional[int]`
+# - Use `str | int` instead of `Union[str, int]`
+# - Use `tuple[int, str]` instead of `Tuple[int, str]`
+# - Use `set[str]` instead of `Set[str]`
+#
+# Consider using a pre-commit hook with ruff to automatically
+# upgrade typing imports to modern syntax.

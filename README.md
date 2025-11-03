@@ -234,7 +234,6 @@ python project_manager.py --help
 * **[🚀 Getting Started](docs/getting-started/README.md)** - Installation and first steps
 * **[👤 User Guide](docs/user-guide/README.md)** - Comprehensive guides for class-based CLI patterns
 * **[⚙️ Features](docs/features/README.md)** - Type annotations, themes, completion, and more
-* **[🛡️ Guard Clauses](docs/features/guards.md)** - Parameter validation with declarative guards
 * **[📋 Examples & Best Practices](docs/guides/README.md)** - Real-world examples and patterns
 * **[❓ FAQ](docs/faq.md)** - Frequently asked questions
 * **[🔧 API Reference](docs/reference/README.md)** - Complete API documentation
@@ -256,7 +255,7 @@ curl -sSL https://install.python-poetry.org | python3 -
 
 # Run tests and examples
 ./bin/dev-tools test run
-poetry run python examples/cls_example --help
+poetry run python freyja/examples/cls_example --help
 ```
 
 ### Development Commands

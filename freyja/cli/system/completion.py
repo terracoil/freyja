@@ -5,7 +5,7 @@ import sys
 class Completion:
     """Shell completion management."""
 
-    def __init__(self, shell: str = None, cli_instance=None):
+    def __init__(self, shell: str | None = None, cli_instance=None):
         """Initialize completion manager.
 
         :param shell: Shell type (auto-detect if None)
@@ -163,7 +163,7 @@ class Completion:
 
         sys.exit(exit_code)
 
-    def init_completion(self, shell: str = None):
+    def init_completion(self, shell: str | None = None):
         """Initialize completion handler if enabled.
 
         :param shell: Target shell (auto-detect if None)

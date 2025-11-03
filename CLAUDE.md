@@ -99,11 +99,11 @@ poetry install
 ### Examples
 ```bash
 # Run class-based Freyja example  
-poetry run python examples/cls_example --help
+poetry run python freyja/examples/cls_example --help
 
 # Try example commands (all commands are flat)
-poetry run python examples/cls_example file-operations--process-single --input-file "test.txt"
-poetry run python examples/cls_example data-operations--process-batch --files "*.csv" --parallel
+poetry run python freyja/examples/cls_example file-operations--process-single --input-file "test.txt"
+poetry run python freyja/examples/cls_example data-operations--process-batch --files "*.csv" --parallel
 ```
 
 ## Creating Freyja CLIs in Other Projects
@@ -571,7 +571,7 @@ All constructor parameters must have default values to be used as CLI arguments.
 - **[Complete Documentation](docs/README.md)** - Full user guide
 - **[Type Annotations](docs/features/type-annotations.md)** - Supported types reference
 - **[Troubleshooting](docs/guides/troubleshooting.md)** - Common issues and solutions
-- **[Examples](examples/cls_example)** - Class-based CLI examples
+- **[Examples](freyja/examples/cls_example)** - Class-based CLI examples
 
 ## Class Namespacing Rules (CRITICAL)
 

@@ -584,4 +584,4 @@ def good_function(items: List[str] = None) -> None:
 ---
 
 **Navigation**: [← Help Hub](../README.md) | [Quick Start →](quick-start.md) | [Installation →](installation.md)  
-**Examples**: [Class Example](../../examples/cls_example)
+**Examples**: [Class Example](../../freyja/examples/cls_example)

@@ -3,7 +3,6 @@
 import inspect
 from typing import Any
 
-from freyja.utils.guards import guarded, not_none, not_empty
 from freyja.utils.text_util import TextUtil
 
 from .argument_preprocessor import PositionalInfo
@@ -12,16 +11,25 @@ from .argument_preprocessor import PositionalInfo
 class PositionalHandler:
     """Handles positional parameter detection, validation, and conversion."""
 
-    @guarded(not_none("positional_info", 1), implicit_return=False)
     def __init__(self, positional_info: dict[str, PositionalInfo]):
         """Initialize positional handler with discovered positional parameters."""
+        # Guard: Ensure positional_info is not None
+        if positional_info is None:
+            raise ValueError("positional_info cannot be None")
+        
         self.positional_info = positional_info
 
-    @guarded(not_none("args", 1), not_none("command_path", 2), implicit_return=False)
     def identify_positional_value(
         self, args: list[str], command_path: list[str]
     ) -> tuple[str, str] | None:
         """Identify positional value in argument list."""
+        # Guard: Ensure args is not None
+        if args is None:
+            raise ValueError("args cannot be None")
+        
+        # Guard: Ensure command_path is not None
+        if command_path is None:
+            raise ValueError("command_path cannot be None")
         if not command_path:
             return None
 
@@ -50,22 +58,33 @@ class PositionalHandler:
 
         return None
 
-    @guarded(not_empty("param_name", 1), not_none("param_value", 2), implicit_return=False)
     def convert_positional_to_flag(self, param_name: str, param_value: str) -> list[str]:
         """Convert positional parameter to flag format."""
+        # Guard: Ensure param_name is not empty
+        if not param_name or (isinstance(param_name, str) and not param_name.strip()):
+            raise ValueError("param_name cannot be empty")
+        
+        # Guard: Ensure param_value is not None
+        if param_value is None:
+            raise ValueError("param_value cannot be None")
         flag_name = TextUtil.kebab_case(param_name)
         return [f"--{flag_name}", param_value]
 
-    @guarded(
-      not_empty("param_name", 1),
-      not_none("param_value", 2),
-      not_none("param_type", 3),
-      implicit_return=False
-    )
     def validate_positional_value(
         self, param_name: str, param_value: str, param_type: type
     ) -> tuple[bool, str | None]:
         """Validate positional parameter value matches expected type."""
+        # Guard: Ensure param_name is not empty
+        if not param_name or (isinstance(param_name, str) and not param_name.strip()):
+            raise ValueError("param_name cannot be empty")
+        
+        # Guard: Ensure param_value is not None
+        if param_value is None:
+            raise ValueError("param_value cannot be None")
+        
+        # Guard: Ensure param_type is not None
+        if param_type is None:
+            raise ValueError("param_type cannot be None")
         if param_type == str:
             return True, None
 
@@ -97,9 +116,11 @@ class PositionalHandler:
         # For other types, just accept the string - argparse will handle conversion
         return True, None
 
-    @guarded(not_empty("command_name", 1), implicit_return=False)
     def generate_positional_usage(self, command_name: str) -> str:
         """Generate usage text showing positional parameter."""
+        # Guard: Ensure command_name is not empty
+        if not command_name or (isinstance(command_name, str) and not command_name.strip()):
+            raise ValueError("command_name cannot be empty")
         if command_name not in self.positional_info:
             return ""
 

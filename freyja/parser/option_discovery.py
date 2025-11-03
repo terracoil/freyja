@@ -85,7 +85,7 @@ class OptionDiscovery:
 
         return positional_params
 
-    def get_all_known_options(self, command_path: list[str] = None) -> set[str]:
+    def get_all_known_options(self, command_path: list[str] | None = None) -> set[str]:
         """Get all known options for a given command path."""
         all_options = set()
 
@@ -236,7 +236,7 @@ class OptionDiscovery:
         return conflicts
 
     def suggest_option_corrections(
-        self, unknown_option: str, command_path: list[str] = None
+        self, unknown_option: str, command_path: list[str] | None = None
     ) -> list[str]:
         """Suggest corrections for unknown options using similarity matching."""
         all_options = self.get_all_known_options(command_path)

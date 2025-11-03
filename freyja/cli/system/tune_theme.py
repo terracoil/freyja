@@ -70,7 +70,7 @@ class TuneTheme:
         self.adjust_percent = max(-5.0, self.adjust_percent - self.ADJUSTMENT_INCREMENT)
         print(f"Adjustment decreased to {self.adjust_percent:.2f}")
 
-    def select_strategy(self, strategy: str = None) -> None:
+    def select_strategy(self, strategy: str | None = None) -> None:
         """Select color adjustment strategy.
 
         :param strategy: Strategy name or None for interactive selection

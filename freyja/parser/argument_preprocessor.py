@@ -6,7 +6,6 @@ from typing import Any
 
 from freyja.shared.command_tree import CommandTree
 from freyja.parser.docstring_parser import DocStringParser
-from freyja.utils.guards import guarded, not_none, not_empty
 from freyja.utils.text_util import TextUtil
 
 
@@ -23,9 +22,12 @@ class PositionalInfo:
 class ArgumentPreprocessor:
     """Preprocesses args for flexible option ordering AND positional support."""
 
-    @guarded(not_none("command_tree", 1), implicit_return=False)
     def __init__(self, command_tree: CommandTree, target_class: type | None = None):
         """Initialize the preprocessor with command tree and target class info."""
+        # Guard: Ensure command_tree is not None
+        if command_tree is None:
+            raise ValueError("command_tree cannot be None")
+        
         self.command_tree = command_tree
         self.target_class = target_class
         self._global_options: set[str] = set()
@@ -37,9 +39,12 @@ class ArgumentPreprocessor:
         self._build_option_maps()
         self._build_positional_maps()
 
-    @guarded(not_none("args", 1), implicit_return=False)
     def validate_arguments(self, args: list[str]) -> tuple[bool, list[str]]:
         """Validate arguments before preprocessing."""
+        # Guard: Ensure args is not None
+        if args is None:
+            raise ValueError("args cannot be None")
+        
         errors = []
 
         # Basic validation - check for obviously malformed arguments
@@ -57,9 +62,12 @@ class ArgumentPreprocessor:
 
         return len(errors) == 0, errors
 
-    @guarded(not_none("args", 1), implicit_return=False)
     def preprocess_args(self, args: list[str]) -> list[str]:
         """Reorder arguments to match argparse hierarchical expectations."""
+        # Guard: Ensure args is not None
+        if args is None:
+            raise ValueError("args cannot be None")
+        
         # Parse command structure from positional arguments
         command_path = self._extract_command_path(args)
 
@@ -134,9 +142,12 @@ class ArgumentPreprocessor:
                     if positional_info:
                         self._positional_params[group_name] = positional_info
 
-    @guarded(not_none("cls", 1), implicit_return=False)
     def _extract_constructor_options(self, cls: type, skip_params: int = 1) -> set[str]:
         """Extract options from class constructor."""
+        # Guard: Ensure cls is not None
+        if cls is None:
+            raise ValueError("cls cannot be None")
+        
         options: set[str] = set()
         if not hasattr(cls, "__init__"):
             return options
@@ -154,9 +165,12 @@ class ArgumentPreprocessor:
 
         return options
 
-    @guarded(not_none("func", 1), implicit_return=False)
     def _extract_function_options(self, func: Any) -> set[str]:
         """Extract options from function signature."""
+        # Guard: Ensure func is not None
+        if func is None:
+            raise ValueError("func cannot be None")
+        
         options = set()
         sig = inspect.signature(func)
 
@@ -173,9 +187,12 @@ class ArgumentPreprocessor:
 
         return options
 
-    @guarded(not_none("func", 1), implicit_return=False)
     def _extract_positional_parameter(self, func: Any) -> PositionalInfo | None:
         """Extract positional parameter info from function signature."""
+        # Guard: Ensure func is not None
+        if func is None:
+            raise ValueError("func cannot be None")
+        
         sig = inspect.signature(func)
         _, param_help = DocStringParser.extract_function_help(func)
 
@@ -194,9 +211,16 @@ class ArgumentPreprocessor:
 
         return None
 
-    @guarded(not_none("func", 1), not_none("param_name", 2), implicit_return=False)
     def _is_first_non_default_param(self, func: Any, param_name: str) -> bool:
         """Check if this is the first parameter without a default value."""
+        # Guard: Ensure func is not None
+        if func is None:
+            raise ValueError("func cannot be None")
+        
+        # Guard: Ensure param_name is not None
+        if param_name is None:
+            raise ValueError("param_name cannot be None")
+        
         sig = inspect.signature(func)
 
         for name, param in sig.parameters.items():

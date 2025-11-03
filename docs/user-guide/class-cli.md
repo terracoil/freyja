@@ -347,12 +347,12 @@ db-mgr restore prod_backup.sql --overwrite
 
 ## Complete Example Walkthrough
 
-Let's build a user management system using [../examples/cls_example](../../examples/cls_example):
+Let's build a user management system using [../freyja/examples/cls_example](../../freyja/examples/cls_example):
 
 ### Step 1: Define Your Class
 
 ```python
-# ../examples/cls_example
+# ../freyja/examples/cls_example
 """User Management Freyja Application"""
 
 from enum import Enum
@@ -572,7 +572,7 @@ class UserManager:
 ### Step 2: Create CLI
 
 ```python
-# At the end of ../examples/cls_example
+# At the end of ../freyja/examples/cls_example
 if __name__ == '__main__':
   from src import CLI
 
@@ -604,24 +604,24 @@ if __name__ == '__main__':
 
 ```bash
 # Run the Freyja
-python ../examples/cls_example
+python ../freyja/examples/cls_example
 
 # Create users
-python ../examples/cls_example add-user --username john --email john@example.com
-python ../examples/cls_example add-user --username admin --email admin@company.com --role ADMIN
-python ../examples/cls_example add-user --username guest --email guest@test.com --role GUEST --active False
+python ../freyja/examples/cls_example add-user --username john --email john@example.com
+python ../freyja/examples/cls_example add-user --username admin --email admin@company.com --role ADMIN
+python ../freyja/examples/cls_example add-user --username guest --email guest@test.com --role GUEST --active False
 
 # List users with filtering
-python ../examples/cls_example list-users
-python ../examples/cls_example list-users --role-filter ADMIN
-python ../examples/cls_example list-users --active-only --format-output json
+python ../freyja/examples/cls_example list-users
+python ../freyja/examples/cls_example list-users --role-filter ADMIN
+python ../freyja/examples/cls_example list-users --active-only --format-output json
 
 # Modify users
-python ../examples/cls_example modify-user --username john --new-email john.doe@example.com
-python ../examples/cls_example modify-user --username guest --active True
+python ../freyja/examples/cls_example modify-user --username john --new-email john.doe@example.com
+python ../freyja/examples/cls_example modify-user --username guest --active True
 
 # Show statistics
-python ../examples/cls_example show-stats
+python ../freyja/examples/cls_example show-stats
 ```
 
 ## State Management
@@ -1047,4 +1047,4 @@ class DocumentedApp:
 ---
 
 **Navigation**: [← Help Hub](README.md) | [Module-based Guide →](inner-classes.md)  
-**Example**: [../examples/cls_example](../../examples/cls_example)
+**Example**: [../freyja/examples/cls_example](../../freyja/examples/cls_example)

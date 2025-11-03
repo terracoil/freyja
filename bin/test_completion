@@ -80,25 +80,25 @@ echo "----------------------------------------"
 
 # CRITICAL: These tests verify that normal execution works correctly
 run_test "cls_example shows usage (not 'completion')" \
-    "PYTHONPATH=. python examples/cls_example" \
+    "PYTHONPATH=. python freyja/examples/cls_example" \
     "usage:\|Usage:" \
     false \
     true
 
 run_test "cls_example does NOT output just 'completion'" \
-    "PYTHONPATH=. python examples/cls_example | head -1 | grep -x 'completion'" \
+    "PYTHONPATH=. python freyja/examples/cls_example | head -1 | grep -x 'completion'" \
     "." \
     true \
     true
 
 run_test "mod_example shows usage" \
-    "PYTHONPATH=. python examples/mod_example" \
+    "PYTHONPATH=. python freyja/examples/mod_example" \
     "usage:\|Usage:" \
     false \
     true
 
 run_test "system_example shows usage" \
-    "PYTHONPATH=. python examples/system_example" \
+    "PYTHONPATH=. python freyja/examples/system_example" \
     "usage:\|Usage:" \
     false \
     true
@@ -108,15 +108,15 @@ echo -e "${BLUE}2. Command Execution Tests${NC}"
 echo "----------------------------"
 
 run_test "cls_example foo command works" \
-    "PYTHONPATH=. python examples/cls_example foo --text 'test'" \
+    "PYTHONPATH=. python freyja/examples/cls_example foo --text 'test'" \
     "test"
 
 run_test "cls_example help works" \
-    "PYTHONPATH=. python examples/cls_example --help" \
+    "PYTHONPATH=. python freyja/examples/cls_example --help" \
     "usage:\|Usage:"
 
 run_test "mod_example greet command works" \
-    "PYTHONPATH=. python examples/mod_example greet --name 'Test'" \
+    "PYTHONPATH=. python freyja/examples/mod_example greet --name 'Test'" \
     "Hello, Test\|Test"
 
 echo ""
@@ -124,15 +124,15 @@ echo -e "${BLUE}3. Completion Functionality Tests${NC}"
 echo "--------------------------------"
 
 run_test "ZSH completion: fo -> foo" \
-    "_FREYJA_COMPLETE=zsh COMP_WORDS_STR='examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python examples/cls_example --_complete" \
+    "_FREYJA_COMPLETE=zsh COMP_WORDS_STR='freyja/examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python freyja/examples/cls_example --_complete" \
     "foo"
 
 run_test "ZSH completion: sys -> system" \
-    "_FREYJA_COMPLETE=zsh COMP_WORDS_STR='examples/cls_example sys' COMP_CWORD_NUM=2 PYTHONPATH=. python examples/cls_example --_complete" \
+    "_FREYJA_COMPLETE=zsh COMP_WORDS_STR='freyja/examples/cls_example sys' COMP_CWORD_NUM=2 PYTHONPATH=. python freyja/examples/cls_example --_complete" \
     "system"
 
 run_test "Bash completion works" \
-    "_FREYJA_COMPLETE=bash COMP_WORDS_STR='examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python examples/cls_example --_complete" \
+    "_FREYJA_COMPLETE=bash COMP_WORDS_STR='freyja/examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python freyja/examples/cls_example --_complete" \
     "foo"
 
 echo ""
@@ -143,41 +143,41 @@ echo "Testing that completion doesn't interfere with subsequent normal execution
 
 # Test multiple completion scenarios followed by normal execution
 echo "  Running ZSH completion for 'fo'..."
-_FREYJA_COMPLETE=zsh COMP_WORDS_STR='examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python examples/cls_example --_complete > /dev/null 2>&1
+_FREYJA_COMPLETE=zsh COMP_WORDS_STR='freyja/examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python freyja/examples/cls_example --_complete > /dev/null 2>&1
 
 run_test "Normal execution works after ZSH 'fo' completion" \
-    "PYTHONPATH=. python examples/cls_example" \
+    "PYTHONPATH=. python freyja/examples/cls_example" \
     "usage:\|Usage:" \
     false \
     true
 
 run_test "No 'completion' output after ZSH completion" \
-    "PYTHONPATH=. python examples/cls_example | head -1 | grep -x 'completion'" \
+    "PYTHONPATH=. python freyja/examples/cls_example | head -1 | grep -x 'completion'" \
     "." \
     true \
     true
 
 echo "  Running ZSH completion for 'sys'..."
-_FREYJA_COMPLETE=zsh COMP_WORDS_STR='examples/cls_example sys' COMP_CWORD_NUM=2 PYTHONPATH=. python examples/cls_example --_complete > /dev/null 2>&1
+_FREYJA_COMPLETE=zsh COMP_WORDS_STR='freyja/examples/cls_example sys' COMP_CWORD_NUM=2 PYTHONPATH=. python freyja/examples/cls_example --_complete > /dev/null 2>&1
 
 run_test "Normal execution works after ZSH 'sys' completion" \
-    "PYTHONPATH=. python examples/cls_example" \
+    "PYTHONPATH=. python freyja/examples/cls_example" \
     "usage:\|Usage:" \
     false \
     true
 
 echo "  Running Bash completion..."
-_FREYJA_COMPLETE=bash COMP_WORDS_STR='examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python examples/cls_example --_complete > /dev/null 2>&1
+_FREYJA_COMPLETE=bash COMP_WORDS_STR='freyja/examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python freyja/examples/cls_example --_complete > /dev/null 2>&1
 
 run_test "Normal execution works after Bash completion" \
-    "PYTHONPATH=. python examples/cls_example" \
+    "PYTHONPATH=. python freyja/examples/cls_example" \
     "usage:\|Usage:" \
     false \
     true
 
 echo "  Testing command execution after completion..."
 run_test "Command execution works after completion" \
-    "PYTHONPATH=. python examples/cls_example foo --text 'post-completion-test'" \
+    "PYTHONPATH=. python freyja/examples/cls_example foo --text 'post-completion-test'" \
     "post-completion-test"
 
 echo ""
@@ -190,13 +190,13 @@ if [ "$SHELL_NAME" = "zsh" ]; then
     if [ -f ~/.zfunc/_cls_example ]; then
         echo -e "${GREEN}✓${NC} ZSH completion file found at ~/.zfunc/_cls_example"
     else
-        echo -e "${YELLOW}!${NC} ZSH completion not installed. Run: python examples/cls_example system completion install --shell zsh"
+        echo -e "${YELLOW}!${NC} ZSH completion not installed. Run: python freyja/examples/cls_example system completion install --shell zsh"
     fi
 elif [ "$SHELL_NAME" = "bash" ]; then
     if grep -q "cls_example" ~/.bashrc 2>/dev/null || grep -q "cls_example" ~/.bash_profile 2>/dev/null; then
         echo -e "${GREEN}✓${NC} Bash completion appears to be configured"
     else
-        echo -e "${YELLOW}!${NC} Bash completion not installed. Run: python examples/cls_example system completion install --shell bash"
+        echo -e "${YELLOW}!${NC} Bash completion not installed. Run: python freyja/examples/cls_example system completion install --shell bash"
     fi
 fi
 
@@ -214,9 +214,9 @@ if [ $CRITICAL_FAILURES -eq 0 ] && [ $TESTS_FAILED -eq 0 ]; then
     echo "The completion system is working correctly."
     echo ""
     echo "Manual tests you can try:"
-    echo "  examples/cls_example fo<TAB>    (should complete to 'foo')"
-    echo "  examples/cls_example sys<TAB>   (should complete to 'system')" 
-    echo "  examples/cls_example <TAB>      (should show all commands)"
+    echo "  freyja/examples/cls_example fo<TAB>    (should complete to 'foo')"
+    echo "  freyja/examples/cls_example sys<TAB>   (should complete to 'system')" 
+    echo "  freyja/examples/cls_example <TAB>      (should show all commands)"
     exit 0
 elif [ $CRITICAL_FAILURES -gt 0 ]; then
     echo -e "${RED}❌ CRITICAL ISSUES FOUND!${NC}"

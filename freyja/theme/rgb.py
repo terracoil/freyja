@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from enum import Enum
 
-from freyja.utils.guards import guarded, in_range
 from freyja.utils.math_util import MathUtil
 
 
@@ -23,15 +22,20 @@ class AdjustStrategy(Enum):
 class RGB:
     """Immutable RGB color representation with values in range 0.0-1.0."""
 
-    @guarded(
-      in_range(0.0, 1.0, "r", 1),
-      in_range(0.0, 1.0, "g", 2),
-      in_range(0.0, 1.0, "b", 3),
-      on_error=ValueError,
-      implicit_return=False
-    )
     def __init__(self, r: float, g: float, b: float):
-        """Initialize RGB with float values (0.0-1.0 range enforced by guards)."""
+        """Initialize RGB with float values (0.0-1.0 range)."""
+        # Guard: Ensure r is in valid range
+        if not (0.0 <= r <= 1.0):
+            raise ValueError(f"r must be between 0.0 and 1.0")
+        
+        # Guard: Ensure g is in valid range
+        if not (0.0 <= g <= 1.0):
+            raise ValueError(f"g must be between 0.0 and 1.0")
+        
+        # Guard: Ensure b is in valid range
+        if not (0.0 <= b <= 1.0):
+            raise ValueError(f"b must be between 0.0 and 1.0")
+        
         self._r = r
         self._g = g
         self._b = b
@@ -52,25 +56,29 @@ class RGB:
         return self._b
 
     @classmethod
-    @guarded(
-      in_range(0, 255, "r", 1),
-      in_range(0, 255, "g", 2),
-      in_range(0, 255, "b", 3),
-      on_error=ValueError,
-      implicit_return=False
-    )
     def from_ints(cls, r: int, g: int, b: int) -> RGB:
-        """Create RGB from integer values (0-255 range enforced by guards)."""
+        """Create RGB from integer values (0-255 range)."""
+        # Guard: Ensure r is in valid range
+        if not (0 <= r <= 255):
+            raise ValueError(f"r must be between 0 and 255")
+        
+        # Guard: Ensure g is in valid range
+        if not (0 <= g <= 255):
+            raise ValueError(f"g must be between 0 and 255")
+        
+        # Guard: Ensure b is in valid range
+        if not (0 <= b <= 255):
+            raise ValueError(f"b must be between 0 and 255")
+        
         return cls(r / 255.0, g / 255.0, b / 255.0)
 
     @classmethod
-    @guarded(
-      in_range(0, 0xFFFFFF, "rgb", 1),
-      on_error=ValueError,
-      implicit_return=False
-    )
     def from_rgb(cls, rgb: int) -> RGB:
-        """Create RGB from hex integer (0x000000-0xFFFFFF range enforced by guard)."""
+        """Create RGB from hex integer (0x000000-0xFFFFFF range)."""
+        # Guard: Ensure rgb is in valid range
+        if not (0 <= rgb <= 0xFFFFFF):
+            raise ValueError(f"rgb must be between 0 and 16777215")
+        
         return cls.from_ints((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF)
 
     def to_hex(self) -> str:
@@ -126,14 +134,15 @@ class RGB:
             case _:
                 return self
 
-    @guarded(
-      in_range(-5.0, 5.0, "brightness", 1),
-      in_range(-5.0, 5.0, "saturation", 2),
-      on_error=ValueError,
-      implicit_return=False
-    )
     def linear_blend(self, brightness: float = 0.0, saturation: float = 0.0) -> RGB:
-        """Adjust color brightness and/or saturation (ranges enforced by guards)."""
+        """Adjust color brightness and/or saturation."""
+        # Guard: Ensure brightness is in valid range
+        if not (-5.0 <= brightness <= 5.0):
+            raise ValueError(f"brightness must be between -5.0 and 5.0")
+        
+        # Guard: Ensure saturation is in valid range
+        if not (-5.0 <= saturation <= 5.0):
+            raise ValueError(f"saturation must be between -5.0 and 5.0")
         if brightness == 0.0 and saturation == 0.0:
           return self
 

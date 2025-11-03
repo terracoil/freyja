@@ -108,19 +108,19 @@ echo "--------------------------------------------"
 
 # CRITICAL: Test that normal execution shows help, not "completion"
 run_test "cls_example normal execution shows help" \
-    "PYTHONPATH=. python examples/cls_example" \
+    "PYTHONPATH=. python freyja/examples/cls_example" \
     "Usage:\|usage:" \
     false \
     true
 
 run_test "cls_example does NOT output just 'completion'" \
-    "PYTHONPATH=. python examples/cls_example | grep -x completion" \
+    "PYTHONPATH=. python freyja/examples/cls_example | grep -x completion" \
     "." \
     true \
     true
 
 run_test "mod_example normal execution shows help" \
-    "PYTHONPATH=. python examples/mod_example" \
+    "PYTHONPATH=. python freyja/examples/mod_example" \
     "Usage:\|usage:" \
     false \
     true
@@ -144,11 +144,11 @@ echo "--------------------------------------------"
 
 # Test that completion works when requested
 run_test "ZSH completion generates output" \
-    "_FREYJA_COMPLETE=zsh COMP_WORDS_STR='examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python examples/cls_example --_complete" \
+    "_FREYJA_COMPLETE=zsh COMP_WORDS_STR='freyja/examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python freyja/examples/cls_example --_complete" \
     "foo"
 
 run_test "ZSH completion for system commands" \
-    "_FREYJA_COMPLETE=zsh COMP_WORDS_STR='examples/cls_example sys' COMP_CWORD_NUM=2 PYTHONPATH=. python examples/cls_example --_complete" \
+    "_FREYJA_COMPLETE=zsh COMP_WORDS_STR='freyja/examples/cls_example sys' COMP_CWORD_NUM=2 PYTHONPATH=. python freyja/examples/cls_example --_complete" \
     "system"
 
 echo ""
@@ -159,17 +159,17 @@ echo "--------------------------------------------"
 echo "Testing environment isolation..."
 
 # Run completion
-_FREYJA_COMPLETE=zsh COMP_WORDS_STR='examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python examples/cls_example --_complete > /dev/null 2>&1
+_FREYJA_COMPLETE=zsh COMP_WORDS_STR='freyja/examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python freyja/examples/cls_example --_complete > /dev/null 2>&1
 
 # Immediately test normal execution
 run_test "Normal execution works after completion" \
-    "PYTHONPATH=. python examples/cls_example" \
+    "PYTHONPATH=. python freyja/examples/cls_example" \
     "Usage:\|usage:" \
     false \
     true
 
 run_test "No completion output after completion run" \
-    "PYTHONPATH=. python examples/cls_example | grep -x completion" \
+    "PYTHONPATH=. python freyja/examples/cls_example | grep -x completion" \
     "." \
     true \
     true
@@ -180,15 +180,15 @@ echo "------------------------------------"
 
 # Test actual command execution
 run_test "Command execution works (foo command)" \
-    "PYTHONPATH=. python examples/cls_example foo --text 'test'" \
+    "PYTHONPATH=. python freyja/examples/cls_example foo --text 'test'" \
     "test"
 
 run_test "Help flags work at different levels" \
-    "PYTHONPATH=. python examples/cls_example --help" \
+    "PYTHONPATH=. python freyja/examples/cls_example --help" \
     "Usage:\|usage:"
 
 run_test "Group help works" \
-    "PYTHONPATH=. python examples/cls_example system --help" \
+    "PYTHONPATH=. python freyja/examples/cls_example system --help" \
     "System\|SYSTEM"
 
 echo ""
@@ -208,7 +208,7 @@ echo "----------------------------"
 echo "Running integration sequence..."
 
 # 1. Normal execution
-NORMAL_OUTPUT=$(PYTHONPATH=. python examples/cls_example 2>&1)
+NORMAL_OUTPUT=$(PYTHONPATH=. python freyja/examples/cls_example 2>&1)
 echo "Normal execution output length: ${#NORMAL_OUTPUT} characters"
 
 if echo "$NORMAL_OUTPUT" | grep -q "Usage:"; then
@@ -220,7 +220,7 @@ else
 fi
 
 # 2. Completion
-COMPLETION_OUTPUT=$(_FREYJA_COMPLETE=zsh COMP_WORDS_STR='examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python examples/cls_example --_complete 2>&1)
+COMPLETION_OUTPUT=$(_FREYJA_COMPLETE=zsh COMP_WORDS_STR='freyja/examples/cls_example fo' COMP_CWORD_NUM=2 PYTHONPATH=. python freyja/examples/cls_example --_complete 2>&1)
 if echo "$COMPLETION_OUTPUT" | grep -q "foo"; then
     echo -e "  Completion: ${GREEN}✅${NC}"
 else
@@ -229,7 +229,7 @@ else
 fi
 
 # 3. Normal execution after completion
-AFTER_OUTPUT=$(PYTHONPATH=. python examples/cls_example 2>&1)
+AFTER_OUTPUT=$(PYTHONPATH=. python freyja/examples/cls_example 2>&1)
 if echo "$AFTER_OUTPUT" | grep -q "Usage:"; then
     echo -e "  After completion: ${GREEN}✅${NC}"
 else

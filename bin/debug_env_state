@@ -56,7 +56,7 @@ cd "$(dirname "$0")/.."
 PYTHONPATH=. python -c "
 import os, sys
 import importlib.util
-spec = importlib.util.spec_from_file_location('cls_example', 'examples/cls_example')
+spec = importlib.util.spec_from_file_location('cls_example', 'freyja/examples/cls_example')
 cls_example = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cls_example)
 

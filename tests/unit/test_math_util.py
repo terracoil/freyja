@@ -1,7 +1,6 @@
 """Comprehensive tests for MathUtil class to achieve 95%+ coverage."""
 
 import pytest
-
 from freyja.utils.math_util import MathUtil
 
 
@@ -83,7 +82,7 @@ class TestMathUtil:
 
   def test_minmax_no_args_raises_error(self):
     """Test that minmax raises error with no arguments."""
-    with pytest.raises(ValueError, match="minmax\\(\\) requires at least one argument"):
+    with pytest.raises(ValueError, match='minmax\\(\\) requires at least one argument'):
       MathUtil.minmax()
 
   def test_minmax_range_basic(self):
@@ -172,15 +171,15 @@ class TestMathUtil:
   def test_percent_small_max_raises_error(self):
     """Test that percent raises error when max_val is too small."""
     # Test with exactly EPSILON
-    with pytest.raises(ValueError, match="max_val is too small"):
+    with pytest.raises(ValueError, match='max_val is too small'):
       MathUtil.percent(50, MathUtil.EPSILON / 2)
 
     # Test with zero
-    with pytest.raises(ValueError, match="max_val is too small"):
+    with pytest.raises(ValueError, match='max_val is too small'):
       MathUtil.percent(50, 0)
 
     # Test with negative
-    with pytest.raises(ValueError, match="max_val is too small"):
+    with pytest.raises(ValueError, match='max_val is too small'):
       MathUtil.percent(50, -1)
 
   def test_percent_edge_cases(self):

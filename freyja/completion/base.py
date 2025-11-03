@@ -6,8 +6,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from freyja.utils.guards import guarded_expression
-
 if TYPE_CHECKING:
     from freyja import FreyjaCLI
 
@@ -298,7 +296,7 @@ class CompletionHandler(ABC):
         return completions
 
 
-def get_completion_handler(cli, shell: str = None) -> CompletionHandler:
+def get_completion_handler(cli, shell: str | None = None) -> CompletionHandler:
     """Get appropriate completion handler for shell.
 
     :param cli: FreyjaCLI instance

@@ -7,9 +7,9 @@ license = "MIT"
 version = "1.1.5" # Uses poetry-dynamic-versioning
 
 [project.urls]
-Homepage = "https://github.com/terracoil/modgud"
-Repository = "https://github.com/terracoil/modgud"
-Documentation = "https://github.com/terracoil/modgud/tree/main/docs"
+Homepage = "https://github.com/terracoil/freyja"
+Repository = "https://github.com/terracoil/freyja"
+Documentation = "https://github.com/terracoil/freyja/tree/main/docs"
 
 [tool.poetry]
 classifiers = [
@@ -26,23 +26,9 @@ classifiers = [
 include = [
     "LICENSE",
     "README.md",
-    "freyja/py.typed",
-    "freyja/utils/modgud/**/*.py",
-    "freyja/utils/modgud/modgud/py.typed"
+    "freyja/py.typed"
 ]
 exclude = [
-    "freyja/utils/modgud/.venv",
-    "freyja/utils/modgud/dist",
-    "freyja/utils/modgud/build",
-    "freyja/utils/modgud/.git",
-    "freyja/utils/modgud/.gitignore",
-    "freyja/utils/modgud/tests",
-    "freyja/utils/modgud/docs",
-    "freyja/utils/modgud/bin",
-    "freyja/utils/modgud/tmp",
-    "freyja/utils/modgud/*.toml",
-    "freyja/utils/modgud/*.md",
-    "freyja/utils/modgud/LICENSE",
     "**/__pycache__",
     "**/*.pyc",
     "**/.pytest_cache",
@@ -57,7 +43,6 @@ python = "^3.13.7"
 
 [dependency-groups]
 test = [
-    "black (>= 25.9.0, <27.0.0)",
     "pytest (>=8.4.2,<9.0.0)",
     "pytest-cov (>=7.0.0,<8.0.0)",
     "pytest-timeout (>=2.3.1,<3.0.0)",
@@ -79,18 +64,6 @@ style = "semver"
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
-
-[tool.mypy]
-python_version = "3.13"
-cache_dir = "tmp/.mypy_cache"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = false  # Start lenient, can be tightened later
-show_error_codes = true
-exclude = [
-    "build/",
-    "dist/",
-]
 
 [tool.pytest.ini_options]
 minversion = "8.0"

@@ -1,7 +1,7 @@
 # Command discovery functionality extracted from FreyjaCLI class.
 import inspect
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Sequence
 
 from freyja.cli import SystemClassBuilder, TargetMode
 from freyja.parser import DocStringParser
@@ -11,7 +11,7 @@ from freyja.shared.command_tree import CommandTree
 
 from .validation import ValidationService
 
-TargetType = type | list[type]
+TargetType = type | list[type] | type[Any] | Sequence[type[Any]]
 
 
 class CommandDiscovery:
@@ -146,7 +146,8 @@ class CommandDiscovery:
             self._discover_from_class(target_class, command_tree, is_namespaced=True)
 
         # Discover cmd_tree for primary class (no namespace)
-        self._discover_from_class(self.primary_class, command_tree, is_namespaced=False)
+        if self.primary_class is not None:
+            self._discover_from_class(self.primary_class, command_tree, is_namespaced=False)
 
     def _discover_inner_classes(self, target_class: type) -> dict[str, type]:
         """Discover inner classes that should be treated as command groups."""

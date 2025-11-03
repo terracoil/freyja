@@ -1,8 +1,6 @@
 import inspect
 from typing import Any
 
-from freyja.utils.guards import guarded, not_empty, not_none
-
 """Multi-class FreyjaCLI command handling and collision detection.
 
 Provides services for managing cmd_tree from multiple classes in a single FreyjaCLI,
@@ -19,9 +17,15 @@ class ClassHandler:
     self.class_commands: dict[type, list[str]] = {}  # source_class -> [command_names]
     self.collision_tracker: dict[str, list[type]] = {}  # command_name -> [source_classes]
 
-  @guarded(not_empty("command_name"), not_none("source_class"), implicit_return=False)
   def track_command(self, command_name: str, source_class: type) -> None:
     """Track a command and its source class for collision detection."""
+    # Guard: Ensure command_name is not empty
+    if not command_name or (isinstance(command_name, str) and not command_name.strip()):
+      raise ValueError("command_name cannot be empty")
+    
+    # Guard: Ensure source_class is not None
+    if source_class is None:
+      raise ValueError("source_class cannot be None")
     # Track collision if command already exists
     if command_name in self.command_sources:
       if command_name not in self.collision_tracker:
@@ -33,17 +37,14 @@ class ClassHandler:
     # Track commands per class for ordering
     self.class_commands.setdefault(source_class, []).append(command_name)
 
-  @guarded(implicit_return=False)
   def detect_collisions(self) -> list[tuple[str, list[type]]]:
     """Detect and return command name collisions."""
     return list(self.collision_tracker.items())
 
-  @guarded(implicit_return=False)
   def has_collisions(self) -> bool:
     """Check if any command name collisions exist."""
     return len(self.collision_tracker) > 0
 
-  @guarded(implicit_return=False)
   def get_ordered_commands(self, class_order: list[type]) -> list[str]:
     """Get commands ordered by class sequence, then alphabetically within each class."""
     return [
@@ -53,12 +54,10 @@ class ClassHandler:
       for cmd in sorted(self.class_commands[cls])
     ]
 
-  @guarded(implicit_return=False)
   def get_command_source(self, command_name: str) -> type | None:
     """Get the source class for a command."""
     return self.command_sources.get(command_name)
 
-  @guarded(implicit_return=False)
   def format_collision_error(self) -> str:
     """Format collision error message for user display."""
     if not self.has_collisions():
@@ -78,7 +77,6 @@ class ClassHandler:
     ]
     return "\n".join(error_lines)
 
-  @guarded(implicit_return=False)
   def validate_classes(self, classes: list[type]) -> None:
     """Validate that classes can be used together without collisions."""
     temp_handler = ClassHandler()
@@ -114,7 +112,6 @@ class ClassHandler:
         if self._is_valid_method(name, obj, cls):
           handler.track_command(TextUtil.kebab_case(name), cls)
 
-  @guarded(implicit_return=False)
   def _discover_inner_classes(self, cls: type) -> dict[str, type]:
     """Discover inner classes for a given class."""
     return {
@@ -124,7 +121,6 @@ class ClassHandler:
           obj.__qualname__.endswith(f"{cls.__name__}.{name}"))
     }
 
-  @guarded(implicit_return=False)
   def _is_valid_method(self, name: str, obj: Any, cls: type) -> bool:
     """Check if a method should be included as a CLI command."""
     return (not name.startswith("_") and callable(obj) and

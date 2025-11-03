@@ -9,7 +9,6 @@
 
 **Related**:
 - [⚙️ How It Works](how-it-works.md) - Internal architecture explained
-- [🏗️ Architecture](architecture/README.md) - Visual architecture diagrams
 - [✨ Features](features/README.md) - Feature documentation
 - [👤 User Guide](user-guide/README.md) - Building CLIs with Freyja
 
@@ -25,7 +24,6 @@
   - [Shared Models](#shared-models)
   - [Completion System](#completion-system)
   - [Utilities](#utilities)
-- [🛡️ Guards (modgud)](#️-guards-modgud)
 - [🎨 Themes](#-themes)
 - [📝 Type Support](#-type-support)
 
@@ -362,7 +360,7 @@ python db_cli.py query --help
 
 The following classes are **internal implementation details** of Freyja's architecture. They are documented here for contributors and those interested in understanding Freyja's internals.
 
-> **💡 Note**: For a visual overview of how these components interact, see the [Architecture Diagrams](architecture/README.md) and [How It Works](how-it-works.md) guide.
+> **💡 Note**: For a visual overview of how these components interact, see the [How It Works](how-it-works.md) guide.
 
 ### CLI Layer
 
@@ -699,42 +697,6 @@ python app.py completion uninstall --shell bash
 
 ---
 
-## 🛡️ Guards (modgud)
-
-Freyja includes declarative guard clauses powered by the modgud library.
-
-> **📦 Standalone Package**: Guard functionality is provided by [modgud](https://pypi.org/project/modgud/), included as a Git submodule. For standalone usage outside Freyja, install: `pip install modgud`
-
-### Usage in Freyja
-
-```python
-from freyja.utils.guards import guarded, not_none, positive
-
-class MyClass:
-    @guarded(
-        not_none("value", "Value cannot be None"),
-        positive("count", "Count must be positive")
-    )
-    def process(self, value: str, count: int = 1) -> None:
-        """Process value count times."""
-        for _ in range(count):
-            print(value)
-```
-
-### Available Guards
-
-See [Guards Documentation](features/guards.md) for complete reference.
-
-**Common Guards**:
-- `not_none(param, message)` - Ensure parameter is not None
-- `positive(param, message)` - Ensure number is positive
-- `non_empty(param, message)` - Ensure string/list is not empty
-- `range_check(param, min, max, message)` - Ensure value in range
-
-**For More**: See the [modgud PyPI page](https://pypi.org/project/modgud/) for full documentation.
-
----
-
 ## 🎨 Themes
 
 Freyja supports customizable themes for colored output.
@@ -872,14 +834,12 @@ See [Type Annotations Documentation](features/type-annotations.md) for complete 
 
 ### For Advanced Users
 - **[How It Works](how-it-works.md)** - Deep dive into internals
-- **[Architecture](architecture/README.md)** - Visual diagrams
 - **[Best Practices](guides/best-practices.md)** - Professional patterns
 
 ### For Contributors
 - **[Contributing](development/contributing.md)** - Contribution guide
 - **[Development](development/README.md)** - Development setup
-- **[Submodules](development/submodules.md)** - Git submodule management
 
 ---
 
-**Navigation**: [← Documentation Hub](README.md) | [How It Works →](how-it-works.md) | [Architecture →](architecture/README.md)
+**Navigation**: [← Documentation Hub](README.md) | [How It Works →](how-it-works.md)

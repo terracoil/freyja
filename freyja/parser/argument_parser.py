@@ -81,7 +81,9 @@ class ArgumentParser:
             if param.default != param.empty:
                 arg_config["default"] = param.default
             else:
-                arg_config["required"] = True
+                # Don't set required=True for boolean flags (they have action="store_true")
+                if "action" not in arg_config:
+                    arg_config["required"] = True
 
             # Add argument without prefix (user requested no global- prefix)
             from freyja.utils.text_util import TextUtil
@@ -133,7 +135,9 @@ class ArgumentParser:
             if param.default != param.empty:
                 arg_config["default"] = param.default
             else:
-                arg_config["required"] = True
+                # Don't set required=True for boolean flags (they have action="store_true")
+                if "action" not in arg_config:
+                    arg_config["required"] = True
 
             # Add argument with command-specific prefix
             from freyja.utils.text_util import TextUtil

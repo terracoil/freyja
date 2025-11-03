@@ -633,4 +633,4 @@ def export_data(data: str, format: str = "json") -> None:
 ---
 
 **Navigation**: [← Help Hub](../README.md) | [Basic Usage →](../getting-started/basic-usage.md)  
-**Examples**: [Class Example](../../examples/cls_example)
+**Examples**: [Class Example](../../freyja/examples/cls_example)

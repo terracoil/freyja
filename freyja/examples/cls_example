@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 
 from freyja import FreyjaCLI
-from freyja.utils.guards import guarded, not_none, in_range, not_empty
 
 class ProcessingMode(enum.Enum):
   """Processing modes for data operations."""
@@ -211,37 +210,39 @@ class DataProcessor:
       """
       self.parent = parent
 
-    @guarded(not_none("data", 1), not_empty("data", 1), implicit_return=False)
     def validate_input(self, data: str, strict: bool = False) -> bool:
-      """Validate input data with guard clauses.
-
-      This method demonstrates using @guarded with not_none and not_empty guards.
-      The guards ensure data is provided and not empty before the method executes.
+      """Validate input data.
 
       :param data: Input data to validate (must not be None or empty)
       :param strict: Apply strict validation rules
       :return: True if validation passes
       """
+      # Guard: Ensure data is not None
+      if data is None:
+        raise ValueError("data cannot be None")
+      
+      # Guard: Ensure data is not empty
+      if not data or (isinstance(data, str) and not data.strip()):
+        raise ValueError("data cannot be empty")
       validation_mode = "strict" if strict else "standard"
       print(f"✓ Input data validated ({validation_mode} mode): {len(data)} characters")
       return True
 
-    @guarded(
-      in_range(1, 100, "batch_size", 1),
-      in_range(0, 10, "priority", 2),
-      implicit_return=False
-    )
     def configure_batch(self, batch_size: int, priority: int, auto_start: bool = False) -> dict:
       """Configure batch processing with validated parameters.
-
-      This method demonstrates using @guarded with in_range guards for numeric validation.
-      The guards ensure batch_size is 1-100 and priority is 0-10.
 
       :param batch_size: Number of items per batch (must be 1-100)
       :param priority: Processing priority level (must be 0-10)
       :param auto_start: Automatically start processing after configuration
       :return: Configuration dictionary
       """
+      # Guard: Ensure batch_size is in valid range
+      if not (1 <= batch_size <= 100):
+        raise ValueError(f"batch_size must be between 1 and 100")
+      
+      # Guard: Ensure priority is in valid range
+      if not (0 <= priority <= 10):
+        raise ValueError(f"priority must be between 0 and 10")
       config = {
         "batch_size": batch_size,
         "priority": priority,
