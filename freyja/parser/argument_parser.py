@@ -13,6 +13,37 @@ class ArgumentParser:
     """Centralized service for handling argument parser configuration and setup."""
 
     @staticmethod
+    def _bool_converter(value: str) -> bool:
+        """Convert string value to boolean with flexible parsing.
+        
+        For true values: 'true' (any case) or any non-zero numeric value
+        For false values: 'false' (any case) or '0'
+        """
+        if isinstance(value, bool):
+            return value
+        
+        # Handle string representations
+        lower_value = str(value).lower()
+        
+        # True values: 'true' (any case) or any non-zero numeric value
+        if lower_value == 'true':
+            return True
+        
+        # False values: 'false' (any case) or '0'
+        if lower_value == 'false' or lower_value == '0':
+            return False
+            
+        # Try to parse as a number (non-zero = True, zero = False)
+        try:
+            numeric_value = float(lower_value)
+            return numeric_value != 0.0
+        except ValueError:
+            pass
+        
+        # Default to True for any other non-empty string
+        return bool(value)
+
+    @staticmethod
     def get_arg_type_config(annotation: type) -> dict[str, Any]:
         """Configure argparse arguments based on Python type annotations.
 
@@ -69,7 +100,9 @@ class ArgumentParser:
 
             arg_config = {
                 "dest": f"_global_{param_name}",  # Prefix to avoid conflicts
-                "help": param_help.get(param_name, f"Global {param_name} parameter"),
+                "help": DocStringParser.create_parameter_help(
+                    param_name, param_help, param.annotation, param.default
+                ),
             }
 
             # Handle type annotations
@@ -119,7 +152,9 @@ class ArgumentParser:
 
             arg_config = {
                 "dest": f"_subglobal_{command_name}_{param_name}",  # Prefix to avoid conflicts
-                "help": param_help.get(param_name, f"{command_name} {param_name} parameter"),
+                "help": DocStringParser.create_parameter_help(
+                    param_name, param_help, param.annotation, param.default
+                ),
             }
 
             # Handle type annotations
@@ -168,7 +203,11 @@ class ArgumentParser:
 
             if is_positional:
                 # Add as positional (ArgumentPreprocessor handles conversion)
-                arg_config: dict[str, Any] = {"help": param_help.get(name, f"{name} parameter")}
+                arg_config: dict[str, Any] = {
+                    "help": DocStringParser.create_parameter_help(
+                        name, param_help, param.annotation, param.default
+                    )
+                }
 
                 # Handle type annotations
                 if param.annotation != param.empty:
@@ -196,7 +235,9 @@ class ArgumentParser:
                 # For optional arguments, specify dest
                 arg_config: dict[str, Any] = {
                     "dest": name,
-                    "help": param_help.get(name, f"{name} parameter"),
+                    "help": DocStringParser.create_parameter_help(
+                        name, param_help, param.annotation, param.default
+                    ),
                 }
 
                 # Handle type annotations

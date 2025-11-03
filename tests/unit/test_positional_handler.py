@@ -7,7 +7,7 @@ from freyja.parser.argument_preprocessor import PositionalInfo
 from freyja.parser.positional_handler import PositionalHandler
 
 
-class TestEnum(enum.Enum):
+class SampleEnum(enum.Enum):
   """Test enum for positional testing."""
 
   OPTION_A = 'a'

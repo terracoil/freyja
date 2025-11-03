@@ -1,5 +1,5 @@
-![Freyja Action](https://github.com/terracoil/freyja/raw/main/docs/freyja-action.png)
-# 🔧 Development
+# 🔧 Development 
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png" alt="Freyja" title="Freyja" width="300"/>
 
 ## 📍 Navigation
 **You are here**: Development Overview
@@ -65,24 +65,60 @@ How releases are managed.
 ## 🏁 Quick Start for Contributors
 
 ### Development Setup
+### Using Poetry (Recommended)
+
+1. Install Poetry:
+
 ```bash
-# Clone the repository
+# Install pipx
+brew update && brew upgrade pipx
+# Install poetry
+pipx install poetry
+```
+  
+2. Clone the repository:
+```bash
 git clone https://github.com/terracoil/freyja.git
 cd freyja
-
-# Install development dependencies
-poetry install --with dev
-
-# Run tests
-poetry run pytest
-
-# Run linters
-poetry run ruff check .
-poetry run mypy src
-
-# Install pre-commit hooks
-poetry run pre-commit install
 ```
+
+3. Install dependencies:
+```bash
+poetry install --with dev
+```
+
+4. Activate the virtual environment:
+```bash
+poetry shell
+```
+
+### Using Poetry (Recommended)
+
+1. Install Poetry:
+
+```shell
+# Install pipx
+brew update && brew upgrade pipx
+# Install poetry
+pipx install poetry
+```
+  
+2. Clone the repository:
+```bash
+git clone https://github.com/terracoil/freyja.git
+cd freyja
+```
+
+3. Install dependencies:
+```bash
+poetry install --with dev
+```
+
+4. Activate the virtual environment:
+```bash
+poetry shell
+```
+
 
 ### Project Structure
 ```
@@ -99,6 +135,17 @@ freyja/
 ├── pyproject.toml     # Project configuration
 └── README.md          # Project README
 ```
+
+## Verify Installation
+
+### Check Version
+
+```python
+import src
+
+print(src.__version__)
+```
+
 
 ### Key Development Commands
 

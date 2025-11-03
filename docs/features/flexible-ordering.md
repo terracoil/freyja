@@ -1,7 +1,6 @@
-![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
-# 🎯 Flexible Argument Ordering
-
 *→ [Back to Features](README.md) | [Home](../README.md)*
+# 🎯 Flexible Argument Ordering
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 ## Overview
 

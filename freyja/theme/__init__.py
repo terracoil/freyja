@@ -1,15 +1,20 @@
 """Theme module for freyja color schemes."""
 
 from .color_formatter import ColorFormatter
-from .enums import Back, Fore, ForeUniversal, Style
-from .rgb import RGB, AdjustStrategy
+from .back import Back
+from .fore import Fore
+from .fore_universal import ForeUniversal
+from .style_enum import Style
+from .adjust_strategy import AdjustStrategy
+from .rgb import RGB
 from .theme import (
-    Theme,
-    create_default_theme,
-    create_default_theme_colorful,
-    create_no_color_theme,
+  Theme,
+  create_default_theme,
+  create_colorful_theme,
+  create_no_color_theme,
 )
-from .theme_style import CommandStyleSection, ThemeStyle
+from .command_style_section import CommandStyleSection
+from .theme_style import ThemeStyle
 
 __all__ = [
     "AdjustStrategy",
@@ -23,6 +28,6 @@ __all__ = [
     "Theme",
     "ThemeStyle",
     "create_default_theme",
-    "create_default_theme_colorful",
+  "create_colorful_theme",
     "create_no_color_theme",
 ]

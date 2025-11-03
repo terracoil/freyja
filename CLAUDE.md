@@ -1,10 +1,13 @@
-![Freyja](https://github.com/terracoil/freyja/raw/main/docs/freyja.png)
-
 # CLAUDE.md
+## Freyja ⚡
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja.png" alt="Freyja" title="Freyja" width="400"/>
+
+**No-dependency, zero-configuration CLI tool to build command-line interfaces purely from python classes.**
+
 
 ## Table of Contents
 * [Project Overview](#project-overview)
-* [Development Environment Setup](#development-environment-setup)
+* [Development Environment Setup](docs/development/README.md#development-setup)
 * [Common Commands](#common-commands)
 * [Creating Freyja CLIs in Other Projects](#creating-freyja-clis-in-other-projects)
   * [Quick Setup Checklist](#quick-setup-checklist)
@@ -28,29 +31,45 @@ This is an active Python library (`freyja`) that automatically builds complete C
 
 The library generates argument parsers and command-line interfaces with minimal configuration by analyzing class method signatures. Published on PyPI at https://pypi.org/project/freyja/
 
-## Development Environment Setup
+## ⚠️ CRITICAL: Command Syntax Rules
 
-### Poetry Environment (Recommended)
+**Freyja v1.1.5+ enforces STRICT hierarchical command syntax:**
+
+### ✅ CORRECT - Hierarchical Space-Separated Commands
 ```bash
-# Install Poetry (if not already installed)
-curl -sSL https://install.python-poetry.org | python3 -
-
-# Setup development environment
-./bin/dev-tools setup env
-
-# Or manually:
-poetry install --with dev
-poetry run pre-commit install
+my_cli database migrate                    # Correct
+my_cli projects create --name "web-app"   # Correct  
+my_cli system completion install          # Correct
+my_cli file-operations process-single     # Correct (inner class)
 ```
 
-### Alternative Installation
+### ❌ FORBIDDEN - Flat Double-Dash and Dunder Syntax
 ```bash
-# Install from PyPI
-pip install freyja
-
-# Install from GitHub (specific branch)
-pip install git+https://github.com/terracoil/freyja.git@main
+my_cli database--migrate                  # FORBIDDEN - Will not work!
+my_cli projects--create                   # FORBIDDEN - Will not work!
+my_cli system__completion__install        # FORBIDDEN - Will not work!
+my_cli file-operations--process-single    # FORBIDDEN - Will not work!
 ```
+
+**Breaking this rule will cause command resolution failures. All examples in this document use the correct hierarchical syntax.**
+
+## Version Compatibility and Recent Changes
+
+### v1.1.5 (Current)
+- **ExecutionSpinner**: Thread-safe command execution feedback
+- **Theme Enhancements**: Hierarchical CommandStyleSection structure
+- **Dependency Analysis**: New tools for analyzing command dependencies
+- **Stricter Command Syntax**: Enforces hierarchical space-separated commands only
+
+### Breaking Changes from v1.0.x
+- Flat double-dash commands (`database--migrate`) are now FORBIDDEN
+- Dunder syntax (`system__completion__install`) is now FORBIDDEN
+- All commands must use hierarchical space-separated syntax
+
+### Backward Compatibility
+- Theme system maintains backward compatibility through property aliases
+- Core API (`FreyjaCLI` class) remains stable
+- Existing hierarchical commands continue to work
 
 ## Common Commands
 
@@ -101,9 +120,17 @@ poetry install
 # Run class-based Freyja example  
 poetry run python freyja/examples/cls_example --help
 
-# Try example commands (all commands are flat)
-poetry run python freyja/examples/cls_example file-operations--process-single --input-file "test.txt"
-poetry run python freyja/examples/cls_example data-operations--process-batch --files "*.csv" --parallel
+# Try example commands (hierarchical space-separated syntax)
+poetry run python freyja/examples/cls_example file-operations process-single --input-file "test.txt"
+poetry run python freyja/examples/cls_example data-operations process-batch --files "*.csv" --parallel
+
+# ⚠️ WARNING: NEVER use flat double-dash (--) or dunder (__) syntax:
+# ❌ FORBIDDEN: file-operations--process-single
+# ❌ FORBIDDEN: data-operations--process-batch
+# ❌ FORBIDDEN: system__completion__install
+# ✅ CORRECT: file-operations process-single
+# ✅ CORRECT: data-operations process-batch
+# ✅ CORRECT: system completion install
 ```
 
 ## Creating Freyja CLIs in Other Projects
@@ -128,6 +155,8 @@ pip install freyja  # Ensure Freyja is available
 ### Class-based CLI Pattern
 
 Freyja transforms Python classes into powerful command-line interfaces. Perfect for stateful applications, configuration management, and complex workflows.
+
+**⚠️ REMINDER**: All commands MUST use hierarchical space-separated syntax. Never use `--` or `__` in command names.
 
 #### **Direct Methods Pattern (Simple)**
 
@@ -234,8 +263,8 @@ class ProjectManager:
       print(f"Using filter: {self.priority_filter}")
 
     def list_tasks(self, show_completed: bool = False) -> None:
-      """List project tasks."""
-      print(f"Listing tasks (filter: {self.priority_filter})")
+      """list project tasks."""
+      print(f"listing tasks (filter: {self.priority_filter})")
       print(f"Include completed: {show_completed}")
 
   class ReportGeneration:
@@ -325,7 +354,7 @@ class FileProcessor:
         """Convert files between formats."""
         pass
 
-    def validate_files(self, directory: str, extensions: List[str]) -> None:
+    def validate_files(self, directory: str, extensions: list[str]) -> None:
         """Validate files in directory."""
         pass
 
@@ -366,7 +395,7 @@ class APIClient:
     class DataEndpoints:
         """Data-related API operations."""
         
-        def get_data(self, endpoint: str, params: List[str] = None) -> None:
+        def get_data(self, endpoint: str, params: list[str] = None) -> None:
             """GET request to data endpoint."""
             pass
 ```
@@ -417,8 +446,8 @@ class DataProcessor:
         pass
 
     # Collections  
-    from typing import List, Optional
-    def batch_process(self, files: List[str], options: Optional[List[str]] = None) -> None:
+    from typing import  Optional
+    def batch_process(self, files: list[str], options: Optional[list[str]] = None) -> None:
         pass
 
 # Enums for choices
@@ -438,15 +467,14 @@ class DataExporter:
 
 ```python
 # Class-based with custom options
+
+class MyClass:
+  def foo(self, name: str) -> str: return f"Hello, {name}!"
+  
+from freyja import FreyjaCLI
 cli = FreyjaCLI(
     MyClass,
     title="Custom CLI Title",
-    function_opts={
-        'method_name': {
-            'description': 'Custom method description',
-            'hidden': False
-        }
-    },
     theme_name="colorful",  # or "universal"
     no_color=False,         # Force disable colors if needed
     completion=True         # Enable shell completion
@@ -493,7 +521,7 @@ class ComplexClass:
 
 # ❌ Mutable defaults
 class RiskyClass:
-    def risky_method(self, items: List[str] = []) -> None:  # Dangerous
+    def risky_method(self, items: list[str] = []) -> None:  # Dangerous
         pass
 
 # ✅ Correct patterns
@@ -507,7 +535,7 @@ class GoodClass:
     def simple_method(self, callback_name: str) -> None:  # Use string lookup
         pass
 
-    def safe_method(self, items: List[str] = None) -> None:
+    def safe_method(self, items: list[str] = None) -> None:
         if items is None:
             items = []
 ```
@@ -662,7 +690,7 @@ Always verify that:
 
 - **`freyja/freyja_cli.py`**: Main `FreyjaCLI` class - entry point for CLI generation
 - **`freyja/cli/`**: CLI coordination and execution components
-  - `execution_coordinator.py`: Orchestrates command execution flow
+  - `execution_coordinator.py`: Orchestrates command execution flow with ExecutionSpinner integration
   - `class_handler.py`: Manages class-based CLI creation
   - `enums.py`: Core enums and constants
   - `system/`: Built-in system commands (completion, theme tuning)
@@ -677,9 +705,17 @@ Always verify that:
   - `positional_handler.py`: Handles positional argument logic
   - `option_discovery.py`: Discovers method options and converts to CLI args
   - `argument_preprocessor.py`: Pre-processes arguments for flexible ordering
-  - `command_path_resolver.py`: Resolves command paths (flat vs hierarchical)
+  - `command_path_resolver.py`: Resolves command paths (hierarchical only)
 - **`freyja/completion/`**: Shell completion system
-- **`freyja/utils/`**: Utility modules (text processing, data structures, etc.)
+- **`freyja/theme/`**: Enhanced theme system with hierarchical structure
+  - `theme.py`: Main theme class with backward compatibility
+  - `command_style_section.py`: Hierarchical command styling
+  - `adjust_strategy.py`: Dynamic theme adjustment capabilities
+- **`freyja/utils/`**: Utility modules
+  - `spinner.py`: Enhanced ExecutionSpinner with context management
+  - `dependency_analyzer.py`: Dependency analysis tools
+  - `output_capture.py`: Advanced output capture modes
+  - `text_util.py`: Text processing utilities
 
 ### Key Architecture Patterns
 
@@ -688,16 +724,23 @@ Always verify that:
 **Layered Command Discovery**:
 1. **CommandDiscovery** scans classes and builds command tree
 2. **ArgumentParser** creates argparse structure from command tree
-3. **ExecutionCoordinator** handles command dispatch and execution
+3. **ExecutionCoordinator** handles command dispatch and execution with ExecutionSpinner feedback
 
 **Flexible Argument Processing**:
 - **ArgumentPreprocessor**: Enables flexible argument ordering (global, sub-global, command-specific)
 - **PositionalHandler**: Manages positional arguments (first non-default parameter)
 - **OptionDiscovery**: Converts method parameters to CLI arguments with kebab-case
 
-**Hierarchical Command Structure**:
+**Hierarchical Command Structure** (CRITICAL - NO FLAT COMMANDS):
 - **Single Class**: Hierarchical commands (`inner-class method`)
 - **Multi-Class**: Hierarchical structure for all classes
+- **FORBIDDEN**: Flat double-dash (`--`) and dunder (`__`) syntax
+
+**Enhanced Features** (v1.1.5+):
+- **ExecutionSpinner**: Thread-safe command execution feedback with context tracking
+- **Theme System**: Hierarchical command styling with backward compatibility
+- **Dependency Analysis**: Tools for analyzing command dependencies
+- **Output Capture**: Advanced modes for capturing command output
 
 **Type-Driven Generation**: 
 - Method annotations become argument types and validation
@@ -726,8 +769,81 @@ cli.run()
 # Usage: my_cli process-file <input_file> [--output-dir OUTPUT_DIR] [--config CONFIG] [--debug]
 ```
 
-## Core Architectural Rules (CRITICAL)
+## Coding and refactoring Rules (CRITICAL)
 
+### Important Rules (**IMPORTANT**)
+- All classes, methods, and functions should have typehints (including parameters and return types).  
+- Do NOT use `typing.List`, `typing.Dict`, `typing.Tuple`, etc for typehints.  Use "primitive" types `list`, `dict`, `tuple`, respectively.
+- Do NOT use `typing.Union`.  Use the `|` operator, so `Union[str, list]` is instead `str | list`
+- No "lazy" imports; all imports must be at top of file
+- No circular dependencies, even **at the package level**.  There must be a clear defined order for importing from other packages.
+- One class per file!  The only exception is for test files that contain classes/fixtures used for testing.  There still should not be multiple test classes per test file.    
+- No loose functions unless absolutely warranted.  All functions must be encapsulated as methods in a class.
+- Interfaces files are named with a `_protocol.py` suffix.  Interface classes use `typing.Protocol` and are named with a Protocol suffix
+- Implementations of interfaces (protocols) do not have an "_impl" in the filename, nor do they have an "Impl" suffix on the class name.
+
+### Testing Patterns (v1.1.5+)
+- Use ExecutionSpinner in tests with `capture_output=True` for deterministic behavior
+- Test theme functionality using `CommandStyleSection` hierarchical structure
+- Verify command syntax is hierarchical (no flat double-dash commands)
+- Use dependency analyzer for complex CLI structure validation
+
+###### ExecutionSpinner Usage (v1.1.5+)
+
+The ExecutionSpinner provides enhanced command execution feedback:
+
+```python
+from freyja.utils.spinner import ExecutionSpinner
+
+class MyCLI:
+    def __init__(self, verbose: bool = False):
+        self.verbose = verbose
+    
+    def process(self, input_file: str) -> None:
+        """Process file with spinner feedback."""
+        # Spinner automatically handles verbose mode
+        spinner = ExecutionSpinner(self.verbose)
+        
+        with spinner.spin("Processing file", context=f"File: {input_file}"):
+            # Long-running operation
+            result = self._do_processing(input_file)
+        
+        print(f"Processed: {result}")
+```
+
+**Features**:
+- Thread-safe operation
+- Automatic cleanup on errors
+- Context tracking for better debugging
+- Verbose mode support (shows context instead of spinner)
+- Custom status augmentation
+
+### Theme System Enhancements (v1.1.5+)
+
+**Theme Adjustment**:
+```python
+from freyja import FreyjaCLI
+
+cli = FreyjaCLI(
+    MyClass,
+    theme_name="colorful",
+    # Theme can be dynamically adjusted
+)
+```
+
+**Available Themes**:
+- `colorful`: Full color support with rich formatting
+- `universal`: Cross-platform compatible theme
+- Custom themes via `AdjustStrategy`
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+
+
+## Core Architectural Rules (CRITICAL)
 **CRITICAL**: These architectural rules must be preserved to prevent regressions. All code changes MUST comply with these rules.
 
 ### 1. Positional Argument Rule
@@ -857,14 +973,16 @@ class MyClass:
 
 ```bash
 # ❌ NEVER USE - Flat double-dash commands FORBIDDEN
-my_cli database--migrate            # FORBIDDEN
-my_cli data-ops--process            # FORBIDDEN
-my_cli system__completion__install  # FORBIDDEN
+my_cli database--migrate            # FORBIDDEN - Command not found error
+my_cli data-ops--process            # FORBIDDEN - Command not found error
+my_cli system__completion__install  # FORBIDDEN - Command not found error
+my_cli file-operations--process     # FORBIDDEN - Command not found error
 
 # ✅ CORRECT - ONLY hierarchical commands with spaces
 my_cli database migrate             # Correct
 my_cli system completion install    # Correct
 my_cli projects create              # Correct
+my_cli file-operations process      # Correct
 ```
 
 **Rationale**:
@@ -879,6 +997,17 @@ my_cli projects create              # Correct
 - All commands use space-separated hierarchical structure
 - Inner classes become command groups, their methods become subcommands
 - Help output shows proper hierarchical nesting with indentation
+
+**Error Example**:
+```bash
+# User attempts forbidden syntax
+$ my_cli database--migrate
+Error: No such command 'database--migrate'. Did you mean 'database migrate'?
+
+# Correct usage
+$ my_cli database migrate
+Migrating database...
+```
 
 ### 13. Error Prevention Rules
 
@@ -911,16 +1040,51 @@ When implementing or modifying Freyja code, ALWAYS verify:
 
 ## File Structure
 
-- `freya/cli.py` - Core CLI generation logic
-- `examples.py` - Working examples showing library usage
+- `freyja/freyja_cli.py` - Main entry point for CLI generation
+- `freyja/cli/` - CLI coordination and execution layer
+- `freyja/command/` - Command discovery and management
+- `freyja/parser/` - Argument parsing and preprocessing
+- `freyja/theme/` - Enhanced theme system (v1.1.5+)
+- `freyja/utils/` - Utilities including ExecutionSpinner
+- `freyja/examples/` - Working examples showing library usage
 - `pyproject.toml` - Poetry configuration and metadata
-- `tests/` - Test suite with pytest
-- `scripts/` - Development helper scripts
+- `tests/` - Comprehensive test suite with pytest
+- `bin/dev-tools` - Enhanced development tooling
 - `.pre-commit-config.yaml` - Code quality automation
 
 ## Testing Notes
 
 - Uses pytest framework with coverage reporting
 - Test configuration in `pyproject.toml`
-- Tests located in `tests/` directory
-- Run with `./scripts/test.sh` or `poetry run pytest`
+- Tests located in `tests/` directory organized by feature
+- Run with `./bin/dev-tools test run` or `poetry run pytest`
+- **ExecutionSpinner Testing**: Use `capture_output=True` for deterministic tests
+- **Theme Testing**: Verify hierarchical `CommandStyleSection` structure
+- **Command Syntax Testing**: Ensure all commands use space-separated hierarchical format
+
+### Test Categories
+- **Unit Tests**: Individual component testing
+- **Integration Tests**: Multi-component interaction testing
+- **End-to-End Tests**: Full CLI execution testing
+- **Performance Tests**: Large-scale CLI performance validation
+
+### Development Tools
+
+The project includes enhanced development tools in `./bin/dev-tools`:
+
+```bash
+# Setup development environment
+./bin/dev-tools setup env
+
+# Run tests with coverage
+./bin/dev-tools test run
+
+# Run linters and formatters
+./bin/dev-tools build lint
+
+# Build and publish (maintainers only)
+./bin/dev-tools build publish
+
+# Analyze dependencies
+./bin/dev-tools analyze deps
+```

@@ -14,11 +14,11 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from freyja.cli.enums import TargetMode
+from freyja.cli.target_mode_enum import TargetModeEnum
 
 # Add project root to Python path
 # sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from freyja.cli.execution_coordinator import ExecutionCoordinator
+from freyja.command.execution_coordinator import ExecutionCoordinator
 from freyja.freyja_cli import FreyjaCLI
 from freyja.shared.command_info import CommandInfo
 from freyja.shared.command_tree import CommandTree
@@ -155,7 +155,7 @@ class TestCompletionSystemIntegration(unittest.TestCase):
     )
     tree.add_command('test', command_info)
 
-    coordinator = ExecutionCoordinator(TargetMode.CLASS, {})
+    coordinator = ExecutionCoordinator(TargetModeEnum.CLASS, {})
     coordinator.command_tree = tree
 
     # Should raise error if completion environment detected in normal execution

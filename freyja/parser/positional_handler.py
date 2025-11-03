@@ -4,7 +4,7 @@ import inspect
 from typing import Any
 
 from freyja.utils.text_util import TextUtil
-
+from .docstring_parser import DocStringParser
 from .argument_preprocessor import PositionalInfo
 
 
@@ -245,11 +245,17 @@ class PositionalHandler:
 
                 # First parameter without default becomes positional
                 if param.default == param.empty:
+                    # Get help text from function docstring
+                    _, param_help = DocStringParser.extract_function_help(function)
+                    help_text = DocStringParser.create_parameter_help(
+                        param_name, param_help, param.annotation, param.default
+                    )
+                    
                     return PositionalInfo(
                         param_name=param_name,
                         param_type=param.annotation if param.annotation != param.empty else str,
                         is_required=True,
-                        help_text=f"{param_name} parameter",
+                        help_text=help_text,
                     )
         except (ValueError, TypeError):
             # Handle cases where signature inspection fails

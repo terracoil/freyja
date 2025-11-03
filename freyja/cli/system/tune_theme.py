@@ -3,11 +3,11 @@
 import os
 
 from freyja.theme import (
-    RGB,
-    AdjustStrategy,
-    ColorFormatter,
-    create_default_theme,
-    create_default_theme_colorful,
+  RGB,
+  AdjustStrategy,
+  ColorFormatter,
+  create_default_theme,
+  create_colorful_theme,
 )
 from freyja.theme.theme_style import ThemeStyle
 from freyja.utils.ansi_string import AnsiString
@@ -109,7 +109,7 @@ class TuneTheme:
         """Get theme with global adjustments and individual overrides applied."""
         # 1. Start with base theme
         base_theme = (
-            create_default_theme_colorful() if self.use_colorful_theme else create_default_theme()
+            create_colorful_theme() if self.use_colorful_theme else create_default_theme()
         )
 
         # 2. Apply global adjustments if any
@@ -134,15 +134,20 @@ class TuneTheme:
         """Create new theme with individual color overrides applied."""
         from freyja.theme.theme import Theme
 
-        # Get all current theme styles
-        theme_styles = {}
+        # Create new theme with same adjustment settings
+        new_theme = Theme(
+            adjust_percent=theme.adjust_percent,
+            adjust_strategy=theme.adjust_strategy,
+        )
+
+        # Apply all component styles (original or overridden)
         for component_name, _ in self.theme_components:
             original_style = getattr(theme, component_name)
 
             if component_name in self.individual_color_overrides:
                 # Create new ThemeStyle with overridden color but preserve other attributes
                 override_color = self.individual_color_overrides[component_name]
-                theme_styles[component_name] = ThemeStyle(
+                new_style = ThemeStyle(
                     fg=override_color,
                     bg=original_style.bg,
                     bold=original_style.bold,
@@ -150,16 +155,12 @@ class TuneTheme:
                     dim=original_style.dim,
                     underline=original_style.underline,
                 )
+                setattr(new_theme, component_name, new_style)
             else:
                 # Use original style
-                theme_styles[component_name] = original_style
+                setattr(new_theme, component_name, original_style)
 
-        # Create new theme with overridden styles
-        return Theme(
-            adjust_percent=theme.adjust_percent,
-            adjust_strategy=theme.adjust_strategy,
-            **theme_styles,
-        )
+        return new_theme
 
     def display_theme_info(self):
         """Display current theme information and preview."""
@@ -318,7 +319,7 @@ class TuneTheme:
                 if is_modified:
                     # Get the original color (before override)
                     base_theme = (
-                        create_default_theme_colorful()
+                        create_colorful_theme()
                         if self.use_colorful_theme
                         else create_default_theme()
                     )

@@ -1,6 +1,6 @@
-![Freyja](https://github.com/terracoil/freyja/raw/main/docs/freyja.png)
-
 # ❓ Frequently Asked Questions (FAQ)
+![Freyja](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
+
 
 [← Back to Documentation Hub](README.md) | [🔧 Basic Usage](getting-started/basic-usage.md)
 
@@ -274,9 +274,13 @@ if __name__ == '__main__':
     sys.argv.remove('--click')
     click_command()
   else:
-    from src import CLI
+    from freyja import FreyjaCLI
 
-    cli = CLI.from_module(sys.modules[__name__])
+    class MyApp:
+        """Application with Freyja CLI."""
+        # Your methods here
+    
+    cli = FreyjaCLI(MyApp)
     cli.run()
 ```
 

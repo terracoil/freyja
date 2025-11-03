@@ -17,4 +17,4 @@ if __name__ == '__main__':
     theme_name="colorful",
     completion=True
   )
-  cli.display()
+  cli.run()

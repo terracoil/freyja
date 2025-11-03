@@ -1,7 +1,7 @@
 import enum
 
 
-class TargetMode(enum.Enum):
+class TargetModeEnum(enum.Enum):
     """Target mode enum for command discovery."""
 
     CLASS = "class"

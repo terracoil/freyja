@@ -12,6 +12,32 @@ from freyja.theme import (
 
 class TestThemeColorAdjustment:
   """Test color adjustment functionality in themes."""
+  
+  def _create_theme_with_style(self, style, adjust_strategy=AdjustStrategy.LINEAR, adjust_percent=0.0):
+    """Helper method to create a theme with all properties set to the given style."""
+    theme = Theme(
+      title=style,
+      subtitle=style,
+      required_asterisk=style,
+      adjust_strategy=adjust_strategy,
+      adjust_percent=adjust_percent,
+    )
+    
+    # Set backward compatibility properties
+    theme.command_name = style
+    theme.command_description = style
+    theme.command_group_name = style
+    theme.command_group_description = style
+    theme.grouped_command_name = style
+    theme.grouped_command_description = style
+    theme.option_name = style
+    theme.option_description = style
+    theme.command_group_option_name = style
+    theme.command_group_option_description = style
+    theme.grouped_command_option_name = style
+    theme.grouped_command_option_description = style
+    
+    return theme
 
   def test_theme_creation_with_adjustment(self):
     """Test creating theme with adjustment parameters."""
@@ -26,24 +52,10 @@ class TestThemeColorAdjustment:
     """Test proportional color adjustment with positive percentage using RGB."""
     original_rgb = RGB.from_ints(128, 128, 128)  # Mid gray
     style = ThemeStyle(fg=original_rgb)
-    theme = Theme(
-      title=style,
-      subtitle=style,
-      command_name=style,
-      command_description=style,
-      command_group_name=style,
-      command_group_description=style,
-      grouped_command_name=style,
-      grouped_command_description=style,
-      option_name=style,
-      option_description=style,
-      command_group_option_name=style,
-      command_group_option_description=style,
-      grouped_command_option_name=style,
-      grouped_command_option_description=style,
-      required_asterisk=style,
-      adjust_strategy=AdjustStrategy.LINEAR,
-      adjust_percent=0.25,  # 25% adjustment
+    theme = self._create_theme_with_style(
+      style, 
+      adjust_strategy=AdjustStrategy.LINEAR, 
+      adjust_percent=0.25
     )
 
     adjusted_style = theme.get_adjusted_style(style)
@@ -58,24 +70,10 @@ class TestThemeColorAdjustment:
     """Test proportional color adjustment with negative percentage using RGB."""
     original_rgb = RGB.from_ints(128, 128, 128)  # Mid gray
     style = ThemeStyle(fg=original_rgb)
-    theme = Theme(
-      title=style,
-      subtitle=style,
-      command_name=style,
-      command_description=style,
-      command_group_name=style,
-      command_group_description=style,
-      grouped_command_name=style,
-      grouped_command_description=style,
-      option_name=style,
-      option_description=style,
-      command_group_option_name=style,
-      command_group_option_description=style,
-      grouped_command_option_name=style,
-      grouped_command_option_description=style,
-      required_asterisk=style,
+    theme = self._create_theme_with_style(
+      style,
       adjust_strategy=AdjustStrategy.LINEAR,
-      adjust_percent=-0.25,  # 25% darker
+      adjust_percent=-0.25  # 25% darker
     )
 
     adjusted_style = theme.get_adjusted_style(style)
@@ -90,24 +88,10 @@ class TestThemeColorAdjustment:
     """Test absolute color adjustment with positive percentage using RGB."""
     original_rgb = RGB.from_ints(64, 64, 64)  # Dark gray
     style = ThemeStyle(fg=original_rgb)
-    theme = Theme(
-      title=style,
-      subtitle=style,
-      command_name=style,
-      command_description=style,
-      command_group_name=style,
-      command_group_description=style,
-      grouped_command_name=style,
-      grouped_command_description=style,
-      option_name=style,
-      option_description=style,
-      command_group_option_name=style,
-      command_group_option_description=style,
-      grouped_command_option_name=style,
-      grouped_command_option_description=style,
-      required_asterisk=style,
+    theme = self._create_theme_with_style(
+      style,
       adjust_strategy=AdjustStrategy.ABSOLUTE,
-      adjust_percent=0.5,  # 50% adjustment (actually darkens due to current implementation)
+      adjust_percent=0.5  # 50% adjustment (actually darkens due to current implementation)
     )
 
     adjusted_style = theme.get_adjusted_style(style)
@@ -122,24 +106,10 @@ class TestThemeColorAdjustment:
     """Test absolute adjustment with clamping at boundaries using RGB."""
     original_rgb = RGB.from_ints(240, 240, 240)  # Light gray
     style = ThemeStyle(fg=original_rgb)
-    theme = Theme(
-      title=style,
-      subtitle=style,
-      command_name=style,
-      command_description=style,
-      command_group_name=style,
-      command_group_description=style,
-      grouped_command_name=style,
-      grouped_command_description=style,
-      option_name=style,
-      option_description=style,
-      command_group_option_name=style,
-      command_group_option_description=style,
-      grouped_command_option_name=style,
-      grouped_command_option_description=style,
-      required_asterisk=style,
+    theme = self._create_theme_with_style(
+      style,
       adjust_strategy=AdjustStrategy.ABSOLUTE,
-      adjust_percent=0.5,  # 50% adjustment (actually darkens due to current implementation)
+      adjust_percent=0.5  # 50% adjustment (actually darkens due to current implementation)
     )
 
     adjusted_style = theme.get_adjusted_style(style)
@@ -150,33 +120,15 @@ class TestThemeColorAdjustment:
     assert g == 232
     assert b == 232
 
-  @staticmethod
-  def _theme_with_style(style):
-    return Theme(
-      title=style,
-      subtitle=style,
-      command_name=style,
-      command_description=style,
-      command_group_name=style,
-      command_group_description=style,
-      grouped_command_name=style,
-      grouped_command_description=style,
-      option_name=style,
-      option_description=style,
-      command_group_option_name=style,
-      command_group_option_description=style,
-      grouped_command_option_name=style,
-      grouped_command_option_description=style,
-      required_asterisk=style,
-      adjust_strategy=AdjustStrategy.LINEAR,
-      adjust_percent=0.25,
-    )
-
   def test_get_adjusted_style(self):
     """Test getting adjusted style using RGB."""
     original_rgb = RGB.from_ints(128, 128, 128)  # Mid gray
     original_style = ThemeStyle(fg=original_rgb, bold=True, italic=False)
-    theme = self._theme_with_style(original_style)
+    theme = self._create_theme_with_style(
+      original_style,
+      adjust_strategy=AdjustStrategy.LINEAR,
+      adjust_percent=0.25
+    )
     adjusted_style = theme.get_adjusted_style(original_style)
 
     assert adjusted_style is not None
@@ -188,24 +140,10 @@ class TestThemeColorAdjustment:
     """Test that RGB adjustment preserves non-color properties."""
     original_rgb = RGB.from_ints(128, 128, 128)  # Mid gray - will be adjusted
     style = ThemeStyle(fg=original_rgb, bold=True, underline=True)
-    theme = Theme(
-      title=style,
-      subtitle=style,
-      command_name=style,
-      command_description=style,
-      command_group_name=style,
-      command_group_description=style,
-      grouped_command_name=style,
-      grouped_command_description=style,
-      option_name=style,
-      option_description=style,
-      command_group_option_name=style,
-      command_group_option_description=style,
-      grouped_command_option_name=style,
-      grouped_command_option_description=style,
-      required_asterisk=style,
+    theme = self._create_theme_with_style(
+      style,
       adjust_strategy=AdjustStrategy.LINEAR,
-      adjust_percent=0.25,
+      adjust_percent=0.25
     )
 
     adjusted_style = theme.get_adjusted_style(style)
@@ -219,23 +157,9 @@ class TestThemeColorAdjustment:
     """Test no adjustment when percent is 0 using RGB."""
     original_rgb = RGB.from_ints(255, 0, 0)  # Red color
     style = ThemeStyle(fg=original_rgb)
-    theme = Theme(
-      title=style,
-      subtitle=style,
-      command_name=style,
-      command_description=style,
-      command_group_name=style,
-      command_group_description=style,
-      grouped_command_name=style,
-      grouped_command_description=style,
-      option_name=style,
-      option_description=style,
-      command_group_option_name=style,
-      command_group_option_description=style,
-      grouped_command_option_name=style,
-      grouped_command_option_description=style,
-      required_asterisk=style,
-      adjust_percent=0.0,  # No adjustment
+    theme = self._create_theme_with_style(
+      style,
+      adjust_percent=0.0  # No adjustment
     )
 
     adjusted_style = theme.get_adjusted_style(style)
@@ -255,24 +179,10 @@ class TestThemeColorAdjustment:
 
   def test_adjustment_edge_cases(self):
     """Test adjustment with edge case RGB colors."""
-    theme = Theme(
-      title=ThemeStyle(),
-      subtitle=ThemeStyle(),
-      command_name=ThemeStyle(),
-      command_description=ThemeStyle(),
-      command_group_name=ThemeStyle(),
-      command_group_description=ThemeStyle(),
-      grouped_command_name=ThemeStyle(),
-      grouped_command_description=ThemeStyle(),
-      option_name=ThemeStyle(),
-      option_description=ThemeStyle(),
-      command_group_option_name=ThemeStyle(),
-      command_group_option_description=ThemeStyle(),
-      grouped_command_option_name=ThemeStyle(),
-      grouped_command_option_description=ThemeStyle(),
-      required_asterisk=ThemeStyle(),
+    theme = self._create_theme_with_style(
+      ThemeStyle(),
       adjust_strategy=AdjustStrategy.LINEAR,
-      adjust_percent=0.5,
+      adjust_percent=0.5
     )
 
     # Test with black RGB (should handle division by zero)
@@ -297,61 +207,14 @@ class TestThemeColorAdjustment:
     style = ThemeStyle()
 
     # Valid range should work
-    Theme(
-      title=style,
-      subtitle=style,
-      command_name=style,
-      command_description=style,
-      command_group_name=style,
-      command_group_description=style,
-      grouped_command_name=style,
-      grouped_command_description=style,
-      option_name=style,
-      option_description=style,
-      command_group_option_name=style,
-      command_group_option_description=style,
-      grouped_command_option_name=style,
-      grouped_command_option_description=style,
-      required_asterisk=style,
-      adjust_percent=-5.0,  # Minimum valid
-    )
-
-    Theme(
-      title=style,
-      subtitle=style,
-      command_name=style,
-      command_description=style,
-      command_group_name=style,
-      command_group_description=style,
-      grouped_command_name=style,
-      grouped_command_description=style,
-      option_name=style,
-      option_description=style,
-      command_group_option_name=style,
-      command_group_option_description=style,
-      grouped_command_option_name=style,
-      grouped_command_option_description=style,
-      required_asterisk=style,
-      adjust_percent=5.0,  # Maximum valid
-    )
+    self._create_theme_with_style(style, adjust_percent=-5.0)  # Minimum valid
+    self._create_theme_with_style(style, adjust_percent=5.0)   # Maximum valid
 
     # Below minimum should raise exception
     with pytest.raises(ValueError, match='adjust_percent must be between -5.0 and 5.0, got -5.1'):
       Theme(
         title=style,
         subtitle=style,
-        command_name=style,
-        command_description=style,
-        command_group_name=style,
-        command_group_description=style,
-        grouped_command_name=style,
-        grouped_command_description=style,
-        option_name=style,
-        option_description=style,
-        command_group_option_name=style,
-        command_group_option_description=style,
-        grouped_command_option_name=style,
-        grouped_command_option_description=style,
         required_asterisk=style,
         adjust_percent=-5.1,
       )
@@ -361,18 +224,6 @@ class TestThemeColorAdjustment:
       Theme(
         title=style,
         subtitle=style,
-        command_name=style,
-        command_description=style,
-        command_group_name=style,
-        command_group_description=style,
-        grouped_command_name=style,
-        grouped_command_description=style,
-        option_name=style,
-        option_description=style,
-        command_group_option_name=style,
-        command_group_option_description=style,
-        grouped_command_option_name=style,
-        grouped_command_option_description=style,
         required_asterisk=style,
         adjust_percent=5.1,
       )

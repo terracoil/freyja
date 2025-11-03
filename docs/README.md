@@ -1,14 +1,12 @@
-![Freyja](https://github.com/terracoil/freyja/raw/main/docs/freyja.png
+**[↑ Main README](../README.md)**
 
 # 📚 Freyja Documentation Hub
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" width="300"/>
+
 **No-dependency, zero-configuration CLI tool to build command-line interfaces purely from your code.**
 
 ## 📍 Navigation
 **You are here**: Documentation Hub (Root)
-
-**Parents**:
-- [🏠 Main README](../README.md) - Project overview and quick start
-- [🔧 Development Guide (CLAUDE.md)](../CLAUDE.md) - Contributing and development setup
 
 **Children**:
 
@@ -127,11 +125,11 @@ if __name__ == '__main__':
 python script.py greet --name Alice --excited
 # Output: Hello, Alice! 🎉
 
-# 🔥 NEW: Positional parameters (name becomes positional automatically!)
+# 🔥 NEW in v1.1.5+: Positional parameters (name becomes positional automatically!)
 python script.py greet Alice --excited
 # Output: Hello, Alice! 🎉
 
-# 🔥 NEW: Flexible argument ordering
+# 🔥 NEW in v1.1.5+: Flexible argument ordering
 python script.py greet --excited Alice
 # Same result - arguments can be in any order!
 
@@ -278,11 +276,11 @@ python project_manager.py --config-file prod.json --environment production \
   database migrate --connection-timeout 60 --pool-size 20 \
   --target-version 2.1.0 --dry-run
 
-# 🔥 NEW: Positional parameters (target_version, environment, etc. become positional)
+# 🔥 NEW in v1.1.5+: Positional parameters (target_version, environment, etc. become positional)
 python project_manager.py database migrate latest --connection-timeout 60 --dry-run
 python project_manager.py deploy deploy staging --version 2.1.0 --force
 
-# 🔥 NEW: Flexible argument ordering - mix global, sub-global, and command args!
+# 🔥 NEW in v1.1.5+: Flexible argument ordering - mix global, sub-global, and command args!
 python project_manager.py database migrate --dry-run --config-file prod.json latest --connection-timeout 60 --environment production
 
 # Complex operations with natural ordering
@@ -317,9 +315,10 @@ Freyja supports two flexible class-based patterns:
 ✅ **Production Ready** - Enterprise-tested in real applications  
 🔍 **Developer Friendly** - Clear error messages and debugging support  
 
-**🔥 New Features**  
+**🔥 New Features (v1.1.5+)**  
 🔀 **Flexible Ordering** - Mix options and arguments in any natural order  
 📍 **Positional Parameters** - First parameter without default becomes positional automatically  
+🔄 **Execution Spinner** - Visual progress indicator with command context display  
 
 ## 🎯 Getting Started
 

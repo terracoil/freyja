@@ -157,22 +157,47 @@ class ExecutionSpinner:
             self.thread.daemon = True
             self.thread.start()
 
+    def _can_write_to_stdout(self) -> bool:
+        """Check if stdout is available and safe to write to."""
+        try:
+            # Check if stdout exists and is not closed
+            if not hasattr(sys.stdout, 'write') or sys.stdout.closed:
+                return False
+            
+            # Check if stdout has a valid file descriptor
+            if hasattr(sys.stdout, 'fileno'):
+                try:
+                    sys.stdout.fileno()
+                except (OSError, ValueError, AttributeError):
+                    return False
+            
+            # Check if terminal is interactive (avoids writing to captured stdout in tests)
+            return sys.stdout.isatty()
+        except (OSError, ValueError, AttributeError):
+            return False
+
     def _spin(self):
-        """Spinner animation loop (runs in separate thread)."""
+        """Spinner animation loop (runs in separate thread) with robust error handling."""
         while self.running:
             with self._lock:
                 current_status = self.status_line
                 char = self.spinner_chars[self.current]
 
-            # Write spinner and status
-            sys.stdout.write(f"\r{char} {current_status}")
-            sys.stdout.flush()
+            # Write spinner and status with error handling for test environments
+            if self._can_write_to_stdout():
+                try:
+                    sys.stdout.write(f"\r{char} {current_status}")
+                    sys.stdout.flush()
+                except (OSError, ValueError, AttributeError):
+                    # Handle cases where stdout becomes invalid during execution
+                    # This commonly happens during testing when stdout is captured/redirected
+                    break
 
             self.current = (self.current + 1) % len(self.spinner_chars)
             time.sleep(0.1)
 
     def stop(self, success: bool = True):
-        """Stop the spinner.
+        """Stop the spinner with robust error handling.
 
         :param success: Whether the command succeeded
         """
@@ -180,32 +205,51 @@ class ExecutionSpinner:
             self.running = False
 
             if self.thread:
-                # Wait for spinner thread to finish
-                self.thread.join(timeout=0.5)
+                # Wait for spinner thread to finish gracefully
+                try:
+                    self.thread.join(timeout=1.0)  # Increased timeout for better reliability
+                except RuntimeError:
+                    # Handle case where thread is already finished or not startable
+                    pass
+                finally:
+                    self.thread = None
 
-            if not self.verbose:
-                # Clear the spinner line
-                line_length = len(self.status_line) + 3  # spinner char + space + space
-                sys.stdout.write("\r" + " " * line_length + "\r")
-                sys.stdout.flush()
+            if not self.verbose and self._can_write_to_stdout():
+                try:
+                    # Clear the spinner line
+                    line_length = len(self.status_line) + 3  # spinner char + space + space
+                    sys.stdout.write("\r" + " " * line_length + "\r")
+                    sys.stdout.flush()
 
-                # Print final status with appropriate symbol
-                status_char = "✓" if success else "✗"
-                final_status = f"{status_char} {self.status_line}"
+                    # Print final status with appropriate symbol
+                    status_char = "✓" if success else "✗"
+                    final_status = f"{status_char} {self.status_line}"
 
-                if self.color_formatter and hasattr(self.color_formatter, "apply_style"):
-                    try:
-                        from ..theme.defaults import create_default_theme
+                    if self.color_formatter and hasattr(self.color_formatter, "apply_style"):
+                        try:
+                            from ..theme.defaults import create_default_theme
 
-                        theme = create_default_theme()
-                        styled_status = self.color_formatter.apply_style(
-                            final_status, theme.command_output
-                        )
-                        print(styled_status)
-                    except Exception:
+                            theme = create_default_theme()
+                            styled_status = self.color_formatter.apply_style(
+                                final_status, theme.command_output
+                            )
+                            print(styled_status)
+                        except Exception:
+                            print(final_status)
+                    else:
                         print(final_status)
-                else:
-                    print(final_status)
+                except (OSError, ValueError, AttributeError):
+                    # Ignore errors during cleanup - common in test environments
+                    pass
+
+    def __del__(self) -> None:
+        """Destructor to ensure spinner threads are cleaned up."""
+        try:
+            if hasattr(self, 'running') and self.running:
+                self.stop()
+        except Exception:
+            # Ignore any errors during destruction
+            pass
 
     @contextmanager
     def execute(self, command_context: CommandContext):
@@ -221,4 +265,9 @@ class ExecutionSpinner:
             success = False
             raise
         finally:
-            self.stop(success)
+            try:
+                self.stop(success)
+            except Exception:
+                # Ensure exceptions during cleanup don't propagate
+                # This is particularly important in test environments
+                pass

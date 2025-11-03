@@ -4,10 +4,11 @@ from typing import Any
 
 from freyja.help.help_formatter import HierarchicalHelpFormatter
 
-from ..theme import create_default_theme
-from ..utils.version import format_title_with_version
-from .argument_parser import ArgumentParser
-from .docstring_parser import DocStringParser
+from freyja.theme import create_default_theme
+from freyja.utils.version import format_title_with_version
+from freyja.parser.argument_parser import ArgumentParser
+from freyja.parser.docstring_parser import DocStringParser
+from freyja.parser.positional_handler import PositionalHandler
 
 
 class CommandParser:
@@ -56,10 +57,13 @@ class CommandParser:
         # For multi-class mode, disable alphabetization to preserve class order
         effective_alphabetize = self.alphabetize and (target_mode != "multi_class")
 
+        # Extract positional information from command tree
+        positional_info = self._extract_positional_info_from_tree(command_tree)
+
         # Create formatter factory
         def create_formatter_with_theme(*args, **kwargs):
             return HierarchicalHelpFormatter(
-                *args, theme=effective_theme, alphabetize=effective_alphabetize, **kwargs
+                *args, theme=effective_theme, alphabetize=effective_alphabetize, positional_info=positional_info, **kwargs
             )
 
         # Create main parser with version-enhanced title
@@ -86,6 +90,29 @@ class CommandParser:
         self._apply_parser_patches(parser, effective_theme)
 
         return parser
+
+    def _extract_positional_info_from_tree(self, command_tree: dict[str, Any]) -> dict:
+        """Extract positional parameter information from command tree."""
+        positional_info = {}
+        
+        for command_name, command_info in command_tree.items():
+            if command_info.get("type") == "command" and command_info.get("function"):
+                # Flat command
+                pos_info = PositionalHandler.discover_from_function(command_info["function"])
+                if pos_info:
+                    positional_info[command_name] = pos_info
+            elif command_info.get("type") == "group" and command_info.get("cmd_tree"):
+                # Group commands
+                for cmd_name, cmd_info in command_info["cmd_tree"].items():
+                    if cmd_info.get("type") == "command" and cmd_info.get("function"):
+                        full_cmd_name = f"{command_name}--{cmd_name}"
+                        pos_info = PositionalHandler.discover_from_function(cmd_info["function"])
+                        if pos_info:
+                            # Store with both keys for different contexts
+                            positional_info[full_cmd_name] = pos_info  # For main help
+                            positional_info[cmd_name] = pos_info        # For group help
+                            
+        return positional_info
 
     def _add_global_arguments(
         self,
@@ -128,9 +155,13 @@ class CommandParser:
         """Add a flat command from command tree."""
         desc, _ = DocStringParser.extract_function_help(command_info["function"])
 
+        # Extract positional info for this command
+        pos_info = PositionalHandler.discover_from_function(command_info["function"])
+        positional_info = {command_name: pos_info} if pos_info else {}
+
         def create_formatter_with_theme(*args, **kwargs):
             return HierarchicalHelpFormatter(
-                *args, theme=theme, alphabetize=self.alphabetize, **kwargs
+                *args, theme=theme, alphabetize=self.alphabetize, positional_info=positional_info, **kwargs
             )
 
         sub = subparsers.add_parser(
@@ -157,6 +188,7 @@ class CommandParser:
 
         sub.set_defaults(**defaults)
 
+
     def _add_command_group_from_tree(
         self, subparsers, group_name: str, group_info: dict[str, Any], theme
     ):
@@ -166,9 +198,19 @@ class CommandParser:
         )
         inner_class = group_info.get("inner_class")
 
+        # Extract positional info for commands in this group
+        positional_info = {}
+        for cmd_name, cmd_info in group_info.get("cmd_tree", {}).items():
+            if cmd_info.get("type") == "command" and cmd_info.get("function"):
+                # For the group's own formatter, use just the command name
+                # not the full "group--command" name
+                pos_info = PositionalHandler.discover_from_function(cmd_info["function"])
+                if pos_info:
+                    positional_info[cmd_name] = pos_info
+
         def create_formatter_with_theme(*args, **kwargs):
             return HierarchicalHelpFormatter(
-                *args, theme=theme, alphabetize=self.alphabetize, **kwargs
+                *args, theme=theme, alphabetize=self.alphabetize, positional_info=positional_info, **kwargs
             )
 
         # Create group parser

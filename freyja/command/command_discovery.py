@@ -3,13 +3,13 @@ import inspect
 from collections.abc import Callable
 from typing import Any, Sequence
 
-from freyja.cli import SystemClassBuilder, TargetMode
+from freyja.cli import SystemClassBuilder, TargetModeEnum
 from freyja.parser import DocStringParser
 from freyja.utils import TextUtil
 from freyja.shared.command_info import CommandInfo
 from freyja.shared.command_tree import CommandTree
 
-from .validation import ValidationService
+from .validation_service import ValidationService
 
 TargetType = type | list[type] | type[Any] | Sequence[type[Any]]
 
@@ -42,7 +42,7 @@ class CommandDiscovery:
         self.theme_tuner: bool = theme_tuner
 
         self.target_classes: list[type] = []
-        self.mode: TargetMode = TargetMode.CLASS
+        self.mode: TargetModeEnum = TargetModeEnum.CLASS
         self.primary_class: type | None = None
 
         # Determine target mode with unified class handling
@@ -322,7 +322,42 @@ class CommandDiscovery:
         if not hasattr(obj, "__qualname__"):
             return False
 
-        return target_class.__name__ in obj.__qualname__
+        # Check if method belongs to this class or its inheritance chain
+        # This handles both direct methods and inherited methods properly
+        method_belongs_to_class = False
+        
+        # First check if it's a direct method of the target class
+        if target_class.__name__ in obj.__qualname__:
+            method_belongs_to_class = True
+        else:
+            # Check if it's an inherited method by looking at MRO
+            # The method should belong to one of the classes in the inheritance chain
+            for base_class in target_class.__mro__:
+                if base_class.__name__ in obj.__qualname__:
+                    # Verify this is actually the same method object
+                    try:
+                        if hasattr(base_class, name) and getattr(base_class, name) is obj:
+                            method_belongs_to_class = True
+                            break
+                    except AttributeError:
+                        continue
+        
+        if not method_belongs_to_class:
+            return False
+        
+        # Exclude @staticmethod and @classmethod decorated methods
+        # Only instance methods should become CLI commands
+        try:
+            raw_attr = inspect.getattr_static(target_class, name)
+            if isinstance(raw_attr, staticmethod):
+                return False
+            if isinstance(raw_attr, classmethod):
+                return False
+        except (AttributeError, TypeError):
+            # If we can't determine the method type, allow it through
+            pass
+
+        return True
 
     def generate_title(self) -> str:
         """Generate FreyjaCLI title based on target type."""

@@ -3,48 +3,22 @@ import argparse
 import itertools
 import os
 import re
-import textwrap
 
-from .help_formatting_engine import HelpFormattingEngine
 from freyja.theme import ColorFormatter
 
+from .format_patterns import FormatPatterns
+from .help_formatting_engine import HelpFormattingEngine
 
-class FormatPatterns:
-    """Common formatting patterns extracted to eliminate duplication."""
+# argparse aliases (not all can be imported directly):
+RawDescriptionHelpFormatter = argparse.RawDescriptionHelpFormatter
+Action = argparse.Action
+SubParsersAction = argparse._SubParsersAction
+ActionsContainer = argparse._ActionsContainer
 
-    @staticmethod
-    def format_section_title(title: str, style_func=None) -> str:
-        """Format section title consistently."""
-        return style_func(title) if style_func else title
-
-    @staticmethod
-    def format_indented_line(content: str, indent: int) -> str:
-        """Format line with consistent indentation."""
-        return f"{' ' * indent}{content}"
-
-    @staticmethod
-    def calculate_spacing(name_width: int, target_column: int, min_spacing: int = 4) -> int:
-        """Calculate spacing needed to reach target column."""
-        return min_spacing if name_width >= target_column else target_column - name_width
-
-    @staticmethod
-    def create_text_wrapper(
-        width: int, initial_indent: str = "", subsequent_indent: str = ""
-    ) -> textwrap.TextWrapper:
-        """Create TextWrapper with consistent parameters."""
-        return textwrap.TextWrapper(
-            width=width,
-            break_long_words=False,
-            break_on_hyphens=False,
-            initial_indent=initial_indent,
-            subsequent_indent=subsequent_indent,
-        )
-
-
-class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
+class HierarchicalHelpFormatter(RawDescriptionHelpFormatter):
     """Refactored formatter with reduced duplication and single return points."""
 
-    def __init__(self, *args, theme=None, alphabetize=True, **kwargs):
+    def __init__(self, *args, theme=None, alphabetize=True, positional_info=None, **kwargs):
         super().__init__(*args, **kwargs)
         self._console_width = self._get_console_width()
         self._cmd_indent = 2
@@ -66,26 +40,22 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
         self._alphabetize = alphabetize
         self._global_desc_column = None
+        self._positional_info = positional_info or {}
 
-    def _get_console_width(self) -> int:
+    @staticmethod
+    def _get_console_width() -> int:
         """Get console width with fallback."""
         try:
             return os.get_terminal_size().columns
         except (OSError, ValueError):
             return int(os.environ.get("COLUMNS", 80))
 
-    def _format_actions(self, actions):
-        """Override to capture parser actions for unified column calculation."""
-        self._parser_actions = actions
-        return super()._format_actions(actions)
-
-    def _format_action(self, action):
+    def _format_action(self, action: Action|SubParsersAction) -> str:
         """Format actions with proper indentation for command groups."""
-        result = None
-
-        if isinstance(action, argparse._SubParsersAction):
-            result = self._format_command_groups(action)
-        elif action.option_strings and not isinstance(action, argparse._SubParsersAction):
+        if isinstance(action, SubParsersAction):
+            result = self._format_command_groups_with_positional(action)
+        # elif action.option_strings and not isinstance(action, SubParsersAction):
+        elif action.option_strings:
             result = self._format_global_option_aligned(action)
         else:
             result = super()._format_action(action)
@@ -112,14 +82,13 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         parser_actions = getattr(self, "_parser_actions", [])
 
         for action in parser_actions:
-            if isinstance(action, argparse._SubParsersAction):
+            if isinstance(action, SubParsersAction):
                 return action
         return None
 
-    def _format_global_option_aligned(self, action):
+    def _format_global_option_aligned(self, action:Action) -> str:
         """Format global options with consistent alignment using existing alignment logic."""
         option_strings = action.option_strings
-        result = None
 
         if not option_strings:
             result = super()._format_action(action)
@@ -142,7 +111,8 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
         return result
 
-    def _build_option_display(self, action, option_strings):
+    @staticmethod
+    def _build_option_display(action, option_strings):
         """Build option display string with metavar."""
         option_name = option_strings[-1] if option_strings else ""
 
@@ -157,7 +127,8 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
         return option_name
 
-    def _build_help_text(self, action):
+    @staticmethod
+    def _build_help_text(action):
         """Build help text including choices if present."""
         help_text = action.help or ""
 
@@ -193,7 +164,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
             if (
                 action.option_strings
                 and action.dest != "help"
-                and not isinstance(action, argparse._SubParsersAction)
+                and not isinstance(action, SubParsersAction)
             ):
                 opt_width = self._calculate_option_width(action)
                 max_width = max(max_width, opt_width)
@@ -202,7 +173,6 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     def _calculate_option_width(self, action):
         """Calculate width for a single option."""
-        action.option_strings[-1]
         opt_display = self._build_option_display(action, action.option_strings)
         return len(opt_display) + self._arg_indent
 
@@ -263,7 +233,8 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
         return "\n".join(parts)
 
-    def _collect_all_commands(self, action):
+    @staticmethod
+    def _collect_all_commands(action):
         """Collect all cmd_tree with their metadata."""
         all_commands = []
 
@@ -291,7 +262,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
             pass  # The group name stays at base_indent, contents get extra indent inside
 
         return self._format_group_with_command_groups_global(
-            choice, subparser, effective_indent, unified_cmd_desc_column, unified_cmd_desc_column
+            choice, subparser, effective_indent, unified_cmd_desc_column
         )
 
     def _command_has_required_args(self, subparser):
@@ -322,7 +293,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         return ["", footnote_text]
 
     def _format_group_with_command_groups_global(
-        self, name, parser, base_indent, unified_cmd_desc_column, global_option_column
+        self, name, parser, base_indent, unified_cmd_desc_column
     ):
         """Format a command group with unified command description column alignment."""
         lines = []
@@ -376,6 +347,19 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         lines = []
         required_args, optional_args = self._analyze_arguments(parser)
 
+        # Check if we need to filter out positional parameters that are shown in command names
+        parser_prog = getattr(parser, 'prog', '')
+        prog_parts = parser_prog.split()
+        if len(prog_parts) >= 2:
+            # Extract command name from prog (e.g., "devtools test unit" -> "unit")
+            cmd_name = prog_parts[-1]
+            if cmd_name in self._positional_info:
+                pos_info = self._positional_info[cmd_name]
+                positional_param_flag = f"--{pos_info.param_name.replace('_', '-')}"
+                # Filter out the positional parameter from required args since it's shown in command name
+                required_args = [(name, help_text) for name, help_text in required_args 
+                               if not name.startswith(positional_param_flag)]
+
         # Format required arguments
         for arg_name, arg_help in required_args:
             arg_lines = self._format_single_argument(
@@ -399,6 +383,23 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
                 required=False,
             )
             lines.extend(arg_lines)
+
+        # Add positional parameter info under the command
+        if len(prog_parts) >= 2:
+            cmd_name = prog_parts[-1]
+            if cmd_name in self._positional_info:
+                pos_info = self._positional_info[cmd_name]
+                pos_arg_name = pos_info.param_name.upper()
+                pos_help = pos_info.help_text or f"*Required Positional Parameter representing a {pos_info.param_name} ({pos_info.param_type.__name__})"
+                pos_lines = self._format_single_argument(
+                    pos_arg_name,
+                    pos_help,
+                    unified_cmd_desc_column,
+                    "command_group_option_name",
+                    "command_group_option_description", 
+                    required=True,
+                )
+                lines.extend(pos_lines)
 
         return lines
 
@@ -497,13 +498,14 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
                         cmd,
                         cmd_parser,
                         command_indent,
-                        unified_cmd_desc_column,
-                        unified_cmd_desc_column,
+                        unified_cmd_desc_column
                     )
                 else:
-                    # Final command
-                    cmd_section = self._format_final_command(
-                        cmd, cmd_parser, command_indent, unified_cmd_desc_column
+                    # Final command - check if we need to format it with positional parameters
+                    full_cmd_name = self._get_full_command_name(parser, cmd)
+                    display_cmd_name = self._format_command_name_with_positional(full_cmd_name)
+                    cmd_section = self._format_final_command_with_display_name(
+                        display_cmd_name, cmd_parser, command_indent, unified_cmd_desc_column
                     )
                 lines.extend(cmd_section)
             else:
@@ -519,30 +521,12 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     def _format_final_command(self, name, parser, base_indent, unified_cmd_desc_column):
         """Format a final command with its arguments."""
-        lines = []
-
-        # Command description
-        help_text = parser.description or getattr(parser, "help", "")
-
-        if help_text:
-            formatted_lines = self._format_inline_description(
-                name=name,
-                description=help_text,
-                name_indent=base_indent,
-                description_column=unified_cmd_desc_column + 2,
-                style_name="command_group_name",
-                style_description="grouped_command_description",
-                add_colon=True,
-            )
-            lines.extend(formatted_lines)
-        else:
-            styled_name = self._apply_style(name, "command_group_name")
-            lines.append(f"{' ' * base_indent}{styled_name}")
-
-        # Command arguments
-        lines.extend(self._format_final_command_arguments(parser, unified_cmd_desc_column))
-
-        return lines
+        # Get the full command name and check for positional parameters
+        full_cmd_name = self._get_full_command_name(parser, name)
+        display_name = self._format_command_name_with_positional(full_cmd_name)
+        
+        # Use the enhanced formatter with display name
+        return self._format_final_command_with_display_name(display_name, parser, base_indent, unified_cmd_desc_column)
 
     def _format_final_command_arguments(self, parser, unified_cmd_desc_column):
         """Format arguments for final cmd_tree."""
@@ -585,7 +569,7 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
         return lines
 
-    def _analyze_arguments(self, parser):
+    def _analyze_arguments(self, parser: ActionsContainer|None):
         """Analyze parser arguments and return required and optional separately."""
         if not parser:
             return [], []
@@ -720,6 +704,10 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
     ) -> list[str]:
         """Format name and description inline with consistent wrapping."""
         lines = []
+
+        # Convert description to string if it's not already (handles Mock objects in tests)
+        if description is not None and not isinstance(description, str):
+            description = str(description)
 
         if not description:
             styled_name = self._apply_style(name, style_name)
@@ -863,8 +851,177 @@ class HierarchicalHelpFormatter(argparse.RawDescriptionHelpFormatter):
         """Find a subparser by name in the parent parser."""
         result = None
         for action in parent_parser._actions:
-            if isinstance(action, argparse._SubParsersAction):
+            if isinstance(action, SubParsersAction):
                 if subcmd_name in action.choices:
                     result = action.choices[subcmd_name]
                     break
         return result
+
+    def _get_positional_display(self, command_name: str) -> str:
+        """Get positional parameter display text for a command."""
+        if not self._positional_info or command_name not in self._positional_info:
+            # Debug: print what command names are available
+            # print(f"DEBUG: No positional info for '{command_name}', available: {list(self._positional_info.keys()) if self._positional_info else 'None'}")
+            return ""
+        
+        pos_info = self._positional_info[command_name]
+        param_display = pos_info.param_name.upper()
+        
+        if pos_info.is_required:
+            return f" {param_display}"
+        else:
+            return f" [{param_display}]"
+
+    def _format_command_name_with_positional(self, command_name: str) -> str:
+        """Format command name with positional parameter if it has one."""
+        positional_display = self._get_positional_display(command_name)
+        return f"{command_name}{positional_display}"
+
+    def _get_full_command_name(self, parent_parser, cmd_name: str) -> str:
+        """Get the full command name that matches the positional info keys."""
+        # Try to derive group name from parent parser
+        parent_group_name = None
+        
+        # Try different ways to get the group name
+        if hasattr(parent_parser, '_group_name'):
+            parent_group_name = parent_parser._group_name
+        elif hasattr(parent_parser, 'prog'):
+            # Extract from prog name (e.g., "devtools test" -> "test")
+            prog_parts = parent_parser.prog.split()
+            if len(prog_parts) > 1:
+                parent_group_name = prog_parts[-1]
+        
+        # Debug: print what we found
+        # print(f"DEBUG: _get_full_command_name: cmd_name='{cmd_name}', parent_group_name='{parent_group_name}', prog='{getattr(parent_parser, 'prog', 'N/A')}'")
+        
+        if parent_group_name:
+            return f"{parent_group_name}--{cmd_name}"
+        return cmd_name
+
+    def _format_final_command_with_display_name(self, display_name: str, parser, base_indent: int, unified_cmd_desc_column: int):
+        """Format a final command with a custom display name (includes positional params)."""
+        lines = []
+
+        # Command description
+        help_text = parser.description or getattr(parser, "help", "")
+
+        if help_text:
+            formatted_lines = self._format_inline_description(
+                name=display_name,
+                description=help_text,
+                name_indent=base_indent,
+                description_column=unified_cmd_desc_column + 2,
+                style_name="command_group_name",
+                style_description="grouped_command_description",
+                add_colon=True,
+            )
+            lines.extend(formatted_lines)
+        else:
+            styled_name = self._apply_style(display_name, "command_group_name")
+            lines.append(f"{' ' * base_indent}{styled_name}")
+
+        # Command arguments (skip the positional param since it's shown in command name)
+        lines.extend(self._format_final_command_arguments_with_positional_skip(parser, unified_cmd_desc_column, display_name))
+
+        return lines
+
+    def _format_command_groups_with_positional(self, action):
+        """Format command groups with positional parameter support."""
+        # First, modify the choices to include positional parameters in the display names
+        original_choices = action.choices.copy()
+        modified_choices = {}
+        
+        for choice_name, subparser in original_choices.items():
+            display_name = choice_name
+            
+            # Check if this command has positional parameters
+            if choice_name in self._positional_info:
+                pos_info = self._positional_info[choice_name]
+                if pos_info.is_required:
+                    param_display = pos_info.param_name.upper()
+                    display_name = f"{choice_name} {param_display}"
+            
+            modified_choices[display_name] = subparser
+        
+        # Temporarily replace the choices for formatting
+        action.choices = modified_choices
+        
+        # Use the original formatting method
+        result = self._format_command_groups(action)
+        
+        # Restore original choices
+        action.choices = original_choices
+        
+        return result
+
+    def _format_final_command_arguments_with_positional_skip(self, parser, unified_cmd_desc_column: int, display_name: str):
+        """Format arguments for final commands, skipping positional params shown in command name."""
+        lines = []
+        required_args, optional_args = self._analyze_arguments(parser)
+
+        # Filter out positional parameters that are shown in the command name
+        # Extract command name without positional display
+        base_cmd_name = display_name.split()[0] if ' ' in display_name else display_name
+        pos_info = self._positional_info.get(base_cmd_name)
+        
+        if pos_info:
+            # Filter out the positional parameter from required args
+            positional_param_flag = f"--{pos_info.param_name.replace('_', '-')}"
+            # Filter out the positional parameter from required args
+            required_args = [(name, help_text) for name, help_text in required_args 
+                           if not name.startswith(positional_param_flag)]
+
+        # Required arguments
+        for arg_name, arg_help in required_args:
+            arg_lines = self._format_single_argument(
+                arg_name,
+                arg_help,
+                unified_cmd_desc_column,
+                "option_name",
+                "option_description",
+                required=True,
+            )
+            # Adjust indentation for command group options
+            adjusted_lines = [
+                line.replace(" " * self._arg_indent, " " * (self._arg_indent + 2), 1)
+                for line in arg_lines
+            ]
+            lines.extend(adjusted_lines)
+
+        # Optional arguments
+        for arg_name, arg_help in optional_args:
+            arg_lines = self._format_single_argument(
+                arg_name,
+                arg_help,
+                unified_cmd_desc_column,
+                "option_name",
+                "option_description",
+                required=False,
+            )
+            # Adjust indentation for command group options
+            adjusted_lines = [
+                line.replace(" " * self._arg_indent, " " * (self._arg_indent + 2), 1)
+                for line in arg_lines
+            ]
+            lines.extend(adjusted_lines)
+
+        # Add positional parameter as required with better description
+        if pos_info:
+            pos_arg_name = pos_info.param_name.upper()
+            pos_help = pos_info.help_text or f"*Required Positional Parameter representing a {pos_info.param_name} ({pos_info.param_type.__name__})"
+            pos_lines = self._format_single_argument(
+                pos_arg_name,
+                pos_help,
+                unified_cmd_desc_column,
+                "option_name", 
+                "option_description",
+                required=True,
+            )
+            # Adjust indentation for command group options
+            adjusted_lines = [
+                line.replace(" " * self._arg_indent, " " * (self._arg_indent + 2), 1)
+                for line in pos_lines
+            ]
+            lines.extend(adjusted_lines)
+
+        return lines

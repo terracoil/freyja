@@ -1,8 +1,7 @@
-![Freyja Action](https://github.com/terracoil/freyja/raw/main/docs/freyja-action.png)
+**[↑ Documentation Hub](../README.md)**
 
 # 👤 User Guide
-
-[↑ Documentation Hub](../README.md)
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 Master the art of building CLIs with Freyja! This comprehensive guide covers everything from basic patterns to advanced techniques for class-based CLI development.
 

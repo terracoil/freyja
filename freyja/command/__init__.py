@@ -1,10 +1,17 @@
 """Command discovery and execution components."""
 
-from freyja.command.command_discovery import CommandDiscovery
-from freyja.command.command_executor import CommandExecutor
+from .class_handler import ClassHandler
+from .command_discovery import CommandDiscovery
+from .command_executor import CommandExecutor
+from .command_parser import CommandParser
+from .execution_coordinator import ExecutionCoordinator
+from .validation_service import ValidationService
 
-# Re-export from shared for backward compatibility
-from freyja.shared.command_info import CommandInfo
-from freyja.shared.command_tree import CommandTree
-
-__all__ = ['CommandDiscovery', 'CommandExecutor', 'CommandTree', 'CommandInfo']
+__all__ = [
+  "ClassHandler",
+  "CommandDiscovery",
+  "CommandExecutor",
+  "CommandParser",
+  "ExecutionCoordinator",
+  "ValidationService"
+]

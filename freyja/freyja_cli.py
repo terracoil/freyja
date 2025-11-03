@@ -7,10 +7,8 @@ from collections.abc import Callable, Sequence
 from contextlib import contextmanager
 from typing import Any
 
-from freyja.cli import ClassHandler, ExecutionCoordinator
-from freyja.command import CommandDiscovery, CommandExecutor
-from freyja.parser import CommandParser
-from freyja.utils.output_capture import OutputCapture, OutputCaptureConfig
+from freyja.command import CommandDiscovery, CommandExecutor, CommandParser, ClassHandler, ExecutionCoordinator
+from freyja.utils import OutputCapture, OutputCaptureConfig
 
 Target = type[Any] | Sequence[type[Any]]
 
@@ -284,7 +282,7 @@ class FreyjaCLI:
         """
         try:
             # Use the execution coordinator's completion handler
-            result = self.execution_coordinator._handle_completion_request()
+            result = self.execution_coordinator.handle_completion_request()
 
             # Explicitly exit after completion to prevent any further processing
             sys.exit(0 if result == 0 else 1)

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 from freyja import FreyjaCLI
-from freyja.cli import TargetMode
+from freyja.cli import TargetModeEnum
 
 
 class SampleEnum(enum.Enum):
@@ -85,7 +85,7 @@ class TestClassBasedCLI:
     """Test FreyjaCLI creation from class."""
     cli = FreyjaCLI(SampleClass)
 
-    assert cli.target_mode == TargetMode.CLASS
+    assert cli.target_mode == TargetModeEnum.CLASS
     assert cli.target_class == SampleClass
     assert cli.title == 'Sample class for testing FreyjaCLI generation.'  # From docstring
     assert 'simple-method' in cli.commands
@@ -398,7 +398,7 @@ class TestConstructorParameterValidation:
     """Test that class with default constructor parameters works for direct method pattern."""
     # Should work because all parameters have defaults
     cli = FreyjaCLI(SampleClassWithDefaults)
-    assert cli.target_mode == TargetMode.CLASS
+    assert cli.target_mode == TargetModeEnum.CLASS
     # Should have the test method available as a command
     assert 'test-method' in cli.commands
 
@@ -412,7 +412,7 @@ class TestConstructorParameterValidation:
     """Test that inner class pattern works when all constructors have default parameters."""
     # Should work because both main class and inner class have defaults
     cli = FreyjaCLI(SampleClassWithInnerClasses)
-    assert cli.target_mode == TargetMode.CLASS
+    assert cli.target_mode == TargetModeEnum.CLASS
     # Inner class methods become hierarchical cmd_tree with proper nesting
     assert 'good-inner-class' in cli.commands
     assert cli.commands['good-inner-class']['type'] == 'group'

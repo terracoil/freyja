@@ -1,7 +1,8 @@
-![Freyja Action](https://github.com/terracoil/freyja/raw/main/docs/freyja-action.png)
-# Guides
+**[↑ Documentation Hub](../README.md)**
 
-[↑ Documentation Hub](../README.md)
+# Guides
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
+
 
 Practical guides and how-to documentation for common tasks.
 

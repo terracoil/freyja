@@ -1,7 +1,7 @@
 """Tests for validation module to achieve 90%+ coverage."""
 
 import pytest
-from freyja.command.validation import ValidationService
+from freyja.command.validation_service import ValidationService
 
 
 class TestValidationService:

@@ -1,6 +1,5 @@
 # ⚙️ How Freyja Works
-
-![Freyja](freyja-github.jpg)
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" width="300"/>
 
 ## 📍 Navigation
 **You are here**: Documentation Hub > How It Works

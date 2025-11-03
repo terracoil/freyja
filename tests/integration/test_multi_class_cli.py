@@ -2,7 +2,8 @@
 
 import pytest
 from freyja import FreyjaCLI
-from freyja.cli import ClassHandler, TargetMode
+from freyja.cli import TargetModeEnum
+from freyja.command import ClassHandler
 
 
 class MockDataProcessor:
@@ -13,9 +14,9 @@ class MockDataProcessor:
     self.config_file = config_file
     self.verbose = verbose
 
-  def process_data(self, input_file: str, format: str = 'json') -> str:
+  def process_data(self, input_file: str, data_format: str = 'json') -> str:
     """Process data file."""
-    return f'Processed {input_file} as {format} with config {self.config_file}'
+    return f'Processed {input_file} as {data_format} with config {self.config_file}'
 
   class FileOperations:
     """File operations for data processor."""
@@ -41,9 +42,10 @@ class MockFileManager:
     """List files in directory."""
     return f'Listed files in {directory} from {self.base_path}'
 
-  def process_data(self, input_file: str, format: str = 'xml') -> str:
+  @staticmethod
+  def process_data(input_file: str, data_format: str = 'xml') -> str:
     """Process data file (collision with MockDataProcessor)."""
-    return f'FileManager processed {input_file} as {format}'
+    return f'FileManager processed {input_file} as {data_format}'
 
 
 class MockReportGenerator:
@@ -128,7 +130,7 @@ class TestMultiClassCLI:
     """Test single class in list behaves like regular class mode."""
     cli = FreyjaCLI([MockDataProcessor], completion=False)
 
-    assert cli.target_mode == TargetMode.CLASS
+    assert cli.target_mode == TargetModeEnum.CLASS
     assert cli.target_class == MockDataProcessor
     assert cli.target_classes == [MockDataProcessor]  # Unified handling: always a list for classes
     assert 'process-data' in cli.commands
@@ -137,7 +139,7 @@ class TestMultiClassCLI:
     """Test multi-class mode is detected correctly."""
     cli = FreyjaCLI([MockDataProcessor, MockReportGenerator], completion=False)
 
-    assert cli.target_mode == TargetMode.CLASS  # Unified handling: always CLASS for classes
+    assert cli.target_mode == TargetModeEnum.CLASS  # Unified handling: always CLASS for classes
     assert cli.target_class == MockReportGenerator  # Last class is primary
     assert cli.target_classes == [MockDataProcessor, MockReportGenerator]
 
@@ -223,7 +225,7 @@ class TestMultiClassCLI:
     """Test backward compatibility with single class (non-list)."""
     cli = FreyjaCLI(MockDataProcessor, completion=False)
 
-    assert cli.target_mode == TargetMode.CLASS
+    assert cli.target_mode == TargetModeEnum.CLASS
     assert cli.target_class == MockDataProcessor
     assert cli.target_classes == [MockDataProcessor]  # Unified handling: always a list for classes
 

@@ -1,7 +1,7 @@
-![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
-# Basic Usage Guide
+**[← Back to Help](../README.md) | [🚀 Quick Start](quick-start.md) | [📦 Installation](installation.md)**
 
-[← Back to Help](../README.md) | [🚀 Quick Start](quick-start.md) | [📦 Installation](installation.md)
+# Basic Usage Guide
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 # Table of Contents
 - [Core Concepts](#core-concepts)
@@ -57,15 +57,15 @@ def bad_function(name, count=5, verbose=False):  # No type hints
 
 ### Supported Types
 
-| Python Type | CLI Behavior | Example Usage |
-|-------------|-------------|---------------|
-| `str` | `--name VALUE` | `--name "John"` |
-| `int` | `--count 42` | `--count 100` |
-| `float` | `--rate 3.14` | `--rate 2.5` |
-| `bool` | `--verbose` (flag) | `--verbose` |
-| `Enum` | `--level CHOICE` | `--level INFO` |
-| `List[str]` | `--items A B C` | `--items file1 file2` |
-| `Optional[str]` | `--name VALUE` (optional) | `--name "test"` |
+| Python Type     | CLI Behavior              | Example Usage         |
+|-----------------|---------------------------|-----------------------|
+| `str`           | `--name VALUE`            | `--name "John"`       |
+| `int`           | `--count 42`              | `--count 100`         |
+| `float`         | `--rate 3.14`             | `--rate 2.5`          |
+| `bool`          | `--verbose` (flag)        | `--verbose`           |
+| `Enum`          | `--level CHOICE`          | `--level INFO`        |
+| `List[str]`     | `--items A B C`           | `--items file1 file2` |
+| `Optional[str]` | `--name VALUE` (optional) | `--name "test"`       |
 
 ## New Features
 
@@ -127,31 +127,36 @@ db-tool backup-database --database-name production_db --compress
 
 ## Common Patterns
 
-### 1. Simple Utility Functions
+### 1. Simple Utility Class
 
 ```python
-from src import CLI
-import sys
+from freyja import FreyjaCLI
 
 
-def convert_temperature(celsius: float, to_fahrenheit: bool = True) -> None:
-  """Convert temperature between Celsius and Fahrenheit."""
-  if to_fahrenheit:
-    result = (celsius * 9 / 5) + 32
-    print(f"{celsius}°C = {result}°F")
-  else:
-    result = (celsius - 32) * 5 / 9
-    print(f"{celsius}°F = {result}°C")
+class HealthCalculator:
+  """Health and fitness calculations."""
+  
+  def __init__(self, precision: int = 2):
+    """Initialize calculator with display precision."""
+    self.precision = precision
 
+  def convert_temperature(self, celsius: float, to_fahrenheit: bool = True) -> None:
+    """Convert temperature between Celsius and Fahrenheit."""
+    if to_fahrenheit:
+      result = (celsius * 9 / 5) + 32
+      print(f"{celsius}°C = {result:.{self.precision}f}°F")
+    else:
+      result = (celsius - 32) * 5 / 9
+      print(f"{celsius}°F = {result:.{self.precision}f}°C")
 
-def calculate_bmi(weight_kg: float, height_m: float) -> None:
-  """Calculate Body Mass Index."""
-  bmi = weight_kg / (height_m ** 2)
-  print(f"BMI: {bmi:.2f}")
+  def calculate_bmi(self, weight_kg: float, height_m: float) -> None:
+    """Calculate Body Mass Index."""
+    bmi = weight_kg / (height_m ** 2)
+    print(f"BMI: {bmi:.{self.precision}f}")
 
 
 if __name__ == '__main__':
-  cli = CLI.from_module(sys.modules[__name__], title="Health Calculator")
+  cli = FreyjaCLI(HealthCalculator, title="Health Calculator")
   cli.run()
 ```
 
@@ -173,7 +178,7 @@ python health_calc.py calculate-bmi --height-m 1.75 70        # weight_kg is pos
 ### 2. Stateful Application Class
 
 ```python
-from src import CLI
+from freyja import FreyjaCLI
 from typing import List
 import json
 
@@ -256,69 +261,76 @@ python config_mgr.py list-all --format-type json
 ### 3. File Processing Pipeline
 
 ```python
-from src import CLI
+from freyja import FreyjaCLI
 from pathlib import Path
 from typing import List
-import sys
 
 
-def process_text_files(
-        input_dir: str,
-        output_dir: str,
-        extensions: List[str] = None,
-        convert_to_uppercase: bool = False,
-        add_line_numbers: bool = False,
-        dry_run: bool = False
-) -> None:
-  """Process text files with various transformations."""
-  if extensions is None:
-    extensions = ['.txt', '.md']
+class FileProcessor:
+  """Text file processing utilities."""
+  
+  def __init__(self, default_extensions: List[str] = None):
+    """Initialize with default file extensions."""
+    self.default_extensions = default_extensions or ['.txt', '.md']
 
-  input_path = Path(input_dir)
-  output_path = Path(output_dir)
+  def process_text_files(
+          self,
+          input_dir: str,
+          output_dir: str,
+          extensions: List[str] = None,
+          convert_to_uppercase: bool = False,
+          add_line_numbers: bool = False,
+          dry_run: bool = False
+  ) -> None:
+    """Process text files with various transformations."""
+    if extensions is None:
+      extensions = self.default_extensions
 
-  if not input_path.exists():
-    print(f"❌ Input directory '{input_dir}' does not exist")
-    return
+    input_path = Path(input_dir)
+    output_path = Path(output_dir)
 
-  if not dry_run:
-    output_path.mkdir(parents=True, exist_ok=True)
+    if not input_path.exists():
+      print(f"❌ Input directory '{input_dir}' does not exist")
+      return
 
-  # Find files
-  files_to_process = []
-  for ext in extensions:
-    files_to_process.extend(input_path.glob(f"*{ext}"))
+    if not dry_run:
+      output_path.mkdir(parents=True, exist_ok=True)
 
-  print(f"Found {len(files_to_process)} files to process")
+    # Find files
+    files_to_process = []
+    for ext in extensions:
+      files_to_process.extend(input_path.glob(f"*{ext}"))
 
-  for file_path in files_to_process:
-    print(f"Processing: {file_path.name}")
+    print(f"Found {len(files_to_process)} files to process")
 
-    if dry_run:
-      print(f"  Would write to: {output_path / file_path.name}")
-      continue
+    for file_path in files_to_process:
+      print(f"Processing: {file_path.name}")
 
-    # Read and process
-    with open(file_path, 'r', encoding='utf-8') as f:
-      content = f.read()
+      if dry_run:
+        print(f"  Would write to: {output_path / file_path.name}")
+        continue
 
-    if convert_to_uppercase:
-      content = content.upper()
+      # Read and process
+      with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
 
-    if add_line_numbers:
-      lines = content.splitlines()
-      content = '\n'.join(f"{i + 1:4d}: {line}" for i, line in enumerate(lines))
+      if convert_to_uppercase:
+        content = content.upper()
 
-    # Write output
-    output_file = output_path / file_path.name
-    with open(output_file, 'w', encoding='utf-8') as f:
-      f.write(content)
+      if add_line_numbers:
+        lines = content.splitlines()
+        content = '\n'.join(f"{i + 1:4d}: {line}" for i, line in enumerate(lines))
 
-    print(f"  ✅ Written to: {output_file}")
+      # Write output
+      output_file = output_path / file_path.name
+      with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(content)
+
+      print(f"  ✅ Written to: {output_file}")
 
 
 if __name__ == '__main__':
-  cli = CLI.from_module(sys.modules[__name__], title="Text File Processor")
+  cli = FreyjaCLI(FileProcessor, title="Text File Processor")
   cli.run()
 ```
 
@@ -404,9 +416,9 @@ class DatabaseManager:
 ### CLI Initialization Options
 
 ```python
-# Module-based configuration
-cli = CLI.from_module(
-    module=sys.modules[__name__],
+# Class-based configuration
+cli = FreyjaCLI(
+    target_class=FileProcessor,
     title="Custom Freyja Title",           # Override auto-detected title
     function_opts={                     # Per-function configuration
         'function_name': {

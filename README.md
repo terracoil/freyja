@@ -1,20 +1,36 @@
-![Freyja](https://github.com/terracoil/freyja/raw/main/docs/freyja.png)
-
 # Freyja ⚡
-**No-dependency, zero-configuration CLI tool to build command-line interfaces purely from your code.**
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja.png" alt="Freyja" title="Freyja" width="400"/>
 
-## CHECK OUT https://pypi.org/project/freyja/
+_**[Freyja](https://pypi.org/project/freyja/)** is a no-dependency, zero-configuration CLI tool to build command-line interfaces purely from python classes._
 
-Transform your Python classes into powerful command-line applications in seconds! Freyja uses introspection and type annotations to automatically generate professional CLIs with zero configuration required.
+## Summary
+
+Transform your Python classes into powerful command-line applications in seconds! 
+
+**[Freyja](https://pypi.org/project/freyja/)** uses your class to generate a powerful CLI:
+* Methods become commands with automatic usage, help and validation.  
+* Type annotations and docstrings are used to enhance CLI functionality. 
+* Inner classes can be used to organize commands into groups. 
 
 **⚠️ Important:** All constructor parameters MUST have default values for CLI generation to work. Parameters without defaults will cause CLI creation to fail.
 
+## 🎉 What's New in v1.1.5
+
+### Enhanced Features
+- **🔄 ExecutionSpinner**: Beautiful progress indicators with command context tracking
+- **🎨 Theme Adjustments**: Dynamic theme customization with multiple adjustment strategies
+- **📊 Dependency Analysis**: New tools for analyzing project dependencies
+- **🛡️ Improved Error Handling**: Better validation and clearer error messages
+- **⚡ Performance Improvements**: Faster command discovery and execution
+
 ## Table of Contents
+* [🎉 What's New](#-whats-new-in-v115)  
 * [🚀 Why Freyja?](#-why-freyja)
 * [⚡ Quick Start](#-quick-start)
 * [🏗️ Class-based CLI](#️-class-based-cli)
   * [Direct Methods Pattern](#direct-methods-pattern)
   * [Inner Classes Pattern](#inner-classes-pattern)
+  * [🔄 ExecutionSpinner](#-executionspinner-new)
 * [✨ Key Features](#-key-features)
 * [📚 Documentation](#-documentation)
 * [🛠️ Development](#️-development)
@@ -55,9 +71,10 @@ from freyja import FreyjaCLI
 class Greeter:
     """Simple greeting application."""
 
-    def __init__(self, default_name: str = "World"):
+    def __init__(self, default_name: str = "World", verbose: bool = False):
         """Initialize greeter with default name."""
         self.default_name = default_name
+        self.verbose = verbose
 
     def greet(self, name: str = None, excited: bool = False) -> None:
         """Greet someone by name."""
@@ -82,12 +99,17 @@ python script.py greet --name Alice --excited
 
 python script.py --help
 # Automatic help generation with beautiful formatting
+
+# With verbose mode (shows execution spinner in v1.1.5+)
+python script.py --verbose greet --name Bob
+# Output: Executing greet [greet:name:Bob]
+#         Hello, Bob!
 ```
 
 
 ## 🏗️ Class-based CLI
 
-Freyja transforms your Python classes into powerful CLI applications. Supports two flexible patterns:
+Freyja transforms your Python classes into powerful CLI applications. Supports flexible patterns for organizing your commands:
 
 ### Direct Methods Pattern
 
@@ -135,7 +157,7 @@ python calculator.py --precision 4 add 3.14159 --b 2.71828 --store-result
 
 ### Inner Classes Pattern
 
-Organize complex applications with hierarchical command structure (e.g., `group subgroup command`):
+Organize complex applications with hierarchical command structure using space-separated commands:
 
 ```python
 # project_manager.py
@@ -196,13 +218,13 @@ if __name__ == '__main__':
     cli.run()
 ```
 
-**Usage:**
+**Usage with Hierarchical Commands:**
 ```bash
 # Global + Sub-global + Command arguments (hierarchical structure)
 python project_manager.py --config-file prod.json --debug \
   database migrate --timeout 60 --version 2.1.0 --dry-run
 
-# Create new project with custom workspace
+# Create new project with custom workspace  
 python project_manager.py projects create --workspace /prod/projects --auto-save \
   --name "web-app" --template "react" --description "Production web application"
 
@@ -213,17 +235,75 @@ python project_manager.py projects deploy --project-name web-app --environment p
 python project_manager.py --help
 ```
 
+**⚠️ Important:** Freyja uses ONLY hierarchical space-separated commands. Flat dash-separated syntax (e.g., `database--migrate` or `system__completion__install`) is NOT supported.
+
+### 🔄 ExecutionSpinner (NEW)
+
+Freyja v1.1.5+ includes an enhanced execution feedback system that provides visual progress indicators:
+
+```python
+from freyja import FreyjaCLI
+from freyja.utils.spinner import ExecutionSpinner, CommandContext
+import time
+
+
+class DataProcessor:
+    """Data processing with progress feedback."""
+    
+    def __init__(self, verbose: bool = False):
+        """Initialize with verbose mode support."""
+        self.verbose = verbose
+    
+    def process_large_file(self, input_file: str, chunk_size: int = 1024) -> None:
+        """Process a large file with progress indication."""
+        # ExecutionSpinner is automatically integrated when verbose=True
+        print(f"Processing {input_file} in {chunk_size}-byte chunks")
+        
+        # Simulate processing
+        for i in range(5):
+            time.sleep(0.5)
+            print(f"  Processed chunk {i+1}/5")
+        
+        print("✓ Processing complete!")
+
+
+if __name__ == '__main__':
+    cli = FreyjaCLI(DataProcessor, title="Data Processor")
+    cli.run()
+```
+
+**Usage with ExecutionSpinner:**
+```bash
+# Verbose mode shows execution context
+python processor.py --verbose process-large-file input.csv --chunk-size 2048
+# Output: Executing process-large-file [positional:0:input.csv, process-large-file:chunk_size:2048]
+#         Processing input.csv in 2048-byte chunks
+#         ...
+
+# Normal mode (no spinner for quick operations)
+python processor.py process-large-file input.csv
+```
+
+**Key ExecutionSpinner Features:**
+- **Automatic Integration**: Works with any Freyja CLI when `verbose=True`
+- **Command Context**: Shows namespace, command, and all arguments
+- **Thread-Safe**: Handles concurrent operations properly
+- **Custom Status**: Can augment status during execution
+- **Clean Output**: Proper cleanup on success or failure
+
 ## ✨ Key Features
 
 🚀 **Zero Configuration** - Works out of the box with just type annotations
 ⚡ **Lightning Fast** - No runtime dependencies, minimal overhead
 🎯 **Type Safe** - Automatic validation from your type hints
+🔄 **ExecutionSpinner** - Beautiful progress indicators with command context (v1.1.5+)
 🛡️ **Guard Clauses** - Built-in parameter validation with declarative guards
 📚 **Auto Documentation** - Help text generated from your docstrings
-🎨 **Beautiful Output** - Professional themes and formatting
+🎨 **Beautiful Output** - Professional themes with dynamic adjustment capabilities
 🔧 **Flexible Architecture** - Direct methods or inner class patterns
 📦 **No Dependencies** - Uses only Python standard library
 🌈 **Shell Completion** - Bash, Zsh, Fish, and PowerShell support
+📊 **Dependency Analysis** - Built-in tools for analyzing project dependencies (v1.1.5+)
 ✅ **Production Ready** - Battle-tested in enterprise applications  
 
 ## 📚 Documentation
@@ -233,30 +313,21 @@ python project_manager.py --help
 ### Quick Links
 * **[🚀 Getting Started](docs/getting-started/README.md)** - Installation and first steps
 * **[👤 User Guide](docs/user-guide/README.md)** - Comprehensive guides for class-based CLI patterns
-* **[⚙️ Features](docs/features/README.md)** - Type annotations, themes, completion, and more
+* **[⚙️ Features](docs/features/README.md)** - Type annotations, themes, completion, ExecutionSpinner, and more
 * **[📋 Examples & Best Practices](docs/guides/README.md)** - Real-world examples and patterns
+* **[🔄 Migration Guide](docs/guides/README.md)** - Upgrading from older versions
 * **[❓ FAQ](docs/faq.md)** - Frequently asked questions
 * **[🔧 API Reference](docs/reference/README.md)** - Complete API documentation
 
+### New in v1.1.5 Documentation
+* **[ExecutionSpinner Guide](docs/features/execution-spinner.md)** - Progress indication system
+* **[Theme System](docs/features/themes.md)** - Dynamic theme customization
+* **[Dependency Analysis](docs/features/README.md)** - Project dependency tools
+
 ## 🛠️ Development
+See [Development Environment Setup](docs/development/README.md#development-setup) for detailed instructions.
 
 **[📖 Development Guide](CLAUDE.md)** - Comprehensive guide for contributors
-
-### Quick Setup
-
-```bash
-# Clone and setup
-git clone https://github.com/terracoil/freyja.git
-cd freyja
-
-# Install Poetry and setup environment  
-curl -sSL https://install.python-poetry.org | python3 -
-./bin/dev-tools setup env
-
-# Run tests and examples
-./bin/dev-tools test run
-poetry run python freyja/examples/cls_example --help
-```
 
 ### Development Commands
 
@@ -274,7 +345,24 @@ poetry install                    # Install dependencies
 * **Python 3.13.5+** (recommended) or Python 3.8+
 * **Zero runtime dependencies** - uses only Python standard library
 * **Type annotations required** - for automatic CLI generation
+* **Constructor defaults required** - all constructor parameters must have default values
 * **Docstrings recommended** - for automatic help text generation
+
+### Command Syntax Rules
+
+✅ **CORRECT - Hierarchical Commands:**
+```bash
+my_cli database migrate             # Hierarchical with spaces
+my_cli system completion install    # Multi-level hierarchy
+my_cli projects create              # Clean and intuitive
+```
+
+❌ **INCORRECT - Forbidden Syntax:**
+```bash
+my_cli database--migrate            # Double-dash syntax NOT supported
+my_cli system__completion__install  # Dunder syntax NOT supported
+my_cli data-ops--process           # Mixed syntax NOT supported
+```
 
 ---
 
@@ -285,4 +373,4 @@ pip install freyja
 # Start building amazing command-line tools in minutes! ⚡
 ```
 
-**[📚 Get Started Now →](docs/getting-started/README.md)**
+**[📚 Get Started Now →](docs/getting-started/README.md)** | **[🎉 What's New →](docs/guides/README.md)**

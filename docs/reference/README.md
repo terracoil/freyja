@@ -1,9 +1,9 @@
-![Freyja Action](https://github.com/terracoil/freyja/raw/main/docs/freyja-action.png)
+**[↑ Documentation Hub](../README.md)**
+
 # API Reference
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
-[↑ Documentation Hub](../README.md)
-
-Complete API documentation and technical reference for freyja.
+Complete API documentation and technical reference for Freyja.
 
 ## Reference Documentation
 
@@ -37,11 +37,14 @@ Complete guide to supported parameter types.
 **Module-based CLI**
 
 ```python
-from src import CLI
-import sys
+from freyja import FreyjaCLI
 
-cli = CLI(
-  sys.modules[__name__],
+class MyApp:
+  """My application."""
+  # Your methods here
+
+cli = FreyjaCLI(
+  MyApp,
   title="My Freyja",
   theme_name="universal",
   no_color=False,
@@ -53,9 +56,9 @@ cli.run()
 **Class-based CLI**
 
 ```python
-from src import CLI
+from freyja import FreyjaCLI
 
-cli = CLI(
+cli = FreyjaCLI(
   MyClass,
   title="My Freyja",
   theme_name="colorful",

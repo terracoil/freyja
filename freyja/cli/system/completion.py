@@ -49,8 +49,7 @@ class Completion:
 
         if self._completion_handler:
             try:
-                from freyja.completion.installer import CompletionInstaller
-
+                from .completion_installer import CompletionInstaller
                 # Extract program name from sys.argv[0]
                 prog_name = os.path.basename(sys.argv[0])
                 if prog_name.endswith(".py"):

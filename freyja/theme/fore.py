@@ -1,0 +1,26 @@
+"""Foreground color constants."""
+
+from enum import Enum
+
+
+class Fore(Enum):
+  """Foreground color constants."""
+
+  BLACK = 0x000000
+  RED = 0xFF0000
+  GREEN = 0x008000
+  YELLOW = 0xFFFF00
+  BLUE = 0x0000FF
+  MAGENTA = 0xFF00FF
+  CYAN = 0x00FFFF
+  WHITE = 0xFFFFFF
+
+  # Bright colors
+  LIGHTBLACK_EX = 0x808080
+  LIGHTRED_EX = 0xFF8080
+  LIGHTGREEN_EX = 0x80FF80
+  LIGHTYELLOW_EX = 0xFFFF80
+  LIGHTBLUE_EX = 0x8080FF
+  LIGHTMAGENTA_EX = 0xFF80FF
+  LIGHTCYAN_EX = 0x80FFFF
+  LIGHTWHITE_EX = 0xF0F0F0

@@ -1,7 +1,7 @@
-![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
-# Theme System
+**[← Back to Features](README.md) | [↑ Documentation Hub](../README.md)**
 
-[← Back to Features](README.md) | [↑ Documentation Hub](../README.md)
+# Theme System
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 ## Overview
 
@@ -28,13 +28,13 @@ A vibrant theme with rich colors:
 ### Setting Theme
 
 ```python
-from src import CLI
-
-# Module-based Freyja with theme
-cli = CLI(sys.modules[__name__], theme_name="colorful")
+from freyja import FreyjaCLI
 
 # Class-based Freyja with theme
-cli = CLI(MyClass, theme_name="universal")
+cli = FreyjaCLI(MyClass, theme_name="colorful")
+
+# Another class-based example with different theme
+cli = FreyjaCLI(MyClass, theme_name="universal")
 ```
 
 ### Disabling Colors

@@ -33,7 +33,7 @@
 
 The Freyja public API consists primarily of the `FreyjaCLI` class. All other classes are internal implementation details.
 
-### FreyjaCLI
+### ⚡ Freyja CLI
 
 **Location**: `freyja.FreyjaCLI`
 

@@ -9,7 +9,7 @@ from typing import Any
 
 from freyja.utils.output_capture import OutputCapture, OutputCaptureConfig
 
-from .enums import TargetMode
+from freyja.cli.target_mode_enum import TargetModeEnum
 
 
 class ExecutionCoordinator:
@@ -17,7 +17,7 @@ class ExecutionCoordinator:
 
     def __init__(
         self,
-        target_mode: TargetMode,
+        target_mode: TargetModeEnum,
         executors: dict[str | type, Any],
         output_capture_config: OutputCaptureConfig | None = None,
     ):
@@ -25,11 +25,11 @@ class ExecutionCoordinator:
         # Guard: Ensure target_mode is not None
         if target_mode is None:
             raise ValueError("target_mode cannot be None")
-        
+
         # Guard: Ensure executors is not None
         if executors is None:
             raise ValueError("executors cannot be None")
-        
+
         self.target_mode = target_mode
         self.executors = executors
         self.command_tree = None
@@ -252,7 +252,7 @@ class ExecutionCoordinator:
         # Update executor verbose setting
         executor.verbose = verbose
 
-        return executor.execute_command(parsed=parsed, target_mode=TargetMode.CLASS)
+        return executor.execute_command(parsed=parsed, target_mode=TargetModeEnum.CLASS)
 
     def _find_source_class_for_function(self, function_name: str) -> type | None:
         """Find the source class for a given function name."""
@@ -360,7 +360,7 @@ class ExecutionCoordinator:
         current_parser.print_help()
         return 0
 
-    def _handle_completion_request(self):
+    def handle_completion_request(self):
         """
         Handle shell completion requests with complete isolation.
 

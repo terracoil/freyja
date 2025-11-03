@@ -1,8 +1,7 @@
-![Freyja Action](https://github.com/terracoil/freyja/raw/main/docs/freyja-action.png)
+**[↑ Documentation Hub](../README.md)**
 
 # 🚀 Getting Started with Freyja
-
-[↑ Documentation Hub](../README.md)
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 Welcome to Freyja! This section will transform you from zero to CLI hero in minutes. **No configuration files, no complex setup, no dependencies** - just add type annotations to your Python code and Freyja does the magic! ✨
 

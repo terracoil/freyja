@@ -1,7 +1,7 @@
-![Freyja Action](https://github.com/terracoil/freyja/raw/main/docs/freyja-action.png)
-# Quick Start Guide
+**[← Back to Help](../README.md) | [📦 Installation](installation.md) | [📖 Basic Usage](basic-usage.md)**
 
-[← Back to Help](../README.md) | [📦 Installation](installation.md) | [📖 Basic Usage](basic-usage.md)
+# Quick Start Guide
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 # Table of Contents
 - [Installation](#installation)

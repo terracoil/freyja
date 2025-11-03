@@ -1,7 +1,7 @@
-![Freyja Action](https://github.com/terracoil/freyja/raw/main/docs/freyja-action.png)
-# Advanced Topics
+**[↑ Documentation Hub](../README.md)**
 
-[↑ Documentation Hub](../README.md)
+# Advanced Topics
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 Advanced patterns and techniques for power users of freyja.
 

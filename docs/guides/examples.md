@@ -1,7 +1,7 @@
-![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
-# Examples
+**[← Back to Guides](README.md) | [↑ Documentation Hub](../README.md)**
 
-[← Back to Guides](README.md) | [↑ Documentation Hub](../README.md)
+# Examples
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 ## Real-World CLI Examples
 
@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 from enum import Enum
-from src import CLI
+from freyja import FreyjaCLI
 
 
 class CompressionFormat(Enum):
@@ -177,7 +177,7 @@ def batch_rename(
 
 
 if __name__ == '__main__':
-  cli = CLI(
+  cli = FreyjaCLI(
     sys.modules[__name__],
     title="FileTool - Advanced File Operations",
     theme_name="colorful"
@@ -193,7 +193,7 @@ A class-based database management tool:
 #!/usr/bin/env python3
 """Database management Freyja with connection state."""
 
-from src import CLI
+from freyja import FreyjaCLI
 from datetime import datetime
 from typing import Optional, List
 from enum import Enum
@@ -417,7 +417,7 @@ class DatabaseManager:
 
 
 if __name__ == '__main__':
-  cli = CLI(DatabaseManager, theme_name="colorful")
+  cli = FreyjaCLI(DatabaseManager, theme_name="colorful")
   cli.run()
 ```
 
@@ -429,7 +429,7 @@ A comprehensive API client with authentication:
 #!/usr/bin/env python3
 """RESTful API client with authentication and session management."""
 
-from src import CLI
+from freyja import FreyjaCLI
 from typing import Optional, Dict, List
 from enum import Enum
 import json
@@ -670,7 +670,7 @@ class APIClient:
 
 
 if __name__ == '__main__':
-  cli = CLI(APIClient, theme_name="colorful")
+  cli = FreyjaCLI(APIClient, theme_name="colorful")
   cli.run()
 ```
 

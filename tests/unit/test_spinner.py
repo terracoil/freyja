@@ -231,17 +231,19 @@ class TestExecutionSpinner:
     spinner.status_line = 'Test status'
     spinner.running = True
 
-    # Mock stdout to capture output
-    with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-      with patch('time.sleep', side_effect=[None, None, KeyboardInterrupt]):
-        # Run spin for a short time
-        try:
-          spinner._spin()
-        except KeyboardInterrupt:
-          pass
+    # Mock _can_write_to_stdout to return True so output is captured
+    with patch.object(spinner, '_can_write_to_stdout', return_value=True):
+      # Mock stdout to capture output
+      with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+        with patch('time.sleep', side_effect=[None, None, KeyboardInterrupt]):
+          # Run spin for a short time
+          try:
+            spinner._spin()
+          except KeyboardInterrupt:
+            pass
 
-    output = mock_stdout.getvalue()
-    assert 'Test status' in output
+      output = mock_stdout.getvalue()
+      assert 'Test status' in output
 
   def test_stop_success(self):
     """Test stop method with success."""
@@ -249,12 +251,14 @@ class TestExecutionSpinner:
     spinner.running = True
     spinner.status_line = 'Test command'
 
-    with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-      spinner.stop(success=True)
+    # Mock _can_write_to_stdout to return True so output is captured
+    with patch.object(spinner, '_can_write_to_stdout', return_value=True):
+      with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+        spinner.stop(success=True)
 
-    assert spinner.running is False
-    output = mock_stdout.getvalue()
-    assert '✓' in output or 'Test command' in output
+      assert spinner.running is False
+      output = mock_stdout.getvalue()
+      assert '✓' in output or 'Test command' in output
 
   def test_stop_failure(self):
     """Test stop method with failure."""
@@ -262,22 +266,25 @@ class TestExecutionSpinner:
     spinner.running = True
     spinner.status_line = 'Test command'
 
-    with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-      spinner.stop(success=False)
+    # Mock _can_write_to_stdout to return True so output is captured
+    with patch.object(spinner, '_can_write_to_stdout', return_value=True):
+      with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+        spinner.stop(success=False)
 
-    assert spinner.running is False
-    output = mock_stdout.getvalue()
-    assert '✗' in output or 'Test command' in output
+      assert spinner.running is False
+      output = mock_stdout.getvalue()
+      assert '✗' in output or 'Test command' in output
 
   def test_stop_with_thread(self):
     """Test stop method with active thread."""
     spinner = ExecutionSpinner()
     spinner.running = True
-    spinner.thread = Mock()
-    spinner.thread.join = Mock()
+    mock_thread = Mock()
+    mock_thread.join = Mock()
+    spinner.thread = mock_thread
 
     spinner.stop()
-    spinner.thread.join.assert_called_once_with(timeout=0.5)
+    mock_thread.join.assert_called_once_with(timeout=1.0)
 
   def test_execute_context_manager_success(self):
     """Test execute context manager with successful execution."""

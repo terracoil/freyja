@@ -191,7 +191,7 @@ class TestExecutionSpinner:
     spinner.stop(success=True)
 
     assert spinner.running is False
-    mock_thread.join.assert_called_once_with(timeout=0.5)
+    mock_thread.join.assert_called_once_with(timeout=1.0)
 
   def test_context_manager_success(self):
     """Test spinner context manager with successful execution."""
@@ -231,10 +231,12 @@ class TestExecutionSpinner:
     spinner = ExecutionSpinner()
     context = CommandContext(command='test_command')
 
-    # Start spinner briefly
-    spinner.start(context)
-    time.sleep(0.1)  # Let it spin briefly
-    spinner.stop()
+    # Mock _can_write_to_stdout to return True so spinner writes output
+    with patch.object(spinner, '_can_write_to_stdout', return_value=True):
+      # Start spinner briefly
+      spinner.start(context)
+      time.sleep(0.1)  # Let it spin briefly
+      spinner.stop()
 
     # Should have written some output
     assert mock_write.called
@@ -251,8 +253,10 @@ class TestExecutionSpinner:
     # Mock the status line
     spinner.status_line = 'Executing test_command'
 
-    # Stop with success
-    spinner.stop(success=True)
+    # Mock _can_write_to_stdout to return True so print gets called
+    with patch.object(spinner, '_can_write_to_stdout', return_value=True):
+      # Stop with success
+      spinner.stop(success=True)
 
     # Should print final status with checkmark
     mock_print.assert_called_once()
@@ -271,8 +275,10 @@ class TestExecutionSpinner:
     # Mock the status line
     spinner.status_line = 'Executing test_command'
 
-    # Stop with failure
-    spinner.stop(success=False)
+    # Mock _can_write_to_stdout to return True so print gets called
+    with patch.object(spinner, '_can_write_to_stdout', return_value=True):
+      # Stop with failure
+      spinner.stop(success=False)
 
     # Should print final status with X mark
     mock_print.assert_called_once()
@@ -312,8 +318,10 @@ class TestExecutionSpinner:
     # Mock the status line
     spinner.status_line = 'Executing test_command'
 
-    # Stop with success
-    spinner.stop(success=True)
+    # Mock _can_write_to_stdout to return True so print gets called
+    with patch.object(spinner, '_can_write_to_stdout', return_value=True):
+      # Stop with success
+      spinner.stop(success=True)
 
     # Should print styled final status
     mock_print.assert_called_once()

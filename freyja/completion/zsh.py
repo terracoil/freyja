@@ -105,6 +105,6 @@ compdef _{func_name} "**/{prog_basename}"'''
 def handle_zsh_completion() -> None:
     """Handle zsh completion request from environment variables."""
     # This function should not be called anymore
-    # Completion is handled through the ExecutionCoordinator._handle_completion_request
+    # Completion is handled through the ExecutionCoordinator.handle_completion_request
     # But for compatibility, if we somehow reach here, just exit cleanly
     sys.exit(0)

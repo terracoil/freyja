@@ -1,15 +1,14 @@
-![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
+**[← Getting Started](README.md) | [🚀 Quick Start](quick-start.md)**
 
 # 📦 Installation Guide
-
-[← Getting Started](README.md) | [🚀 Quick Start](quick-start.md)
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 # Table of Contents
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
   - [Install from PyPI](#install-from-pypi)
   - [From GitHub](#from-github)
-- [Development Setup](#development-setup)
+- [Development Setup](../development/README.md)
 - [Verify Installation](#verify-installation)
 - [Troubleshooting](#troubleshooting)
 
@@ -73,77 +72,24 @@ cd freyja
 pip install .
 ```
 
-## Development Setup
-
-### Using Poetry (Recommended)
-
-1. Install Poetry:
-```bash
-curl -sSL https://install.python-poetry.org | python3 -
-```
-
-2. Clone the repository:
-```bash
-git clone https://github.com/terracoil/freyja.git
-cd freyja
-```
-
-3. Install dependencies:
-```bash
-poetry install --with dev
-```
-
-4. Activate the virtual environment:
-```bash
-poetry shell
-```
-
-### Using pip
-
-1. Clone the repository:
-```bash
-git clone https://github.com/terracoil/freyja.git
-cd freyja
-```
-
-2. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install in development mode:
-```bash
-pip install -e ".[dev]"
-```
-
-## Verify Installation
-
-### Check Version
-
-```python
-import src
-
-print(src.__version__)
-```
-
 ### Test Basic Functionality
 
 Create a test file `test_install.py`:
 
 ```python
-from src import CLI
+from freyja import FreyjaCLI
 
 
-def hello(name: str = "World"):
-  """Test function."""
-  print(f"Hello, {name}!")
+class TestApp:
+  """Test application."""
+  
+  def hello(self, name: str = "World"):
+    """Test function."""
+    print(f"Hello, {name}!")
 
 
 if __name__ == "__main__":
-  import sys
-
-  cli = CLI.from_module(sys.modules[__name__])
+  cli = FreyjaCLI(TestApp)
   cli.run()
 ```
 

@@ -1,0 +1,30 @@
+[pytest]
+
+minversion = 8.0
+testpaths = tests
+python_files = test_*.py
+python_classes = Test*
+python_functions = test_*
+
+cache_dir = tmp/.pytest_cache
+addopts = -ra -v -q --strict-markers --cov=freyja --cov-report=term-missing --cov-report=html:reports/coverage --cov-report=xml:reports/coverage/coverage.xml --tb=short --color=yes
+
+;timeout = 300
+;timeout_method = thread
+
+# Ignore archived tests
+norecursedirs = tests/archived
+
+# Warnings
+filterwarnings =
+    error
+    ignore::DeprecationWarning
+    ignore::PendingDeprecationWarning
+
+
+# Test markers
+markers =
+    unit: Fast, isolated unit tests
+    integration: End-to-end integration tests
+    architecture: Architecture compliance tests
+    slow: Tests that take more than 5 seconds

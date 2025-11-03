@@ -1,13 +1,10 @@
-![Freyja Action](https://github.com/terracoil/freyja/raw/main/docs/freyja-action.png)
+**→ [Back to Documentation Hub](../README.md) | [Home](../../README.md)**
 
 # ✨ Features
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 ## 📍 Navigation
 **You are here**: Features Overview
-
-**Parents**:
-- [🏠 Main README](../../README.md) - Project overview and quick start
-- [📚 Documentation Hub](../README.md) - Complete documentation index
 
 **Children**:
 
@@ -16,10 +13,12 @@
 * **[🌈 Shell Completion](shell-completion.md)** - Enable tab completion for Bash, Zsh, Fish, and PowerShell with zero configuration
 * **[⚠️ Error Handling](error-handling.md)** - Robust error management with user-friendly messages and proper exit codes
 * **[📝 Output Capture](output-capture.md)** - Capture and control command output programmatically for testing and monitoring
+* **[🔄 Execution Spinner](execution-spinner.md)** - Visual feedback during command execution with detailed status display
 
-### 🔥 New Features
+### 🔥 New Features (v1.1.5+)
 * **[🔀 Flexible Argument Ordering](flexible-ordering.md)** - Mix options and arguments in any order for natural command flow
 * **[📍 Positional Parameters](positional-parameters.md)** - Automatic positional detection creates intuitive command interfaces
+* **[🔄 Execution Spinner](execution-spinner.md)** - Visual progress indicator with command context display
 
 ---
 
@@ -135,11 +134,28 @@ db-tool backup-database production_db --output-dir /secure/backups --compress
 db-tool backup-database --database-name production_db --compress
 ```
 
+### 🔄 Execution Spinner
+**[Complete Guide →](execution-spinner.md)**
+
+Provide visual feedback during command execution:
+- **🎯 Animated Progress** - Spinning animation shows the CLI is working
+- **📝 Command Context** - Displays executing command with arguments
+- **📦 Smart Formatting** - Groups arguments by type (global, command, positional)
+- **🎨 Theme Integration** - Respects your chosen color theme
+
+```bash
+# Running a command shows contextual spinner
+python project_mgr.py database migrate --target-version 2.0 --dry-run
+
+# Spinner displays:
+⮜ Executing database:migrate [target-version:2.0, migrate:dry-run:True]
+```
+
 ## 💎 Feature Highlights
 
 ### 🏁 Zero-Configuration Magic
 ```python
-from freyja import CLI
+from freyja import FreyjaCLI
 from enum import Enum
 from pathlib import Path
 from typing import List, Optional

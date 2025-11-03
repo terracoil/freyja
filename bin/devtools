@@ -49,6 +49,7 @@ class FreyjaDevTools:
     # Configure cache directories to use tmp/
     os.environ.setdefault('RUFF_CACHE_DIR', str(Path(self.project_src) / 'tmp' / '.ruff_cache'))
 
+
   @classmethod
   def get_project_src(cls) -> str:
     """Get pyproject source root"""
@@ -167,7 +168,7 @@ class FreyjaDevTools:
         continue
 
     if claude_result:
-      commit_message = claude_result.stdout
+      commit_message = claude_result.stdout.strip()
     else:
       raise RuntimeError(f"Error running claude command: {claude_cmd}: {last_error}")
 
@@ -230,7 +231,7 @@ class FreyjaDevTools:
     print(f"{color}{icon} {message}{self.colors['nc']}")
 
   class Setup:
-    """Development environment and self-installation setup operations."""
+    """Development environment and cls-installation setup operations."""
 
     def __init__(self, parent) -> None:
       """Initialize with parent FreyjaDevTools instance."""
@@ -347,6 +348,8 @@ class FreyjaDevTools:
         "**/.pytest_cache",
         "build",
         "dist",
+        "generated*",
+        "demo*",
         "*.egg-info",
         "**/.mypy_cache",
         "**/.ruff_cache",
@@ -394,22 +397,22 @@ class FreyjaDevTools:
       """Display project environment information."""
       parent = self.parent
       parent._print("📋 Project Environment Information", 'info')
-      
+
       # Project details
       print(f"\n{parent.colors['blue']}=== Project Details ==={parent.colors['nc']}")
       print(f"Project Source: {parent.project_src}")
       print(f"Project Name: {parent.project_name}")
-      
+
       # Git information
       print(f"\n{parent.colors['blue']}=== Git Information ==={parent.colors['nc']}")
-      
+
       # Current branch
       branch_result = parent._run_command(['git', 'branch', '--show-current'], capture_output=True)
       if isinstance(branch_result, subprocess.CompletedProcess) and branch_result.returncode == 0:
         print(f"Current Branch: {branch_result.stdout.strip()}")
       else:
         print("Current Branch: (unable to determine)")
-      
+
       # Git status summary
       status_result = parent._run_command(['git', 'status', '--short'], capture_output=True)
       if isinstance(status_result, subprocess.CompletedProcess) and status_result.returncode == 0:
@@ -417,43 +420,43 @@ class FreyjaDevTools:
         print(f"Git Status: {len(status_lines)} file(s) modified" if status_lines else "Git Status: Clean working directory")
       else:
         print("Git Status: (unable to determine)")
-      
+
       # Python environment
       print(f"\n{parent.colors['blue']}=== Python Environment ==={parent.colors['nc']}")
-      
+
       # Python version
       py_result = parent._run_command(['python', '--version'], capture_output=True)
       if isinstance(py_result, subprocess.CompletedProcess) and py_result.returncode == 0:
         print(f"Python Version: {py_result.stdout.strip()}")
       else:
         print("Python Version: (unable to determine)")
-      
+
       # Poetry version
       poetry_result = parent._run_command(['poetry', '--version'], capture_output=True)
       if isinstance(poetry_result, subprocess.CompletedProcess) and poetry_result.returncode == 0:
         print(f"Poetry Version: {poetry_result.stdout.strip()}")
       else:
         print("Poetry Version: (unable to determine)")
-      
+
       # Virtual environment
       venv_result = parent._run_command(['poetry', 'env', 'info', '--path'], capture_output=True)
       if isinstance(venv_result, subprocess.CompletedProcess) and venv_result.returncode == 0:
         print(f"Virtual Environment: {venv_result.stdout.strip()}")
       else:
         print("Virtual Environment: (not active or unable to determine)")
-      
+
       # Additional useful info
       print(f"\n{parent.colors['blue']}=== Additional Information ==={parent.colors['nc']}")
       print(f"Working Directory: {os.getcwd()}")
       print(f"Platform: {sys.platform}")
       print(f"Python Path: {sys.executable}")
-      
+
       # Check if running in development mode
       if Path(parent.project_src).exists():
         parent._print("\nDevelopment environment appears to be properly configured!", 'success')
       else:
         parent._print("\nWarning: Project source directory not found!", 'warning')
-      
+
       return
 
     def publish(self, test_pypi: bool = False) -> None:
@@ -518,12 +521,12 @@ class FreyjaDevTools:
       return None
 
     def autocommit(self, timeout: int = 120, retry_count: int = 3, timeout_increment: int = 60) -> None:
-      """Commit all uncommitted files using Claude to generate an informative commit message.
+      """
+      Commit all uncommitted files using Claude to generate an informative commit message.
 
-      Args:
-        timeout: Initial timeout in seconds for Claude API call (default: 120)
-        retry_count: Number of times to retry on failure (default: 3)
-        timeout_increment: Seconds to add per retry (default: 60)
+      :param timeout: Initial timeout in seconds for Claude API call (default: 120)
+      :param retry_count: Number of times to retry on failure (default: 3)
+      :param timeout_increment: Seconds to add per retry (default: 60)
       """
       import time
       parent = self.parent
@@ -537,13 +540,20 @@ class FreyjaDevTools:
         return
 
       # Step 4: Use Claude to generate commit message with retry logic
-      prompt = "Generate a git commit message for the uncommitted changes (and new non-ignored files) in this branch. Output ONLY the commit message; no preamble, introductions, explanations, nothing else."
+      prompt = "Write a single-line git commit message based on all the currently uncommited code, using conventional commit format. Output ONLY the commit message with no analysis, explanation, or phrases like 'Based on' or 'I can see'. Do not mention Claude or AI tools."
       parent._print(
         f"🤖 Generating commit message with Claude (timeout: {timeout}s, retries: {retry_count}, increment: {timeout_increment}s): \n Prompt: {prompt}",
         'info')
 
       commit_message = parent._run_claude_prompt(prompt, retry_count=retry_count, timeout=timeout, timeout_increment=timeout_increment)
-      # Try to get commit message with retries
+
+      # Check for problematic phrases and regenerate if found
+      problematic_phrases = ["Based on the git diff", "I can see", "Now I can see", "This is a", "Looking at the changes", "The changes show"]
+      if any(phrase in commit_message for phrase in problematic_phrases):
+        parent._print(f"⚠️ Generated message contains analytical text, regenerating...", 'warning')
+        simple_prompt = "Generate a git commit message. Output only the message, no explanation."
+        commit_message = parent._run_claude_prompt(simple_prompt, retry_count=1, timeout=30)
+
       parent._print(f"📝 Generated commit message:\n{commit_message}", 'info')
 
       if commit_message:
@@ -742,7 +752,7 @@ class FreyjaDevTools:
       parent._print("🤖 Generating tag message with Claude...", 'info')
       result = parent._run_command(
         ['poetry', 'run', 'claude', '-p',
-         'Create a very short message to be used on a new tag basing it on the most recent commit (HEAD). Return a single string representing the tag description with no preamble, summary, or afterthoughts. Dont mention phases or claude AT ALL'],
+         'You must output ONLY a short tag message. NO analysis, NO explanations, NO preamble. Just a brief description for the git tag based on the most recent commit. Do NOT mention Claude, AI, phases, or any automated tools. Output only the tag description itself (e.g., "Add user authentication feature" or "Fix database connection bug").'],
         capture_output=True
       )
 
@@ -776,20 +786,130 @@ class FreyjaDevTools:
                       'info')
       return
 
-  class Test:
-    """Testing, diagnostics, and quality assurance operations."""
+    def analyze_deps(
+        self,
+        output_format: str = "console",
+        output_file: str | None = None,
+        filter_package: str | None = None,
+        include_external: bool = False,
+        show_classes: bool = True,
+        show_cycles: bool = True,
+        max_depth: int = 10
+    ) -> None:
+      """
+      Analyze project dependencies and optionally generate diagrams.
 
-    def __init__(self, parent, coverage: bool = True) -> None:
-      """Initialize with parent and optional coverage reporting."""
+      Performs AST-based analysis to extract imports, class hierarchies, and package relationships.
+
+      :param output_format: Output format - 'console', 'json', or 'diagram'
+      :param output_file: Optional output file path (defaults based on format)
+      :param filter_package: Filter to specific package (e.g., 'freyja.cli')
+      :param include_external: Include external (non-project) dependencies
+      :param show_classes: Include class-level dependency analysis
+      :param show_cycles: Detect and report circular dependencies
+      :param max_depth: Maximum depth for dependency traversal
+      """
+      parent = self.parent
+      parent._print(f"🔍 Analyzing {parent.project_name} dependencies...", 'info')
+
+      # Import the analyzer and formatters (at method level to avoid circular deps)
+      import sys
+      sys.path.insert(0, '.')
+      from freyja.utils.dependency_analyzer import DependencyAnalyzer
+      from freyja.utils.console_formatter import ConsoleFormatter
+      from freyja.utils.json_formatter import JsonFormatter
+
+      # Create analyzer instance
+      analyzer = DependencyAnalyzer(
+        project_path=Path(parent.project_src),
+        include_external=include_external,
+        max_depth=max_depth
+      )
+
+      # Run analysis
+      parent._print("📊 Running AST analysis...", 'info')
+      raw_analysis = analyzer.analyze()
+
+      # Extract dependencies
+      package_deps = analyzer.extract_package_dependencies(raw_analysis)
+      class_deps = analyzer.extract_class_dependencies(raw_analysis)
+
+      # Filter if requested
+      if filter_package:
+        parent._print(f"🔍 Filtering to package: {filter_package}", 'info')
+        raw_analysis = analyzer.filter_results(raw_analysis, filter_package)
+        package_deps = {k: v for k, v in package_deps.items() if k.startswith(filter_package)}
+        class_deps = {k: v for k, v in class_deps.items() if k.startswith(filter_package)}
+
+      # Detect cycles if requested
+      cycles = []
+      if show_cycles:
+        parent._print("🔄 Detecting circular dependencies...", 'info')
+        cycles = analyzer.detect_cycles(package_deps)
+        if cycles:
+          parent._print(f"⚠️ Found {len(cycles)} circular dependencies!", 'warning')
+
+      # Prepare analysis result
+      analysis_result = {
+        'raw_analysis': raw_analysis,
+        'package_dependencies': package_deps,
+        'class_dependencies': class_deps,
+        'cycles': cycles,
+        'metadata': {
+          'project_name': parent.project_name,
+          'total_modules': len(raw_analysis),
+          'total_packages': len(set(k.split('.')[1] if '.' in k else k for k in package_deps.keys())),
+          'total_classes': len(class_deps)
+        }
+      }
+
+      # Format output
+      formatter = None
+      if output_format == "console":
+        formatter = ConsoleFormatter(
+          show_classes=show_classes,
+          show_cycles=show_cycles,
+          colors=parent.colors
+        )
+      elif output_format == "json":
+        formatter = JsonFormatter(pretty=True)
+      elif output_format == "diagram":
+        parent._print("Diagram generation not yet implemented", 'error')
+        return
+      else:
+        parent._print(f"Unknown output format: {output_format}", 'error')
+        return
+
+      # Generate output
+      formatted_output = formatter.format(analysis_result)
+
+      # Write output
+      if output_file:
+        with open(output_file, 'w') as f:
+          f.write(formatted_output)
+        parent._print(f"✅ Analysis saved to {output_file}", 'success')
+      else:
+        print(formatted_output)
+
+      # Print summary
+      metadata = analysis_result['metadata']
+      parent._print(f"📈 Analysis complete: {metadata['total_modules']} modules, "
+                   f"{metadata['total_packages']} packages, {metadata['total_classes']} classes", 'success')
+      return
+
+  class Quality:
+    """Code quality, linting, diagnostics, and completion operations."""
+
+    def __init__(self, parent) -> None:
+      """Initialize with parent FreyjaDevTools instance."""
       self.parent: 'FreyjaDevTools' = parent
-      self.coverage: bool = coverage
 
     def lint(self, fix: bool = False, skip_mypy: bool = False) -> None:
-      """Run all linting and formatting tools, optionally auto-fixing issues.
+      """
+      Run all linting and formatting tools, optionally auto-fixing issues.
 
-      Args:
-        fix: Auto-fix linting issues where possible
-        skip_mypy: Skip MyPy type checking if True
+      :param fix: Auto-fix linting issues where possible
+      :param skip_mypy: Skip MyPy type checking if True
       """
       parent = self.parent
       parent._print("🔍 Running code quality checks...", 'info')
@@ -840,99 +960,6 @@ class FreyjaDevTools:
       else:
         parent._print("Some code quality checks failed!", 'error')
         sys.exit(1)
-
-    def unit(self, pattern: str = "", parallel: bool = False, verbose_output: bool = False) -> None:
-      """Run unit tests with optional filtering, parallelization, and coverage."""
-      parent = self.parent
-      parent._print("🧪 Running unit tests with coverage...", 'info')
-
-      # Build test command - use pytest marks to select unit tests
-      cmd_parts: List[str] = ["poetry", "run", "pytest"]
-
-      if self.coverage:
-        cmd_parts.extend([f"--cov={parent.project_name}", "--cov-report=term-missing", "--cov-report=html"])
-
-      if verbose_output:
-        cmd_parts.append("-v")
-
-      if parallel:
-        cmd_parts.append("-n auto")
-
-      # Use pytest mark to select only unit tests
-      cmd_parts.extend(["-m", "unit"])
-
-      if pattern:
-        cmd_parts.extend(["-k", pattern])
-
-      success = parent._run_command(cmd_parts)
-      if success:
-        parent._print("📊 Coverage report generated in htmlcov/", 'info')
-        parent._print("Unit tests completed successfully!", 'success')
-      else:
-        parent._print("Unit tests failed!", 'error')
-      return
-
-    def integration(self, pattern: str = "", parallel: bool = False, verbose_output: bool = False) -> None:
-      """Run integration tests with optional filtering, parallelization, and coverage."""
-      parent = self.parent
-      parent._print("🔗 Running integration tests...", 'info')
-
-      # Build test command - use pytest marks to select integration tests
-      cmd_parts: List[str] = ["poetry", "run", "pytest"]
-
-      if self.coverage:
-        cmd_parts.extend([f"--cov={parent.project_name}", "--cov-report=term-missing", "--cov-report=html"])
-
-      if verbose_output:
-        cmd_parts.append("-v")
-
-      if parallel:
-        cmd_parts.append("-n auto")
-
-      # Use pytest mark to select only integration tests
-      cmd_parts.extend(["-m", "integration"])
-
-      if pattern:
-        cmd_parts.extend(["-k", pattern])
-
-      success = parent._run_command(cmd_parts)
-      if success:
-        parent._print("📊 Coverage report generated in htmlcov/", 'info')
-        parent._print("Integration tests completed successfully!", 'success')
-      else:
-        parent._print("Integration tests failed!", 'error')
-      return
-
-    def all(self, pattern: str = "", parallel: bool = False, verbose_output: bool = False) -> None:
-      """Run all tests (unit and integration) with optional filtering, parallelization, and coverage."""
-      parent = self.parent
-      parent._print("🧪 Running all tests (unit and integration)...", 'info')
-
-      # Build test command - run both unit and integration tests
-      cmd_parts: List[str] = ["poetry", "run", "pytest"]
-
-      if self.coverage:
-        cmd_parts.extend([f"--cov={parent.project_name}", "--cov-report=term-missing", "--cov-report=html"])
-
-      if verbose_output:
-        cmd_parts.append("-v")
-
-      if parallel:
-        cmd_parts.append("-n auto")
-
-      # Use pytest marks to select both unit and integration tests
-      cmd_parts.extend(["-m", "unit or integration"])
-
-      if pattern:
-        cmd_parts.extend(["-k", pattern])
-
-      success = parent._run_command(cmd_parts)
-      if success:
-        parent._print("📊 Coverage report generated in htmlcov/", 'info')
-        parent._print("All tests completed successfully!", 'success')
-      else:
-        parent._print("Some tests failed!", 'error')
-      return
 
     def completion(self, examples_only: bool = False) -> None:
       """Test shell completion functionality, optionally just examples."""
@@ -1114,6 +1141,87 @@ class FreyjaDevTools:
           parent._print(f"❌ {file_path} missing", 'error')
 
       parent._print("Diagnostic analysis complete!", 'success')
+      return
+
+  class Test:
+    """Testing operations."""
+
+    def __init__(self, parent, pattern: str="", coverage: bool = True, parallel: bool = False, verbose: bool = False) -> None:
+      """Initialize with parent and test configuration options."""
+      self.parent: 'FreyjaDevTools' = parent
+      self.coverage: bool = coverage
+      self.parallel: bool = parallel
+      self.pattern: str = pattern
+      self.verbose: bool = verbose
+
+    def _build_test_cmd(self, test_mark: str) -> List[str]:
+      """Build pytest command with common options and specified test mark."""
+      parent = self.parent
+      cmd_parts: List[str] = ["poetry", "run", "pytest"]
+
+      if self.coverage:
+        cmd_parts.extend([f"--cov={parent.project_name}", "--cov-report=term-missing", "--cov-report=html"])
+
+      if self.verbose:
+        cmd_parts.append("-sv")
+
+      if self.parallel:
+        cmd_parts.append("-n auto")
+
+      cmd_parts.extend(["-m", test_mark])
+
+      if self.pattern:
+        cmd_parts.extend(["-k", self.pattern])
+
+      return cmd_parts
+
+    def unit(self, thingy: str) -> None:
+      """Run unit tests with configured options."""
+      if thingy:
+        print(f"Thingy: {thingy}")
+        return
+
+      parent = self.parent
+      parent._print("🧪 Running unit tests with coverage...", 'info')
+
+      cmd_parts = self._build_test_cmd("unit")
+      success = parent._run_command(cmd_parts)
+
+      if success:
+        parent._print("📊 Coverage report generated in htmlcov/", 'info')
+        parent._print("Unit tests completed successfully!", 'success')
+      else:
+        parent._print("Unit tests failed!", 'error')
+      return
+
+    def integration(self) -> None:
+      """Run integration tests with configured options."""
+      parent = self.parent
+      parent._print("🔗 Running integration tests...", 'info')
+
+      cmd_parts = self._build_test_cmd("integration")
+      success = parent._run_command(cmd_parts)
+
+      if success:
+        parent._print("📊 Coverage report generated in htmlcov/", 'info')
+        parent._print("Integration tests completed successfully!", 'success')
+      else:
+        parent._print("Integration tests failed!", 'error')
+      return
+
+    def all(self) -> None:
+      """Run all tests (unit and integration) with configured options."""
+      parent = self.parent
+      parent._print("🧪 Running all tests (unit and integration)...", 'info')
+
+      cmd_parts = self._build_test_cmd("unit or integration")
+      success = parent._run_command(cmd_parts)
+
+      if success:
+        parent._print("📊 Coverage report generated in htmlcov/", 'info')
+        parent._print("All tests completed successfully!", 'success')
+      else:
+        parent._print("Some tests failed!", 'error')
       return
 
 

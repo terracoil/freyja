@@ -1,11 +1,10 @@
-![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
-# 📍 Positional Parameters
+**→ [Back to Features](README.md) | [Home](../README.md)**
 
-*→ [Back to Features](README.md) | [Home](../README.md)*
+# 📍 Positional Parameters
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 ## Overview
-
-Freyja automatically converts the **first parameter without a default value** into a positional argument, creating more natural and intuitive command-line interfaces. This eliminates the need for verbose `--parameter value` syntax for primary inputs that users expect to provide.
+**[Freyja](https://pypi.org/project/freyja/)** automatically converts the **first parameter without a default value** into a positional argument, creating more natural and intuitive command-line interfaces. This eliminates the need for verbose `--parameter value` syntax for primary inputs that users expect to provide.
 
 **Key Benefits:**
 - **Natural Commands**: `my_cli process data.txt` instead of `my_cli process --filename data.txt`
@@ -14,8 +13,7 @@ Freyja automatically converts the **first parameter without a default value** in
 - **Automatic Detection**: No configuration required - works by analyzing function signatures
 
 ## How Positional Detection Works
-
-Freyja analyzes function signatures and automatically identifies positional parameters using this rule:
+**[Freyja](https://pypi.org/project/freyja/)** analyzes function signatures and automatically identifies positional parameters using this rule:
 
 > **The first parameter without a default value becomes positional**
 
@@ -43,25 +41,35 @@ def no_params():
 # Usage: my_cli no-params
 ```
 
-## Module-Based CLI Examples
+## Class-Based CLI Examples
 
 ### File Processing Tool
 
 ```python
-def compress_file(filename: str, algorithm: str = "gzip", 
-                 output_dir: str = "./compressed", keep_original: bool = True):
-    """Compress file using specified algorithm."""
-    print(f"Compressing {filename} with {algorithm}")
-    print(f"Output directory: {output_dir}")
-    print(f"Keep original: {keep_original}")
+from freyja import FreyjaCLI
 
-def extract_archive(archive_path: str, destination: str = "./extracted",
-                   overwrite: bool = False):
-    """Extract archive to destination."""
-    pass
+class ArchiveTools:
+    """Archive compression and extraction utilities."""
+    
+    def __init__(self, working_dir: str = ".", verbose: bool = False):
+        """Initialize archive tools."""
+        self.working_dir = working_dir
+        self.verbose = verbose
+
+    def compress_file(self, filename: str, algorithm: str = "gzip", 
+                     output_dir: str = "./compressed", keep_original: bool = True):
+        """Compress file using specified algorithm."""
+        print(f"Compressing {filename} with {algorithm}")
+        print(f"Output directory: {output_dir}")
+        print(f"Keep original: {keep_original}")
+
+    def extract_archive(self, archive_path: str, destination: str = "./extracted",
+                       overwrite: bool = False):
+        """Extract archive to destination."""
+        pass
 
 if __name__ == '__main__':
-    cli = CLI(sys.modules[__name__], title="Archive Tools")  
+    cli = FreyjaCLI(ArchiveTools, title="Archive Tools")  
     cli.run()
 ```
 
@@ -456,7 +464,7 @@ api-tester load-test https://httpbin.org --concurrent-users 50 --duration 120
 
 - **[🎯 Flexible Ordering](flexible-ordering.md)** - Mix positional and optional arguments freely
 - **[🏷️ Type Annotations](type-annotations.md)** - Type validation for positional parameters
-- **[📘 Module CLI Guide](../user-guide/class-cli.md)** - Module-specific positional usage  
+- **[📘 Class CLI Guide](../user-guide/class-cli.md)** - Class-based positional usage  
 - **[🏗️ Class CLI Guide](../user-guide/class-cli.md)** - Class-based positional patterns
 - **[⚠️ Error Handling](error-handling.md)** - Error messages and validation
 

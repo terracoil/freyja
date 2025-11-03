@@ -2,21 +2,10 @@
 
 from __future__ import annotations
 
-from enum import Enum
-
 from freyja.utils.math_util import MathUtil
 
+from .adjust_strategy import AdjustStrategy
 
-class AdjustStrategy(Enum):
-    """Strategy for color adjustment calculations."""
-
-    LINEAR = "linear"
-    COLOR_HSL = "color_hsl"
-    MULTIPLICATIVE = "multiplicative"
-    GAMMA = "gamma"
-    LUMINANCE = "luminance"
-    OVERLAY = "overlay"
-    ABSOLUTE = "absolute"  # Legacy absolute adjustment
 
 
 class RGB:

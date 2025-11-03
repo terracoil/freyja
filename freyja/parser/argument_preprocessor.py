@@ -202,11 +202,14 @@ class ArgumentPreprocessor:
 
             # First parameter without default value becomes positional
             if param.default == param.empty:
+                help_text = DocStringParser.create_parameter_help(
+                    param_name, param_help, param.annotation, param.default
+                )
                 return PositionalInfo(
                     param_name=param_name,
                     param_type=param.annotation if param.annotation != param.empty else str,
                     is_required=True,
-                    help_text=param_help.get(param_name),
+                    help_text=help_text,
                 )
 
         return None

@@ -1,0 +1,574 @@
+{
+  "packages": {
+    "freyja.freyja_cli": {
+      "modules": [
+        "freyja.freyja_cli"
+      ],
+      "dependencies": [
+        "freyja.command",
+        "freyja.theme",
+        "freyja.utils"
+      ],
+      "classes": {
+        "FreyjaCLI": {
+          "full_name": "freyja.freyja_cli.FreyjaCLI",
+          "dependencies": [
+            "freyja.command.ExecutionCoordinator",
+            "freyja.command.ClassHandler",
+            "freyja.command.CommandParser",
+            "freyja.command.CommandDiscovery",
+            "freyja.command.CommandExecutor",
+            "freyja.utils.OutputCaptureConfig",
+            "freyja.utils.OutputCapture",
+            "freyja.theme.ColorFormatter"
+          ]
+        }
+      }
+    },
+    "freyja.__init__": {
+      "modules": [
+        "freyja.__init__"
+      ],
+      "dependencies": [],
+      "classes": {}
+    },
+    "freyja.completion": {
+      "modules": [
+        "freyja.completion.powershell",
+        "freyja.completion.bash",
+        "freyja.completion.__init__",
+        "freyja.completion.zsh",
+        "freyja.completion.installer",
+        "freyja.completion.fish",
+        "freyja.completion.base"
+      ],
+      "dependencies": [],
+      "classes": {
+        "PowerShellCompletionHandler": {
+          "full_name": "freyja.completion.powershell.PowerShellCompletionHandler",
+          "dependencies": [
+            "CompletionHandler"
+          ]
+        },
+        "BashCompletionHandler": {
+          "full_name": "freyja.completion.bash.BashCompletionHandler",
+          "dependencies": [
+            "CompletionHandler"
+          ]
+        },
+        "ZshCompletionHandler": {
+          "full_name": "freyja.completion.zsh.ZshCompletionHandler",
+          "dependencies": [
+            "CompletionHandler"
+          ]
+        },
+        "CompletionInstaller": {
+          "full_name": "freyja.completion.installer.CompletionInstaller",
+          "dependencies": []
+        },
+        "FishCompletionHandler": {
+          "full_name": "freyja.completion.fish.FishCompletionHandler",
+          "dependencies": [
+            "CompletionHandler"
+          ]
+        },
+        "CompletionContext": {
+          "full_name": "freyja.completion.base.CompletionContext",
+          "dependencies": []
+        },
+        "CompletionHandler": {
+          "full_name": "freyja.completion.base.CompletionHandler",
+          "dependencies": []
+        }
+      }
+    },
+    "freyja.utils": {
+      "modules": [
+        "freyja.utils.json_formatter",
+        "freyja.utils.ansi_string",
+        "freyja.utils.version",
+        "freyja.utils.data_struct_util",
+        "freyja.utils.console_formatter",
+        "freyja.utils.dependency_analyzer",
+        "freyja.utils.text_util",
+        "freyja.utils.__init__",
+        "freyja.utils.output_capture",
+        "freyja.utils.math_util",
+        "freyja.utils.spinner"
+      ],
+      "dependencies": [],
+      "classes": {
+        "JsonFormatter": {
+          "full_name": "freyja.utils.json_formatter.JsonFormatter",
+          "dependencies": []
+        },
+        "AnsiString": {
+          "full_name": "freyja.utils.ansi_string.AnsiString",
+          "dependencies": []
+        },
+        "DataStructUtil": {
+          "full_name": "freyja.utils.data_struct_util.DataStructUtil",
+          "dependencies": []
+        },
+        "ConsoleFormatter": {
+          "full_name": "freyja.utils.console_formatter.ConsoleFormatter",
+          "dependencies": []
+        },
+        "DependencyAnalyzer": {
+          "full_name": "freyja.utils.dependency_analyzer.DependencyAnalyzer",
+          "dependencies": [
+            "ast.NodeVisitor"
+          ]
+        },
+        "TextUtil": {
+          "full_name": "freyja.utils.text_util.TextUtil",
+          "dependencies": []
+        },
+        "OutputCaptureConfig": {
+          "full_name": "freyja.utils.output_capture.OutputCaptureConfig",
+          "dependencies": []
+        },
+        "OutputCapture": {
+          "full_name": "freyja.utils.output_capture.OutputCapture",
+          "dependencies": []
+        },
+        "OutputFormatter": {
+          "full_name": "freyja.utils.output_capture.OutputFormatter",
+          "dependencies": []
+        },
+        "MathUtil": {
+          "full_name": "freyja.utils.math_util.MathUtil",
+          "dependencies": []
+        },
+        "CommandContext": {
+          "full_name": "freyja.utils.spinner.CommandContext",
+          "dependencies": []
+        },
+        "ExecutionSpinner": {
+          "full_name": "freyja.utils.spinner.ExecutionSpinner",
+          "dependencies": []
+        }
+      }
+    },
+    "freyja.shared": {
+      "modules": [
+        "freyja.shared.command_tree",
+        "freyja.shared.__init__",
+        "freyja.shared.command_info"
+      ],
+      "dependencies": [
+        "freyja.utils"
+      ],
+      "classes": {
+        "CommandTree": {
+          "full_name": "freyja.shared.command_tree.CommandTree",
+          "dependencies": [
+            "freyja.utils.TextUtil"
+          ]
+        },
+        "CommandInfo": {
+          "full_name": "freyja.shared.command_info.CommandInfo",
+          "dependencies": []
+        }
+      }
+    },
+    "freyja.cli": {
+      "modules": [
+        "freyja.cli.__init__",
+        "freyja.cli.target_mode_enum",
+        "freyja.cli.system.completion",
+        "freyja.cli.system.tune_theme",
+        "freyja.cli.system.__init__",
+        "freyja.cli.system.completion_installer",
+        "freyja.cli.system.system_class_builder"
+      ],
+      "dependencies": [
+        "freyja.completion",
+        "freyja.theme",
+        "freyja.utils"
+      ],
+      "classes": {
+        "TargetModeEnum": {
+          "full_name": "freyja.cli.target_mode_enum.TargetModeEnum",
+          "dependencies": [
+            "enum.Enum"
+          ]
+        },
+        "Completion": {
+          "full_name": "freyja.cli.system.completion.Completion",
+          "dependencies": [
+            "freyja.completion.base.CompletionContext"
+          ]
+        },
+        "TuneTheme": {
+          "full_name": "freyja.cli.system.tune_theme.TuneTheme",
+          "dependencies": [
+            "freyja.theme.AdjustStrategy",
+            "freyja.theme.RGB",
+            "freyja.theme.theme.Theme",
+            "freyja.utils.ansi_string.AnsiString",
+            "freyja.theme.theme_style.ThemeStyle",
+            "freyja.theme.ColorFormatter"
+          ]
+        },
+        "CompletionInstaller": {
+          "full_name": "freyja.cli.system.completion_installer.CompletionInstaller",
+          "dependencies": []
+        },
+        "SystemClassBuilder": {
+          "full_name": "freyja.cli.system.system_class_builder.SystemClassBuilder",
+          "dependencies": []
+        }
+      }
+    },
+    "freyja.parser": {
+      "modules": [
+        "freyja.parser.argument_preprocessor",
+        "freyja.parser.__init__",
+        "freyja.parser.positional_handler",
+        "freyja.parser.option_discovery",
+        "freyja.parser.argument_parser",
+        "freyja.parser.docstring_parser"
+      ],
+      "dependencies": [
+        "freyja.shared",
+        "freyja.utils"
+      ],
+      "classes": {
+        "PositionalInfo": {
+          "full_name": "freyja.parser.argument_preprocessor.PositionalInfo",
+          "dependencies": [
+            "freyja.shared.command_tree.CommandTree",
+            "freyja.utils.text_util.TextUtil",
+            "freyja.parser.docstring_parser.DocStringParser"
+          ]
+        },
+        "ArgumentPreprocessor": {
+          "full_name": "freyja.parser.argument_preprocessor.ArgumentPreprocessor",
+          "dependencies": [
+            "freyja.shared.command_tree.CommandTree",
+            "freyja.utils.text_util.TextUtil",
+            "freyja.parser.docstring_parser.DocStringParser"
+          ]
+        },
+        "PositionalHandler": {
+          "full_name": "freyja.parser.positional_handler.PositionalHandler",
+          "dependencies": [
+            "freyja.utils.text_util.TextUtil"
+          ]
+        },
+        "OptionDiscovery": {
+          "full_name": "freyja.parser.option_discovery.OptionDiscovery",
+          "dependencies": [
+            "freyja.utils.text_util.TextUtil"
+          ]
+        },
+        "ArgumentParser": {
+          "full_name": "freyja.parser.argument_parser.ArgumentParser",
+          "dependencies": [
+            "freyja.utils.text_util.TextUtil"
+          ]
+        },
+        "ParamDoc": {
+          "full_name": "freyja.parser.docstring_parser.ParamDoc",
+          "dependencies": []
+        },
+        "DocStringParser": {
+          "full_name": "freyja.parser.docstring_parser.DocStringParser",
+          "dependencies": []
+        }
+      }
+    },
+    "freyja.theme": {
+      "modules": [
+        "freyja.theme.fore",
+        "freyja.theme.adjust_strategy",
+        "freyja.theme.command_style_section",
+        "freyja.theme.theme",
+        "freyja.theme.fore_universal",
+        "freyja.theme.style_enum",
+        "freyja.theme.__init__",
+        "freyja.theme.theme_style",
+        "freyja.theme.back",
+        "freyja.theme.rgb",
+        "freyja.theme.color_formatter",
+        "freyja.theme.defaults"
+      ],
+      "dependencies": [
+        "freyja.utils"
+      ],
+      "classes": {
+        "Fore": {
+          "full_name": "freyja.theme.fore.Fore",
+          "dependencies": []
+        },
+        "AdjustStrategy": {
+          "full_name": "freyja.theme.adjust_strategy.AdjustStrategy",
+          "dependencies": []
+        },
+        "CommandStyleSection": {
+          "full_name": "freyja.theme.command_style_section.CommandStyleSection",
+          "dependencies": []
+        },
+        "Theme": {
+          "full_name": "freyja.theme.theme.Theme",
+          "dependencies": []
+        },
+        "ForeUniversal": {
+          "full_name": "freyja.theme.fore_universal.ForeUniversal",
+          "dependencies": []
+        },
+        "Style": {
+          "full_name": "freyja.theme.style_enum.Style",
+          "dependencies": []
+        },
+        "ThemeStyle": {
+          "full_name": "freyja.theme.theme_style.ThemeStyle",
+          "dependencies": [
+            "freyja.theme.RGB"
+          ]
+        },
+        "Back": {
+          "full_name": "freyja.theme.back.Back",
+          "dependencies": []
+        },
+        "RGB": {
+          "full_name": "freyja.theme.rgb.RGB",
+          "dependencies": [
+            "freyja.utils.math_util.MathUtil"
+          ]
+        },
+        "ColorFormatter": {
+          "full_name": "freyja.theme.color_formatter.ColorFormatter",
+          "dependencies": []
+        }
+      }
+    },
+    "freyja.command": {
+      "modules": [
+        "freyja.command.command_executor",
+        "freyja.command.__init__",
+        "freyja.command.class_handler",
+        "freyja.command.command_discovery",
+        "freyja.command.command_parser",
+        "freyja.command.execution_coordinator",
+        "freyja.command.validation_service"
+      ],
+      "dependencies": [
+        "freyja.cli",
+        "freyja.completion",
+        "freyja.help",
+        "freyja.parser",
+        "freyja.shared",
+        "freyja.theme",
+        "freyja.utils"
+      ],
+      "classes": {
+        "CommandExecutor": {
+          "full_name": "freyja.command.command_executor.CommandExecutor",
+          "dependencies": []
+        },
+        "ClassHandler": {
+          "full_name": "freyja.command.class_handler.ClassHandler",
+          "dependencies": [
+            "freyja.utils.text_util.TextUtil"
+          ]
+        },
+        "CommandDiscovery": {
+          "full_name": "freyja.command.command_discovery.CommandDiscovery",
+          "dependencies": [
+            "freyja.shared.command_tree.CommandTree",
+            "freyja.parser.DocStringParser",
+            "freyja.cli.TargetModeEnum",
+            "freyja.shared.command_info.CommandInfo",
+            "freyja.cli.SystemClassBuilder",
+            "freyja.utils.TextUtil"
+          ]
+        },
+        "CommandParser": {
+          "full_name": "freyja.command.command_parser.CommandParser",
+          "dependencies": [
+            "freyja.help.help_formatter.HierarchicalHelpFormatter",
+            "freyja.parser.argument_parser.ArgumentParser",
+            "freyja.theme.ColorFormatter",
+            "freyja.parser.docstring_parser.DocStringParser"
+          ]
+        },
+        "ExecutionCoordinator": {
+          "full_name": "freyja.command.execution_coordinator.ExecutionCoordinator",
+          "dependencies": [
+            "freyja.completion.bash.BashCompletionHandler",
+            "freyja.completion.base.CompletionContext",
+            "freyja.utils.output_capture.OutputCapture",
+            "freyja.parser.argument_preprocessor.ArgumentPreprocessor",
+            "freyja.cli.target_mode_enum.TargetModeEnum",
+            "freyja.utils.output_capture.OutputCaptureConfig",
+            "freyja.completion.zsh.ZshCompletionHandler"
+          ]
+        },
+        "ValidationService": {
+          "full_name": "freyja.command.validation_service.ValidationService",
+          "dependencies": []
+        }
+      }
+    },
+    "freyja.help": {
+      "modules": [
+        "freyja.help.help_formatter",
+        "freyja.help.__init__",
+        "freyja.help.format_patterns",
+        "freyja.help.help_formatting_engine"
+      ],
+      "dependencies": [
+        "freyja.theme"
+      ],
+      "classes": {
+        "HierarchicalHelpFormatter": {
+          "full_name": "freyja.help.help_formatter.HierarchicalHelpFormatter",
+          "dependencies": [
+            "freyja.theme.ColorFormatter",
+            "RawDescriptionHelpFormatter"
+          ]
+        },
+        "FormatPatterns": {
+          "full_name": "freyja.help.format_patterns.FormatPatterns",
+          "dependencies": []
+        },
+        "HelpFormattingEngine": {
+          "full_name": "freyja.help.help_formatting_engine.HelpFormattingEngine",
+          "dependencies": []
+        }
+      }
+    }
+  },
+  "class_dependencies": {
+    "freyja.freyja_cli.FreyjaCLI": [
+      "freyja.command.ExecutionCoordinator",
+      "freyja.command.ClassHandler",
+      "freyja.command.CommandParser",
+      "freyja.command.CommandDiscovery",
+      "freyja.command.CommandExecutor",
+      "freyja.utils.OutputCaptureConfig",
+      "freyja.utils.OutputCapture",
+      "freyja.theme.ColorFormatter"
+    ],
+    "freyja.completion.powershell.PowerShellCompletionHandler": [
+      "CompletionHandler"
+    ],
+    "freyja.completion.bash.BashCompletionHandler": [
+      "CompletionHandler"
+    ],
+    "freyja.completion.zsh.ZshCompletionHandler": [
+      "CompletionHandler"
+    ],
+    "freyja.completion.installer.CompletionInstaller": [],
+    "freyja.completion.fish.FishCompletionHandler": [
+      "CompletionHandler"
+    ],
+    "freyja.completion.base.CompletionContext": [],
+    "freyja.completion.base.CompletionHandler": [],
+    "freyja.utils.json_formatter.JsonFormatter": [],
+    "freyja.utils.ansi_string.AnsiString": [],
+    "freyja.utils.data_struct_util.DataStructUtil": [],
+    "freyja.utils.console_formatter.ConsoleFormatter": [],
+    "freyja.utils.dependency_analyzer.DependencyAnalyzer": [
+      "ast.NodeVisitor"
+    ],
+    "freyja.utils.text_util.TextUtil": [],
+    "freyja.utils.output_capture.OutputCaptureConfig": [],
+    "freyja.utils.output_capture.OutputCapture": [],
+    "freyja.utils.output_capture.OutputFormatter": [],
+    "freyja.utils.math_util.MathUtil": [],
+    "freyja.utils.spinner.CommandContext": [],
+    "freyja.utils.spinner.ExecutionSpinner": [],
+    "freyja.shared.command_tree.CommandTree": [
+      "freyja.utils.TextUtil"
+    ],
+    "freyja.shared.command_info.CommandInfo": [],
+    "freyja.cli.target_mode_enum.TargetModeEnum": [
+      "enum.Enum"
+    ],
+    "freyja.parser.argument_preprocessor.PositionalInfo": [
+      "freyja.shared.command_tree.CommandTree",
+      "freyja.utils.text_util.TextUtil",
+      "freyja.parser.docstring_parser.DocStringParser"
+    ],
+    "freyja.parser.argument_preprocessor.ArgumentPreprocessor": [
+      "freyja.shared.command_tree.CommandTree",
+      "freyja.utils.text_util.TextUtil",
+      "freyja.parser.docstring_parser.DocStringParser"
+    ],
+    "freyja.parser.positional_handler.PositionalHandler": [
+      "freyja.utils.text_util.TextUtil"
+    ],
+    "freyja.parser.option_discovery.OptionDiscovery": [
+      "freyja.utils.text_util.TextUtil"
+    ],
+    "freyja.parser.argument_parser.ArgumentParser": [
+      "freyja.utils.text_util.TextUtil"
+    ],
+    "freyja.parser.docstring_parser.ParamDoc": [],
+    "freyja.parser.docstring_parser.DocStringParser": [],
+    "freyja.theme.fore.Fore": [],
+    "freyja.theme.adjust_strategy.AdjustStrategy": [],
+    "freyja.theme.command_style_section.CommandStyleSection": [],
+    "freyja.theme.theme.Theme": [],
+    "freyja.theme.fore_universal.ForeUniversal": [],
+    "freyja.theme.style_enum.Style": [],
+    "freyja.theme.theme_style.ThemeStyle": [
+      "freyja.theme.RGB"
+    ],
+    "freyja.theme.back.Back": [],
+    "freyja.theme.rgb.RGB": [
+      "freyja.utils.math_util.MathUtil"
+    ],
+    "freyja.theme.color_formatter.ColorFormatter": [],
+    "freyja.command.command_executor.CommandExecutor": [],
+    "freyja.command.class_handler.ClassHandler": [
+      "freyja.utils.text_util.TextUtil"
+    ],
+    "freyja.command.command_discovery.CommandDiscovery": [
+      "freyja.shared.command_tree.CommandTree",
+      "freyja.parser.DocStringParser",
+      "freyja.cli.TargetModeEnum",
+      "freyja.shared.command_info.CommandInfo",
+      "freyja.cli.SystemClassBuilder",
+      "freyja.utils.TextUtil"
+    ],
+    "freyja.command.command_parser.CommandParser": [
+      "freyja.help.help_formatter.HierarchicalHelpFormatter",
+      "freyja.parser.argument_parser.ArgumentParser",
+      "freyja.theme.ColorFormatter",
+      "freyja.parser.docstring_parser.DocStringParser"
+    ],
+    "freyja.command.execution_coordinator.ExecutionCoordinator": [
+      "freyja.completion.bash.BashCompletionHandler",
+      "freyja.completion.base.CompletionContext",
+      "freyja.utils.output_capture.OutputCapture",
+      "freyja.parser.argument_preprocessor.ArgumentPreprocessor",
+      "freyja.cli.target_mode_enum.TargetModeEnum",
+      "freyja.utils.output_capture.OutputCaptureConfig",
+      "freyja.completion.zsh.ZshCompletionHandler"
+    ],
+    "freyja.command.validation_service.ValidationService": [],
+    "freyja.help.help_formatter.HierarchicalHelpFormatter": [
+      "freyja.theme.ColorFormatter",
+      "RawDescriptionHelpFormatter"
+    ],
+    "freyja.help.format_patterns.FormatPatterns": [],
+    "freyja.help.help_formatting_engine.HelpFormattingEngine": [],
+    "freyja.cli.system.completion.Completion": [
+      "freyja.completion.base.CompletionContext"
+    ],
+    "freyja.cli.system.tune_theme.TuneTheme": [
+      "freyja.theme.AdjustStrategy",
+      "freyja.theme.RGB",
+      "freyja.theme.theme.Theme",
+      "freyja.utils.ansi_string.AnsiString",
+      "freyja.theme.theme_style.ThemeStyle",
+      "freyja.theme.ColorFormatter"
+    ],
+    "freyja.cli.system.completion_installer.CompletionInstaller": [],
+    "freyja.cli.system.system_class_builder.SystemClassBuilder": []
+  }
+}

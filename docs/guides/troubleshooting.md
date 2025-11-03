@@ -1,7 +1,8 @@
-![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
-# Troubleshooting Guide
+**[← Back to Guides](README.md) | [↑ Documentation Hub](../README.md)**
 
-[← Back to Guides](README.md) | [↑ Documentation Hub](../README.md)
+# Troubleshooting Guide
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
+
 
 ## Common Issues and Solutions
 

@@ -314,7 +314,6 @@ class TestHierarchicalFormatterWithCommandGroups:
       parser=group_parser,
       base_indent=2,
       unified_cmd_desc_column=25,  # Add unified command description column
-      global_option_column=40,
     )
 
     # Should use the CommandGroup description in formatting
@@ -341,7 +340,6 @@ class TestHierarchicalFormatterWithCommandGroups:
       parser=group_parser,
       base_indent=2,
       unified_cmd_desc_column=25,  # Add unified command description column
-      global_option_column=40,
     )
 
     # Should use default formatting

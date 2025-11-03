@@ -1,7 +1,7 @@
-![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
-# Inner Classes Pattern
+**[← Back to User Guide](README.md) | [↑ Documentation Hub](../README.md)**
 
-[← Back to User Guide](README.md) | [↑ Documentation Hub](../README.md)
+# Inner Classes Pattern
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 ## Overview
 
@@ -44,7 +44,7 @@ class ProjectManager:
 ## Complete Example
 
 ```python
-from src import CLI
+from freyja import FreyjaCLI
 from pathlib import Path
 from typing import List
 
@@ -209,7 +209,7 @@ class ProjectManager:
 
 
 if __name__ == '__main__':
-  cli = CLI(ProjectManager, theme_name="colorful")
+  cli = FreyjaCLI(ProjectManager, theme_name="colorful")
   cli.run()
 ```
 
@@ -288,23 +288,24 @@ Use inner classes when you have:
 
 - **Inner class names**: Use CamelCase (e.g., `ProjectOperations`)
 - **Method names**: Use snake_case (e.g., `list_projects`)
-- **Generated commands**: Automatic kebab-case (e.g., `project-operations--list-projects`)
+- **Generated commands**: Automatic kebab-case (e.g., `project-operations list-projects`)
 
-## Comparison with Module Hierarchies
+## Comparison with Direct Methods
 
-Module-based CLIs use double underscores for hierarchies:
+Direct methods on the main class are accessed at the top level:
 ```python
-# Module function
-def project__create(name: str) -> None:
-    pass
+# Direct method on main class
+class ProjectManager:
+    def create_project(self, name: str) -> None:
+        pass
 
-# Usage: python freyja_cli.py project create --name "app"
+# Usage: python freyja_cli.py create-project --name "app"
 ```
 
-Class-based CLIs use inner classes with hierarchical structure:
+Inner class methods use hierarchical structure:
 ```python
 # Inner class method
-class CLI:
+class ProjectManager:
     class Project:
         def create(self, name: str) -> None:
             pass
@@ -322,7 +323,6 @@ class CLI:
 ## See Also
 
 - [Class CLI Guide](class-cli.md) - Complete class-based CLI documentation
-- [Module CLI Guide](class-cli.md) - Module-based alternative
 - [Mode Comparison](../features/README.md) - Choosing between approaches
 - [Best Practices](../guides/best-practices.md) - General guidelines
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 
-from .enums import Style
+from .style_enum import Style
 from .rgb import RGB
 from .theme_style import ThemeStyle
 

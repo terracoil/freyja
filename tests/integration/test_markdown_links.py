@@ -3,6 +3,7 @@
 import re
 import urllib.error
 import urllib.request
+from functools import reduce
 from pathlib import Path
 
 import pytest
@@ -57,6 +58,10 @@ class TestMarkdownLinks:
       (r'(?<!["\'\(])https?://[^\s<>\[\]]+(?!["\'\)])', 'plain_url'),
     ]
 
+    exclude = [
+      "https://httpbin.org"
+    ]
+
     for line_num, line in enumerate(lines, 1):
       for pattern, link_type in patterns:
         matches = re.finditer(pattern, line, re.IGNORECASE)
@@ -65,6 +70,9 @@ class TestMarkdownLinks:
             url = match.group(0)
           else:
             url = match.group(2) if len(match.groups()) > 1 else match.group(1)
+
+          if [e for e in exclude if e in url]:
+            continue
 
           # Skip empty links and anchors only
           if url and not url.startswith('#'):

@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
-from .enums import Back, Fore, ForeUniversal
-from .rgb import RGB, AdjustStrategy
-from .theme_style import CommandStyleSection, ThemeStyle
+from .back import Back
+from .fore import Fore
+from .fore_universal import ForeUniversal
+from .adjust_strategy import AdjustStrategy
+from .rgb import RGB
+from .command_style_section import CommandStyleSection
+from .theme_style import ThemeStyle
 
 
 class Theme:
@@ -27,19 +31,6 @@ class Theme:
         subtitle: ThemeStyle | None = None,
         required_asterisk: ThemeStyle | None = None,
         command_output: ThemeStyle | None = None,
-        # Backward compatibility: flat attributes (legacy constructor support)
-        command_name: ThemeStyle | None = None,
-        command_description: ThemeStyle | None = None,
-        command_group_name: ThemeStyle | None = None,
-        command_group_description: ThemeStyle | None = None,
-        grouped_command_name: ThemeStyle | None = None,
-        grouped_command_description: ThemeStyle | None = None,
-        option_name: ThemeStyle | None = None,
-        option_description: ThemeStyle | None = None,
-        command_group_option_name: ThemeStyle | None = None,
-        command_group_option_description: ThemeStyle | None = None,
-        grouped_command_option_name: ThemeStyle | None = None,
-        grouped_command_option_description: ThemeStyle | None = None,
         # Adjustment settings
         adjust_strategy: AdjustStrategy = AdjustStrategy.LINEAR,
         adjust_percent: float = 0.0,
@@ -51,51 +42,25 @@ class Theme:
         self.adjust_strategy = adjust_strategy
         self.adjust_percent = adjust_percent
 
-        # Handle both hierarchical and flat initialization patterns
-        if (
-            top_level_command_section is not None
-            or command_group_section is not None
-            or grouped_command_section is not None
-        ):
-            # New hierarchical initialization
-            self.topLevelCommandSection = top_level_command_section or CommandStyleSection(
-                command_name=ThemeStyle(),
-                command_description=ThemeStyle(),
-                option_name=ThemeStyle(),
-                option_description=ThemeStyle(),
-            )
-            self.commandGroupSection = command_group_section or CommandStyleSection(
-                command_name=ThemeStyle(),
-                command_description=ThemeStyle(),
-                option_name=ThemeStyle(),
-                option_description=ThemeStyle(),
-            )
-            self.groupedCommandSection = grouped_command_section or CommandStyleSection(
-                command_name=ThemeStyle(),
-                command_description=ThemeStyle(),
-                option_name=ThemeStyle(),
-                option_description=ThemeStyle(),
-            )
-        else:
-            # Legacy flat initialization - construct sections from flat attributes
-            self.topLevelCommandSection = CommandStyleSection(
-                command_name=command_name or ThemeStyle(),
-                command_description=command_description or ThemeStyle(),
-                option_name=option_name or ThemeStyle(),
-                option_description=option_description or ThemeStyle(),
-            )
-            self.commandGroupSection = CommandStyleSection(
-                command_name=command_group_name or ThemeStyle(),
-                command_description=command_group_description or ThemeStyle(),
-                option_name=command_group_option_name or ThemeStyle(),
-                option_description=command_group_option_description or ThemeStyle(),
-            )
-            self.groupedCommandSection = CommandStyleSection(
-                command_name=grouped_command_name or ThemeStyle(),
-                command_description=grouped_command_description or ThemeStyle(),
-                option_name=grouped_command_option_name or ThemeStyle(),
-                option_description=grouped_command_option_description or ThemeStyle(),
-            )
+        # Initialize hierarchical sections (always needed for backward compatibility)
+        self.topLevelCommandSection = top_level_command_section or CommandStyleSection(
+            command_name=ThemeStyle(),
+            command_description=ThemeStyle(),
+            option_name=ThemeStyle(),
+            option_description=ThemeStyle(),
+        )
+        self.commandGroupSection = command_group_section or CommandStyleSection(
+            command_name=ThemeStyle(),
+            command_description=ThemeStyle(),
+            option_name=ThemeStyle(),
+            option_description=ThemeStyle(),
+        )
+        self.groupedCommandSection = grouped_command_section or CommandStyleSection(
+            command_name=ThemeStyle(),
+            command_description=ThemeStyle(),
+            option_name=ThemeStyle(),
+            option_description=ThemeStyle(),
+        )
 
         # Non-sectioned attributes
         self.title = title or ThemeStyle()
@@ -355,7 +320,7 @@ def create_default_theme() -> Theme:
     )
 
 
-def create_default_theme_colorful() -> Theme:
+def create_colorful_theme() -> Theme:
     """Create a colorful theme with traditional terminal colors."""
     # Create hierarchical sections
     top_level_section = CommandStyleSection(

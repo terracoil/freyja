@@ -20,7 +20,6 @@ ignore = [
     "D213",  # "Multi-line docstring summary should start at the second line" - we prefer summary on first line
     "D400",  # "First line should end with a period" - enforces ending punctuation in first line
     "D401",  # "First line should be in imperative mood" - we don't require imperative mood
-    "D413",  # "Missing blank line after last section" - we don't require blank lines after docstring sections
     "D415",  # "First line should end with a period, question mark, or exclamation point" - we don't require punctuation
 ]
 # Core errors, logical issues, import sorting, bug detection, and docstrings

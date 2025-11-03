@@ -1,7 +1,7 @@
-![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
-# Contributing to freyja
+**[← Back to Development](README.md) | [↑ Documentation Hub](../README.md)**
 
-[← Back to Development](README.md) | [↑ Documentation Hub](../README.md)
+# Contributing to **[Freyja](https://pypi.org/project/freyja/)**
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 ## Welcome Contributors!
 
@@ -22,17 +22,7 @@ cd freyja
 ```
 
 ### 2. Set Up Development Environment
-
-```bash
-# Install Poetry if you haven't already
-curl -sSL https://install.python-poetry.org | python3 -
-
-# Install dependencies
-poetry install --with dev
-
-# Install pre-commit hooks
-poetry run pre-commit install
-```
+See [Development Environment Setup](README.md#development-setup) for details.
 
 ### 3. Create a Branch
 

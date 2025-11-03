@@ -1,6 +1,6 @@
 """Default theme configurations for Freyja CLI."""
 
-from .enums import Fore
+from .fore import Fore
 from .rgb import RGB
 from .theme import Theme
 from .theme_style import ThemeStyle

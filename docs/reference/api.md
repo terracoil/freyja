@@ -1,7 +1,7 @@
-![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
-# API Reference
+**[← Back to Help](../README.md) | [🔧 Basic Usage](../getting-started/basic-usage.md)**
 
-[← Back to Help](../README.md) | [🔧 Basic Usage](../getting-started/basic-usage.md)
+# API Reference
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 # Table of Contents
 - [FreyjaCLI Class](#freyja-cli-class)

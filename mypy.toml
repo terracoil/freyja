@@ -1,4 +1,4 @@
-# MyPy Configuration for Freyja
+# MyPy Configuration for Quarksmith
 # Modern type hinting enforcement for Python 3.13
 # Extracted from pyproject.toml for better maintainability
 
@@ -117,7 +117,7 @@ disallow_any_generics = true
 #
 # To enforce modern syntax patterns in your code:
 # - Use `dict[str, int]` instead of `Dict[str, int]`
-# - Use `list[int]` instead of `List[int]`  
+# - Use `list[int]` instead of `List[int]`
 # - Use `int | None` instead of `Optional[int]`
 # - Use `str | int` instead of `Union[str, int]`
 # - Use `tuple[int, str]` instead of `Tuple[int, str]`

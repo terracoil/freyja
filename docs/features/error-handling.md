@@ -1,11 +1,10 @@
-![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
-# Error Handling
+**[← Back to Features](README.md) | [↑ Documentation Hub](../README.md)**
 
-[← Back to Features](README.md) | [↑ Documentation Hub](../README.md)
+# Error Handling
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
 
 ## Overview
-
-freyja provides comprehensive error handling to ensure user-friendly error messages and proper exit codes.
+**[Freyja](https://pypi.org/project/freyja/)** provides comprehensive error handling to ensure user-friendly error messages and proper exit codes.
 
 ## Error Types
 

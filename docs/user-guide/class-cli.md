@@ -1,7 +1,8 @@
-![Freyja Thumb](https://github.com/terracoil/freyja/raw/main/docs/freyja-thumb.png)
-# Class-based CLI Guide
+**[← Back to Help](README.md) | [🏢 Inner Classes →](inner-classes.md)**
 
-[← Back to Help](README.md) | [🏢 Inner Classes →](inner-classes.md)
+# Class-based CLI Guide
+<img src="https://github.com/terracoil/freyja/raw/main/docs/freyja-github.jpg" alt="Freyja" title="Freyja" height="200"/>
+
 
 # Table of Contents
 - [Overview](#overview)
@@ -574,7 +575,7 @@ class UserManager:
 ```python
 # At the end of ../freyja/examples/cls_example
 if __name__ == '__main__':
-  from src import CLI
+  from freyja import FreyjaCLI
 
   # Optional: Configure specific methods
   function_opts = {
