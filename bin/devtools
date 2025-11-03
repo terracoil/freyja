@@ -270,7 +270,7 @@ class FreyjaDevTools:
 
       if success:
         # Find the latest wheel file
-        dist_dir = parent.project_src / "dist"
+        dist_dir = Path(parent.project_src) / "dist"
         if dist_dir.exists():
           wheel_files = list(dist_dir.glob("*.whl"))
           if wheel_files:
@@ -622,7 +622,7 @@ class FreyjaDevTools:
     def _update_pyproject_version(self, version: str) -> bool:
       """Update version in pyproject.toml."""
       parent = self.parent
-      pyproject_path = parent.project_src / "pyproject.toml"
+      pyproject_path = Path("pyproject.toml")  # pyproject.toml is in project root, not package dir
 
       try:
         with open(pyproject_path, 'r') as f:
@@ -826,7 +826,7 @@ class FreyjaDevTools:
         package_name = parent.project_src  # The actual Python package name
         mypy_cmd = f"poetry run mypy {package_name}"
         # Generate reports if directories exist
-        reports_dir = parent.project_src / "reports" / "mypy"
+        reports_dir = Path(parent.project_src) / "reports" / "mypy"
         if reports_dir.exists():
           mypy_cmd += f" --html-report {reports_dir} --linecount-report {reports_dir} --linecoverage-report {reports_dir}"
         if not parent._run_command(mypy_cmd, "🔧 Running MyPy type checking..."):
@@ -1107,7 +1107,7 @@ class FreyjaDevTools:
       ]
 
       for file_path in important_files:
-        full_path: Path = parent.project_src / file_path
+        full_path: Path = Path(parent.project_src) / file_path
         if full_path.exists():
           parent._print(f"✅ {file_path} exists", 'success')
         else:
