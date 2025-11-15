@@ -350,6 +350,7 @@ class HierarchicalHelpFormatter(RawDescriptionHelpFormatter):
         # Check if we need to filter out positional parameters that are shown in command names
         parser_prog = getattr(parser, 'prog', '')
         prog_parts = parser_prog.split()
+        # print(f"DEBUG _format_command_arguments: parser_prog='{parser_prog}', prog_parts={prog_parts}")
         if len(prog_parts) >= 2:
             # Extract command name from prog (e.g., "devtools test unit" -> "unit")
             cmd_name = prog_parts[-1]
@@ -385,21 +386,33 @@ class HierarchicalHelpFormatter(RawDescriptionHelpFormatter):
             lines.extend(arg_lines)
 
         # Add positional parameter info under the command
+        # BUT: Don't add it if we're in a group context where positional parameters
+        # are already shown in the command names (e.g., "unit THINGY:")
         if len(prog_parts) >= 2:
             cmd_name = prog_parts[-1]
             if cmd_name in self._positional_info:
-                pos_info = self._positional_info[cmd_name]
-                pos_arg_name = pos_info.param_name.upper()
-                pos_help = pos_info.help_text or f"*Required Positional Parameter representing a {pos_info.param_name} ({pos_info.param_type.__name__})"
-                pos_lines = self._format_single_argument(
-                    pos_arg_name,
-                    pos_help,
-                    unified_cmd_desc_column,
-                    "command_group_option_name",
-                    "command_group_option_description", 
-                    required=True,
-                )
-                lines.extend(pos_lines)
+                # Check if this parser is being used in a context where command names 
+                # already include positional parameters (i.e., group context)
+                # In group context, we should NOT add positional parameters again
+                
+                # Heuristic: if prog has more than 2 parts (e.g., "devtools test unit"), 
+                # this suggests we're in a nested context where the command name
+                # likely already shows the positional parameter
+                is_likely_group_context = len(prog_parts) > 2
+                
+                if not is_likely_group_context:
+                    pos_info = self._positional_info[cmd_name]
+                    pos_arg_name = pos_info.param_name.upper()
+                    pos_help = pos_info.help_text or f"*Required Positional Parameter representing a {pos_info.param_name} ({pos_info.param_type.__name__})"
+                    pos_lines = self._format_single_argument(
+                        pos_arg_name,
+                        pos_help,
+                        unified_cmd_desc_column,
+                        "command_group_option_name",
+                        "command_group_option_description", 
+                        required=True,
+                    )
+                    lines.extend(pos_lines)
 
         return lines
 
@@ -895,7 +908,7 @@ class HierarchicalHelpFormatter(RawDescriptionHelpFormatter):
         # print(f"DEBUG: _get_full_command_name: cmd_name='{cmd_name}', parent_group_name='{parent_group_name}', prog='{getattr(parent_parser, 'prog', 'N/A')}'")
         
         if parent_group_name:
-            return f"{parent_group_name}--{cmd_name}"
+            return f"{parent_group_name} {cmd_name}"
         return cmd_name
 
     def _format_final_command_with_display_name(self, display_name: str, parser, base_indent: int, unified_cmd_desc_column: int):
@@ -960,9 +973,28 @@ class HierarchicalHelpFormatter(RawDescriptionHelpFormatter):
         required_args, optional_args = self._analyze_arguments(parser)
 
         # Filter out positional parameters that are shown in the command name
-        # Extract command name without positional display
-        base_cmd_name = display_name.split()[0] if ' ' in display_name else display_name
+        # Extract the actual command name (last part before positional params)
+        # For "test unit THINGY", we want "unit", not "test"
+        parts = display_name.split()
+        if len(parts) >= 2:
+            # Check if the last part is an uppercase positional parameter
+            if parts[-1].isupper():
+                # The command name is the second-to-last part
+                base_cmd_name = parts[-2] if len(parts) > 2 else parts[0]
+            else:
+                # No positional parameter, use the last part
+                base_cmd_name = parts[-1]
+        else:
+            base_cmd_name = display_name
+        
         pos_info = self._positional_info.get(base_cmd_name)
+        
+        # Debug: print what we're looking for
+        # print(f"DEBUG: display_name='{display_name}', base_cmd_name='{base_cmd_name}', pos_info={pos_info}")
+        # print(f"DEBUG: Available positional_info keys: {list(self._positional_info.keys())}")
+        # if pos_info:
+        #     print(f"DEBUG: positional_param_flag would be: --{pos_info.param_name.replace('_', '-')}")
+        #     print(f"DEBUG: required_args before filtering: {[name for name, _ in required_args]}")
         
         if pos_info:
             # Filter out the positional parameter from required args

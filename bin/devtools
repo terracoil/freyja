@@ -16,13 +16,10 @@ from pathlib import Path
 from subprocess import CompletedProcess
 from typing import Optional, List, Union, Dict
 
-from freyja import FreyjaCLI
-
-
 # Add the project root to the Python path
-# project_src =ToolUtil.get_project_name()
-# PROJECT_NAME = get_project_name()
-# sys.path.insert(0, str(project_src))
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from freyja import FreyjaCLI
 
 # Configure cache directories to use tmp/
 # os.environ.setdefault('RUFF_CACHE_DIR', str(project_src / 'tmp' / '.ruff_cache'))
@@ -231,7 +228,7 @@ class FreyjaDevTools:
     print(f"{color}{icon} {message}{self.colors['nc']}")
 
   class Setup:
-    """Development environment and cls-installation setup operations."""
+    """Development environment and self-installation setup operations."""
 
     def __init__(self, parent) -> None:
       """Initialize with parent FreyjaDevTools instance."""
@@ -298,7 +295,7 @@ class FreyjaDevTools:
           else:
             parent._print("No wheel files found in dist/. Build may have failed.", 'error')
         else:
-          parent._print("dist/ directory not found. Run build first.", 'error')
+          parent._print("dist/ dir not found. Run build first.", 'error')
       else:
         parent._print("Build failed!", 'error')
 
@@ -311,7 +308,7 @@ class FreyjaDevTools:
       self.parallel: bool = parallel
 
     def _remove_path(self, path_obj: Path) -> bool:
-      """Remove a single file or directory with error handling."""
+      """Remove a single file or dir with error handling."""
       parent = self.parent
       path_str = str(path_obj)
 
@@ -320,7 +317,7 @@ class FreyjaDevTools:
           if not parent.dry_run:
             shutil.rmtree(path_obj)
           if parent.verbose or parent.dry_run:
-            print(f"Removed directory: {path_str}")
+            print(f"Removed dir: {path_str}")
         elif path_obj.is_file():
           if not parent.dry_run:
             path_obj.unlink()
@@ -347,9 +344,12 @@ class FreyjaDevTools:
         "**/.ipynb_checkpoints",
         "**/.pytest_cache",
         "build",
+        "target",
+        "demo*",
         "dist",
         "generated*",
-        "demo*",
+        "output*",
+        "tmp*",
         "*.egg-info",
         "**/.mypy_cache",
         "**/.ruff_cache",
@@ -417,7 +417,7 @@ class FreyjaDevTools:
       status_result = parent._run_command(['git', 'status', '--short'], capture_output=True)
       if isinstance(status_result, subprocess.CompletedProcess) and status_result.returncode == 0:
         status_lines = status_result.stdout.strip().split('\n') if status_result.stdout.strip() else []
-        print(f"Git Status: {len(status_lines)} file(s) modified" if status_lines else "Git Status: Clean working directory")
+        print(f"Git Status: {len(status_lines)} file(s) modified" if status_lines else "Git Status: Clean working dir")
       else:
         print("Git Status: (unable to determine)")
 
@@ -455,7 +455,7 @@ class FreyjaDevTools:
       if Path(parent.project_src).exists():
         parent._print("\nDevelopment environment appears to be properly configured!", 'success')
       else:
-        parent._print("\nWarning: Project source directory not found!", 'warning')
+        parent._print("\nWarning: Project source dir not found!", 'warning')
 
       return
 
@@ -465,7 +465,7 @@ class FreyjaDevTools:
       parent._print(f"📦 Building and publishing {parent.project_name} to PyPI...", 'info')
 
       # Clean and build first
-      Build(parent).compile(clean_first=True)
+      FreyjaDevTools.Build(parent).compile(clean_first=True)
 
       # Check for PyPI token
       token_var: str = "TEST_PYPI_TOKEN" if test_pypi else "PYPI_TOKEN"
@@ -1175,12 +1175,8 @@ class FreyjaDevTools:
 
       return cmd_parts
 
-    def unit(self, thingy: str) -> None:
+    def unit(self, ) -> None:
       """Run unit tests with configured options."""
-      if thingy:
-        print(f"Thingy: {thingy}")
-        return
-
       parent = self.parent
       parent._print("🧪 Running unit tests with coverage...", 'info')
 
@@ -1227,9 +1223,8 @@ class FreyjaDevTools:
 
 if __name__ == '__main__':
   # Create the CLI instance and store reference for inner classes
-  dev_tools = FreyjaDevTools()
-  sys.modules[__name__].__dict__['_parent_instance'] = dev_tools
+  sys.modules[__name__].__dict__['_parent_instance'] = FreyjaDevTools()
 
-  cli = FreyjaCLI(FreyjaDevTools, title=f"{dev_tools.project_name.capitalize()} Development Tools")
+  cli = FreyjaCLI(FreyjaDevTools, title=f"{FreyjaDevTools.get_project_name().capitalize()} Development Tools")
   result = cli.run()
   sys.exit(result if isinstance(result, int) else 0)

@@ -315,7 +315,7 @@ def create_default_theme() -> Theme:
         grouped_command_section=grouped_command_section,
         title=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.TEAL.value), bold=True),
         subtitle=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.TEAL.value), italic=True),
-        required_asterisk=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.GOLD.value)),
+        required_asterisk=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.DARK_BROWN.value)),
         adjust_percent=0.0,
     )
 
@@ -354,7 +354,7 @@ def create_colorful_theme() -> Theme:
             bold=True,
         ),
         subtitle=ThemeStyle(fg=RGB.from_rgb(Fore.YELLOW.value), italic=True),
-        required_asterisk=ThemeStyle(fg=RGB.from_rgb(Fore.YELLOW.value)),
+        required_asterisk=ThemeStyle(fg=RGB.from_rgb(ForeUniversal.DARK_BROWN.value)),
     )
 
 
