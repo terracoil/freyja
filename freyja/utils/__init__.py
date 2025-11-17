@@ -11,18 +11,22 @@ from .output_capture import OutputCapture, OutputCaptureConfig, OutputFormatter
 from .spinner import CommandContext, ExecutionSpinner
 from .text_util import TextUtil
 
+# Convenience function for backward compatibility
+applogger = AppLogger.get_logger()
+
 __all__ = [
-    "AnsiString",
-    "AppLogger",
-    "CommandContext",
-    "ConsoleFormatter",
-    "DataStructUtil",
-    "DependencyAnalyzer",
-    "ExecutionSpinner",
-    "JsonFormatter",
-    "MathUtil",
-    "TextUtil",
-    "OutputCapture",
-    "OutputCaptureConfig",
-    "OutputFormatter",
+  "applogger",
+  "AnsiString",
+  "AppLogger",
+  "CommandContext",
+  "ConsoleFormatter",
+  "DataStructUtil",
+  "DependencyAnalyzer",
+  "ExecutionSpinner",
+  "JsonFormatter",
+  "MathUtil",
+  "TextUtil",
+  "OutputCapture",
+  "OutputCaptureConfig",
+  "OutputFormatter",
 ]

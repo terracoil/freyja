@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from typing import Any
 
 from freyja.command import CommandDiscovery, CommandExecutor, CommandParser, ClassHandler, ExecutionCoordinator
-from freyja.utils import OutputCapture, OutputCaptureConfig
+from freyja.utils import OutputCapture, OutputCaptureConfig, applogger
 
 Target = type[Any] | Sequence[type[Any]]
 
@@ -49,6 +49,8 @@ class FreyjaCLI:
         :param capture_stdin: Capture stdin when output capture is enabled
         :param output_capture_config: Advanced OutputCapture configuration
         """
+
+        applogger.info("Initializing FreyjaCLI")
 
         # Initialize discovery service (replaces TargetAnalyzer)
         self.discovery = CommandDiscovery(

@@ -84,15 +84,15 @@ class CommandExecutor:
         # Guard: Ensure parsed is not None
         if parsed is None:
             raise ValueError("parsed cannot be None")
-        
+
         # Guard: Ensure _cli_function exists
         if not hasattr(parsed, "_cli_function"):
             raise ValueError("Missing _cli_function in parsed args")
-        
+
         # Guard: Ensure _function_name exists
         if not hasattr(parsed, "_function_name"):
             raise ValueError("Missing _function_name in parsed args")
-        
+
         # Guard: Ensure _command_path exists
         if not hasattr(parsed, "_command_path"):
             raise ValueError("Missing _command_path in parsed args")
@@ -139,7 +139,7 @@ class CommandExecutor:
 
         if self.target_class is None:
           raise RuntimeError("Cannot create parent instance: target_class is None")
-        
+
         try:
           return self.target_class(**parent_kwargs)
         except TypeError as e:
@@ -155,15 +155,15 @@ class CommandExecutor:
         # Guard: Ensure inner_class is not None
         if inner_class is None:
             raise ValueError("inner_class cannot be None")
-        
+
         # Guard: Ensure command_name is not None
         if command_name is None:
             raise ValueError("command_name cannot be None")
-        
+
         # Guard: Ensure parsed is not None
         if parsed is None:
             raise ValueError("parsed cannot be None")
-        
+
         # Guard: Ensure parent is not None
         if parent is None:
             raise ValueError("parent cannot be None")
@@ -178,23 +178,31 @@ class CommandExecutor:
 
         try:
           if self._is_system_inner_class(inner_class):
-            cli_instance = getattr(parsed, "_cli_instance", None)
-            if "cli_instance" in inner_sig.parameters:
-              inner_kwargs["cli_instance"] = cli_instance
-            return inner_class(**inner_kwargs)
+            try:
+              cli_instance = getattr(parsed, "_cli_instance", None)
+              if "cli_instance" in inner_sig.parameters:
+                inner_kwargs["cli_instance"] = cli_instance
+              return inner_class(**inner_kwargs)
+            except TypeError as e:
+              raise RuntimeError(
+                f"Cannot instantiate system {inner_class.__name__} with sub-global args: {e}"
+              ) from e
           else:
-            return inner_class(parent, **inner_kwargs)
-        except TypeError as e:
-          raise RuntimeError(
-            f"Cannot instantiate {inner_class.__name__} with sub-global args: {e}"
-          ) from e
+            try:
+              return inner_class(parent, **inner_kwargs)
+            except TypeError as e:
+              raise RuntimeError(
+                f"Cannot instantiate {inner_class.__name__} with sub-global args: {e}"
+              ) from e
+        except Exception as e:
+          raise RuntimeError(f"Error setting up inner class: {e}") from e
 
     def _is_system_inner_class(self, inner_class: type) -> bool:
         """Check if this is a System inner class (from freyja.cli.system)."""
         # Guard: Ensure inner_class is not None
         if inner_class is None:
             raise ValueError("inner_class cannot be None")
-        
+
         module_name = getattr(inner_class, "__module__", "")
         return "freyja.cli.system" in module_name
 
@@ -220,11 +228,11 @@ class CommandExecutor:
         # Guard: Ensure method_or_function is not None
         if method_or_function is None:
             raise ValueError("method_or_function cannot be None")
-        
+
         # Guard: Ensure parsed is not None
         if parsed is None:
             raise ValueError("parsed cannot be None")
-        
+
         sig = inspect.signature(method_or_function)
         return {
           param_name: getattr(parsed, param_name.replace("-", "_"))
@@ -293,11 +301,11 @@ class CommandExecutor:
         # Guard: Ensure parsed is not None
         if parsed is None:
             raise ValueError("parsed cannot be None")
-        
+
         # Guard: Ensure error is not None
         if error is None:
             raise ValueError("error cannot be None")
-        
+
         function_name = getattr(parsed, "_function_name", "unknown")
         print(f"Error executing {function_name}: {error}", file=sys.stderr)
         if getattr(parsed, "verbose", False):
