@@ -1223,7 +1223,7 @@ class FreyjaDevTools:
 
 if __name__ == '__main__':
   # Create the CLI instance and store reference for inner classes
-  sys.modules[__name__].__dict__['_parent_instance'] = FreyjaDevTools()
+  # sys.modules[__name__].__dict__['_parent_instance'] = FreyjaDevTools()
 
   cli = FreyjaCLI(FreyjaDevTools, title=f"{FreyjaDevTools.get_project_name().capitalize()} Development Tools")
   result = cli.run()

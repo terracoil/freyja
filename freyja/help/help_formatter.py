@@ -516,7 +516,9 @@ class HierarchicalHelpFormatter(RawDescriptionHelpFormatter):
                 else:
                     # Final command - check if we need to format it with positional parameters
                     full_cmd_name = self._get_full_command_name(parser, cmd)
-                    display_cmd_name = self._format_command_name_with_positional(full_cmd_name)
+                    # For nested commands, just use the command name (not the full path with group)
+                    # since it's already indented under the group
+                    display_cmd_name = self._format_nested_command_name_with_positional(full_cmd_name, cmd)
                     cmd_section = self._format_final_command_with_display_name(
                         display_cmd_name, cmd_parser, command_indent, unified_cmd_desc_column
                     )
@@ -889,6 +891,17 @@ class HierarchicalHelpFormatter(RawDescriptionHelpFormatter):
         """Format command name with positional parameter if it has one."""
         positional_display = self._get_positional_display(command_name)
         return f"{command_name}{positional_display}"
+
+    def _format_nested_command_name_with_positional(self, full_command_name: str, base_command_name: str) -> str:
+        """Format nested command name with positional parameter, checking both full and base names."""
+        # First try to get positional info using the full command name
+        positional_display = self._get_positional_display(full_command_name)
+        if positional_display:
+            return f"{base_command_name}{positional_display}"
+        
+        # If not found with full name, try with just the base command name
+        positional_display = self._get_positional_display(base_command_name)
+        return f"{base_command_name}{positional_display}"
 
     def _get_full_command_name(self, parent_parser, cmd_name: str) -> str:
         """Get the full command name that matches the positional info keys."""
