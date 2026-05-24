@@ -2,118 +2,89 @@
 
 from __future__ import annotations
 
+import os
 import sys
 
 from .enums import Style
-from .rgb import RGB
+from .rgb import RGB, _detect_truecolor
 from .theme_style import ThemeStyle
 
 
 class ColorFormatter:
-    """Handles color application and terminal compatibility."""
+  """Apply ThemeStyle to text via ANSI escapes when the terminal supports color."""
 
-    def __init__(self, enable_colors: bool | None = None):
-        """Initialize color formatter with automatic color detection.
+  def __init__(self, enable_colors: bool | None = None, truecolor: bool | None = None):
+    """Initialize color formatter with automatic color and truecolor detection.
 
-        :param enable_colors: Force enable/disable colors, or None for auto-detection
-        """
-        self.colors_enabled = self._is_color_terminal() if enable_colors is None else enable_colors
+    :param enable_colors: Force enable/disable COLORS, or None for auto-detection
+    :param truecolor: Force 24-bit ANSI output, or None to detect via ``COLORTERM``
+    """
+    self.colors_enabled = self._is_color_terminal() if enable_colors is None else enable_colors
+    self.truecolor = _detect_truecolor() if truecolor is None else truecolor
 
-        if self.colors_enabled:
-            self.enable_windows_ansi_support()
+    if self.colors_enabled:
+      self.enable_windows_ansi_support()
 
-    @staticmethod
-    def enable_windows_ansi_support():
-        """Enable ANSI escape sequences on Windows terminals."""
-        if sys.platform != "win32":
-            return
+  @staticmethod
+  def enable_windows_ansi_support() -> None:
+    """Enable ANSI escape sequences on Windows terminals."""
+    if sys.platform != 'win32':
+      return
 
-        try:
-            import ctypes
+    try:
+      import ctypes
 
-            kernel32 = ctypes.windll.kernel32
-            kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
-        except Exception:  # noqa: S110 # intentional silent fail for Windows compatibility
-            # Fail silently on older Windows versions or permission issues
-            pass
+      kernel32 = ctypes.windll.kernel32
+      kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
+    except Exception:  # noqa: S110 # intentional silent fail for Windows compatibility
+      pass
 
-    def _is_color_terminal(self) -> bool:
-        """Check if the current terminal supports colors."""
-        import os
+  @staticmethod
+  def _is_color_terminal() -> bool:
+    """Determine whether the current terminal should receive ANSI color codes."""
+    result = True
 
-        # Check for explicit disable first
-        if os.environ.get("NO_COLOR") or os.environ.get("CLICOLOR") == "0":
-            return False
-        elif os.environ.get("FORCE_COLOR") or os.environ.get("CLICOLOR"):
-            # Check for explicit enable
-            return True
-        elif not sys.stdout.isatty():
-            # Check if stdout is a TTY (not redirected to file/pipe)
-            return False
-        else:
-            # Check environment variables that indicate color support
-            term = sys.platform
-            if term == "win32":
-                # Windows terminal color support
-                return True
-            else:
-                # Unix-like systems
-                term_env = os.environ.get("TERM", "").lower()
-                if "color" in term_env or term_env in ("xterm", "xterm-256color", "screen"):
-                    return True
-                elif term_env in ("dumb", ""):
-                    # Default for dumb terminals or empty TERM
-                    return False
-                else:
-                    return True
+    if os.environ.get('NO_COLOR') or os.environ.get('CLICOLOR') == '0':
+      result = False
+    elif os.environ.get('FORCE_COLOR') or os.environ.get('CLICOLOR'):
+      result = True
+    elif not sys.stdout.isatty():
+      result = False
+    elif sys.platform != 'win32':
+      term_env = os.environ.get('TERM', '').lower()
+      if term_env in ('dumb', ''):
+        result = False
+      elif 'color' in term_env or term_env in ('xterm', 'xterm-256color', 'screen'):
+        result = True
 
-    def apply_style(self, text: str, style: ThemeStyle) -> str:
-        """Apply a theme style to text.
+    return result
 
-        :param text: Text to style
-        :param style: ThemeStyle configuration to apply
-        :return: Styled text (or original text if colors disabled)
-        """
-        if not self.colors_enabled or not text:
-            return text
+  def apply_style(self, text: str, style: ThemeStyle) -> str:
+    """Apply a theme style to text.
 
-        # Build color codes
-        codes = []
+    :param text: Text to style
+    :param style: ThemeStyle configuration to apply
+    :return: Styled text (or original text if COLORS disabled)
+    """
+    result = text
 
-        # Foreground color - handle RGB instances and ANSI strings
-        if style.fg:
-            if isinstance(style.fg, RGB):
-                fg_code = style.fg.to_ansi(background=False)
-                codes.append(fg_code)
-            elif isinstance(style.fg, str) and style.fg.startswith("\x1b["):
-                # Allow ANSI escape sequences as strings
-                codes.append(style.fg)
-            else:
-                raise ValueError(
-                    f"Foreground color must be RGB instance or ANSI string, got {type(style.fg)}"
-                )
+    if self.colors_enabled and text and style is not None:
+      codes: list[str] = []
 
-        # Background color - handle RGB instances and ANSI strings
-        if style.bg:
-            if isinstance(style.bg, RGB):
-                bg_code = style.bg.to_ansi(background=True)
-                codes.append(bg_code)
-            elif isinstance(style.bg, str) and style.bg.startswith("\x1b["):
-                # Allow ANSI escape sequences as strings
-                codes.append(style.bg)
-            else:
-                raise ValueError(
-                    f"Background color must be RGB instance or ANSI string, got {type(style.bg)}"
-                )
+      if isinstance(style.fg, RGB):
+        codes.append(style.fg.to_ansi(background=False, truecolor=self.truecolor))
+      if isinstance(style.bg, RGB):
+        codes.append(style.bg.to_ansi(background=True, truecolor=self.truecolor))
+      if style.bold:
+        codes.append(Style.ANSI_BOLD.value)
+      if style.dim:
+        codes.append(Style.DIM.value)
+      if style.italic:
+        codes.append(Style.ANSI_ITALIC.value)
+      if style.underline:
+        codes.append(Style.ANSI_UNDERLINE.value)
 
-        # Text styling (using defined ANSI constants)
-        if style.bold:
-            codes.append(Style.ANSI_BOLD.value)  # Use ANSI bold to avoid Style.BRIGHT color shifts
-        if style.dim:
-            codes.append(Style.DIM.value)  # ANSI DIM style
-        if style.italic:
-            codes.append(Style.ANSI_ITALIC.value)  # ANSI italic code (support varies by terminal)
-        if style.underline:
-            codes.append(Style.ANSI_UNDERLINE.value)  # ANSI underline code
+      if codes:
+        result = ''.join(codes) + text + Style.RESET_ALL.value
 
-        return "".join(codes) + text + Style.RESET_ALL.value if codes else text
+    return result

@@ -1,23 +1,20 @@
+"""Freyja system command components (shell completion)."""
+
 from .completion import Completion
-from .tune_theme import TuneTheme
 
 
 class SystemClassBuilder:
-    """Dynamically builds System class with selected system command components."""
+  """Dynamically build a System class containing the enabled system commands."""
 
-    @staticmethod
-    def build(completion: bool = True, theme_tuner: bool = False) -> type:
-        """Build System class with specified command components enabled."""
-        system_class_dict: dict = {}
-
-        if completion:
-            system_class_dict["Completion"] = Completion
-        if theme_tuner:
-            system_class_dict["TuneTheme"] = TuneTheme
-        return type("System", (object,), system_class_dict)
+  @staticmethod
+  def build(completion: bool = True) -> type:
+    """Build the System class with the requested components enabled."""
+    members: dict = {}
+    if completion:
+      members['Completion'] = Completion
+    return type('System', (object,), members)
 
 
-# Create default System class for direct import
-System = SystemClassBuilder.build(completion=True, theme_tuner=True)
+System = SystemClassBuilder.build(completion=True)
 
-__all__ = ["SystemClassBuilder", "System", "Completion", "TuneTheme"]
+__all__ = ['SystemClassBuilder', 'System', 'Completion']

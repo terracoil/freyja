@@ -22,7 +22,6 @@
 ### 🔬 Understanding Freyja
 * **[⚙️ How It Works](how-it-works.md)** - Deep dive into Freyja's internal architecture and transformation pipeline
 * **[📘 API Documentation](api-docs.md)** - Complete FreyjaCLI API reference and architecture components
-* **[🏗️ Architecture](architecture/README.md)** - Visual architecture diagrams and design documentation
 
 ### 🛠️ Resources & Support
 * **[💡 Guides](guides/README.md)** - Best practices, real-world examples, and troubleshooting

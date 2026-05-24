@@ -10,7 +10,6 @@
 
 **Children**:
 - **[🤝 Contributing](contributing.md)** - How to contribute to Freyja
-- **[📦 Git Submodules](submodules.md)** - Git submodule workflow for modgud
 
 **Related**:
 - **[🏗️ Architecture (CLAUDE.md)](../../CLAUDE.md)** - Codebase structure and design
@@ -38,13 +37,6 @@ How to contribute to Freyja.
 - Submitting pull requests
 - Issue reporting guidelines
 - Community standards
-
-### 📦 [Git Submodules](submodules.md)
-Working with the vendored modgud library.
-- Initial setup and verification
-- Updating submodules
-- Troubleshooting
-- CI/CD integration
 
 ### 🏗️ Architecture
 Understanding the codebase structure - see [CLAUDE.md](../../CLAUDE.md).
@@ -177,7 +169,6 @@ poetry install
 ## 📖 Next Steps
 
 - Read [Contributing Guidelines](contributing.md)
-- Review [Git Submodules](submodules.md) workflow
 - Understand the Architecture (see [CLAUDE.md](../../CLAUDE.md))
 - Set up Testing (see [CLAUDE.md](../../CLAUDE.md))
 - Learn the Release Process (see [CLAUDE.md](../../CLAUDE.md))

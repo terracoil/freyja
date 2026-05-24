@@ -10,7 +10,6 @@
 - [📚 Documentation Hub](README.md) - Complete documentation index
 
 **Related**:
-- [🏗️ Architecture Diagrams](architecture/README.md) - Visual architecture overview
 - [📖 API Reference](api-docs.md) - Complete API documentation
 - [👤 User Guide](user-guide/README.md) - Building CLIs with Freyja
 - [✨ Features](features/README.md) - Detailed feature documentation
@@ -373,7 +372,7 @@ class DatabaseCLI:
 
 ### Why Zero Dependencies?
 
-**Decision**: Use only Python standard library (except modgud submodule).
+**Decision**: Use only Python standard library.
 
 **Rationale**:
 - ⚡ **Fast Imports**: No dependency resolution overhead
@@ -402,18 +401,6 @@ class DatabaseCLI:
 - 🎯 **Usability**: Users can run commands without specifying every config
 - 🚫 **Error Prevention**: Required constructor params break CLI flow
 - ⚡ **Flexibility**: Defaults provide sensible behavior out of box
-
-### Why Modgud as Submodule?
-
-**Decision**: Include modgud as Git submodule, not pip dependency.
-
-> **📦 Standalone modgud**: While Freyja includes modgud as a git submodule, you can also use modgud independently in your own projects. Install from PyPI: `pip install modgud`. Visit [modgud on PyPI](https://pypi.org/project/modgud/) for more information.
-
-**Rationale**:
-- ✅ **Zero Dependencies**: Maintains no-dependency goal
-- 🎯 **Version Control**: Lock to exact modgud version
-- 🚫 **No Conflicts**: Users can still `pip install modgud` separately
-- ⚡ **Full Features**: Guards available without extra installation
 
 ## 🔍 Under the Hood: A Real Example
 
@@ -638,9 +625,7 @@ def process(self, file: str, opts: str = ""):
 Now that you understand how Freyja works internally:
 
 ### 📖 Deep Dive into Components
-- **[Architecture Diagrams](architecture/README.md)** - Visual architecture overview
 - **[API Reference](api-docs.md)** - Complete technical documentation
-- **[Shared Module](architecture/README.md#architectural-insights)** - Core data structures
 
 ### 🛠️ Build Something
 - **[User Guide](user-guide/README.md)** - Comprehensive building guide
@@ -650,9 +635,8 @@ Now that you understand how Freyja works internally:
 ### 🚀 Advanced Topics
 - **[Type Annotations](features/type-annotations.md)** - Supported types and validation
 - **[Shell Completion](features/shell-completion.md)** - Tab completion setup
-- **[Guards](features/guards.md)** - Declarative validation
 - **[Error Handling](features/error-handling.md)** - Robust error management
 
 ---
 
-**Navigation**: [← Documentation Hub](README.md) | [API Reference →](api-docs.md) | [Architecture →](architecture/README.md)
+**Navigation**: [← Documentation Hub](README.md) | [API Reference →](api-docs.md)

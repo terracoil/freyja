@@ -218,25 +218,41 @@ def test_api_call():
 ## Organization Best Practices
 
 ### 1. Logical Command Grouping
-For module-based CLIs with hierarchies:
+Use inner classes to group related commands into hierarchical subcommands:
 ```python
-# Database operations
-def db__backup(database: str, output: str = "backup.sql") -> None:
-    """Backup database."""
-    pass
+class AdminTool:
+    """Administrative utility."""
 
-def db__restore(database: str, backup_file: str) -> None:
-    """Restore database from backup."""
-    pass
+    def __init__(self):
+        pass
 
-# User operations
-def user__create(username: str, email: str) -> None:
-    """Create new user."""
-    pass
+    class Database:
+        """Database operations."""
 
-def user__delete(username: str, force: bool = False) -> None:
-    """Delete user."""
-    pass
+        def backup(self, database: str, output: str = "backup.sql") -> None:
+            """Backup database."""
+            pass
+
+        def restore(self, database: str, backup_file: str) -> None:
+            """Restore database from backup."""
+            pass
+
+    class User:
+        """User operations."""
+
+        def create(self, username: str, email: str) -> None:
+            """Create new user."""
+            pass
+
+        def delete(self, username: str, force: bool = False) -> None:
+            """Delete user."""
+            pass
+```
+
+Usage:
+```bash
+admin-tool database backup --database prod --output prod.sql
+admin-tool user create --username alice --email alice@example.com
 ```
 
 ### 2. Consistent State Management

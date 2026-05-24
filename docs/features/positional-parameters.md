@@ -48,20 +48,31 @@ def no_params():
 ### File Processing Tool
 
 ```python
-def compress_file(filename: str, algorithm: str = "gzip", 
-                 output_dir: str = "./compressed", keep_original: bool = True):
-    """Compress file using specified algorithm."""
-    print(f"Compressing {filename} with {algorithm}")
-    print(f"Output directory: {output_dir}")
-    print(f"Keep original: {keep_original}")
+from freyja import FreyjaCLI
 
-def extract_archive(archive_path: str, destination: str = "./extracted",
-                   overwrite: bool = False):
-    """Extract archive to destination."""
-    pass
+
+class ArchiveTools:
+    """Archive utilities."""
+
+    def __init__(self):
+        pass
+
+    def compress_file(self, filename: str, algorithm: str = "gzip",
+                      output_dir: str = "./compressed",
+                      keep_original: bool = True):
+        """Compress file using specified algorithm."""
+        print(f"Compressing {filename} with {algorithm}")
+        print(f"Output directory: {output_dir}")
+        print(f"Keep original: {keep_original}")
+
+    def extract_archive(self, archive_path: str, destination: str = "./extracted",
+                        overwrite: bool = False):
+        """Extract archive to destination."""
+        pass
+
 
 if __name__ == '__main__':
-    cli = CLI(sys.modules[__name__], title="Archive Tools")  
+    cli = FreyjaCLI(ArchiveTools, title="Archive Tools")
     cli.run()
 ```
 
@@ -391,7 +402,7 @@ Suggestion: Use either 'my_tool process data.txt' or 'my_tool process --filename
 Enable debug mode to see positional parameter detection:
 
 ```python
-cli = CLI(MyClass, debug=True)
+cli = FreyjaCLI(MyClass, debug=True)
 # Shows: "Detected positional parameter: 'filename' (type: str)"
 ```
 

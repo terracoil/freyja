@@ -8,7 +8,6 @@
 - [Type Annotation Requirements](#type-annotation-requirements)
 - [New Features](#new-features)
 - [Common Patterns](#common-patterns)
-- [Choosing Between Modes](#choosing-between-modes)
 - [Configuration Options](#configuration-options)
 - [Built-in Features](#built-in-features)
 - [Common Pitfalls](#common-pitfalls)
@@ -16,23 +15,20 @@
 
 ## Core Concepts
 
-freyja uses Python's introspection capabilities to automatically generate command-line interfaces from your existing code. The key principle is **minimal configuration** - most behavior is inferred from your function signatures and docstrings.
+Freyja uses Python's introspection capabilities to automatically generate command-line interfaces from your existing classes. The key principle is **minimal configuration** — most behavior is inferred from your method signatures and docstrings.
 
 ### How It Works
 
-1. **Function/Method Discovery**: freyja scans your module or class for public functions/methods
+1. **Method Discovery**: Freyja scans your class for public methods (and inner classes for command groups)
 2. **Signature Analysis**: Parameter types, default values, and names are extracted using `inspect.signature()`
-3. **CLI Generation**: Each function becomes a command with arguments derived from parameters
+3. **CLI Generation**: Each method becomes a command with arguments derived from parameters
 4. **Help Text Generation**: Docstrings are parsed to create descriptive help text
 
-### Two Creation Patterns
+### Creation Pattern
 
 ```python
-# Module-based: Functions become command tree
-CLI.from_module(module, title="My Freyja")
-
-# Class-based: Methods become command tree, instance maintains state
-CLI.from_class(SomeClass, title="My App")
+# Class-based: Methods become commands, instance maintains state
+FreyjaCLI(SomeClass, title="My App")
 ```
 
 ## Type Annotation Requirements
@@ -127,31 +123,35 @@ db-tool backup-database --database-name production_db --compress
 
 ## Common Patterns
 
-### 1. Simple Utility Functions
+### 1. Simple Utility Class
 
 ```python
-from src import CLI
-import sys
+from freyja import FreyjaCLI
 
 
-def convert_temperature(celsius: float, to_fahrenheit: bool = True) -> None:
-  """Convert temperature between Celsius and Fahrenheit."""
-  if to_fahrenheit:
-    result = (celsius * 9 / 5) + 32
-    print(f"{celsius}°C = {result}°F")
-  else:
-    result = (celsius - 32) * 5 / 9
-    print(f"{celsius}°F = {result}°C")
+class HealthCalculator:
+  """Health calculation utilities."""
 
+  def __init__(self):
+    pass
 
-def calculate_bmi(weight_kg: float, height_m: float) -> None:
-  """Calculate Body Mass Index."""
-  bmi = weight_kg / (height_m ** 2)
-  print(f"BMI: {bmi:.2f}")
+  def convert_temperature(self, celsius: float, to_fahrenheit: bool = True) -> None:
+    """Convert temperature between Celsius and Fahrenheit."""
+    if to_fahrenheit:
+      result = (celsius * 9 / 5) + 32
+      print(f"{celsius}°C = {result}°F")
+    else:
+      result = (celsius - 32) * 5 / 9
+      print(f"{celsius}°F = {result}°C")
+
+  def calculate_bmi(self, weight_kg: float, height_m: float) -> None:
+    """Calculate Body Mass Index."""
+    bmi = weight_kg / (height_m ** 2)
+    print(f"BMI: {bmi:.2f}")
 
 
 if __name__ == '__main__':
-  cli = CLI.from_module(sys.modules[__name__], title="Health Calculator")
+  cli = FreyjaCLI(HealthCalculator, title="Health Calculator")
   cli.run()
 ```
 
@@ -173,8 +173,7 @@ python health_calc.py calculate-bmi --height-m 1.75 70        # weight_kg is pos
 ### 2. Stateful Application Class
 
 ```python
-from src import CLI
-from typing import List
+from freyja import FreyjaCLI
 import json
 
 
@@ -231,7 +230,7 @@ class ConfigManager:
 
 
 if __name__ == '__main__':
-  cli = CLI.from_class(ConfigManager, theme_name="colorful")
+  cli = FreyjaCLI(ConfigManager, theme_name="colorful")
   cli.run()
 ```
 
@@ -256,115 +255,79 @@ python config_mgr.py list-all --format-type json
 ### 3. File Processing Pipeline
 
 ```python
-from src import CLI
+from freyja import FreyjaCLI
 from pathlib import Path
 from typing import List
-import sys
 
 
-def process_text_files(
-        input_dir: str,
-        output_dir: str,
-        extensions: List[str] = None,
-        convert_to_uppercase: bool = False,
-        add_line_numbers: bool = False,
-        dry_run: bool = False
-) -> None:
-  """Process text files with various transformations."""
-  if extensions is None:
-    extensions = ['.txt', '.md']
+class TextFileProcessor:
+  """Text file batch processor."""
 
-  input_path = Path(input_dir)
-  output_path = Path(output_dir)
+  def __init__(self):
+    pass
 
-  if not input_path.exists():
-    print(f"❌ Input directory '{input_dir}' does not exist")
-    return
+  def process_text_files(
+    self,
+    input_dir: str,
+    output_dir: str,
+    extensions: List[str] = None,
+    convert_to_uppercase: bool = False,
+    add_line_numbers: bool = False,
+    dry_run: bool = False,
+  ) -> None:
+    """Process text files with various transformations."""
+    if extensions is None:
+      extensions = ['.txt', '.md']
 
-  if not dry_run:
-    output_path.mkdir(parents=True, exist_ok=True)
+    input_path = Path(input_dir)
+    output_path = Path(output_dir)
 
-  # Find files
-  files_to_process = []
-  for ext in extensions:
-    files_to_process.extend(input_path.glob(f"*{ext}"))
+    if not input_path.exists():
+      print(f"❌ Input directory '{input_dir}' does not exist")
+      return
 
-  print(f"Found {len(files_to_process)} files to process")
+    if not dry_run:
+      output_path.mkdir(parents=True, exist_ok=True)
 
-  for file_path in files_to_process:
-    print(f"Processing: {file_path.name}")
+    # Find files
+    files_to_process = []
+    for ext in extensions:
+      files_to_process.extend(input_path.glob(f"*{ext}"))
 
-    if dry_run:
-      print(f"  Would write to: {output_path / file_path.name}")
-      continue
+    print(f"Found {len(files_to_process)} files to process")
 
-    # Read and process
-    with open(file_path, 'r', encoding='utf-8') as f:
-      content = f.read()
+    for file_path in files_to_process:
+      print(f"Processing: {file_path.name}")
 
-    if convert_to_uppercase:
-      content = content.upper()
+      if dry_run:
+        print(f"  Would write to: {output_path / file_path.name}")
+        continue
 
-    if add_line_numbers:
-      lines = content.splitlines()
-      content = '\n'.join(f"{i + 1:4d}: {line}" for i, line in enumerate(lines))
+      # Read and process
+      with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
 
-    # Write output
-    output_file = output_path / file_path.name
-    with open(output_file, 'w', encoding='utf-8') as f:
-      f.write(content)
+      if convert_to_uppercase:
+        content = content.upper()
 
-    print(f"  ✅ Written to: {output_file}")
+      if add_line_numbers:
+        lines = content.splitlines()
+        content = '\n'.join(f"{i + 1:4d}: {line}" for i, line in enumerate(lines))
+
+      # Write output
+      output_file = output_path / file_path.name
+      with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(content)
+
+      print(f"  ✅ Written to: {output_file}")
 
 
 if __name__ == '__main__':
-  cli = CLI.from_module(sys.modules[__name__], title="Text File Processor")
+  cli = FreyjaCLI(TextFileProcessor, title="Text File Processor")
   cli.run()
 ```
 
-## Choosing Between Modes
-
-### Decision Tree
-
-```
-Do you need persistent state between commands?
-├── Yes → Use Class-based CLI
-│   ├── Configuration that affects multiple commands
-│   ├── Database connections or file handles
-│   ├── User sessions or authentication state
-│   └── Complex workflows with dependencies
-└── No → Use Module-based CLI
-    ├── Independent utility functions
-    ├── Data transformation scripts
-    ├── Simple command-line tools
-    └── Functional programming style
-```
-
-### Module-based: When Each Command is Independent
-
-```python
-# Each function is completely independent
-def encode_base64(text: str) -> None:
-    """Encode text to base64."""
-    import base64
-    encoded = base64.b64encode(text.encode()).decode()
-    print(f"Encoded: {encoded}")
-
-def decode_base64(encoded_text: str) -> None:
-    """Decode base64 text."""
-    import base64
-    decoded = base64.b64decode(encoded_text).decode()
-    print(f"Decoded: {decoded}")
-
-def hash_text(text: str, algorithm: str = "sha256") -> None:
-    """Hash text using specified algorithm."""
-    import hashlib
-    hasher = getattr(hashlib, algorithm)()
-    hasher.update(text.encode())
-    print(f"{algorithm.upper()}: {hasher.hexdigest()}")
-```
-
-### Class-based: When You Need Shared State
+### 4. Stateful Application with Shared Resources
 
 ```python
 class DatabaseManager:
@@ -404,33 +367,17 @@ class DatabaseManager:
 ### CLI Initialization Options
 
 ```python
-# Module-based configuration
-cli = CLI.from_module(
-    module=sys.modules[__name__],
-    title="Custom Freyja Title",           # Override auto-detected title
-    function_opts={                     # Per-function configuration
-        'function_name': {
-            'description': 'Custom description',
-            'hidden': False,            # Hide from Freyja listing
-        }
-    },
-    theme_name="colorful",             # Built-in theme: "universal", "colorful"
-    no_color=False,                    # Force disable colors
-    completion=True                    # Enable shell completion
-)
-
-# Class-based configuration  
-cli = CLI.from_class(
-    cls=MyClass,                       # Class (not instance)
+cli = FreyjaCLI(
+    MyClass,                           # Class (not instance)
     title="Custom App Title",          # Override class docstring title
     function_opts={                    # Per-method configuration
         'method_name': {
             'description': 'Custom description'
         }
     },
-    theme_name="universal",
-    no_color=False,
-    completion=True
+    theme_name="universal",            # Built-in theme: "universal", "colorful"
+    no_color=False,                    # Force disable COLORS
+    completion=True,                   # Enable shell completion
 )
 ```
 
@@ -465,11 +412,11 @@ python my_cli.py command-name --help
 
 ```python
 # Built-in themes
-cli = CLI.from_module(module, theme_name="universal")  # Default
-cli = CLI.from_module(module, theme_name="colorful")   # More colors
+cli = FreyjaCLI(MyClass, theme_name="universal")  # Default
+cli = FreyjaCLI(MyClass, theme_name="colorful")   # More COLORS
 
-# Disable colors entirely
-cli = CLI.from_module(module, no_color=True)
+# Disable COLORS entirely
+cli = FreyjaCLI(MyClass, no_color=True)
 ```
 
 ### Shell Completion
@@ -574,7 +521,6 @@ def good_function(items: List[str] = None) -> None:
 
 **📚 Complete Guides**  
 - **[Class-based CLI Guide](../user-guide/class-cli.md)** - Complete class-based CLI guide
-- **[Class-based CLI Guide](../user-guide/class-cli.md)** - Complete method-based CLI guide
 - **[Type Annotations](../features/type-annotations.md)** - Detailed type system guide
 
 **🛠️ Reference & Help**

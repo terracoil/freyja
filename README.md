@@ -234,7 +234,6 @@ python project_manager.py --help
 * **[🚀 Getting Started](docs/getting-started/README.md)** - Installation and first steps
 * **[👤 User Guide](docs/user-guide/README.md)** - Comprehensive guides for class-based CLI patterns
 * **[⚙️ Features](docs/features/README.md)** - Type annotations, themes, completion, and more
-* **[🛡️ Guard Clauses](docs/features/guards.md)** - Parameter validation with declarative guards
 * **[📋 Examples & Best Practices](docs/guides/README.md)** - Real-world examples and patterns
 * **[❓ FAQ](docs/faq.md)** - Frequently asked questions
 * **[🔧 API Reference](docs/reference/README.md)** - Complete API documentation
@@ -266,13 +265,13 @@ poetry install                    # Install dependencies
 ./bin/dev-tools test run          # Run tests with coverage
 ./bin/dev-tools build lint        # Run all linters and formatters
 ./bin/dev-tools build compile     # Build package
-./bin/dev-tools build publish     # Publish to PyPI (maintainers)
-./bin/dev-tools build tag-version # Create version tags
+./bin/dev-tools project publish   # Publish to PyPI (maintainers)
+./bin/dev-tools project tag       # Tag a release (Bump version to x.y.z)
 ```
 
 ## ⚙️ Requirements
 
-* **Python 3.13.5+** (recommended) or Python 3.8+
+* **Python 3.13+** (recommended) — supports **Python 3.11+**
 * **Zero runtime dependencies** - uses only Python standard library
 * **Type annotations required** - for automatic CLI generation
 * **Docstrings recommended** - for automatic help text generation

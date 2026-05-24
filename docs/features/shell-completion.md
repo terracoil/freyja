@@ -11,7 +11,7 @@ freyja provides automatic shell completion for all generated CLIs, supporting Ba
 
 Completion is enabled by default. To disable:
 ```python
-cli = CLI(MyClass, completion=False)
+cli = FreyjaCLI(MyClass, completion=False)
 ```
 
 ## Setup by Shell

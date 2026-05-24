@@ -16,7 +16,7 @@
 
 ### What is freyja?
 
-freyja is a Python library that automatically generates complete command-line interfaces from your existing Python functions or class methods using introspection and type annotations. It requires minimal configuration - just add type hints to your functions and you get a fully-featured CLI.
+Freyja is a Python library that automatically generates complete command-line interfaces from your existing Python class methods using introspection and type annotations. It requires minimal configuration — just add type hints to your methods and you get a fully-featured CLI.
 
 ### How is it different from writing CLI code manually?
 
@@ -39,14 +39,19 @@ args = parser.parse_args()
 greet(args.name, args.excited)
 
 # freyja approach
+from freyja import FreyjaCLI
+
 class Greeter:
     """Simple greeting application."""
-    
+
+    def __init__(self):
+        pass
+
     def greet(self, name: str, excited: bool = False) -> None:
         """Greet someone by name."""
         pass
 
-cli = CLI(Greeter)
+cli = FreyjaCLI(Greeter)
 cli.run()
 ```
 
@@ -78,10 +83,14 @@ No! freyja uses only Python standard library modules. It has zero runtime depend
 | **Flexibility** | Good for standard CLIs | Highly customizable |
 
 ```python
-# freyja: Use existing function
-def process_file(input_path: str, format: str = "json") -> None:
-    """Process a file."""
-    pass
+# freyja: Use class methods
+class FileTools:
+    def __init__(self):
+        pass
+
+    def process_file(self, input_path: str, format: str = "json") -> None:
+        """Process a file."""
+        pass
 
 # Click: Requires decorators
 import click
@@ -98,23 +107,28 @@ def process_file(input_path, format):
 | Feature | freyja | Typer |
 |---------|-------------|--------|
 | **Type hints** | Required | Optional but recommended |
-| **Setup** | Automatic discovery | Manual function registration |
-| **Class support** | Built-in (`CLI.from_class`) | Limited |
+| **Setup** | Automatic class introspection | Manual function registration |
+| **Class support** | First-class (the only mode) | Limited |
 | **Dependencies** | None | Typer + Click |
 | **State management** | Excellent (class-based) | Manual |
 
 ```python
-# freyja: Automatic discovery
-def cmd1(name: str) -> None: pass
-def cmd2(count: int) -> None: pass
-cli = CLI.from_module(sys.modules[__name__])  # Finds all functions
+# freyja: Automatic introspection of a class
+class MyTools:
+    def __init__(self):
+        pass
+
+    def cmd1(self, name: str) -> None: pass
+    def cmd2(self, count: int) -> None: pass
+
+cli = FreyjaCLI(MyTools)  # Methods become commands automatically
 
 # Typer: Manual registration
 import typer
 app = typer.Typer()
 @app.command()
 def cmd1(name: str): pass
-@app.command() 
+@app.command()
 def cmd2(count: int): pass
 ```
 
@@ -151,21 +165,29 @@ freyja is built on top of argparse but eliminates the boilerplate:
 
 ### Can I use async functions?
 
-Currently, freyja supports synchronous functions only. For async functions, wrap them:
+Currently, freyja supports synchronous methods only. For async work, wrap it in a sync method:
 
 ```python
 import asyncio
+from freyja import FreyjaCLI
 
-async def async_process(data: str) -> None:
-    """Async processing function."""
-    await some_async_operation(data)
 
-def process(data: str) -> None:
-    """Sync wrapper for async processing."""
-    asyncio.run(async_process(data))
+class AsyncProcessor:
+    """Async-friendly processing wrapper."""
 
-# Freyja uses the sync wrapper
-cli = CLI.from_module(sys.modules[__name__])
+    def __init__(self):
+        pass
+
+    async def _async_process(self, data: str) -> None:
+        """Async worker."""
+        await some_async_operation(data)
+
+    def process(self, data: str) -> None:
+        """Sync wrapper for async processing."""
+        asyncio.run(self._async_process(data))
+
+
+cli = FreyjaCLI(AsyncProcessor)
 ```
 
 ### How do I handle file uploads or binary data?
@@ -247,7 +269,7 @@ def set_email(email: str) -> None:
 
 ### Can I use freyja with existing Click/Typer code?
 
-You can gradually migrate or use them side-by-side:
+You can gradually migrate or use them side-by-side via separate entry points:
 
 ```python
 # Existing Click code
@@ -261,9 +283,18 @@ def click_command(name):
 
 
 # New freyja code
-def freya_command(name: str) -> None:
-  """Freyja command."""
-  print(f"Freyja: {name}")
+from freyja import FreyjaCLI
+
+
+class Freya:
+  """Freyja-managed commands."""
+
+  def __init__(self):
+    pass
+
+  def freya_command(self, name: str) -> None:
+    """Freyja command."""
+    print(f"Freyja: {name}")
 
 
 # Separate entry points
@@ -274,9 +305,7 @@ if __name__ == '__main__':
     sys.argv.remove('--click')
     click_command()
   else:
-    from src import CLI
-
-    cli = CLI.from_module(sys.modules[__name__])
+    cli = FreyjaCLI(Freya)
     cli.run()
 ```
 
@@ -316,7 +345,7 @@ class DatabaseCLI:
         """Vacuum database."""
         pass
 
-cli = CLI.from_class(DatabaseCLI, title="Database Tools")
+cli = FreyjaCLI(DatabaseCLI, title="Database Tools")
 ```
 
 ### How do I handle configuration across commands?
@@ -451,21 +480,25 @@ def public_function(data: str) -> None:
     pass
 ```
 
-3. **Function defined in wrong scope**:
+3. **Method defined outside the class body**:
 ```python
-# ❌ Function inside main block
-if __name__ == '__main__':
-    def my_function(data: str) -> None:  # Not found by Freyja
-        pass
-    
-    cli = CLI.from_module(sys.modules[__name__])
-
-# ✅ Function at module level
+# ❌ Loose function won't be discovered (Freyja is class-only)
 def my_function(data: str) -> None:
     pass
 
 if __name__ == '__main__':
-    cli = CLI.from_module(sys.modules[__name__])
+    cli = FreyjaCLI(my_function)  # TypeError — not a class
+
+# ✅ Method inside a class
+class Tools:
+    def __init__(self):
+        pass
+
+    def my_function(self, data: str) -> None:
+        pass
+
+if __name__ == '__main__':
+    cli = FreyjaCLI(Tools)
 ```
 
 ### I'm getting "TypeError: missing required argument"
@@ -503,19 +536,19 @@ Check these issues:
 
 1. **Colors disabled**:
 ```python
-cli = CLI.from_module(module, no_color=False)  # Ensure enabled
+cli = FreyjaCLI(MyClass, no_color=False)  # Ensure enabled
 ```
 
 2. **Terminal doesn't support colors**:
 ```bash
-# Test in different terminal or force colors
+# Test in different terminal or force COLORS
 FORCE_COLOR=1 python script.py
 ```
 
 3. **Output redirected**:
 ```bash
 # Colors automatically disabled when redirected
-python script.py > output.txt  # No colors (correct behavior)
+python script.py > output.txt  # No COLORS (correct behavior)
 python script.py              # Colors enabled
 ```
 
@@ -523,72 +556,87 @@ python script.py              # Colors enabled
 
 ### Can I create multiple CLIs in one script?
 
-Yes, you can create different CLIs for different purposes:
+Yes — build a separate class for each persona and pick at the entry point:
 
 ```python
-# admin_functions.py
-def reset_database(confirm: bool = False) -> None:
-    """Reset the entire database."""
-    pass
+from freyja import FreyjaCLI
 
-def backup_system(destination: str) -> None:
-    """Create full system backup."""
-    pass
 
-# user_functions.py  
-def view_profile(username: str) -> None:
-    """View user profile."""
-    pass
+class AdminTools:
+    """Administrative operations."""
 
-def update_profile(username: str, email: str = None) -> None:
-    """Update user profile."""
-    pass
+    def __init__(self):
+        pass
 
-# main.py
+    def reset_database(self, confirm: bool = False) -> None:
+        """Reset the entire database."""
+        pass
+
+    def backup_system(self, destination: str) -> None:
+        """Create full system backup."""
+        pass
+
+
+class UserTools:
+    """End-user operations."""
+
+    def __init__(self):
+        pass
+
+    def view_profile(self, username: str) -> None:
+        """View user profile."""
+        pass
+
+    def update_profile(self, username: str, email: str = None) -> None:
+        """Update user profile."""
+        pass
+
+
 if __name__ == '__main__':
     import sys
-    
+
     if '--admin' in sys.argv:
         sys.argv.remove('--admin')
-        import admin_functions
-        cli = CLI.from_module(admin_functions, title="Admin Tools")
+        cli = FreyjaCLI(AdminTools, title="Admin Tools")
     else:
-        import user_functions  
-        cli = CLI.from_module(user_functions, title="User Tools")
-    
+        cli = FreyjaCLI(UserTools, title="User Tools")
+
     cli.run()
 ```
 
 ### How do I create plugin-like architectures?
 
-Use dynamic function discovery:
+Compose multiple plugin classes via Freyja's multi-class support:
 
 ```python
-import importlib
-import sys
-from pathlib import Path
+from freyja import FreyjaCLI
 
-def load_plugins():
-    """Dynamically load plugin modules."""
-    plugin_dir = Path(__file__).parent / 'plugins'
-    
-    for plugin_file in plugin_dir.glob('*.py'):
-        if plugin_file.name.startswith('_'):
-            continue
-            
-        module_name = f"plugins.{plugin_file.stem}"
-        try:
-            plugin = importlib.import_module(module_name)
-            # Add plugin functions to current module
-            for name in dir(plugin):
-                if not name.startswith('_') and callable(getattr(plugin, name)):
-                    setattr(sys.modules[__name__], name, getattr(plugin, name))
-        except ImportError as e:
-            print(f"Warning: Could not load plugin {plugin_file}: {e}")
 
-# Load plugins before creating Freyja
-load_plugins()
-cli = CLI.from_module(sys.modules[__name__], title="Extensible Freyja")
+class CorePlugin:
+    """Always-available core commands."""
+
+    def __init__(self):
+        pass
+
+    def status(self) -> None:
+        """Show overall status."""
+        pass
+
+
+class ReportingPlugin:
+    """Reporting plugin."""
+
+    def __init__(self):
+        pass
+
+    def daily_report(self, output: str = "report.txt") -> None:
+        """Generate a daily report."""
+        pass
+
+
+# Pass a list of classes — non-primary classes become hierarchical command groups
+cli = FreyjaCLI([ReportingPlugin, CorePlugin], title="Extensible Freyja")
+cli.run()
 ```
 
 ### How do I add progress bars or interactive features?

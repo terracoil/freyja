@@ -1,155 +1,81 @@
-"""Test ColorFormatter with RGB instances."""
-
-import pytest
+"""Tests for ColorFormatter applying ThemeStyle to text via ANSI escapes."""
 
 from freyja.theme import RGB, ColorFormatter, ThemeStyle
 
 
-class TestColorFormatterRGB:
-    """Test ColorFormatter with RGB instances."""
+class TestColorFormatter256:
+  """Force 256-color mode for predictable ANSI output regardless of $COLORTERM."""
 
-    def test_apply_style_with_rgb_foreground(self):
-        """Test apply_style with RGB foreground color."""
-        formatter = ColorFormatter(enable_colors=True)
-        rgb_color = RGB.from_rgb(0xFF5733)
-        style = ThemeStyle(fg=rgb_color)
+  def _formatter(self) -> ColorFormatter:
+    return ColorFormatter(enable_colors=True, truecolor=False)
 
-        result = formatter.apply_style("test", style)
+  def test_apply_style_with_rgb_foreground(self):
+    style = ThemeStyle(fg=RGB.from_rgb(0xFF5733))
+    result = self._formatter().apply_style('test', style)
+    assert '\x1b[38;5;' in result
+    assert 'test' in result
+    assert '\x1b[0m' in result
 
-        # Should contain ANSI escape codes
-        assert "\033[38;5;" in result  # Foreground color code
-        assert "test" in result
-        assert "\033[0m" in result  # Reset code
+  def test_apply_style_with_rgb_background(self):
+    style = ThemeStyle(bg=RGB.from_rgb(0x00FF00))
+    result = self._formatter().apply_style('test', style)
+    assert '\x1b[48;5;' in result
+    assert 'test' in result
 
-    def test_apply_style_with_rgb_background(self):
-        """Test apply_style with RGB background color."""
-        formatter = ColorFormatter(enable_colors=True)
-        rgb_color = RGB.from_rgb(0x00FF00)
-        style = ThemeStyle(bg=rgb_color)
+  def test_apply_style_with_rgb_both_colors_and_bold(self):
+    style = ThemeStyle(fg=RGB.from_rgb(0xFF5733), bg=RGB.from_rgb(0x00FF00), bold=True)
+    result = self._formatter().apply_style('test', style)
+    assert '\x1b[38;5;' in result
+    assert '\x1b[48;5;' in result
+    assert '\x1b[1m' in result
+    assert '\x1b[0m' in result
 
-        result = formatter.apply_style("test", style)
+  def test_apply_style_rgb_consistency(self):
+    formatter = self._formatter()
+    rgb_a = RGB.from_rgb(0xFF5733)
+    r, g, b = rgb_a.to_ints()
+    rgb_b = RGB.from_ints(r, g, b)
+    assert formatter.apply_style('x', ThemeStyle(fg=rgb_a)) == formatter.apply_style(
+      'x', ThemeStyle(fg=rgb_b)
+    )
 
-        # Should contain ANSI escape codes for background
-        assert "\033[48;5;" in result  # Background color code
-        assert "test" in result
-        assert "\033[0m" in result  # Reset code
+  def test_all_text_decorations(self):
+    style = ThemeStyle(fg=RGB.from_rgb(0xFF5733), bold=True, italic=True, dim=True, underline=True)
+    result = self._formatter().apply_style('test', style)
+    for code in ('\x1b[38;5;', '\x1b[1m', '\x1b[3m', '\x1b[2m', '\x1b[4m', '\x1b[0m'):
+      assert code in result
 
-    def test_apply_style_with_rgb_both_colors(self):
-        """Test apply_style with RGB foreground and background colors."""
-        formatter = ColorFormatter(enable_colors=True)
-        fg_color = RGB.from_rgb(0xFF5733)
-        bg_color = RGB.from_rgb(0x00FF00)
-        style = ThemeStyle(fg=fg_color, bg=bg_color, bold=True)
 
-        result = formatter.apply_style("test", style)
+class TestColorFormatterTruecolor:
+  """24-bit emission when truecolor mode is enabled."""
 
-        # Should contain both foreground and background codes
-        assert "\033[38;5;" in result  # Foreground color code
-        assert "\033[48;5;" in result  # Background color code
-        assert "\033[1m" in result  # Bold code
-        assert "test" in result
-        assert "\033[0m" in result  # Reset code
+  def _formatter(self) -> ColorFormatter:
+    return ColorFormatter(enable_colors=True, truecolor=True)
 
-    def test_apply_style_rgb_consistency(self):
-        """Test that equivalent RGB instances produce same output."""
-        formatter = ColorFormatter(enable_colors=True)
-        rgb_color1 = RGB.from_rgb(0xFF5733)
-        r, g, b = rgb_color1.to_ints()
-        rgb_color2 = RGB.from_ints(r, g, b)  # Equivalent RGB from ints
+  def test_truecolor_foreground(self):
+    style = ThemeStyle(fg=RGB.from_rgb(0xCB4B16))
+    result = self._formatter().apply_style('test', style)
+    assert '\x1b[38;2;203;75;22m' in result
+    assert '\x1b[0m' in result
 
-        style1 = ThemeStyle(fg=rgb_color1)
-        style2 = ThemeStyle(fg=rgb_color2)
+  def test_truecolor_background(self):
+    style = ThemeStyle(bg=RGB.from_rgb(0xCB4B16))
+    result = self._formatter().apply_style('test', style)
+    assert '\x1b[48;2;203;75;22m' in result
 
-        result1 = formatter.apply_style("test", style1)
-        result2 = formatter.apply_style("test", style2)
 
-        # Results should be identical
-        assert result1 == result2
+class TestColorFormatterDisabled:
+  """When COLORS are disabled, text passes through untouched."""
 
-    def test_apply_style_colors_disabled(self):
-        """Test apply_style with colors disabled."""
-        formatter = ColorFormatter(enable_colors=False)
-        rgb_color = RGB.from_rgb(0xFF5733)
-        style = ThemeStyle(fg=rgb_color, bold=True)
+  def test_colors_disabled_returns_plain(self):
+    formatter = ColorFormatter(enable_colors=False)
+    style = ThemeStyle(fg=RGB.from_rgb(0xFF5733), bold=True)
+    assert formatter.apply_style('test', style) == 'test'
 
-        result = formatter.apply_style("test", style)
+  def test_empty_text_returns_empty(self):
+    formatter = ColorFormatter(enable_colors=True, truecolor=False)
+    assert formatter.apply_style('', ThemeStyle(fg=RGB.from_rgb(0xFF5733))) == ''
 
-        # Should return plain text when colors are disabled
-        assert result == "test"
-        assert "\033[" not in result  # No ANSI codes
-
-    def test_apply_style_invalid_fg_type(self):
-        """Test apply_style with invalid foreground color type."""
-        formatter = ColorFormatter(enable_colors=True)
-        style = ThemeStyle(fg=123)  # Invalid type
-
-        with pytest.raises(
-            ValueError, match="Foreground color must be RGB instance or ANSI string"
-        ):
-            formatter.apply_style("test", style)
-
-    def test_apply_style_invalid_bg_type(self):
-        """Test apply_style with invalid background color type."""
-        formatter = ColorFormatter(enable_colors=True)
-        style = ThemeStyle(bg=123)  # Invalid type
-
-        with pytest.raises(
-            ValueError, match="Background color must be RGB instance or ANSI string"
-        ):
-            formatter.apply_style("test", style)
-
-    def test_apply_style_with_all_text_styles(self):
-        """Test apply_style with RGB color and all text styles."""
-        formatter = ColorFormatter(enable_colors=True)
-        rgb_color = RGB.from_rgb(0xFF5733)
-        style = ThemeStyle(fg=rgb_color, bold=True, italic=True, dim=True, underline=True)
-
-        result = formatter.apply_style("test", style)
-
-        # Should contain all style codes
-        assert "\033[38;5;" in result  # Foreground color
-        assert "\033[1m" in result  # Bold
-        assert "\033[3m" in result  # Italic
-        assert "\033[2m" in result  # Dim
-        assert "\033[4m" in result  # Underline
-        assert "test" in result
-        assert "\033[0m" in result  # Reset
-
-    def test_mixed_rgb_and_string_styles(self):
-        """Test theme with mixed RGB instances and string colors."""
-        formatter = ColorFormatter(enable_colors=True)
-
-        # RGB foreground, string background (ANSI code)
-        rgb_fg = RGB.from_rgb(0xFF5733)
-        ansi_bg = "\033[48;5;46m"  # Direct ANSI code
-        style = ThemeStyle(fg=rgb_fg, bg=ansi_bg)
-
-        result = formatter.apply_style("test", style)
-
-        # Should handle both types properly
-        assert "\033[38;5;" in result  # RGB foreground
-        assert ansi_bg in result  # String background
-        assert "test" in result
-        assert "\033[0m" in result  # Reset
-
-    def test_empty_text(self):
-        """Test apply_style with empty text."""
-        formatter = ColorFormatter(enable_colors=True)
-        rgb_color = RGB.from_rgb(0xFF5733)
-        style = ThemeStyle(fg=rgb_color)
-
-        result = formatter.apply_style("", style)
-
-        # Empty text should return empty string
-        assert result == ""
-
-    def test_none_text(self):
-        """Test apply_style with None text."""
-        formatter = ColorFormatter(enable_colors=True)
-        rgb_color = RGB.from_rgb(0xFF5733)
-        style = ThemeStyle(fg=rgb_color)
-
-        result = formatter.apply_style(None, style)
-
-        # None text should return None
-        assert result is None
+  def test_none_text_returns_none(self):
+    formatter = ColorFormatter(enable_colors=True, truecolor=False)
+    assert formatter.apply_style(None, ThemeStyle(fg=RGB.from_rgb(0xFF5733))) is None

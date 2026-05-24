@@ -1,8 +1,10 @@
 """Shared test utilities for Freyja test suite."""
+
 import io
 import sys
-from typing import Any
 from contextlib import contextmanager
+from typing import Any
+
 from freyja.shared.command_tree import CommandTree
 
 
@@ -12,8 +14,7 @@ class CLITestHelper:
   @staticmethod
   @contextmanager
   def capture_cli_output():
-    """
-    Capture stdout/stderr from CLI execution.
+    """Capture stdout/stderr from CLI execution.
 
     :return: Tuple of (stdout, stderr) StringIO objects
     """
@@ -32,8 +33,7 @@ class CLITestHelper:
 
   @staticmethod
   def create_test_class(methods_config: dict[str, dict[str, Any]]) -> type:
-    """
-    Dynamically create test classes with specified methods.
+    """Dynamically create test classes with specified methods.
 
     :param methods_config: Dict mapping method names to their config
     :return: Dynamically created class
@@ -45,15 +45,17 @@ class CLITestHelper:
           'docstring': 'Process input file'
         }
       }
+
     """
+
     def create_method(method_name: str, params: list, doc: str):
       """Create a method with specified signature."""
       # Build parameter list
-      param_names = [p[0] for p in params]
+      [p[0] for p in params]
 
       def method(self, **kwargs):
         """Dynamically created method."""
-        return f"{method_name} called with {kwargs}"
+        return f'{method_name} called with {kwargs}'
 
       method.__name__ = method_name
       method.__doc__ = doc
@@ -81,8 +83,7 @@ class CLITestHelper:
 
   @staticmethod
   def assert_command_tree_structure(tree: CommandTree, expected_structure: dict[str, Any]) -> None:
-    """
-    Validate command tree structure matches expectations.
+    """Validate command tree structure matches expectations.
 
     :param tree: CommandTree instance to validate
     :param expected_structure: Expected structure as dict
@@ -101,7 +102,9 @@ class CLITestHelper:
     if 'command_count' in expected_structure:
       actual_count = len(tree.commands)
       expected_count = expected_structure['command_count']
-      assert actual_count == expected_count, f"Expected {expected_count} commands, got {actual_count}"
+      assert actual_count == expected_count, (
+        f'Expected {expected_count} commands, got {actual_count}'
+      )
 
 
 class MockFileSystem:
@@ -113,8 +116,7 @@ class MockFileSystem:
     self.directories: set[str] = set()
 
   def create_temp_structure(self, structure_dict: dict[str, Any]) -> None:
-    """
-    Create temporary file structure for testing.
+    """Create temporary file structure for testing.
 
     :param structure_dict: Dict representing file structure
 
@@ -127,11 +129,13 @@ class MockFileSystem:
           }
         }
       }
+
     """
+
     def process_structure(base_path: str, struct: dict):
       """Recursively process structure dict."""
       for name, content in struct.items():
-        full_path = f"{base_path}/{name}" if base_path else name
+        full_path = f'{base_path}/{name}' if base_path else name
 
         if isinstance(content, dict):
           # It's a directory
@@ -144,19 +148,17 @@ class MockFileSystem:
     process_structure('', structure_dict)
 
   def read_file(self, path: str) -> str:
-    """
-    Read file content from mock filesystem.
+    """Read file content from mock filesystem.
 
     :param path: Path to file
     :return: File content
     """
     if path not in self.files:
-      raise FileNotFoundError(f"File not found: {path}")
+      raise FileNotFoundError(f'File not found: {path}')
     return self.files[path]
 
   def file_exists(self, path: str) -> bool:
-    """
-    Check if file exists in mock filesystem.
+    """Check if file exists in mock filesystem.
 
     :param path: Path to check
     :return: True if file exists
@@ -164,8 +166,7 @@ class MockFileSystem:
     return path in self.files
 
   def dir_exists(self, path: str) -> bool:
-    """
-    Check if directory exists in mock filesystem.
+    """Check if directory exists in mock filesystem.
 
     :param path: Path to check
     :return: True if directory exists

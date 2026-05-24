@@ -11,7 +11,7 @@ Class-based CLI creates commands from methods in a Python class. This approach i
 
 ```python
 # calculator_cli.py
-from src import CLI
+from freyja import FreyjaCLI
 
 
 class Calculator:
@@ -51,7 +51,7 @@ class Calculator:
 
 
 if __name__ == '__main__':
-  cli = CLI(Calculator, title="Calculator Freyja")
+  cli = FreyjaCLI(Calculator, title="Calculator Freyja")
   cli.run()
 ```
 

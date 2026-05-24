@@ -9,16 +9,15 @@ Complete API documentation and technical reference for freyja.
 
 ### 📚 [Complete API](api.md)
 Full API documentation for all public interfaces.
-- CLI class methods and properties
-- Factory methods (from_module, from_class)
+- FreyjaCLI class methods and properties
+- Constructor parameters
 - Configuration options
 - Return types and exceptions
 
-### 🏗️ [CLI Class](api.md)
-Detailed documentation of the CLI class.
+### 🏗️ [FreyjaCLI Class](api.md)
+Detailed documentation of the FreyjaCLI class.
 - Constructor parameters
 - Instance methods
-- Class methods
 - Properties and attributes
 - Internal behavior
 
@@ -34,37 +33,19 @@ Complete guide to supported parameter types.
 
 ### CLI Creation
 
-**Module-based CLI**
-
 ```python
-from src import CLI
-import sys
+from freyja import FreyjaCLI
 
-cli = CLI(
-  sys.modules[__name__],
-  title="My Freyja",
-  theme_name="universal",
-  no_color=False,
-  completion=True
-)
-cli.run()
-```
-
-**Class-based CLI**
-
-```python
-from src import CLI
-
-cli = CLI(
+cli = FreyjaCLI(
   MyClass,
-  title="My Freyja",
+  title="My CLI",
   theme_name="colorful",
   function_opts={
     'method_name': {
       'description': 'Custom description',
-      'hidden': False
-    }
-  }
+      'hidden': False,
+    },
+  },
 )
 cli.run()
 ```
@@ -73,11 +54,12 @@ cli.run()
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `title` | str | None | CLI title (from docstring if None) |
-| `theme_name` | str | "universal" | Theme name ("colorful" or "universal") |
-| `no_color` | bool | False | Disable colored output |
-| `completion` | bool | True | Enable shell completion |
-| `function_opts` | dict | None | Per-function/method configuration |
+| `target` | `type \| Sequence[type]` | required | Class (or list of classes) to build CLI from |
+| `title` | `str \| None` | `None` | CLI title (from class docstring if None) |
+| `theme_name` | `str` | `"universal"` | Theme name (`"colorful"` or `"universal"`) |
+| `no_color` | `bool` | `False` | Disable colored output |
+| `completion` | `bool` | `True` | Enable shell completion |
+| `function_opts` | `dict \| None` | `None` | Per-method configuration |
 
 ### Type Mappings
 
@@ -91,56 +73,30 @@ cli.run()
 | `Enum` | Choice from enum | `--level INFO` |
 | `Path` | Path value | `--config /etc/app.conf` |
 
-### Method Signatures
+### Instance Methods
 
-**Factory Methods**
 ```python
-@classmethod
-def from_module(
-    cls,
-    module,
-    title: Optional[str] = None,
-    **kwargs
-) -> 'Freyja':
-    """Create Freyja from module functions."""
+def run(self, args: list[str] | None = None) -> Any:
+    """Parse arguments and execute the appropriate command."""
 
-@classmethod  
-def from_class(
-    cls,
-    class_type: Type,
-    title: Optional[str] = None,
-    **kwargs
-) -> 'Freyja':
-    """Create Freyja from class methods."""
-```
-
-**Instance Methods**
-```python
-def display(self) -> Optional[int]:
-    """Display Freyja interface and execute command tree."""
-
-def run(self) -> Optional[int]:
-    """Alias for display() method."""
-
-def add_command(
-    self,
-    name: str,
-    function: Callable,
-    description: Optional[str] = None
-) -> None:
-    """Add a command to the Freyja."""
+def create_parser(self, no_color: bool = False) -> argparse.ArgumentParser:
+    """Create the argparse parser used internally (escape hatch)."""
 ```
 
 ## Architecture Overview
 
 ### Component Structure
 ```
-freya/
-├── cli.py          # Main CLI class
-├── __init__.py     # Package exports
-├── theme.py        # Theme system
-├── completion.py   # Shell completion
-└── utils.py        # Helper functions
+freyja/
+├── freyja_cli.py        # Main FreyjaCLI entry point
+├── __init__.py          # Package exports
+├── cli/                 # CLI coordination + execution
+├── command/             # Command discovery and execution
+├── parser/              # argparse integration
+├── completion/          # Shell completion
+├── help/                # Help formatting
+├── theme/               # Theme system
+└── utils/               # Helper utilities
 ```
 
 ### Design Principles
@@ -153,7 +109,6 @@ freya/
 ## Next Steps
 
 - Explore the [Complete API](api.md)
-- Understand the [CLI Class](api.md)
 - Review [Type Annotations](../features/type-annotations.md) and [Positional Parameters](../features/positional-parameters.md)
 - See [Examples](../guides/examples.md) for usage
 

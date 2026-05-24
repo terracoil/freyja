@@ -40,39 +40,6 @@ my_cli process-file --format xml --verbose --filename data.txt
 my_cli process-file data.txt --format xml --verbose
 ```
 
-## Module-Based CLI Behavior
-
-For module-based CLIs using `CLI()`, flexible ordering works seamlessly across all functions:
-
-```python
-def backup_database(database_name: str, output_dir: str = "./backups", 
-                   compress: bool = True, encrypt: bool = False):
-    """Backup database with options."""
-    pass
-
-def restore_database(backup_file: str, target_db: str, 
-                    force: bool = False, verify: bool = True):
-    """Restore database from backup."""
-    pass
-
-if __name__ == '__main__':
-    cli = CLI(sys.modules[__name__], title="Database Tools")
-    cli.run()
-```
-
-**Flexible Usage Examples:**
-```bash
-# Any order for backup
-my_tool backup-database --database-name prod --compress --output-dir /backups
-my_tool backup-database --compress --output-dir /backups --database-name prod
-my_tool backup-database prod /backups --compress  # With positional args
-
-# Any order for restore  
-my_tool restore-database --backup-file backup.sql --target-db dev --force
-my_tool restore-database --force --backup-file backup.sql --target-db dev
-my_tool restore-database backup.sql dev --force  # With positional args
-```
-
 ## Class-Based CLI Behavior
 
 For class-based CLIs, flexible ordering applies to all argument levels:
@@ -339,7 +306,7 @@ my_tool --global-option inner-class--method --sub-option --command-option
 Enable debug logging to see how arguments are being processed:
 
 ```python
-cli = CLI(MyClass, debug=True)
+cli = FreyjaCLI(MyClass, debug=True)
 ```
 
 This will show the argument preprocessing steps in the output.

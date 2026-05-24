@@ -15,11 +15,10 @@ A complete file processing utility with multiple operations:
 #!/usr/bin/env python3
 """File processing utility for common operations."""
 
-import sys
 from pathlib import Path
 from typing import List, Optional
 from enum import Enum
-from src import CLI
+from freyja import FreyjaCLI
 
 
 class CompressionFormat(Enum):
@@ -36,151 +35,134 @@ class HashAlgorithm(Enum):
   SHA512 = "sha512"
 
 
-def compress_files(
-        files: List[str],
-        output: str,
-        format: CompressionFormat = CompressionFormat.ZIP,
-        level: int = 6,
-        verbose: bool = False
-) -> None:
-  """
-  Compress multiple files into an archive.
-  
-  Args:
-      files: List of files to compress
-      output: Output archive path
-      format: Compression format to use
-      level: Compression level (1-9, where 9 is maximum)
-      verbose: Show detailed progress
-      
-  Examples:
-      Compress files to ZIP:
-      $ filetool compress-files file1.txt file2.txt --output archive.zip
-      
-      Create tar.gz with maximum compression:
-      $ filetool compress-files *.log --output logs.tar.gz --format tar --level 9
-  """
-  if verbose:
-    print(f"Compressing {len(files)} files to {output}")
-    print(f"Format: {format.value}, Level: {level}")
+class FileTool:
+  """File processing utility for common operations."""
 
-  for file in files:
+  def __init__(self):
+    pass
+
+  def compress_files(
+    self,
+    files: List[str],
+    output: str,
+    format: CompressionFormat = CompressionFormat.ZIP,
+    level: int = 6,
+    verbose: bool = False,
+  ) -> None:
+    """Compress multiple files into an archive.
+
+    :param files: List of files to compress
+    :param output: Output archive path
+    :param format: Compression format to use
+    :param level: Compression level (1-9, where 9 is maximum)
+    :param verbose: Show detailed progress
+    """
+    if verbose:
+      print(f"Compressing {len(files)} files to {output}")
+      print(f"Format: {format.value}, Level: {level}")
+
+    for file in files:
+      if not Path(file).exists():
+        print(f"❌ Error: File not found: {file}")
+        return
+
+    print(f"✅ Created {format.value} archive: {output}")
+
+  def calculate_hash(
+    self,
+    file: str,
+    algorithm: HashAlgorithm = HashAlgorithm.SHA256,
+    compare_with: Optional[str] = None,
+  ) -> None:
+    """Calculate cryptographic hash of a file.
+
+    :param file: File to hash
+    :param algorithm: Hash algorithm to use
+    :param compare_with: Optional hash to compare against
+    """
     if not Path(file).exists():
       print(f"❌ Error: File not found: {file}")
-      return 1
+      return
 
-  print(f"✅ Created {format.value} archive: {output}")
-  return 0
+    # Simulate hash calculation
+    calculated_hash = f"{algorithm.value}_hash_of_{Path(file).name}"
+    print(f"{algorithm.value.upper()}: {calculated_hash}")
 
+    if compare_with:
+      if calculated_hash == compare_with:
+        print("✅ Hash verification passed")
+      else:
+        print("❌ Hash verification failed")
 
-def calculate_hash(
-        file: str,
-        algorithm: HashAlgorithm = HashAlgorithm.SHA256,
-        compare_with: Optional[str] = None
-) -> None:
-  """
-  Calculate cryptographic hash of a file.
-  
-  Args:
-      file: File to hash
-      algorithm: Hash algorithm to use
-      compare_with: Optional hash to compare against
-  """
-  if not Path(file).exists():
-    print(f"❌ Error: File not found: {file}")
-    return 1
+  def find_duplicates(
+    self,
+    directory: str,
+    recursive: bool = True,
+    min_size: int = 0,
+    pattern: str = "*",
+  ) -> None:
+    """Find duplicate files in a directory.
 
-  # Simulate hash calculation
-  calculated_hash = f"{algorithm.value}_hash_of_{Path(file).name}"
-  print(f"{algorithm.value.upper()}: {calculated_hash}")
+    :param directory: Directory to search
+    :param recursive: Search subdirectories
+    :param min_size: Minimum file size in bytes
+    :param pattern: File pattern to match
+    """
+    path = Path(directory)
+    if not path.is_dir():
+      print(f"❌ Error: Not a directory: {directory}")
+      return
 
-  if compare_with:
-    if calculated_hash == compare_with:
-      print("✅ Hash verification passed")
+    search_pattern = f"**/{pattern}" if recursive else pattern
+    files = [f for f in path.glob(search_pattern) if f.is_file() and f.stat().st_size >= min_size]
+
+    print(f"Scanning {len(files)} files for duplicates...")
+    # Simulate duplicate detection
+    print("✅ Found 3 duplicate groups:")
+    print("  - file1.txt, backup/file1.txt (2.3 MB)")
+    print("  - image.jpg, photos/image.jpg, archive/image.jpg (5.1 MB)")
+    print("  - data.csv, old/data.csv (156 KB)")
+
+  def batch_rename(
+    self,
+    pattern: str,
+    replacement: str,
+    directory: str = ".",
+    dry_run: bool = True,
+    case_sensitive: bool = True,
+  ) -> None:
+    """Batch rename files using pattern matching.
+
+    :param pattern: Pattern to match in filenames
+    :param replacement: Replacement string
+    :param directory: Directory containing files
+    :param dry_run: Show what would be renamed without doing it
+    :param case_sensitive: Use case-sensitive matching
+    """
+    mode = "Would rename" if dry_run else "Renaming"
+
+    # Simulate renaming
+    examples = [
+      ("old_file_001.txt", "new_file_001.txt"),
+      ("old_file_002.txt", "new_file_002.txt"),
+      ("old_document.pdf", "new_document.pdf"),
+    ]
+
+    print(f"{mode} {len(examples)} files:")
+    for old, new in examples:
+      print(f"  {old} → {new}")
+
+    if dry_run:
+      print("\n💡 Use --no-dry-run to actually rename files")
     else:
-      print("❌ Hash verification failed")
-      return 1
-
-  return 0
-
-
-def find_duplicates(
-        directory: str,
-        recursive: bool = True,
-        min_size: int = 0,
-        pattern: str = "*"
-) -> None:
-  """
-  Find duplicate files in a directory.
-  
-  Args:
-      directory: Directory to search
-      recursive: Search subdirectories
-      min_size: Minimum file size in bytes
-      pattern: File pattern to match
-  """
-  path = Path(directory)
-  if not path.is_dir():
-    print(f"❌ Error: Not a directory: {directory}")
-    return 1
-
-  search_pattern = f"**/{pattern}" if recursive else pattern
-  files = [f for f in path.glob(search_pattern) if f.is_file() and f.stat().st_size >= min_size]
-
-  print(f"Scanning {len(files)} files for duplicates...")
-  # Simulate duplicate detection
-  print("✅ Found 3 duplicate groups:")
-  print("  - file1.txt, backup/file1.txt (2.3 MB)")
-  print("  - image.jpg, photos/image.jpg, archive/image.jpg (5.1 MB)")
-  print("  - data.csv, old/data.csv (156 KB)")
-
-  return 0
-
-
-def batch_rename(
-        pattern: str,
-        replacement: str,
-        directory: str = ".",
-        dry_run: bool = True,
-        case_sensitive: bool = True
-) -> None:
-  """
-  Batch rename files using pattern matching.
-  
-  Args:
-      pattern: Pattern to match in filenames
-      replacement: Replacement string
-      directory: Directory containing files
-      dry_run: Show what would be renamed without doing it
-      case_sensitive: Use case-sensitive matching
-  """
-  path = Path(directory)
-  mode = "Would rename" if dry_run else "Renaming"
-
-  # Simulate renaming
-  examples = [
-    ("old_file_001.txt", "new_file_001.txt"),
-    ("old_file_002.txt", "new_file_002.txt"),
-    ("old_document.pdf", "new_document.pdf")
-  ]
-
-  print(f"{mode} {len(examples)} files:")
-  for old, new in examples:
-    print(f"  {old} → {new}")
-
-  if dry_run:
-    print("\n💡 Use --no-dry-run to actually rename files")
-  else:
-    print("\n✅ Renamed 3 files successfully")
-
-  return 0
+      print("\n✅ Renamed 3 files successfully")
 
 
 if __name__ == '__main__':
-  cli = CLI(
-    sys.modules[__name__],
+  cli = FreyjaCLI(
+    FileTool,
     title="FileTool - Advanced File Operations",
-    theme_name="colorful"
+    theme_name="colorful",
   )
   cli.run()
 ```
@@ -193,7 +175,7 @@ A class-based database management tool:
 #!/usr/bin/env python3
 """Database management Freyja with connection state."""
 
-from src import CLI
+from freyja import FreyjaCLI
 from datetime import datetime
 from typing import Optional, List
 from enum import Enum
@@ -417,7 +399,7 @@ class DatabaseManager:
 
 
 if __name__ == '__main__':
-  cli = CLI(DatabaseManager, theme_name="colorful")
+  cli = FreyjaCLI(DatabaseManager, theme_name="colorful")
   cli.run()
 ```
 
@@ -429,7 +411,7 @@ A comprehensive API client with authentication:
 #!/usr/bin/env python3
 """RESTful API client with authentication and session management."""
 
-from src import CLI
+from freyja import FreyjaCLI
 from typing import Optional, Dict, List
 from enum import Enum
 import json
@@ -670,7 +652,7 @@ class APIClient:
 
 
 if __name__ == '__main__':
-  cli = CLI(APIClient, theme_name="colorful")
+  cli = FreyjaCLI(APIClient, theme_name="colorful")
   cli.run()
 ```
 

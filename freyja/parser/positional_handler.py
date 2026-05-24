@@ -3,263 +3,249 @@
 import inspect
 from typing import Any
 
-from freyja.utils.guards import guarded, not_none, not_empty
 from freyja.utils.text_util import TextUtil
 
 from .argument_preprocessor import PositionalInfo
 
 
 class PositionalHandler:
-    """Handles positional parameter detection, validation, and conversion."""
+  """Handles positional parameter detection, validation, and conversion."""
 
-    @guarded(not_none("positional_info", 1), implicit_return=False)
-    def __init__(self, positional_info: dict[str, PositionalInfo]):
-        """Initialize positional handler with discovered positional parameters."""
-        self.positional_info = positional_info
+  def __init__(self, positional_info: dict[str, PositionalInfo]):
+    """Initialize positional handler with discovered positional parameters."""
+    self.positional_info = positional_info
 
-    @guarded(not_none("args", 1), not_none("command_path", 2), implicit_return=False)
-    def identify_positional_value(
-        self, args: list[str], command_path: list[str]
-    ) -> tuple[str, str] | None:
-        """Identify positional value in argument list."""
-        if not command_path:
-            return None
+  def identify_positional_value(
+    self, args: list[str], command_path: list[str]
+  ) -> tuple[str, str] | None:
+    """Identify positional value in argument list."""
+    if not command_path:
+      return None
 
-        # Get the command name
-        command_name = self._get_command_name_from_path(command_path)
-        if not command_name or command_name not in self.positional_info:
-            return None
+    # Get the command name
+    command_name = self._get_command_name_from_path(command_path)
+    if not command_name or command_name not in self.positional_info:
+      return None
 
-        pos_info = self.positional_info[command_name]
+    pos_info = self.positional_info[command_name]
 
-        # Look for positional value after command path
-        search_start = len(command_path)
+    # Look for positional value after command path
+    search_start = len(command_path)
 
-        for i in range(search_start, len(args)):
-            arg = args[i]
+    for i in range(search_start, len(args)):
+      arg = args[i]
 
-            # Skip option flags and their values
-            if arg.startswith("-"):
-                # Skip this flag and potentially its value
-                if self._flag_has_value(arg, args, i):
-                    i += 1  # Skip the value too
-                continue
+      # Skip option flags and their values
+      if arg.startswith('-'):
+        # Skip this flag and potentially its value
+        if self._flag_has_value(arg, args, i):
+          i += 1  # Skip the value too
+        continue
 
-            # Found a positional argument
-            return (pos_info.param_name, arg)
+      # Found a positional argument
+      return (pos_info.param_name, arg)
 
-        return None
+    return None
 
-    @guarded(not_empty("param_name", 1), not_none("param_value", 2), implicit_return=False)
-    def convert_positional_to_flag(self, param_name: str, param_value: str) -> list[str]:
-        """Convert positional parameter to flag format."""
-        flag_name = TextUtil.kebab_case(param_name)
-        return [f"--{flag_name}", param_value]
+  def convert_positional_to_flag(self, param_name: str, param_value: str) -> list[str]:
+    """Convert positional parameter to flag format."""
+    flag_name = TextUtil.kebab_case(param_name)
+    return [f'--{flag_name}', param_value]
 
-    @guarded(
-      not_empty("param_name", 1),
-      not_none("param_value", 2),
-      not_none("param_type", 3),
-      implicit_return=False
-    )
-    def validate_positional_value(
-        self, param_name: str, param_value: str, param_type: type
-    ) -> tuple[bool, str | None]:
-        """Validate positional parameter value matches expected type."""
-        if param_type == str:
-            return True, None
+  def validate_positional_value(
+    self, param_name: str, param_value: str, param_type: type
+  ) -> tuple[bool, str | None]:
+    """Validate positional parameter value matches expected type."""
+    if param_type is str:
+      return True, None
 
-        if param_type == int:
-            try:
-                int(param_value)
-                return True, None
-            except ValueError:
-                return False, f"Expected integer for {param_name}, got: {param_value}"
-
-        if param_type == float:
-            try:
-                float(param_value)
-                return True, None
-            except ValueError:
-                return False, f"Expected float for {param_name}, got: {param_value}"
-
-        if param_type == bool:
-            # Boolean positional parameters are tricky - typically they should be flags
-            # But if specified, treat common boolean strings
-            if param_value.lower() in ("true", "false", "1", "0", "yes", "no"):
-                return True, None
-            return (
-                False,
-                f"Expected boolean (true/false, 1/0, yes/no) "
-                f"for {param_name}, got: {param_value}",
-            )
-
-        # For other types, just accept the string - argparse will handle conversion
+    if param_type is int:
+      try:
+        int(param_value)
         return True, None
+      except ValueError:
+        return False, f'Expected integer for {param_name}, got: {param_value}'
 
-    @guarded(not_empty("command_name", 1), implicit_return=False)
-    def generate_positional_usage(self, command_name: str) -> str:
-        """Generate usage text showing positional parameter."""
-        if command_name not in self.positional_info:
-            return ""
+    if param_type is float:
+      try:
+        float(param_value)
+        return True, None
+      except ValueError:
+        return False, f'Expected float for {param_name}, got: {param_value}'
 
-        pos_info = self.positional_info[command_name]
-        param_display = pos_info.param_name.upper()
+    if param_type is bool:
+      # Boolean positional parameters are tricky - typically they should be flags
+      # But if specified, treat common boolean strings
+      if param_value.lower() in ('true', 'false', '1', '0', 'yes', 'no'):
+        return True, None
+      return (
+        False,
+        f'Expected boolean (true/false, 1/0, yes/no) for {param_name}, got: {param_value}',
+      )
 
-        if pos_info.is_required:
-            return param_display
-        else:
-            return f"[{param_display}]"
+    # For other types, just accept the string - argparse will handle conversion
+    return True, None
 
-    def has_positional_parameter(self, command_name: str) -> bool:
-        """Check if a command has a positional parameter."""
-        return command_name in self.positional_info
+  def generate_positional_usage(self, command_name: str) -> str:
+    """Generate usage text showing positional parameter."""
+    if command_name not in self.positional_info:
+      return ''
 
-    def get_positional_info(self, command_name: str) -> PositionalInfo | None:
-        """Get positional parameter info for a command."""
-        return self.positional_info.get(command_name)
+    pos_info = self.positional_info[command_name]
+    param_display = pos_info.param_name.upper()
 
-    def extract_and_convert_positional(
-        self, args: list[str], command_path: list[str]
-    ) -> tuple[list[str], bool]:
-        """Extract positional argument and convert to flag format."""
-        if not command_path:
-            return args, False
+    if pos_info.is_required:
+      return param_display
+    else:
+      return f'[{param_display}]'
 
-        command_name = self._get_command_name_from_path(command_path)
-        if not command_name or command_name not in self.positional_info:
-            return args, False
+  def has_positional_parameter(self, command_name: str) -> bool:
+    """Check if a command has a positional parameter."""
+    return command_name in self.positional_info
 
-        pos_info = self.positional_info[command_name]
-        modified_args = args.copy()
-        conversion_made = False
+  def get_positional_info(self, command_name: str) -> PositionalInfo | None:
+    """Get positional parameter info for a command."""
+    return self.positional_info.get(command_name)
 
-        # Find and convert positional argument
-        search_start = len(command_path)
+  def extract_and_convert_positional(
+    self, args: list[str], command_path: list[str]
+  ) -> tuple[list[str], bool]:
+    """Extract positional argument and convert to flag format."""
+    if not command_path:
+      return args, False
 
-        for i in range(search_start, len(modified_args)):
-            arg = modified_args[i]
+    command_name = self._get_command_name_from_path(command_path)
+    if not command_name or command_name not in self.positional_info:
+      return args, False
 
-            # Skip option flags and their values
-            if arg.startswith("-"):
-                if self._flag_has_value(arg, modified_args, i):
-                    i += 1  # Skip the value too
-                continue
+    pos_info = self.positional_info[command_name]
+    modified_args = args.copy()
+    conversion_made = False
 
-            # Found positional argument - convert it
-            flag_name = TextUtil.kebab_case(pos_info.param_name)
+    # Find and convert positional argument
+    search_start = len(command_path)
 
-            # Validate before conversion
-            is_valid, error_msg = self.validate_positional_value(
-                pos_info.param_name, arg, pos_info.param_type
-            )
+    for i in range(search_start, len(modified_args)):
+      arg = modified_args[i]
 
-            if not is_valid:
-                raise ValueError(error_msg)
+      # Skip option flags and their values
+      if arg.startswith('-'):
+        if self._flag_has_value(arg, modified_args, i):
+          i += 1  # Skip the value too
+        continue
 
-            # Replace positional with flag format
-            modified_args[i] = f"--{flag_name}"
-            modified_args.insert(i + 1, arg)
-            conversion_made = True
+      # Found positional argument - convert it
+      flag_name = TextUtil.kebab_case(pos_info.param_name)
 
-            break
+      # Validate before conversion
+      is_valid, error_msg = self.validate_positional_value(
+        pos_info.param_name, arg, pos_info.param_type
+      )
 
-        return modified_args, conversion_made
+      if not is_valid:
+        raise ValueError(error_msg)
 
-    def _get_command_name_from_path(self, command_path: list[str]) -> str | None:
-        """Get standardized command name from command path."""
-        if not command_path:
-            return None
+      # Replace positional with flag format
+      modified_args[i] = f'--{flag_name}'
+      modified_args.insert(i + 1, arg)
+      conversion_made = True
 
-        if len(command_path) == 1:
-            return command_path[0]
-        elif len(command_path) == 2:
-            return f"{command_path[0]}--{command_path[1]}"
+      break
 
-        return None
+    return modified_args, conversion_made
 
-    def _flag_has_value(self, flag: str, args: list[str], flag_index: int) -> bool:
-        """Check if a flag expects a value (not a store_true flag)."""
-        # Simple heuristic: if next arg exists and doesn't start with '-', it's probably a value
-        if flag_index + 1 < len(args):
-            next_arg = args[flag_index + 1]
-            if not next_arg.startswith("-"):
-                return True
+  def _get_command_name_from_path(self, command_path: list[str]) -> str | None:
+    """Get standardized command name from command path."""
+    if not command_path:
+      return None
 
-        # Check for known store_true flags (flags that don't take values)
-        store_true_flags = {
-            "--help",
-            "-h",
-            "--verbose",
-            "-v",
-            "--no-color",
-            "-n",
-            "--dry-run",
-            "--force",
-            "--debug",
-            "--quiet",
-            "-q",
-            "--excited",
-            "--backup",
-            "--compress",
-            "--detailed",
-            "--parallel",
-            "--preserve-original",
-            "--include-metadata",
-        }
+    if len(command_path) == 1:
+      return command_path[0]
+    elif len(command_path) == 2:
+      return f'{command_path[0]}--{command_path[1]}'
 
-        return flag not in store_true_flags
+    return None
 
-    @staticmethod
-    def discover_from_function(function: Any) -> PositionalInfo | None:
-        """Discover positional parameter from function signature."""
-        if not function:
-            return None
+  def _flag_has_value(self, flag: str, args: list[str], flag_index: int) -> bool:
+    """Check if a flag expects a value (not a store_true flag)."""
+    # Simple heuristic: if next arg exists and doesn't start with '-', it's probably a value
+    if flag_index + 1 < len(args):
+      next_arg = args[flag_index + 1]
+      if not next_arg.startswith('-'):
+        return True
 
-        try:
-            sig = inspect.signature(function)
-            for param_name, param in sig.parameters.items():
-                if param_name == "self":
-                    continue
+    # Check for known store_true flags (flags that don't take values)
+    store_true_flags = {
+      '--help',
+      '-h',
+      '--verbose',
+      '-v',
+      '--no-color',
+      '-n',
+      '--dry-run',
+      '--force',
+      '--debug',
+      '--quiet',
+      '-q',
+      '--excited',
+      '--backup',
+      '--compress',
+      '--detailed',
+      '--parallel',
+      '--preserve-original',
+      '--include-metadata',
+    }
 
-                # First parameter without default becomes positional
-                if param.default == param.empty:
-                    return PositionalInfo(
-                        param_name=param_name,
-                        param_type=param.annotation if param.annotation != param.empty else str,
-                        is_required=True,
-                        help_text=f"{param_name} parameter",
-                    )
-        except (ValueError, TypeError):
-            # Handle cases where signature inspection fails
-            pass
+    return flag not in store_true_flags
 
-        return None
+  @staticmethod
+  def discover_from_function(function: Any) -> PositionalInfo | None:
+    """Discover positional parameter from function signature."""
+    if not function:
+      return None
 
-    @staticmethod
-    def discover_from_command_tree(command_tree) -> dict[str, PositionalInfo]:
-        """Discover all positional parameters from a command tree."""
-        positional_params = {}
+    try:
+      sig = inspect.signature(function)
+      for param_name, param in sig.parameters.items():
+        if param_name == 'self':
+          continue
 
-        # Discover from flat commands
-        if hasattr(command_tree, "flat_commands") and command_tree.flat_commands:
-            for cmd_name, cmd_info in command_tree.flat_commands.items():
-                if "function" in cmd_info:
-                    pos_info = PositionalHandler.discover_from_function(cmd_info["function"])
-                    if pos_info:
-                        positional_params[cmd_name] = pos_info
+        # First parameter without default becomes positional
+        if param.default == param.empty:
+          return PositionalInfo(
+            param_name=param_name,
+            param_type=param.annotation if param.annotation != param.empty else str,
+            is_required=True,
+            help_text=f'{param_name} parameter',
+          )
+    except (ValueError, TypeError):
+      # Handle cases where signature inspection fails
+      pass
 
-        # Discover from grouped commands
-        if hasattr(command_tree, "groups") and command_tree.groups:
-            for group_name, group_info in command_tree.groups.items():
-                if "commands" in group_info:
-                    for cmd_name, cmd_info in group_info["commands"].items():
-                        full_cmd_name = f"{group_name}--{cmd_name}"
-                        if "function" in cmd_info:
-                            pos_info = PositionalHandler.discover_from_function(
-                                cmd_info["function"]
-                            )
-                            if pos_info:
-                                positional_params[full_cmd_name] = pos_info
+    return None
 
-        return positional_params
+  @staticmethod
+  def discover_from_command_tree(command_tree) -> dict[str, PositionalInfo]:
+    """Discover all positional parameters from a command tree."""
+    positional_params = {}
+
+    # Discover from flat commands
+    if hasattr(command_tree, 'flat_commands') and command_tree.flat_commands:
+      for cmd_name, cmd_info in command_tree.flat_commands.items():
+        if 'function' in cmd_info:
+          pos_info = PositionalHandler.discover_from_function(cmd_info['function'])
+          if pos_info:
+            positional_params[cmd_name] = pos_info
+
+    # Discover from grouped commands
+    if hasattr(command_tree, 'groups') and command_tree.groups:
+      for group_name, group_info in command_tree.groups.items():
+        if 'commands' in group_info:
+          for cmd_name, cmd_info in group_info['commands'].items():
+            full_cmd_name = f'{group_name}--{cmd_name}'
+            if 'function' in cmd_info:
+              pos_info = PositionalHandler.discover_from_function(cmd_info['function'])
+              if pos_info:
+                positional_params[full_cmd_name] = pos_info
+
+    return positional_params

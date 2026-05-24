@@ -28,19 +28,19 @@ A vibrant theme with rich colors:
 ### Setting Theme
 
 ```python
-from src import CLI
-
-# Module-based Freyja with theme
-cli = CLI(sys.modules[__name__], theme_name="colorful")
+from freyja import FreyjaCLI
 
 # Class-based Freyja with theme
-cli = CLI(MyClass, theme_name="universal")
+cli = FreyjaCLI(MyClass, theme_name="universal")
+
+# Try the colorful theme for richer output
+cli = FreyjaCLI(MyClass, theme_name="colorful")
 ```
 
 ### Disabling Colors
 ```python
 # Programmatically
-cli = CLI(MyClass, no_color=True)
+cli = FreyjaCLI(MyClass, no_color=True)
 
 # Via environment variable
 export NO_COLOR=1

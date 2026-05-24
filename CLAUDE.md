@@ -89,8 +89,11 @@ poetry run ruff check . --fix
 poetry build
 
 # Publish to PyPI (maintainers only)
-./bin/dev-tools build publish
+./bin/dev-tools project publish
 # Or: poetry publish
+
+# Tag a release (defaults to "Bump version to x.y.z"; --autotag uses Claude)
+./bin/dev-tools project tag
 
 # Install development version
 poetry install
@@ -448,7 +451,7 @@ cli = FreyjaCLI(
         }
     },
     theme_name="colorful",  # or "universal"
-    no_color=False,         # Force disable colors if needed
+    no_color=False,         # Force disable COLORS if needed
     completion=True         # Enable shell completion
 )
 ```

@@ -2,342 +2,326 @@
 
 from __future__ import annotations
 
+import os
 from enum import Enum
 
-from freyja.utils.guards import guarded, in_range
 from freyja.utils.math_util import MathUtil
 
 
-class AdjustStrategy(Enum):
-    """Strategy for color adjustment calculations."""
+def _detect_truecolor() -> bool:
+  """Return True when the terminal advertises 24-bit color via COLORTERM."""
+  return os.environ.get('COLORTERM', '').lower() in ('truecolor', '24bit')
 
-    LINEAR = "linear"
-    COLOR_HSL = "color_hsl"
-    MULTIPLICATIVE = "multiplicative"
-    GAMMA = "gamma"
-    LUMINANCE = "luminance"
-    OVERLAY = "overlay"
-    ABSOLUTE = "absolute"  # Legacy absolute adjustment
+
+class AdjustStrategy(Enum):
+  """Strategy for color adjustment calculations."""
+
+  LINEAR = 'linear'
+  COLOR_HSL = 'color_hsl'
+  MULTIPLICATIVE = 'multiplicative'
+  GAMMA = 'gamma'
+  LUMINANCE = 'luminance'
+  OVERLAY = 'overlay'
+  ABSOLUTE = 'absolute'  # Legacy absolute adjustment
 
 
 class RGB:
-    """Immutable RGB color representation with values in range 0.0-1.0."""
+  """Immutable RGB color representation with values in range 0.0-1.0."""
 
-    @guarded(
-      in_range(0.0, 1.0, "r", 1),
-      in_range(0.0, 1.0, "g", 2),
-      in_range(0.0, 1.0, "b", 3),
-      on_error=ValueError,
-      implicit_return=False
+  def __init__(self, r: float, g: float, b: float):
+    """Initialize RGB with float values in 0.0-1.0 range."""
+    self._r = r
+    self._g = g
+    self._b = b
+
+  @property
+  def r(self) -> float:
+    """Red component (0.0-1.0)."""
+    return self._r
+
+  @property
+  def g(self) -> float:
+    """Green component (0.0-1.0)."""
+    return self._g
+
+  @property
+  def b(self) -> float:
+    """Blue component (0.0-1.0)."""
+    return self._b
+
+  @classmethod
+  def from_ints(cls, r: int, g: int, b: int) -> RGB:
+    """Create RGB from integer values in 0-255 range."""
+    return cls(r / 255.0, g / 255.0, b / 255.0)
+
+  @classmethod
+  def from_rgb(cls, rgb: int) -> RGB:
+    """Create RGB from hex integer in 0x000000-0xFFFFFF range."""
+    return cls.from_ints((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF)
+
+  def to_hex(self) -> str:
+    """Convert to hex string format '#RRGGBB'.
+
+    :return: Hex color string (e.g., '#FF5733')
+    """
+    r, g, b = self.to_ints()
+    return f'#{r:02X}{g:02X}{b:02X}'
+
+  def to_ints(self) -> tuple[int, int, int]:
+    """Convert to integer RGB tuple (0-255 range).
+
+    :return: RGB tuple with integer values
+    """
+    return (int(self._r * 255), int(self._g * 255), int(self._b * 255))
+
+  def to_ansi(self, background: bool = False, truecolor: bool | None = None) -> str:
+    """Convert to ANSI escape code.
+
+    :param background: Whether this is a background color
+    :param truecolor: Force 24-bit emission (True), 256-color fallback (False),
+                      or auto-detect via ``COLORTERM`` (None, default)
+    :return: ANSI color code string
+    """
+    use_truecolor = _detect_truecolor() if truecolor is None else truecolor
+    r, g, b = self.to_ints()
+    code_base = 48 if background else 38
+    result = (
+      f'\033[{code_base};2;{r};{g};{b}m'
+      if use_truecolor
+      else f'\033[{code_base};5;{self._rgb_to_ansi256(r, g, b)}m'
     )
-    def __init__(self, r: float, g: float, b: float):
-        """Initialize RGB with float values (0.0-1.0 range enforced by guards)."""
-        self._r = r
-        self._g = g
-        self._b = b
+    return result
 
-    @property
-    def r(self) -> float:
-        """Red component (0.0-1.0)."""
-        return self._r
+  def adjust(
+    self,
+    *,
+    brightness: float = 0.0,
+    saturation: float = 0.0,
+    strategy: AdjustStrategy = AdjustStrategy.LINEAR,
+  ) -> RGB:
+    """Adjust color using specified strategy."""
+    # Handle strategies using modern match statement for better performance
+    match strategy.value:
+      case 'linear':
+        return self.linear_blend(brightness, saturation)
+      case 'color_hsl':
+        return self.hsl(brightness)
+      case 'multiplicative':
+        return self.multiplicative(brightness)
+      case 'gamma':
+        return self.gamma(brightness)
+      case 'luminance':
+        return self.luminance(brightness)
+      case 'overlay':
+        return self.overlay(brightness)
+      case 'absolute':
+        return self.absolute(brightness)
+      case _:
+        return self
 
-    @property
-    def g(self) -> float:
-        """Green component (0.0-1.0)."""
-        return self._g
+  def linear_blend(self, brightness: float = 0.0, saturation: float = 0.0) -> RGB:
+    """Adjust color brightness and/or saturation in -5.0 to 5.0 range."""
+    if brightness == 0.0 and saturation == 0.0:
+      return self
 
-    @property
-    def b(self) -> float:
-        """Blue component (0.0-1.0)."""
-        return self._b
+    # Convert to integer for adjustment algorithm (matches existing behavior)
+    r, g, b = self.to_ints()
 
-    @classmethod
-    @guarded(
-      in_range(0, 255, "r", 1),
-      in_range(0, 255, "g", 2),
-      in_range(0, 255, "b", 3),
-      on_error=ValueError,
-      implicit_return=False
+    # Apply brightness adjustment (using existing algorithm from theme.py)
+    # NOTE: The original algorithm has a bug where positive brightness makes COLORS darker
+    # We maintain this behavior for backward compatibility
+    if brightness != 0.0:
+      factor = -brightness
+      if brightness >= 0:
+        # Original buggy behavior: negative factor makes COLORS darker
+        r, g, b = (int(v + (255 - v) * factor) for v in (r, g, b))
+      else:
+        # Darker - blend with black (0, 0, 0)
+        factor = 1 + brightness  # brightness is negative, so this reduces values
+        r, g, b = (int(v * factor) for v in (r, g, b))
+
+    # Clamp to valid range
+    r, g, b = (int(MathUtil.clamp(v, 0, 255)) for v in (r, g, b))
+
+    # TODO: Add saturation adjustment when needed
+    # For now, just brightness adjustment to match existing behavior
+
+    return RGB.from_ints(r, g, b)
+
+  def hsl(self, adjust_pct: float) -> RGB:
+    """HSL method: Adjust lightness while preserving hue and saturation."""
+    r, g, b = self.to_ints()
+    h, s, lightness = self._rgb_to_hsl(r, g, b)
+
+    # Adjust lightness
+    lightness = (
+      lightness + (1.0 - lightness) * adjust_pct
+      if adjust_pct >= 0
+      else lightness * (1 + adjust_pct)
     )
-    def from_ints(cls, r: int, g: int, b: int) -> RGB:
-        """Create RGB from integer values (0-255 range enforced by guards)."""
-        return cls(r / 255.0, g / 255.0, b / 255.0)
+    lightness = max(0.0, min(1.0, lightness))  # Clamp to valid range
 
-    @classmethod
-    @guarded(
-      in_range(0, 0xFFFFFF, "rgb", 1),
-      on_error=ValueError,
-      implicit_return=False
+    r_new, g_new, b_new = self._hsl_to_rgb(h, s, lightness)
+    return RGB.from_ints(r_new, g_new, b_new)
+
+  def multiplicative(self, adjust_pct: float) -> RGB:
+    """Multiplicative method: Simple scaling of RGB values."""
+    factor = 1.0 + adjust_pct
+    r, g, b = self.to_ints()
+    return RGB.from_ints(
+      max(0, min(255, int(r * factor))),
+      max(0, min(255, int(g * factor))),
+      max(0, min(255, int(b * factor))),
     )
-    def from_rgb(cls, rgb: int) -> RGB:
-        """Create RGB from hex integer (0x000000-0xFFFFFF range enforced by guard)."""
-        return cls.from_ints((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF)
 
-    def to_hex(self) -> str:
-        """Convert to hex string format '#RRGGBB'.
-
-        :return: Hex color string (e.g., '#FF5733')
-        """
-        r, g, b = self.to_ints()
-        return f"#{r:02X}{g:02X}{b:02X}"
-
-    def to_ints(self) -> tuple[int, int, int]:
-        """Convert to integer RGB tuple (0-255 range).
-
-        :return: RGB tuple with integer values
-        """
-        return (int(self._r * 255), int(self._g * 255), int(self._b * 255))
-
-    def to_ansi(self, background: bool = False) -> str:
-        """Convert to ANSI escape code.
-
-        :param background: Whether this is a background color
-        :return: ANSI color code string
-        """
-        r, g, b = self.to_ints()
-        ansi_code = self._rgb_to_ansi256(r, g, b)
-        prefix = "\033[48;5;" if background else "\033[38;5;"
-        return f"{prefix}{ansi_code}m"
-
-    def adjust(
-        self,
-        *,
-        brightness: float = 0.0,
-        saturation: float = 0.0,
-        strategy: AdjustStrategy = AdjustStrategy.LINEAR,
-    ) -> RGB:
-        """Adjust color using specified strategy."""
-        # Handle strategies using modern match statement for better performance
-        match strategy.value:
-            case "linear":
-                return self.linear_blend(brightness, saturation)
-            case "color_hsl":
-                return self.hsl(brightness)
-            case "multiplicative":
-                return self.multiplicative(brightness)
-            case "gamma":
-                return self.gamma(brightness)
-            case "luminance":
-                return self.luminance(brightness)
-            case "overlay":
-                return self.overlay(brightness)
-            case "absolute":
-                return self.absolute(brightness)
-            case _:
-                return self
-
-    @guarded(
-      in_range(-5.0, 5.0, "brightness", 1),
-      in_range(-5.0, 5.0, "saturation", 2),
-      on_error=ValueError,
-      implicit_return=False
+  def gamma(self, adjust_pct: float) -> RGB:
+    """Gamma correction method: More perceptually uniform adjustments."""
+    gamma = max(0.1, min(3.0, 1.0 - adjust_pct * 0.5))  # Convert to gamma value
+    return RGB.from_ints(
+      max(0, min(255, int(255 * pow(self._r, gamma)))),
+      max(0, min(255, int(255 * pow(self._g, gamma)))),
+      max(0, min(255, int(255 * pow(self._b, gamma)))),
     )
-    def linear_blend(self, brightness: float = 0.0, saturation: float = 0.0) -> RGB:
-        """Adjust color brightness and/or saturation (ranges enforced by guards)."""
-        if brightness == 0.0 and saturation == 0.0:
-          return self
 
-        # Convert to integer for adjustment algorithm (matches existing behavior)
-        r, g, b = self.to_ints()
+  def luminance(self, adjust_pct: float) -> RGB:
+    """Luminance-based method: Adjust based on perceived brightness."""
+    r, g, b = self.to_ints()
+    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b  # ITU-R BT.709
+    factor = 1.0 + adjust_pct * (255 - luminance) / 255 if adjust_pct >= 0 else 1.0 + adjust_pct
+    return RGB.from_ints(
+      max(0, min(255, int(r * factor))),
+      max(0, min(255, int(g * factor))),
+      max(0, min(255, int(b * factor))),
+    )
 
-        # Apply brightness adjustment (using existing algorithm from theme.py)
-        # NOTE: The original algorithm has a bug where positive brightness makes colors darker
-        # We maintain this behavior for backward compatibility
-        if brightness != 0.0:
-            factor = -brightness
-            if brightness >= 0:
-                # Original buggy behavior: negative factor makes colors darker
-                r, g, b = (int(v + (255 - v) * factor) for v in (r, g, b))
-            else:
-                # Darker - blend with black (0, 0, 0)
-                factor = 1 + brightness  # brightness is negative, so this reduces values
-                r, g, b = (int(v * factor) for v in (r, g, b))
+  def overlay(self, adjust_pct: float) -> RGB:
+    """Overlay blend mode: Similar to Photoshop's overlay effect."""
 
-        # Clamp to valid range
-        r, g, b = (int(MathUtil.clamp(v, 0, 255)) for v in (r, g, b))
+    def overlay_blend(base: float, overlay: float) -> float:
+      """Apply overlay blend formula."""
+      return 2 * base * overlay if base < 0.5 else 1 - 2 * (1 - base) * (1 - overlay)
 
-        # TODO: Add saturation adjustment when needed
-        # For now, just brightness adjustment to match existing behavior
+    overlay_val = 0.5 + adjust_pct * 0.5  # Maps to 0.0-1.0 range
+    return RGB.from_ints(
+      max(0, min(255, int(255 * overlay_blend(self._r, overlay_val)))),
+      max(0, min(255, int(255 * overlay_blend(self._g, overlay_val)))),
+      max(0, min(255, int(255 * overlay_blend(self._b, overlay_val)))),
+    )
 
-        return RGB.from_ints(r, g, b)
+  def absolute(self, adjust_pct: float) -> RGB:
+    """Absolute adjustment method: Legacy absolute color adjustment."""
+    r, g, b = self.to_ints()
+    # Legacy behavior: color + (255 - color) * (-adjust_pct)
+    factor = -adjust_pct
+    return RGB.from_ints(
+      max(0, min(255, int(r + (255 - r) * factor))),
+      max(0, min(255, int(g + (255 - g) * factor))),
+      max(0, min(255, int(b + (255 - b) * factor))),
+    )
 
-    def hsl(self, adjust_pct: float) -> RGB:
-        """HSL method: Adjust lightness while preserving hue and saturation."""
-        r, g, b = self.to_ints()
-        h, s, lightness = self._rgb_to_hsl(r, g, b)
+  @staticmethod
+  def _rgb_to_hsl(r: int, g: int, b: int) -> tuple[float, float, float]:
+    """Convert RGB to HSL color space."""
+    r_norm, g_norm, b_norm = r / 255.0, g / 255.0, b / 255.0
 
-        # Adjust lightness
-        lightness = (
-            lightness + (1.0 - lightness) * adjust_pct
-            if adjust_pct >= 0
-            else lightness * (1 + adjust_pct)
-        )
-        lightness = max(0.0, min(1.0, lightness))  # Clamp to valid range
+    max_val = max(r_norm, g_norm, b_norm)
+    min_val = min(r_norm, g_norm, b_norm)
+    diff = max_val - min_val
 
-        r_new, g_new, b_new = self._hsl_to_rgb(h, s, lightness)
-        return RGB.from_ints(r_new, g_new, b_new)
+    # Lightness
+    lightness = (max_val + min_val) / 2.0
 
-    def multiplicative(self, adjust_pct: float) -> RGB:
-        """Multiplicative method: Simple scaling of RGB values."""
-        factor = 1.0 + adjust_pct
-        r, g, b = self.to_ints()
-        return RGB.from_ints(
-            max(0, min(255, int(r * factor))),
-            max(0, min(255, int(g * factor))),
-            max(0, min(255, int(b * factor))),
-        )
+    if diff == 0:
+      h = s = 0  # Achromatic
+    else:
+      # Saturation
+      s = diff / (2 - max_val - min_val) if lightness > 0.5 else diff / (max_val + min_val)
 
-    def gamma(self, adjust_pct: float) -> RGB:
-        """Gamma correction method: More perceptually uniform adjustments."""
-        gamma = max(0.1, min(3.0, 1.0 - adjust_pct * 0.5))  # Convert to gamma value
-        return RGB.from_ints(
-            max(0, min(255, int(255 * pow(self._r, gamma)))),
-            max(0, min(255, int(255 * pow(self._g, gamma)))),
-            max(0, min(255, int(255 * pow(self._b, gamma)))),
-        )
+      # Hue
+      if max_val == r_norm:
+        h = (g_norm - b_norm) / diff + (6 if g_norm < b_norm else 0)
+      elif max_val == g_norm:
+        h = (b_norm - r_norm) / diff + 2
+      else:
+        h = (r_norm - g_norm) / diff + 4
+      h /= 6
 
-    def luminance(self, adjust_pct: float) -> RGB:
-        """Luminance-based method: Adjust based on perceived brightness."""
-        r, g, b = self.to_ints()
-        luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b  # ITU-R BT.709
-        factor = 1.0 + adjust_pct * (255 - luminance) / 255 if adjust_pct >= 0 else 1.0 + adjust_pct
-        return RGB.from_ints(
-            max(0, min(255, int(r * factor))),
-            max(0, min(255, int(g * factor))),
-            max(0, min(255, int(b * factor))),
-        )
+    return h, s, lightness
 
-    def overlay(self, adjust_pct: float) -> RGB:
-        """Overlay blend mode: Similar to Photoshop's overlay effect."""
+  @staticmethod
+  def _hsl_to_rgb(h: float, s: float, lightness: float) -> tuple[int, int, int]:
+    """Convert HSL to RGB color space."""
 
-        def overlay_blend(base: float, overlay: float) -> float:
-            """Apply overlay blend formula."""
-            return 2 * base * overlay if base < 0.5 else 1 - 2 * (1 - base) * (1 - overlay)
+    def hue_to_rgb(p: float, q: float, t: float) -> float:
+      """Convert hue to RGB component."""
+      if t < 0:
+        t = t + 1
+      elif t > 1:
+        t = t - 1
+      result = p  # Default case
 
-        overlay_val = 0.5 + adjust_pct * 0.5  # Maps to 0.0-1.0 range
-        return RGB.from_ints(
-            max(0, min(255, int(255 * overlay_blend(self._r, overlay_val)))),
-            max(0, min(255, int(255 * overlay_blend(self._g, overlay_val)))),
-            max(0, min(255, int(255 * overlay_blend(self._b, overlay_val)))),
-        )
+      if t < 1 / 6:
+        result = p + (q - p) * 6 * t
+      elif t < 1 / 2:
+        result = q
+      elif t < 2 / 3:
+        result = p + (q - p) * (2 / 3 - t) * 6
 
-    def absolute(self, adjust_pct: float) -> RGB:
-        """Absolute adjustment method: Legacy absolute color adjustment."""
-        r, g, b = self.to_ints()
-        # Legacy behavior: color + (255 - color) * (-adjust_pct)
-        factor = -adjust_pct
-        return RGB.from_ints(
-            max(0, min(255, int(r + (255 - r) * factor))),
-            max(0, min(255, int(g + (255 - g) * factor))),
-            max(0, min(255, int(b + (255 - b) * factor))),
-        )
+      return result
 
-    @staticmethod
-    def _rgb_to_hsl(r: int, g: int, b: int) -> tuple[float, float, float]:
-        """Convert RGB to HSL color space."""
-        r_norm, g_norm, b_norm = r / 255.0, g / 255.0, b / 255.0
+    if s == 0:
+      r = g = b = lightness  # Achromatic
+    else:
+      q = lightness * (1 + s) if lightness < 0.5 else lightness + s - lightness * s
+      p = 2 * lightness - q
+      r = hue_to_rgb(p, q, h + 1 / 3)
+      g = hue_to_rgb(p, q, h)
+      b = hue_to_rgb(p, q, h - 1 / 3)
 
-        max_val = max(r_norm, g_norm, b_norm)
-        min_val = min(r_norm, g_norm, b_norm)
-        diff = max_val - min_val
+    return int(r * 255), int(g * 255), int(b * 255)
 
-        # Lightness
-        lightness = (max_val + min_val) / 2.0
+  def _rgb_to_ansi256(self, r: int, g: int, b: int) -> int:
+    """Convert RGB values to the closest ANSI 256-color code.
 
-        if diff == 0:
-            h = s = 0  # Achromatic
-        else:
-            # Saturation
-            s = diff / (2 - max_val - min_val) if lightness > 0.5 else diff / (max_val + min_val)
+    :param r: Red component (0-255)
+    :param g: Green component (0-255)
+    :param b: Blue component (0-255)
+    :return: ANSI color code (0-255)
+    """
+    # Check if it's close to grayscale (COLORS 232-255)
+    if abs(r - g) < 10 and abs(g - b) < 10 and abs(r - b) < 10:
+      # Use grayscale palette (24 shades)
+      gray = (r + g + b) // 3
+      # Map to grayscale range
+      result = 232 + (gray - 8) * 23 // 230  # Default case
+      if gray < 8:
+        result = 16
+      elif gray > 238:
+        result = 231
+      return result
 
-            # Hue
-            if max_val == r_norm:
-                h = (g_norm - b_norm) / diff + (6 if g_norm < b_norm else 0)
-            elif max_val == g_norm:
-                h = (b_norm - r_norm) / diff + 2
-            else:
-                h = (r_norm - g_norm) / diff + 4
-            h /= 6
+    # Use 6x6x6 color cube (COLORS 16-231)
+    # Map RGB values to 6-level scale (0-5)
+    r6 = min(5, r * 6 // 256)
+    g6 = min(5, g * 6 // 256)
+    b6 = min(5, b * 6 // 256)
 
-        return h, s, lightness
+    return 16 + (36 * r6) + (6 * g6) + b6
 
-    @staticmethod
-    def _hsl_to_rgb(h: float, s: float, lightness: float) -> tuple[int, int, int]:
-        """Convert HSL to RGB color space."""
+  def __eq__(self, other) -> bool:
+    """Check equality with another RGB instance."""
+    return (
+      isinstance(other, RGB) and self._r == other._r and self._g == other._g and self._b == other._b
+    )
 
-        def hue_to_rgb(p: float, q: float, t: float) -> float:
-            """Convert hue to RGB component."""
-            if t < 0:
-                t = t + 1
-            elif t > 1:
-                t = t - 1
-            result = p  # Default case
+  def __hash__(self) -> int:
+    """Make RGB hashable."""
+    return hash((self._r, self._g, self._b))
 
-            if t < 1 / 6:
-                result = p + (q - p) * 6 * t
-            elif t < 1 / 2:
-                result = q
-            elif t < 2 / 3:
-                result = p + (q - p) * (2 / 3 - t) * 6
+  def __repr__(self) -> str:
+    """Return a debug-friendly RGB representation."""
+    return f'RGB(r={self._r:.3f}, g={self._g:.3f}, b={self._b:.3f})'
 
-            return result
-
-        if s == 0:
-            r = g = b = lightness  # Achromatic
-        else:
-            q = lightness * (1 + s) if lightness < 0.5 else lightness + s - lightness * s
-            p = 2 * lightness - q
-            r = hue_to_rgb(p, q, h + 1 / 3)
-            g = hue_to_rgb(p, q, h)
-            b = hue_to_rgb(p, q, h - 1 / 3)
-
-        return int(r * 255), int(g * 255), int(b * 255)
-
-    def _rgb_to_ansi256(self, r: int, g: int, b: int) -> int:
-        """Convert RGB values to the closest ANSI 256-color code.
-
-        :param r: Red component (0-255)
-        :param g: Green component (0-255)
-        :param b: Blue component (0-255)
-        :return: ANSI color code (0-255)
-        """
-        # Check if it's close to grayscale (colors 232-255)
-        if abs(r - g) < 10 and abs(g - b) < 10 and abs(r - b) < 10:
-            # Use grayscale palette (24 shades)
-            gray = (r + g + b) // 3
-            # Map to grayscale range
-            result = 232 + (gray - 8) * 23 // 230  # Default case
-            if gray < 8:
-                result = 16
-            elif gray > 238:
-                result = 231
-            return result
-
-        # Use 6x6x6 color cube (colors 16-231)
-        # Map RGB values to 6-level scale (0-5)
-        r6 = min(5, r * 6 // 256)
-        g6 = min(5, g * 6 // 256)
-        b6 = min(5, b * 6 // 256)
-
-        return 16 + (36 * r6) + (6 * g6) + b6
-
-    def __eq__(self, other) -> bool:
-        """Check equality with another RGB instance."""
-        return (
-            isinstance(other, RGB)
-            and self._r == other._r
-            and self._g == other._g
-            and self._b == other._b
-        )
-
-    def __hash__(self) -> int:
-        """Make RGB hashable."""
-        return hash((self._r, self._g, self._b))
-
-    def __repr__(self) -> str:
-        """String representation for debugging."""
-        return f"RGB(r={self._r:.3f}, g={self._g:.3f}, b={self._b:.3f})"
-
-    def __str__(self) -> str:
-        """User-friendly string representation."""
-        return self.to_hex()
+  def __str__(self) -> str:
+    """User-friendly string representation."""
+    return self.to_hex()

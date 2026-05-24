@@ -104,8 +104,8 @@ python freyja_cli.py command --input_file data.txt  # Wrong
 #### Problem: "No colors in output"
 **Solution**: Check color settings
 ```python
-# Force enable colors
-cli = CLI(MyClass, no_color=False)
+# Force enable COLORS
+cli = FreyjaCLI(MyClass, no_color=False)
 
 # Or check NO_COLOR environment variable
 unset NO_COLOR

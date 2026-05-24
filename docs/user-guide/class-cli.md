@@ -574,7 +574,7 @@ class UserManager:
 ```python
 # At the end of ../examples/cls_example
 if __name__ == '__main__':
-  from src import CLI
+  from freyja import FreyjaCLI
 
   # Optional: Configure specific methods
   function_opts = {
@@ -592,7 +592,7 @@ if __name__ == '__main__':
     }
   }
 
-  cli = CLI.from_class(
+  cli = FreyjaCLI(
     UserManager,
     function_opts=function_opts,
     theme_name="colorful"

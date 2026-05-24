@@ -42,19 +42,20 @@ PROJECT_NAME = get_project_name()
 class FreyjaDevTools:
   """Development toolkit with build, test, and setup commands organized via Freyja's inner class pattern."""
 
+  COLORS: Dict[str, str] = {
+    'red': '\033[0;31m',
+    'green': '\033[0;32m',
+    'yellow': '\033[1;33m',
+    'blue': '\033[0;34m',
+    'nc': '\033[0m'  # No Color
+  }
+
   def __init__(self, verbose: bool = False, dry_run: bool = False) -> None:
     """Initialize with optional verbose output and dry-run mode."""
     self.verbose: bool = verbose
     self.dry_run: bool = dry_run
     self.project_root: Path = project_root
     self.project_name: str = PROJECT_NAME
-    self.colors: Dict[str, str] = {
-      'red': '\033[0;31m',
-      'green': '\033[0;32m',
-      'yellow': '\033[1;33m',
-      'blue': '\033[0;34m',
-      'nc': '\033[0m'  # No Color
-    }
 
   def _format_command(self, command: Union[str, List[str]], shell: bool) -> Union[str, List[str]]:
     """Convert string command to list format if needed."""
@@ -116,7 +117,7 @@ class FreyjaDevTools:
 
     Returns bool for compatibility, or CompletedProcess when capture_output=True."""
     if description:
-      print(f"{self.colors['blue']}{description}{self.colors['nc']}")
+      print(f"{self.COLORS['blue']}{description}{self.COLORS['nc']}")
 
     # Format command
     command = self._format_command(command, shell)
@@ -151,9 +152,9 @@ class FreyjaDevTools:
     icons = {'success': '✅', 'error': '❌', 'info': 'ℹ️', 'warning': '⚠️'}
     colors = {'success': 'green', 'error': 'red', 'info': 'blue', 'warning': 'yellow'}
 
-    color = self.colors.get(colors.get(msg_type, 'blue'), self.colors['blue'])
+    color = self.COLORS.get(colors.get(msg_type, 'blue'), self.COLORS['blue'])
     icon = icons.get(msg_type, 'ℹ️')
-    print(f"{color}{icon} {message}{self.colors['nc']}")
+    print(f"{color}{icon} {message}{self.COLORS['nc']}")
 
   class Setup:
     """Development environment and self-installation setup operations."""
@@ -165,7 +166,7 @@ class FreyjaDevTools:
     def env(self) -> None:
       """Set up the development environment with dependencies and pre-commit hooks."""
       parent = self.parent
-      print(f"{parent.colors['blue']}🚀 Setting up development environment for {parent.project_name}...{parent.colors['nc']}")
+      print(f"{parent.COLORS['blue']}🚀 Setting up development environment for {parent.project_name}...{parent.COLORS['nc']}")
 
       # Install dependencies
       success = parent._run_command("poetry install --with dev", "📦 Installing dependencies with Poetry...")
@@ -178,13 +179,14 @@ class FreyjaDevTools:
           parent._print("Development environment setup complete!", 'success')
           print()
           print("Available commands:")
-          print("  python bin/devtools build compile      # Compile/build package")
-          print("  python bin/devtools build lint         # Run linters (ruff + mypy)")
-          print("  python bin/devtools build lint --fix   # Auto-fix linting issues")
-          print("  python bin/devtools test run           # Run tests with coverage")
-          print("  python bin/devtools build autocommit   # Commit changes with Claude-generated message")
-          print("  python bin/devtools build autotag      # Create git tag for HEAD commit")
-          print("  python bin/devtools build publish      # Publish to PyPI")
+          print("  python bin/devtools build compile        # Compile/build package")
+          print("  python bin/devtools build lint           # Run linters (ruff + mypy)")
+          print("  python bin/devtools build lint --fix     # Auto-fix linting issues")
+          print("  python bin/devtools test run             # Run tests with coverage")
+          print("  python bin/devtools project autocommit   # Commit changes with Claude-generated message")
+          print("  python bin/devtools project tag          # Tag release ('Bump version to x.y.z')")
+          print("  python bin/devtools project tag --autotag # Tag release with Claude-generated message")
+          print("  python bin/devtools project publish      # Publish to PyPI")
         else:
           parent._print("Failed to install pre-commit hooks", 'error')
       else:
@@ -351,47 +353,13 @@ class FreyjaDevTools:
         parent._print("Build failed!", 'error')
       return
 
-    def publish(self, test_pypi: bool = False) -> None:
-      """Build and publish package to PyPI or test PyPI."""
-      parent = self.parent
-      parent._print(f"📦 Building and publishing {parent.project_name} to PyPI...", 'info')
 
-      # Clean and build first
-      self.compile(clean_first=True)
+  class Project:
+    """Project release operations: committing, version tagging, and publishing."""
 
-      # Check for PyPI token
-      token_var: str = "TEST_PYPI_TOKEN" if test_pypi else "PYPI_TOKEN"
-      token_exists: bool = bool(os.environ.get(token_var))
-
-      if token_exists:
-        parent._print("🔐 Configuring PyPI authentication...", 'info')
-
-        # Configure repositories
-        if test_pypi:
-          repo_url = "https://test.pypi.org/legacy/"
-          parent._run_command(f"poetry config repositories.testpypi {repo_url}")
-          parent._run_command(f"poetry config http-basic.testpypi __token__ {os.environ[token_var]}")
-          publish_cmd = "poetry publish -r testpypi"
-        else:
-          parent._run_command("poetry config repositories.pypi https://upload.pypi.org/legacy/")
-          parent._run_command(f"poetry config http-basic.pypi __token__ {os.environ[token_var]}")
-          publish_cmd = "poetry publish"
-
-        # Publish
-        success = parent._run_command(publish_cmd, "🚀 Publishing to PyPI...")
-        if success:
-          if test_pypi:
-            parent._print(f"Published successfully to https://test.pypi.org/project/{parent.project_name}/", 'success')
-            parent._print(f"Install with: pip install --index-url https://test.pypi.org/simple/ {parent.project_name}", 'info')
-          else:
-            parent._print(f"Published successfully to https://pypi.org/project/{parent.project_name}/", 'success')
-            parent._print(f"Install with: pip install {parent.project_name}", 'info')
-        else:
-          parent._print("Publishing failed!", 'error')
-      else:
-        parent._print(f"{token_var} environment variable not set", 'error')
-        parent._print(f"Please set {token_var} environment variable with your PyPI token", 'error')
-      return
+    def __init__(self, parent) -> None:
+      """Initialize with parent FreyjaDevTools instance."""
+      self.parent: 'FreyjaDevTools' = parent
 
     def _extract_commit_message(self, raw_output: str) -> Optional[str]:
       """Extract commit message from Claude response."""
@@ -463,6 +431,48 @@ class FreyjaDevTools:
             parent._print("Failed to create commit", 'error')
         else:
           parent._print("Failed to stage files", 'error')
+      return
+
+    def publish(self, test_pypi: bool = False) -> None:
+      """Build and publish package to PyPI or test PyPI."""
+      parent = self.parent
+      parent._print(f"📦 Building and publishing {parent.project_name} to PyPI...", 'info')
+
+      # Clean and build first (compile lives on the Build group)
+      parent.Build(parent).compile(clean_first=True)
+
+      # Check for PyPI token
+      token_var: str = "TEST_PYPI_TOKEN" if test_pypi else "PYPI_TOKEN"
+      token_exists: bool = bool(os.environ.get(token_var))
+
+      if token_exists:
+        parent._print("🔐 Configuring PyPI authentication...", 'info')
+
+        # Configure repositories
+        if test_pypi:
+          repo_url = "https://test.pypi.org/legacy/"
+          parent._run_command(f"poetry config repositories.testpypi {repo_url}")
+          parent._run_command(f"poetry config http-basic.testpypi __token__ {os.environ[token_var]}")
+          publish_cmd = "poetry publish -r testpypi"
+        else:
+          parent._run_command("poetry config repositories.pypi https://upload.pypi.org/legacy/")
+          parent._run_command(f"poetry config http-basic.pypi __token__ {os.environ[token_var]}")
+          publish_cmd = "poetry publish"
+
+        # Publish
+        success = parent._run_command(publish_cmd, "🚀 Publishing to PyPI...")
+        if success:
+          if test_pypi:
+            parent._print(f"Published successfully to https://test.pypi.org/project/{parent.project_name}/", 'success')
+            parent._print(f"Install with: pip install --index-url https://test.pypi.org/simple/ {parent.project_name}", 'info')
+          else:
+            parent._print(f"Published successfully to https://pypi.org/project/{parent.project_name}/", 'success')
+            parent._print(f"Install with: pip install {parent.project_name}", 'info')
+        else:
+          parent._print("Publishing failed!", 'error')
+      else:
+        parent._print(f"{token_var} environment variable not set", 'error')
+        parent._print(f"Please set {token_var} environment variable with your PyPI token", 'error')
       return
 
     def _validate_version_format(self, version: str) -> bool:
@@ -561,8 +571,18 @@ class FreyjaDevTools:
       parent._print(f"Failed to create tag: {error_msg}", 'error')
       return False
 
-    def autotag(self, version: Optional[str] = None, auto_increment: bool = True) -> None:
-      """Create git tag with Claude-generated message, auto-incrementing version if needed."""
+    def tag(
+      self,
+      version: Optional[str] = None,
+      auto_increment: bool = True,
+      message: Optional[str] = None,
+      autotag: bool = False,
+    ) -> None:
+      """Tag a release, auto-incrementing the version when none is given.
+
+      The tag message defaults to "Bump version to X.Y.Z". Pass --autotag to
+      generate the message with Claude instead, or --message to supply your own.
+      """
       parent = self.parent
       parent._print(f"🏷️  Creating {parent.project_name} version tag...", 'info')
 
@@ -628,20 +648,28 @@ class FreyjaDevTools:
           parent._print("Failed to commit version change", 'error')
           return
 
-      # Generate tag message with Claude
-      parent._print("🤖 Generating tag message with Claude...", 'info')
-      result = parent._run_command(
-        ['claude', '-p', 'Create a very short message to be used on a new tag basing it on the most recent commit (HEAD). Return a single string representing the tag description with no preamble, summary, or afterthoughts. Dont mention phases or claude AT ALL'],
-        capture_output=True
-      )
-
+      # Determine tag message: explicit --message wins, then --autotag (Claude),
+      # otherwise the default "Bump version to X.Y.Z".
       tag_message = None
-      if isinstance(result, subprocess.CompletedProcess) and result.returncode == 0:
-        tag_message = result.stdout.strip()
-        parent._print(f"Tag message: {tag_message}", 'info')
+      if message:
+        tag_message = message.strip()
+        parent._print(f"Tag message (provided): {tag_message}", 'info')
+      elif autotag:
+        parent._print("🤖 Generating tag message with Claude...", 'info')
+        result = parent._run_command(
+          ['claude', '-p', 'Create a very short message to be used on a new tag basing it on the most recent commit (HEAD). Return a single string representing the tag description with no preamble, summary, or afterthoughts. Dont mention phases or claude AT ALL'],
+          capture_output=True
+        )
+
+        if isinstance(result, subprocess.CompletedProcess) and result.returncode == 0:
+          tag_message = result.stdout.strip()
+          parent._print(f"Tag message: {tag_message}", 'info')
+        else:
+          parent._print("Failed to generate tag message with Claude", 'error')
+          return
       else:
-        parent._print("Failed to generate tag message with Claude", 'error')
-        return
+        tag_message = f"Bump version to {final_version}"
+        parent._print(f"Tag message: {tag_message}", 'info')
 
       # Create the tag
       parent._print(f"Creating tag: {tag}", 'info')
@@ -661,7 +689,7 @@ class FreyjaDevTools:
         parent._print("Pushed to remote repository", 'success')
       else:
         parent._print("Failed to push to remote. Commit and tag created locally.", 'error')
-        parent._print(f"To push manually, run: {parent.colors['blue']}git push && git push --tags{parent.colors['nc']}", 'info')
+        parent._print(f"To push manually, run: {parent.COLORS['blue']}git push && git push --tags{parent.COLORS['nc']}", 'info')
       return
 
 

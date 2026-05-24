@@ -132,18 +132,22 @@ print(src.__version__)
 Create a test file `test_install.py`:
 
 ```python
-from src import CLI
+from freyja import FreyjaCLI
 
 
-def hello(name: str = "World"):
-  """Test function."""
-  print(f"Hello, {name}!")
+class Greeter:
+  """Test class."""
+
+  def __init__(self):
+    pass
+
+  def hello(self, name: str = "World") -> None:
+    """Test method."""
+    print(f"Hello, {name}!")
 
 
 if __name__ == "__main__":
-  import sys
-
-  cli = CLI.from_module(sys.modules[__name__])
+  cli = FreyjaCLI(Greeter)
   cli.run()
 ```
 

@@ -1,6 +1,5 @@
-"""Help formatting package - handles FreyjaCLI help text generation and styling."""
+"""Help formatting package — renders themed argparse help output."""
 
 from .help_formatter import HierarchicalHelpFormatter
-from .help_formatting_engine import HelpFormattingEngine
 
-__all__ = ["HierarchicalHelpFormatter", "HelpFormattingEngine"]
+__all__ = ['HierarchicalHelpFormatter']

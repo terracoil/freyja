@@ -44,7 +44,7 @@ class ProjectManager:
 ## Complete Example
 
 ```python
-from src import CLI
+from freyja import FreyjaCLI
 from pathlib import Path
 from typing import List
 
@@ -209,7 +209,7 @@ class ProjectManager:
 
 
 if __name__ == '__main__':
-  cli = CLI(ProjectManager, theme_name="colorful")
+  cli = FreyjaCLI(ProjectManager, theme_name="colorful")
   cli.run()
 ```
 
