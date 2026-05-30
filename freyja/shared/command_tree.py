@@ -6,7 +6,7 @@ Provides a hierarchical command structure with convenience methods for efficient
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 from freyja.utils import TextUtil
 
@@ -176,7 +176,7 @@ class CommandTree:
     for _, group_info in self.tree.items():
       if group_info.get('type') == 'group' and 'cmd_tree' in group_info:
         if name in group_info['cmd_tree']:
-          return group_info['cmd_tree'][name]
+          return cast(dict[str, Any], group_info['cmd_tree'][name])
 
     return None
 

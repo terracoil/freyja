@@ -1,7 +1,7 @@
 """Command path resolution for hierarchical command structures."""
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 
 @dataclass
@@ -80,7 +80,7 @@ class CommandPathResolver:
     """Validate that a command path exists in the tree."""
     return self._is_valid_path(path)
 
-  def get_available_commands(self, path: list[str] = None) -> list[str]:
+  def get_available_commands(self, path: list[str] | None = None) -> list[str]:
     """Get available commands/groups at a given path level."""
     if not path:
       # Root level - return all flat commands and groups
@@ -123,7 +123,7 @@ class CommandPathResolver:
         and self.command_tree.flat_commands
         and cmd_name in self.command_tree.flat_commands
       ):
-        return self.command_tree.flat_commands[cmd_name]
+        return cast(dict[str, Any], self.command_tree.flat_commands[cmd_name])
 
       # Check groups
       if (
@@ -131,7 +131,7 @@ class CommandPathResolver:
         and self.command_tree.groups
         and cmd_name in self.command_tree.groups
       ):
-        return self.command_tree.groups[cmd_name]
+        return cast(dict[str, Any], self.command_tree.groups[cmd_name])
 
     elif len(path) == 2:
       # Hierarchical command (group + command)
@@ -144,7 +144,7 @@ class CommandPathResolver:
       ):
         group_info = self.command_tree.groups[group_name]
         if 'commands' in group_info and cmd_name in group_info['commands']:
-          return group_info['commands'][cmd_name]
+          return cast(dict[str, Any], group_info['commands'][cmd_name])
 
     return None
 

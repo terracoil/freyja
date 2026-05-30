@@ -100,7 +100,7 @@ class FreyjaCLI:
     # Get command structure from discovery (no need to build separately)
     self.commands = self.discovery.cmd_tree.to_dict()
 
-  def run(self, args: list[str] = None) -> Any:
+  def run(self, args: list[str] | None = None) -> Any:
     """Parse arguments and execute the appropriate command.
 
     :param args: Optional command line arguments (uses sys.argv if None)
@@ -145,7 +145,7 @@ class FreyjaCLI:
 
     :return: Dictionary with captured content for each stream
     """
-    result = {'stdout': None, 'stderr': None, 'stdin': None}
+    result: dict[str, str | None] = {'stdout': None, 'stderr': None, 'stdin': None}
     if self.output_capture:
       result = self.output_capture.get_all_output()
     return result
@@ -195,11 +195,12 @@ class FreyjaCLI:
 
     return self.execution_coordinator.parse_and_execute(parser, args)
 
-  def _initialize_executors(self) -> dict:
+  def _initialize_executors(self) -> dict[str | type, CommandExecutor]:
     """Initialize command executors with a shared color formatter."""
     from freyja.theme import ColorFormatter
 
     color_formatter = ColorFormatter()
+    executors: dict[str | type, CommandExecutor]
 
     # Determine executors based on class count
     if self.discovery.target_classes and len(self.discovery.target_classes) > 1:

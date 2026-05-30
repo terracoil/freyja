@@ -78,6 +78,7 @@ class CommandExecutor:
 
   def _execute_inner_class_command(self, parsed) -> Any:
     """Execute command using inner class pattern (parent + inner class + method)."""
+    assert self.target_class is not None  # set by __init__ before any execute call
     qualname_parts = parsed._cli_function.__qualname__.split('.')
     if len(qualname_parts) < 2:
       raise RuntimeError(
@@ -105,12 +106,12 @@ class CommandExecutor:
 
   def _create_parent(self, parsed) -> Any:
     """Create parent class instance with global arguments."""
-    parent_sig = inspect.signature(self.target_class.__init__)
+    assert self.target_class is not None  # set by __init__ before any execute call
+    parent_sig = inspect.signature(self.target_class)
     parent_kwargs = {
       param_name: getattr(parsed, f'_global_{param_name}')
       for param_name, param in parent_sig.parameters.items()
-      if param_name != 'self'
-      and param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD)
+      if param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD)
       and hasattr(parsed, f'_global_{param_name}')
     }
 
@@ -125,12 +126,11 @@ class CommandExecutor:
     self, inner_class: type, command_name: str, parsed, parent: Any
   ) -> Any:
     """Create inner class instance with sub-global arguments."""
-    inner_sig = inspect.signature(inner_class.__init__)
+    inner_sig = inspect.signature(inner_class)
     inner_kwargs = {
       param_name: getattr(parsed, f'_subglobal_{command_name}_{param_name}')
       for param_name, param in inner_sig.parameters.items()
-      if param_name != 'self'
-      and param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD)
+      if param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD)
       and hasattr(parsed, f'_subglobal_{command_name}_{param_name}')
     }
 
@@ -200,6 +200,8 @@ class CommandExecutor:
 
       # Only use output capture if explicitly enabled
       if self.enable_output_capture and self.output_capture:
+        # output_formatter is created in lockstep with output_capture in __init__
+        assert self.output_formatter is not None
         # Capture output during execution
         self.output_capture.start()
         try:

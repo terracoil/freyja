@@ -21,13 +21,12 @@ class ValidationService:
     :raises ValueError: If constructor has parameters without defaults
     """
     try:
-      init_method = cls.__init__
-      sig = inspect.signature(init_method)
+      sig = inspect.signature(cls)
       params_without_defaults = []
 
       for param_name, param in sig.parameters.items():
-        # Skip self parameter and varargs
-        if param_name == 'self' or param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+        # Skip varargs (self is excluded by signature(cls))
+        if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
           continue
 
         # Check if parameter has no default value
@@ -67,41 +66,36 @@ class ValidationService:
   def validate_inner_class_constructor_parameters(cls: type, context: str) -> None:
     """Validate inner class constructors for main instance injection."""
     try:
-      init_method = cls.__init__
-      sig = inspect.signature(init_method)
+      # Inspect __init__ directly so we can validate that the first parameter is
+      # actually named 'self' (legal Python doesn't require this, but freyja does).
+      raw_params = list(inspect.signature(cls.__init__).parameters.items())  # type: ignore[misc]
+      if not raw_params or raw_params[0][0] != 'self':
+        raise ValueError(f"Constructor for {context} '{cls.__name__}' malformed (no self param)")
+
+      sig = inspect.signature(cls)
       params = list(sig.parameters.items())
       params_without_defaults = []
 
-      # First parameter should be 'self'
-      if not params or params[0][0] != 'self':
-        raise ValueError(f"Constructor for {context} '{cls.__name__}' malformed (no self param)")
+      # signature(cls) already omits self; if any params remain, params[0] is "main"
+      # under the new pattern (no default, no annotation) or a real arg under the old.
+      if params:
+        first_name, first_param = params[0]
 
-      # Determine if this follows the new main pattern or old pattern
-      if len(params) >= 2:
-        # Check if second parameter is likely main (no type annotation for main is expected)
-        second_param_name, second_param = params[1]
-
-        # If second parameter has no default and no annotation, assume it's main
-        if (
-          second_param.default == second_param.empty
-          and second_param.annotation == second_param.empty
-        ):
+        # If first parameter has no default and no annotation, assume it's main
+        if first_param.default == first_param.empty and first_param.annotation == first_param.empty:
           # New pattern: main parameter - check remaining params for defaults
-          for param_name, param in params[2:]:  # Skip 'self' and main
+          for param_name, param in params[1:]:  # Skip main
             if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
               continue
             if param.default == param.empty:
               params_without_defaults.append(param_name)
         else:
-          # Old pattern or malformed: all params after self need defaults
-          for param_name, param in params[1:]:  # Skip only 'self'
+          # Old pattern: all params need defaults
+          for param_name, param in params:
             if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
               continue
             if param.default == param.empty:
               params_without_defaults.append(param_name)
-      else:
-        # Only self parameter - this is valid (no sub-global args)
-        pass
 
       if params_without_defaults:
         param_list = ', '.join(params_without_defaults)

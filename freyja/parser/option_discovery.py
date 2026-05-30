@@ -83,7 +83,7 @@ class OptionDiscovery:
 
     return positional_params
 
-  def get_all_known_options(self, command_path: list[str] = None) -> set[str]:
+  def get_all_known_options(self, command_path: list[str] | None = None) -> set[str]:
     """Get all known options for a given command path."""
     all_options = set()
 
@@ -121,10 +121,8 @@ class OptionDiscovery:
     options = set()
 
     try:
-      sig = inspect.signature(target_class.__init__)
+      sig = inspect.signature(target_class)
       for param_name, _param in sig.parameters.items():
-        if param_name == 'self':
-          continue
         flag_name = TextUtil.kebab_case(param_name)
         options.add(f'--{flag_name}')
     except (ValueError, TypeError):
@@ -138,10 +136,10 @@ class OptionDiscovery:
     options = set()
 
     try:
-      sig = inspect.signature(inner_class.__init__)
+      sig = inspect.signature(inner_class)
       params = list(sig.parameters.items())
-      # Skip self (index 0) and main (index 1), start from index 2
-      for param_name, _param in params[2:]:
+      # Skip main (index 0); self is already excluded by signature(cls)
+      for param_name, _param in params[1:]:
         flag_name = TextUtil.kebab_case(param_name)
         options.add(f'--{flag_name}')
     except (ValueError, TypeError):
@@ -234,7 +232,7 @@ class OptionDiscovery:
     return conflicts
 
   def suggest_option_corrections(
-    self, unknown_option: str, command_path: list[str] = None
+    self, unknown_option: str, command_path: list[str] | None = None
   ) -> list[str]:
     """Suggest corrections for unknown options using similarity matching."""
     all_options = self.get_all_known_options(command_path)

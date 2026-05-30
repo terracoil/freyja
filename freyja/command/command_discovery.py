@@ -1,7 +1,7 @@
 """Command discovery from classes via introspection."""
 
 import inspect
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import Any
 
 from freyja.cli import SystemClassBuilder
@@ -12,7 +12,7 @@ from freyja.utils import TextUtil
 
 from .validation import ValidationService
 
-TargetType = type | list[type]
+TargetType = type | Sequence[type]
 
 
 class CommandDiscovery:
@@ -43,13 +43,13 @@ class CommandDiscovery:
     self.primary_class: type | None = None
 
     # Determine target mode with unified class handling
-    if isinstance(target, list):
-      self.target_classes = target
-      self._validate_classes(self.target_classes)
-      self.primary_class = self.target_classes[-1]
-    elif inspect.isclass(target):
+    if inspect.isclass(target):
       self.primary_class = target
       self.target_classes = [target]
+    elif isinstance(target, (list, tuple)):
+      self.target_classes = list(target)
+      self._validate_classes(self.target_classes)
+      self.primary_class = self.target_classes[-1]
     else:
       raise ValueError(f'Target must be class or list of classes, got {type(target).__name__}')
 
@@ -138,6 +138,7 @@ class CommandDiscovery:
       self._discover_from_class(target_class, command_tree, is_namespaced=True)
 
     # Discover cmd_tree for primary class (no namespace)
+    assert self.primary_class is not None  # set by __init__ for all valid targets
     self._discover_from_class(self.primary_class, command_tree, is_namespaced=False)
 
   def _discover_inner_classes(self, target_class: type) -> dict[str, type]:

@@ -127,16 +127,17 @@ class ArgumentPreprocessor:
             self._positional_params[group_name] = positional_info
 
   def _extract_constructor_options(self, cls: type, skip_params: int = 1) -> set[str]:
-    """Extract options from class constructor."""
-    options: set[str] = set()
-    if not hasattr(cls, '__init__'):
-      return options
+    """Extract options from class constructor.
 
-    sig = inspect.signature(cls.__init__)
+    skip_params counts from the __init__ signature (including self), preserved
+    for caller-facing API stability. signature(cls) already omits self, so the
+    effective offset into its parameter list is skip_params - 1.
+    """
+    options: set[str] = set()
+    sig = inspect.signature(cls)
     params = list(sig.parameters.items())
 
-    # Skip 'self' and potentially other params (like 'main' in inner classes)
-    for param_name, param in params[skip_params:]:
+    for param_name, param in params[max(skip_params - 1, 0) :]:
       if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
         continue
 

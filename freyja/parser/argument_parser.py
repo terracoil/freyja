@@ -57,16 +57,16 @@ class ArgumentParser:
 
     Class constructors define application-wide settings that apply to all cmd_tree.
     """
-    init_method = target_class.__init__
-    sig = inspect.signature(init_method)
-    _, param_help = DocStringParser.extract_function_help(init_method)
+    sig = inspect.signature(target_class)
+    # __init__'s docstring carries the :param: directives we need
+    _, param_help = DocStringParser.extract_function_help(target_class.__init__)  # type: ignore[misc]
 
     for param_name, param in sig.parameters.items():
-      # Skip self parameter and varargs
-      if param_name == 'self' or param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
+      # Skip varargs (self is excluded by signature(cls))
+      if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
         continue
 
-      arg_config = {
+      arg_config: dict[str, Any] = {
         'dest': f'_global_{param_name}',  # Prefix to avoid conflicts
         'help': param_help.get(param_name, f'Global {param_name} parameter'),
       }
@@ -101,20 +101,20 @@ class ArgumentParser:
 
     Inner class constructors provide group-specific settings shared across related cmd_tree.
     """
-    init_method = inner_class.__init__
-    sig = inspect.signature(init_method)
-    _, param_help = DocStringParser.extract_function_help(init_method)
+    sig = inspect.signature(inner_class)
+    # __init__'s docstring carries the :param: directives we need
+    _, param_help = DocStringParser.extract_function_help(inner_class.__init__)  # type: ignore[misc]
 
-    # Get parameters as a list to skip main parameter
+    # Get parameters as a list to skip main parameter (self already excluded by signature(cls))
     params = list(sig.parameters.items())
 
-    # Skip self (index 0) and main (index 1), start from index 2
-    for param_name, param in params[2:]:
+    # Skip main (index 0), start from index 1
+    for param_name, param in params[1:]:
       # Skip varargs
       if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
         continue
 
-      arg_config = {
+      arg_config: dict[str, Any] = {
         'dest': f'_subglobal_{command_name}_{param_name}',  # Prefix to avoid conflicts
         'help': param_help.get(param_name, f'{command_name} {param_name} parameter'),
       }
@@ -161,9 +161,10 @@ class ArgumentParser:
       # Check if this is the positional parameter
       is_positional = first_positional_param and name == first_positional_param.name
 
+      arg_config: dict[str, Any]
       if is_positional:
         # Add as positional (ArgumentPreprocessor handles conversion)
-        arg_config: dict[str, Any] = {'help': param_help.get(name, f'{name} parameter')}
+        arg_config = {'help': param_help.get(name, f'{name} parameter')}
 
         # Handle type annotations
         if param.annotation != param.empty:
@@ -189,7 +190,7 @@ class ArgumentParser:
           parser.add_argument(name, **arg_config)
       else:
         # For optional arguments, specify dest
-        arg_config: dict[str, Any] = {
+        arg_config = {
           'dest': name,
           'help': param_help.get(name, f'{name} parameter'),
         }

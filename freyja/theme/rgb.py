@@ -232,7 +232,7 @@ class RGB:
     lightness = (max_val + min_val) / 2.0
 
     if diff == 0:
-      h = s = 0  # Achromatic
+      h = s = 0.0  # Achromatic
     else:
       # Saturation
       s = diff / (2 - max_val - min_val) if lightness > 0.5 else diff / (max_val + min_val)

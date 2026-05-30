@@ -216,4 +216,4 @@ class CommandParser:
         original_help = original_help.replace(self.title, styled_title)
       return original_help
 
-    parser.format_help = patched_format_help
+    parser.format_help = patched_format_help  # type: ignore[method-assign]  # intentional themed-help monkey-patch

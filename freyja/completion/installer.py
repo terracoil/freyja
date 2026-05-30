@@ -3,6 +3,7 @@
 import os
 import sys
 from pathlib import Path
+from typing import cast
 
 from .base import CompletionHandler
 
@@ -36,11 +37,12 @@ class CompletionInstaller:
     'powershell': '_install_powershell_completion',
   }
 
-  def install(self, shell: str | None = None, force: bool = False):
+  def install(self, shell: str | None = None, force: bool = False) -> bool:
     """Install completion for specified or detected shell.
 
     :param shell: Target shell (auto-detect if None)
     :param force: Force overwrite existing completion
+    :return: True if installation succeeded
     """
     target_shell = shell or self.shell
     if not target_shell:
@@ -49,7 +51,7 @@ class CompletionInstaller:
       raise ValueError(f'Unsupported shell: {target_shell}')
     installer_method_name = self._SHELL_INSTALLERS[target_shell]
     installer_method = getattr(self, installer_method_name)
-    installer_method(force)
+    return cast(bool, installer_method(force))
 
   def _install_bash_completion(self, force: bool) -> bool:
     """Install bash completion."""

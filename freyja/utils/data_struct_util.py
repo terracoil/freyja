@@ -35,6 +35,7 @@ class DataStructUtil:
 
     def to_prim(o: Any, depth: int, seen: set) -> Simple:
       saw: set = seen.union({id(o)})
+      result: Simple
 
       if depth >= max_depth:
         # Convert to string at max depth

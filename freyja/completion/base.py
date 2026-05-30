@@ -4,7 +4,7 @@ import argparse
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
   from freyja import FreyjaCLI
@@ -21,7 +21,7 @@ class CompletionContext:
   current_word: str  # Word being completed (partial)
   cursor_position: int  # Position in current word
   command_group_path: list[str]  # Path to current command group (e.g., ['db', 'backup'])
-  parser: argparse.ArgumentParser  # Current parser context
+  parser: argparse.ArgumentParser | None  # Current parser context (None when CLI not yet bound)
   cli: 'FreyjaCLI'  # FreyjaCLI instance for introspection
 
 
@@ -36,10 +36,11 @@ class CompletionHandler(ABC):
     self.cli = cli
 
   @abstractmethod
-  def generate_script(self, prog_name: str) -> str:
+  def generate_script(self, prog_name: str, command_patterns: list[str] | None = None) -> str:
     """Generate shell-specific completion script.
 
     :param prog_name: Program name for completion
+    :param command_patterns: Optional additional command patterns (ignored by shells that don't use them)
     :return: Shell-specific completion script
     """
 
@@ -95,7 +96,7 @@ class CompletionHandler(ABC):
         pass
 
   def get_command_group_parser(
-    self, parser: argparse.ArgumentParser, command_group_path: list[str]
+    self, parser: argparse.ArgumentParser | None, command_group_path: list[str]
   ) -> argparse.ArgumentParser | None:
     """Navigate to command group parser following the path.
 
@@ -103,8 +104,11 @@ class CompletionHandler(ABC):
     :param command_group_path: Path to target command group
     :return: Target parser or None if not found
     """
+    if parser is None:
+      return None
+
     current_parser = parser
-    result = current_parser
+    result: argparse.ArgumentParser | None = current_parser
 
     for command_group in command_group_path:
       found_parser = None
@@ -261,7 +265,7 @@ class CompletionHandler(ABC):
     completions: list[str] = []
 
     # Get the appropriate parser for current context
-    parser = context.parser
+    parser: argparse.ArgumentParser | None = context.parser
     if context.command_group_path:
       parser = self.get_command_group_parser(parser, context.command_group_path)
 
@@ -294,7 +298,7 @@ class CompletionHandler(ABC):
     return completions
 
 
-def get_completion_handler(cli, shell: str = None) -> CompletionHandler:
+def get_completion_handler(cli, shell: str | None = None) -> CompletionHandler:
   """Get appropriate completion handler for shell.
 
   :param cli: FreyjaCLI instance
@@ -325,4 +329,4 @@ def get_completion_handler(cli, shell: str = None) -> CompletionHandler:
   module = importlib.import_module(module_path)
   handler_class = getattr(module, class_name)
 
-  return handler_class(cli)
+  return cast(CompletionHandler, handler_class(cli))

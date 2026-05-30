@@ -38,7 +38,7 @@ class ExecutionSpinner:
     self.spinner_chars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
     self.current = 0
     self.running = False
-    self.thread = None
+    self.thread: threading.Thread | None = None
     self.command_context: CommandContext | None = None
     self.status_line = ''
     self._lock = threading.Lock()
@@ -150,9 +150,10 @@ class ExecutionSpinner:
 
       # Non-verbose mode: start spinner thread
       self.running = True
-      self.thread = threading.Thread(target=self._spin)
-      self.thread.daemon = True
-      self.thread.start()
+      thread = threading.Thread(target=self._spin)
+      thread.daemon = True
+      thread.start()
+      self.thread = thread
 
   def _spin(self):
     """Spinner animation loop (runs in separate thread)."""

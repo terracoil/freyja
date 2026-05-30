@@ -23,7 +23,9 @@ class MathUtil:
     return max(min_val, min(value, max_val))
 
   @classmethod
-  def minmax_range(cls, args: [Numeric], negative_lower: bool = False) -> tuple[Numeric, Numeric]:
+  def minmax_range(
+    cls, args: list[Numeric], negative_lower: bool = False
+  ) -> tuple[Numeric, Numeric]:
     """Return min and max of arguments with optional negative lower bound."""
     lower, upper = cls.minmax(*args)
 

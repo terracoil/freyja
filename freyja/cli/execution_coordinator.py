@@ -5,9 +5,13 @@ Extracted from FreyjaCLI class to reduce its size and improve separation of conc
 """
 
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 from freyja.utils.output_capture import OutputCapture, OutputCaptureConfig
+
+if TYPE_CHECKING:
+  from freyja.freyja_cli import FreyjaCLI
+  from freyja.shared.command_tree import CommandTree
 
 
 class ExecutionCoordinator:
@@ -15,13 +19,13 @@ class ExecutionCoordinator:
 
   def __init__(
     self,
-    executors: dict[str, Any],
+    executors: dict[str | type, Any],
     output_capture_config: OutputCaptureConfig | None = None,
   ):
     """Initialize execution coordinator."""
     self.executors = executors
-    self.command_tree = None
-    self.cli_instance = None
+    self.command_tree: 'CommandTree | None' = None
+    self.cli_instance: 'FreyjaCLI | None' = None
 
     # Initialize output capture configuration
     self.output_capture_config = output_capture_config or OutputCaptureConfig()
@@ -453,7 +457,7 @@ class ExecutionCoordinator:
     if 'primary' in self.executors:
       executor = self.executors['primary']
       if hasattr(executor, 'target_class'):
-        return executor.target_class
+        return cast('type | None', executor.target_class)
 
     # For multi-class mode, try to get the last class (primary class)
     if len(self.executors) > 1:
@@ -462,7 +466,7 @@ class ExecutionCoordinator:
       if executor_items:
         last_executor = executor_items[-1][1]
         if hasattr(last_executor, 'target_class'):
-          return last_executor.target_class
+          return cast('type | None', last_executor.target_class)
 
     return None
 
