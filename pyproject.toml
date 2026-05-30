@@ -4,7 +4,7 @@ authors = [{name = "steven.miers@gmail.com"}]
 description = "Python Library that builds a complete CLI given one or more functions using introspection"
 keywords = ["cli", "auto", "introspection", "argparse", "command-line"]
 license = "MIT"
-version = "2.0.0" # Uses poetry-dynamic-versioning
+version = "2.0.1" # Uses poetry-dynamic-versioning
 requires-python = ">=3.11.0, <4.0.0"
 
 [project.urls]
